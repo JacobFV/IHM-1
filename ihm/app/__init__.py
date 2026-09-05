@@ -32,7 +32,10 @@ class Jobs:
         from ihm.native import RUNTIME,available_patients
         with self.lock:runs=[dict(r) for r in self.runs]
         variants=[{'id':'upstream','label':'Original upstream source','available':True,'status':'source reference; known female initialization bounds defect'}]
-        for name,label in [('saturation_bounds','Saturation bounds correction'),('saturation_bounds_heatflux','Bounds and evaporation telemetry corrections')]:
+        for name,label in [('saturation_bounds','Saturation bounds correction'),('saturation_bounds_heatflux','Bounds and evaporation telemetry corrections'),
+                           ('saturation_bounds_heatflux_thermal_units','Thermal dimensional correction'),
+                           ('whole_body_integrity','Calcium transfer integrity correction'),
+                           ('whole_body_integrity_renal','Calcium and renal transfer integrity corrections')]:
             directory=RUNTIME/'variants'/name;manifest=directory/'manifest.json';library=directory/'libbiogears.so.8.0.0'
             if manifest.is_file() and library.is_file():
                 metadata=read_json(manifest)
@@ -43,7 +46,8 @@ class Jobs:
                     self.variant_cache[name]=(stamp,matches)
                 else:matches=cached[1]
                 variants.append(dict(id=name,label=label,available=matches,status='local source patch; execution regression checked, not independent clinical validation',scope=metadata['scope'],library_sha256=metadata['library_sha256']))
-        preferred='saturation_bounds_heatflux' if any(v['id']=='saturation_bounds_heatflux' and v['available'] for v in variants) else 'upstream'
+        available={v['id'] for v in variants if v['available']}
+        preferred=next(name for name in ('whole_body_integrity_renal','whole_body_integrity','saturation_bounds_heatflux_thermal_units','saturation_bounds_heatflux','upstream') if name in available)
         return {'available':(RUNTIME/'native_biogears_rest').is_file(),'patients':available_patients(),'runs':runs,'engine_variants':variants,'default_engine_variant':preferred,
                 'limits':{'max_seconds':600,'max_pending':4,'parallel_runs':1}}
     def submit(self,data,canonical=False):

@@ -19,6 +19,7 @@ ASSETS={
  'anatomy_fidelity':'data/derived/anatomy/fidelity.json',
  'lymph_network':'data/derived/lymphatic/graph.json',
  'native':'data/derived/native-circuits/graph.json',
+ 'systemic_backend':'data/runtime/physiology/native_biogears_stream.manifest.json',
  'population':'data/derived/population/nhanes-2017-2018/joint-population-prior.json',
  'skin_field':'data/derived/calibration/skin-fit.json',
  'skin_lymph':'data/derived/coupling/native-skin-circuit.json',
@@ -122,6 +123,17 @@ class NativePredictor:
         return run_native(self.config,output_dir)
 
 @dataclass(frozen=True)
+class SystemicPredictor:
+    root: Path
+    config: object
+    sources: dict
+    def run(self,output_dir):
+        for path,sha in self.sources.items():
+            if digest(path)!=sha:raise ValueError('Systemic input changed after materialization: '+str(path))
+        from ihm.assembly.systemic import run_systemic
+        return run_systemic(self.root,output_dir,self.config)
+
+@dataclass(frozen=True)
 class OpenSimPredictor:
     config: object
     def run(self,output_dir):
@@ -188,7 +200,7 @@ class ImplicitHuman:
             self._cache[key]=json.loads(path.read_text())
         return deepcopy(self._cache[key])
     def describe(self):
-        return dict(schema_version=1,kind='heterogeneous_implicit_human',coverage=self._read('coverage')['summary'] if 'coverage' in self.assets else {},
+        result=dict(schema_version=1,kind='heterogeneous_implicit_human',coverage=self._read('coverage')['summary'] if 'coverage' in self.assets else {},
             materializations=[name for name,key in [('population','population'),('skin-field','skin_field'),('skin-lymph','skin_lymph'),('temporal','temporal'),('native','native'),('opensim','opensim'),('reproductive','reproductive'),('csf','csf'),('thermal','thermal'),('body','canonical_body'),('ibm-causal','ibm_source'),('body-touch','canonical_microvascular'),('body-skin-transport','canonical_microvascular'),('body-skin-electric','canonical_microvascular'),('kidney-arterial-geometry','kidney_graph')] if key in self.assets and all(k in self.assets for k in {'body':CANONICAL_ASSETS,'body-touch':('ibm_source','canonical_anatomy'),'body-skin-transport':('skin_lymph','canonical_anatomy'),'body-skin-electric':('skin_field','canonical_anatomy'),'kidney-arterial-geometry':('kidney_card','kidney_statistics')}.get(name,()))],
             temporal_runs=[r['id'] for r in self._read('temporal')['runs']] if 'temporal' in self.assets else [],
             assets=deepcopy(self.assets),independently_validated_whole_human=False,
@@ -197,6 +209,8 @@ class ImplicitHuman:
                 'Population covariance predicts concurrent measured states; it does not identify causal dynamics.',
                 'Canonical anatomy uses recorded inter-template fits and synthesis priors; source families retain distinct specimen identities.',
                 'Frozen circuit responses and fitted temporal spectra have different meanings and validity domains.'])
+        if 'systemic_backend' in self.assets:result['materializations'].append('body-systemic')
+        return result
     def microstructure_evidence(self):
         """Acquired organ evidence; availability does not confer population validity."""
         if 'kidney_card' not in self.assets:return {}
@@ -217,6 +231,16 @@ class ImplicitHuman:
                         evidence_kind='native_initialized_state_or_parameter',source=graph['source'],independently_calibrated=False))
         return fields
     def materialize(self,kind,**options):
+        if kind=='body-systemic':
+            from ihm.assembly.systemic import SystemicConfig
+            from ihm.native.session import RUNTIME
+            config=SystemicConfig(**options)
+            library=(RUNTIME/'biogears-build/outputs/Release/lib' if config.engine_variant=='upstream'
+                     else RUNTIME/'variants'/config.engine_variant)/'libbiogears.so.8.0.0'
+            paths=[Path(config.state_path).resolve(), RUNTIME/'native_biogears_stream', library,
+                   self.root/'ihm/assembly/systemic.py',self.root/'ihm/native/session.py',
+                   self.root/'scripts/native_body_ports.h',self.root/'scripts/native_biogears_stream.cpp']
+            return SystemicPredictor(self.root,config,{str(path):digest(path) for path in paths})
         if kind=='kidney-arterial-geometry':
             if options:raise ValueError('Measured donor geometry accepts no synthesis or registration options')
             for key in ('kidney_card','kidney_graph','kidney_statistics'):
