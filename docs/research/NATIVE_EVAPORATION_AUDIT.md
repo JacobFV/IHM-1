@@ -143,6 +143,16 @@ increases resting heat loss, as expected from the restored vapor gradient;
 its one-hour endpoint is not a settled thermal equilibrium. Longer integrated
 rest and intervention acceptance remain necessary for this final variant.
 
+For matched downstream protocols, the fresh initial state and execution lineage
+were frozen separately in
+`data/derived/audits/thermal-final-initial-state-ctkr8bap/initial-state.json`.
+Its `state_path` resolves to a retained copy with SHA-256
+`cba7ffb523728d86e8f07b2a30b215b040676c30580e8accda722d175bd687b3`.
+This is the state before the one-hour rest, not the final endpoint. Its initial
+total heat-storage rate is −26.38209 W, so native source stabilization must not
+be called thermal equilibrium. Every intervention/control should load the same
+frozen state under the same final library and retain its own runtime inputs.
+
 Probe inputs include retained source, binary, initial state, exact linked
 dependencies and post-start runtime-resource bytes. Failed initial probe
 attempts were retained; they failed on intentional native read-only protection
@@ -158,3 +168,41 @@ OPENBLAS_NUM_THREADS=1 .venv/bin/python scripts/verify_native_evaporation_probe.
 These variants are experimental until their fresh-state integrated rest and
 intervention protocols pass the whole-body acceptance checks. They cannot
 retroactively repair previously published source-run histories.
+
+## Inherited source regressions
+
+`verify_final_thermal_inheritance.py` executes the held calcium digestion,
+bilateral renal transport, dry aqueous GI, energy and depletion regressions
+against the final humidity library. Original verifier files are untouched.
+The calcium, renal and dry-GI probes use their existing parameterized API. The
+energy and depletion drivers are copied with retained diffs to select the final
+library and classify the inherited fixes correctly. The energy driver omits
+only historical *cross-variant* resting-output parity: corrected thermal laws
+are expected to change resting outputs. Its cold/neutral partition, thermal
+source, exercise bound, stop behavior, store positivity and within-variant
+matched causal checks remain active.
+
+GI, renal, dry-GI and energy use the final fresh state. Depletion deliberately
+retains its original known water-store/clock fixture for the 1205-second empty
+stomach regression. `archive_thermal_inheritance.py` checks that fixture and
+the linked dependencies against execution receipts and retains their exact
+bytes. Its runtime-resource capture is explicitly after execution, not an
+assertion of historical startup identity.
+
+All inherited regressions passed in
+`data/derived/audits/thermal-final-inheritance-tudiahnb/verification.json`:
+6 calcium cases, 20 bilateral renal cases, 11 dry-GI cases, 15 energy checks,
+and 5 depletion checks. The actual uninterrupted depletion replay reaches
+1205 seconds with exactly zero stomach water, including a safe subsequent
+step after exhaustion; its mixed litre/millilitre remainders and invalid
+negative-input rejection also pass. At 120 seconds, continuous exercise uses
+150.12 W additional demand and raises oxygen consumption from resting
+236.13 to 479.12 mL/min. Stopping at 30 seconds clears that demand and gives
+236.13 mL/min at 120 seconds. These are bounded native causal regressions,
+not sustained exercise or six-hour multisystem acceptance.
+
+```sh
+OPENBLAS_NUM_THREADS=1 .venv/bin/python scripts/verify_final_thermal_inheritance.py
+# Archive the fresh directory printed by the verifier:
+OPENBLAS_NUM_THREADS=1 .venv/bin/python scripts/archive_thermal_inheritance.py data/derived/audits/thermal-final-inheritance-tudiahnb
+```
