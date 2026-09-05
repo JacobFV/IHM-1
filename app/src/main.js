@@ -21,6 +21,7 @@ import { attachedHairPositions } from "./hair_motion.js";
 import { RegionalView, ElectricRegionalView } from "./regional.js";
 import { ClothingView } from "./clothing.js";
 import { GarmentContactView } from "./garment-contact.js";
+import { mountSceneInteraction } from "./scene-interaction.js";
 import { prepareSystemic, systemicLabel, systemicSnapshot } from "./systemic.js";
 const $ = (id) => document.getElementById(id),
   esc = (s) =>
@@ -86,6 +87,8 @@ async function loadSystemicIndex(){
 $('systemic-refresh').onclick=loadSystemicIndex;
 $('systemic-study').onchange=async()=>{
   const id=$('systemic-study').value,request=++systemicRequest;
+  if(sceneInteraction)await sceneInteraction.reset();
+  if(request!==systemicRequest)return;
   regionalRequest++;closeRegional();$('regional-study').value='body';
   systemicSelection=id;activeSystemic=null;playing=false;activeRun='body';
   systemicMonitor.hidden=true;
@@ -226,10 +229,13 @@ const colors = {
 };
 const viewport = $("viewport");
 let renderer, scene, camera, controls, group, webglError;
+let sceneInteraction=null,liveSceneFrame=null;
+let lastRenderTime=0;
+document.addEventListener('visibilitychange',()=>{lastRenderTime=0;lastTick=performance.now();});
 let regionalView, regionalRequest=0, regionalSpectra=[], regionalReturnPhys=null,regionalReturnLabels=null;
 try {
   renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.setPixelRatio(1); // Default resource budget: one device pixel per CSS pixel.
   renderer.localClippingEnabled = true;
   renderer.setClearColor(0x10191c, 0);
   viewport.prepend(renderer.domElement);
@@ -255,7 +261,10 @@ try {
     camera.updateProjectionMatrix();
   }).observe(viewport);
   renderer.setAnimationLoop((now) => {
+    if(document.hidden||now-lastRenderTime<1000/30)return;
+    lastRenderTime=now;
     controls.update();
+    sceneInteraction?.update(now);
     const frameIndex = Number($("time").value);
     const trajectory=spatialTrajectory();
     const garmentActive=regionalView instanceof GarmentContactView&&regionalView.active;
@@ -393,6 +402,8 @@ function rebuildSystems() {
   syncLayers();
 }
 function chooseModel() {
+  sceneInteraction?.dispose();sceneInteraction=null;liveSceneFrame=null;
+  if($('live-scene-signal-note'))$('live-scene-signal-note').hidden=true;
   clearSystemic();
   regionalRequest++;
   closeRegional();
@@ -451,6 +462,23 @@ function chooseModel() {
   resetCamera();
   refresh();
   loadClothing();
+  mountBodySceneInteraction();
+}
+function mountBodySceneInteraction(){
+  $('scene-controls').hidden=modelId!=='ihm-body';
+  if(modelId!=='ihm-body'||!renderer)return;
+  let note=$('live-scene-signal-note');
+  if(!note){note=document.createElement('p');note.id='live-scene-signal-note';note.className='muted';note.textContent='Signal graph shows a separate recorded run. Live mechanics values are in Scene forces.';$('chart-note').after(note);}
+  note.hidden=true;
+  sceneInteraction=mountSceneInteraction({scene,camera,renderer,controls,group,
+    getObjects:()=>objects,getSelected:()=>selected,onSelect:selectStructure,
+    onPauseReplay:()=>{playing=false;$('play').textContent='▶';
+      if(regionalView?.active){regionalRequest++;closeRegional();$('regional-study').value='body';setupFrames();}
+    },
+    onFrame:frame=>{const first=frame&&!liveSceneFrame;liveSceneFrame=frame;note.hidden=!frame;
+      if(frame){if(first)monitorWorkspace.show('scene');if(!document.hidden)updateFrame();}
+      else {setupFrames();updateFrame();}
+    }});
 }
 function syncCanonicalProfile() {
   if (modelId !== "ihm-body") return;
@@ -597,7 +625,7 @@ async function loadVisible(rows) {
   }
   status();
   await Promise.all(
-    Array.from({ length: 6 }, async () => {
+    Array.from({ length: 2 }, async () => {
       while (queue.length && current === generation) {
         const s = queue.shift();
         try {
@@ -837,6 +865,13 @@ function setupFrames() {
   updateFrame();
 }
 function updateFrame() {
+  if(liveSceneFrame&&modelId==='ihm-body'){
+    const reference=Object.fromEntries(Object.entries(liveSceneFrame.entities).map(([id,state])=>[id,state.centroid_m.map((x,i)=>x-(state.translation_m?.[i]||0))]));
+    applyBodyFrame(liveSceneFrame,{centroids_m:reference});
+    $('time').disabled=true;$('play').disabled=true;$('time-value').textContent=`${liveSceneFrame.time_s.toFixed(3)} s · live mechanics`;
+    $('flow-legend').hidden=false;$('flow-legend').textContent='Live mechanics · constrained body orientations · recorded physiology is separate';
+    return;
+  }
   if(regionalView instanceof GarmentContactView&&regionalView.active){
     applyBodyFrame(null,null);
     const frame=regionalView.draw(Number($('time').value));
@@ -1282,6 +1317,8 @@ $("model").onchange = chooseModel;
 $('regional-study').onchange=async()=>{
   const wasSystemic=!!systemicSelection;clearSystemic();if(wasSystemic)useBodyPhysiology();
   const request=++regionalRequest,kind=$('regional-study').value;
+  if(sceneInteraction)await sceneInteraction.reset();
+  if(request!==regionalRequest)return;
   playing=false;
   closeRegional();
   if(kind==='body'){
@@ -1388,6 +1425,7 @@ $("side").onclick = () => resetCamera("side");
 $("time").oninput = updateFrame;
 $("flow-field").onchange = updateFrame;
 $("play").onclick = () => {
+  if(liveSceneFrame)return;
   playing = !playing;
   lastTick = performance.now();
   $("play").textContent = playing ? "Ⅱ" : "▶";
