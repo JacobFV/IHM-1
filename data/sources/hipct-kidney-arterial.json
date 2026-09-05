@@ -42,7 +42,19 @@
     "type": "HiP-CT image TIFFs and matched dense vessel masks",
     "scope": "32 consecutive middle slices from kidney_1_dense",
     "receipt": "data/raw/microstructure/kidney/segmentation_19685382/slab_manifest.json",
-    "donor_relation_to_2025_graph": "not established; treat as separate dataset",
+    "donor_relation_to_2025_graph": "same LADAF-2021-17 right kidney established by 2026 Table 1 and Supplementary Table 1; graph/slab spatial registration remains unknown",
+    "donor": {"id": "LADAF-2021-17", "sex": "male", "age_years": 63, "organ": "right kidney"},
+    "voxel_spacing_um": [50.0, 50.0, 50.0],
+    "voxel_spacing_axis_order": "zyx",
+    "beamline": "BM05",
+    "source_scan_doi": "10.15151/ESRF-DC-1773966439",
+    "metadata_evidence": {
+      "table1_url": "https://www.nature.com/articles/s41467-026-74050-8/tables/1",
+      "table1_sha256": "7f523bc8d48840c96b85daa3d46312c344c1ae82a68f6c93f7ff71f8ddd1bca2",
+      "supplement_sha256": "d4286901266a9b68101dec6ce2407559da8e57265fbb1bcde5d2248b2214451f",
+      "receipt": "data/raw/microstructure/kidney/segmentation_19685382/metadata/evidence_receipt.json"
+    },
+    "measured_slab": {"foreground_voxels": 490087, "labeled_vessel_volume_mm3": 61.260875, "boundary_censored": true, "whole_organ_estimate": false},
     "radius_or_murray_calibration_available": false
   }
 }

@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
 sys.path.insert(0,str(ROOT/"scripts"))
 import numpy as np
-from collect_kidney_microstructure import collect
+from collect_kidney_microstructure import collect, slab_metadata
 from ihm.anatomy.kidney_graph import graph_statistics, validate_graph
 
 def main():
@@ -48,6 +48,7 @@ def main():
         slab=json.loads(slab_path.read_text())
         pairs={}
         foreground=[]
+        masks={}
         for member in slab["files"]:
             path=ROOT/member["relative_path"]
             content=path.read_bytes()
@@ -60,6 +61,7 @@ def main():
             if path.parent.name=="labels":
                 assert set(np.unique(array)).issubset({0,255})
                 foreground.append(int(np.count_nonzero(array)))
+                masks[int(path.stem)]=array!=0
             else: assert array.dtype==np.uint16
         assert len(pairs)==slab["slice_count"]
         assert all(set(p)=={"images","labels"} for p in pairs.values())
@@ -69,6 +71,28 @@ def main():
                     "foreground_voxels":sum(foreground),"mask_values":[0,255],
                     "image_dtype":"uint16","sha256_and_crc32_verified":True,
                     "voxel_spacing_um":None,"physical_morphometry_ready":False}
+        evidence=ROOT/"data/raw/microstructure/kidney/segmentation_19685382/metadata/evidence_receipt.json"
+        if evidence.exists():
+            metadata=slab_metadata(ROOT)
+            assert slab["voxel_spacing_um"]==metadata["voxel_spacing_um"]
+            assert slab["donor"]==metadata["donor"]
+            assert slab["metadata_evidence"]==metadata["metadata_evidence"]
+            voxel_volume_mm3=float(np.prod(np.asarray(metadata["voxel_spacing_um"])/1000))
+            volume=np.stack([masks[i] for i in sorted(masks)])
+            faces={"z_min":volume[0],"z_max":volume[-1],"y_min":volume[:,0],
+                   "y_max":volume[:,-1],"x_min":volume[:,:,0],"x_max":volume[:,:,-1]}
+            border_counts={face:int(np.count_nonzero(mask)) for face,mask in faces.items()}
+            validation.update(metadata)
+            validation.update({"physical_morphometry_ready":False,
+                "labeled_volume_measurement_ready":True,"voxel_volume_mm3":voxel_volume_mm3,
+                "labeled_vessel_volume_mm3":float(sum(foreground)*voxel_volume_mm3),
+                "slab_box_volume_mm3":float(volume.size*voxel_volume_mm3),
+                "labeled_fraction_of_slab_box":float(sum(foreground)/volume.size),
+                "boundary_face_foreground_voxels":border_counts,
+                "boundary_censored":any(border_counts.values()),
+                "volume_interpretation":"Binary labeled vessel volume inside the retained slab at the published voxel spacing; not in-vivo lumen volume or whole-organ vessel volume.",
+                "density_denominator":"entire rectangular slab including background, not segmented kidney tissue",
+                "unsupported_inferences":["complete vessel lengths","capillary completeness","in-vivo radii","organ-wide density","population priors"]})
         (ROOT/"data/derived/microstructure/kidney/slab_validation.json").write_text(json.dumps(validation,indent=2)+"\n")
     print(json.dumps({"verified":True,"scope":stats["scope"],"edges":147,"full_graph_available":False,"paired_slab_verified":slab_path.exists()}))
 

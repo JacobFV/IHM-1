@@ -12,6 +12,7 @@ import tempfile
 import zipfile
 import zlib
 from concurrent.futures import ThreadPoolExecutor
+from html.parser import HTMLParser
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -37,6 +38,63 @@ SOURCES = {
 
 ARCHIVE_URL = "https://zenodo.org/records/19685382/files/final-data-repository-for-paper.zip"
 ARCHIVE_SIZE = 51177854763
+METADATA_URLS = {
+    "paper_2026.html": "https://www.nature.com/articles/s41467-026-74050-8",
+    "table1_2026.html": "https://www.nature.com/articles/s41467-026-74050-8/tables/1",
+    "supplement_2026.pdf": "https://media.springernature.com/original/springer-static/esm/art%3A10.1038%2Fs41467-026-74050-8/MediaObjects/41467_2026_74050_MOESM1_ESM.pdf",
+}
+
+
+class TableRows(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.rows=[]; self.row=[]; self.cell=None
+
+    def handle_starttag(self,tag,attrs):
+        if tag=="tr": self.row=[]
+        if tag in ("td","th"): self.cell=""
+
+    def handle_data(self,data):
+        if self.cell is not None: self.cell+=data
+
+    def handle_endtag(self,tag):
+        if tag in ("td","th") and self.cell is not None:
+            self.row.append(" ".join(self.cell.split())); self.cell=None
+        if tag=="tr" and self.row: self.rows.append(self.row)
+
+
+def slab_metadata(root: Path, *, refresh: bool = False) -> dict:
+    """Use the exact Table 1 row, not an approximate overview resolution."""
+    directory=root/"data/raw/microstructure/kidney/segmentation_19685382/metadata"
+    receipt_path=directory/"evidence_receipt.json"
+    if refresh:
+        directory.mkdir(parents=True,exist_ok=True)
+        receipts={}
+        for name,url in METADATA_URLS.items():
+            with urllib.request.urlopen(url,timeout=90) as response:
+                if response.code!=200: raise ValueError(f"Cannot acquire {url}")
+                content=response.read()
+            (directory/name).write_bytes(content)
+            receipts[name]={"url":url,"bytes":len(content),"sha256":hashlib.sha256(content).hexdigest(),"http_status":200}
+        receipt_path.write_text(json.dumps(receipts,indent=2)+"\n")
+    receipts=json.loads(receipt_path.read_text())
+    for name,receipt in receipts.items():
+        content=(directory/name).read_bytes()
+        if len(content)!=receipt["bytes"] or hashlib.sha256(content).hexdigest()!=receipt["sha256"]:
+            raise ValueError(f"Metadata evidence checksum mismatch: {name}")
+    table=TableRows(); table.feed((directory/"table1_2026.html").read_text())
+    expected=["1","LADAF 2021-17-Right-Kidney","Whole kidney densely labeled","50","2279","Training","BM05","M","63"]
+    if expected not in table.rows:
+        raise ValueError("Primary Table 1 no longer supports exact kidney_1_dense metadata")
+    return {"voxel_spacing_um":[50.0,50.0,50.0],"voxel_spacing_axis_order":"zyx",
+            "spacing_status":"verified exact 2026 Table 1 dense whole-kidney row; isotropic HiP-CT voxels",
+            "donor":{"id":"LADAF-2021-17","sex":"male","age_years":63,"organ":"right kidney"},
+            "beamline":"BM05","source_scan_doi":"10.15151/ESRF-DC-1773966439",
+            "source_tier":"measured_other_donor","metadata_table_row":expected,
+            "metadata_evidence":receipts,"metadata_evidence_path":str(directory.relative_to(root)),
+            "same_donor_as_2025_graph":True,"graph_to_slab_registration_verified":False,
+            "published_dataset_slice_count":2279,
+            "slice_count_note":"Publisher Table 1 lists 2279; archive has 2280 nonempty TIFFs indexed 0000..2279. Slab indices 1100..1131 are unaffected; do not reconcile by dropping a slice."}
 
 
 def fetch_range(start, end):
@@ -99,6 +157,7 @@ def collect_slab(root: Path, start: int, count: int):
              "slice_count":count,"coverage":"contiguous slab, not whole kidney",
              "voxel_spacing_um":None,"spacing_status":"Requires paper/metadata verification; do not infer from filename",
              "files":files}
+    if (raw/"metadata/evidence_receipt.json").exists(): receipt.update(slab_metadata(root))
     (raw/"slab_manifest.json").write_text(json.dumps(receipt,indent=2)+"\n")
     return receipt
 
@@ -156,7 +215,14 @@ if __name__ == "__main__":
     parser.add_argument("--offline",action="store_true")
     parser.add_argument("--slab-slices",type=int,default=0)
     parser.add_argument("--slab-start",type=int,default=1100)
+    parser.add_argument("--refresh-slab-metadata",action="store_true")
     args = parser.parse_args()
+    if args.refresh_slab_metadata:
+        metadata=slab_metadata(ROOT,refresh=True)
+        path=ROOT/"data/raw/microstructure/kidney/segmentation_19685382/slab_manifest.json"
+        if path.exists():
+            receipt=json.loads(path.read_text()); receipt.update(metadata)
+            path.write_text(json.dumps(receipt,indent=2)+"\n")
     stats = collect(ROOT,args.offline)
     print(json.dumps({k:stats[k] for k in ("scope","node_count","edge_count","point_count","complete_published_graph_acquired")},indent=2))
     if args.slab_slices:
