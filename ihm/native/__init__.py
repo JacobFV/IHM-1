@@ -35,7 +35,7 @@ class NativeConfig:
     chest_compliance_l_cmH2O: float|None=None
     def __post_init__(self):
         number(self.seconds,.02,3600,'seconds')
-        if self.engine_variant not in ('upstream','saturation_bounds','saturation_bounds_heatflux','saturation_bounds_heatflux_thermal_units','whole_body_integrity','whole_body_integrity_renal','whole_body_integrity_gi_water'):raise ValueError('Unknown engine variant')
+        if self.engine_variant not in ('upstream','saturation_bounds','saturation_bounds_heatflux','saturation_bounds_heatflux_thermal_units','whole_body_integrity','whole_body_integrity_renal','whole_body_integrity_gi_water','whole_body_integrity_energy','whole_body_integrity_depletion'):raise ValueError('Unknown engine variant')
         if self.ambient_temperature_c is not None:number(self.ambient_temperature_c,10,35,'ambient_temperature_c')
         if self.clothing_clo is not None:number(self.clothing_clo,0,3,'clothing_clo')
         if self.chest_compliance_l_cmH2O is not None:number(self.chest_compliance_l_cmH2O,.05,1.,'chest_compliance_l_cmH2O')
@@ -115,22 +115,26 @@ def summarize(output_dir,config=None):
     summary['input_state_sha256']=_sha(config.state_path) if config and config.state_path else None
     summary['patient_sha256']=_sha(RUNTIME/'biogears-build/runtime/patients'/f'{config.patient}.xml') if config else None
     summary['variable_bindings']=variable_bindings(trajectory['columns'][1:],summary['source_revision'])
-    if variant in ('saturation_bounds_heatflux','saturation_bounds_heatflux_thermal_units','whole_body_integrity','whole_body_integrity_renal','whole_body_integrity_gi_water'):
+    if variant in ('saturation_bounds_heatflux','saturation_bounds_heatflux_thermal_units','whole_body_integrity','whole_body_integrity_renal','whole_body_integrity_gi_water','whole_body_integrity_energy','whole_body_integrity_depletion'):
         summary['limitations']=[text for text in summary['limitations'] if not text.startswith('EvaporativeHeatLoss repeats')]
         summary['limitations'].append('Evaporation telemetry corrected in explicit source variant; skin heat loss is an aggregate, not an additional independent heat pathway.')
         binding=summary['variable_bindings'].get('EvaporativeHeatLoss(W)')
         if binding:
             binding['usable_for_energy_accounting']=True
             binding['source_diagnostic_defect']='Corrected by isolated evaporation_telemetry.patch; original physiological equations retained.'
-    if variant in ('saturation_bounds_heatflux_thermal_units','whole_body_integrity','whole_body_integrity_renal','whole_body_integrity_gi_water'):
+    if variant in ('saturation_bounds_heatflux_thermal_units','whole_body_integrity','whole_body_integrity_renal','whole_body_integrity_gi_water','whole_body_integrity_energy','whole_body_integrity_depletion'):
         summary['limitations']=[text for text in summary['limitations'] if not text.startswith('Original upstream equations;')]
         summary['limitations'].append('Experimental thermal dimensions correction changes source heat-transfer equations; empirical clothing factors retained, no clinical calibration.')
-    if variant in ('whole_body_integrity','whole_body_integrity_renal','whole_body_integrity_gi_water'):
+    if variant in ('whole_body_integrity','whole_body_integrity_renal','whole_body_integrity_gi_water','whole_body_integrity_energy','whole_body_integrity_depletion'):
         summary['limitations'].append('Isolated calcium transfer correction uses paired mg debit/credit capped by available stomach mass. It does not establish global nutrient conservation or calibrate digestion kinetics.')
-    if variant in ('whole_body_integrity_renal','whole_body_integrity_gi_water'):
+    if variant in ('whole_body_integrity_renal','whole_body_integrity_gi_water','whole_body_integrity_energy','whole_body_integrity_depletion'):
         summary['limitations'].append('Renal reabsorption mass is limited by the existing per-kidney transport maximum before glucose bookkeeping. Transport coefficients have not been independently calibrated.')
-    if variant=='whole_body_integrity_gi_water':
+    if variant in ('whole_body_integrity_gi_water','whole_body_integrity_energy','whole_body_integrity_depletion'):
         summary['limitations'].append('Aqueous stomach sodium transfer requires known available water. Proven depletion is numeric zero; unknown sodium remains absent. This does not add secretions or calibrate dry-food digestion.')
+    if variant in ('whole_body_integrity_energy','whole_body_integrity_depletion'):
+        summary['limitations'].append('Exercise demand is relaxed independently and removed on action stop; requested total heat counts it once. Actual oxidation and external mechanical work do not form a closed whole-body energy budget.')
+    if variant=='whole_body_integrity_depletion':
+        summary['limitations'].append('Known complete stomach-water transfer sets its remaining store to exact zero across mixed scalar units; arbitrary negative inputs remain rejected.')
     port_path=out/'respiratory_port.csv'
     if port_path.exists():
         port=load_trajectory(port_path)

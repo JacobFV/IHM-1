@@ -3,6 +3,7 @@ from dataclasses import dataclass, asdict
 import json
 import math
 from pathlib import Path
+from types import SimpleNamespace
 from ihm.native import BASE, _sha
 from ihm.native.session import NativeSession, SessionConfig, Meal, _ticks
 
@@ -14,7 +15,7 @@ class SystemicConfig:
     protocol: str = 'rest'
     seconds: float = 21600
     sample_interval_s: float = 30
-    engine_variant: str = 'whole_body_integrity_gi_water'
+    engine_variant: str = 'whole_body_integrity_depletion'
     state_path: str | Path = BASE/'data/derived/canonical/native_baseline_v1/states/native_stabilized.xml'
 
     def __post_init__(self):
@@ -83,7 +84,8 @@ def run_systemic(root, output_dir, config=None, **options):
     if out.exists() and any(out.iterdir()):
         raise ValueError('Systemic experiment requires a fresh output directory')
     out.mkdir(parents=True, exist_ok=True)
-    sources = ['ihm/assembly/systemic.py', 'ihm/assembly/systemic_evidence.py', 'ihm/native/session.py', 'ihm/native/__init__.py', 'scripts/native_body_ports.h',
+    sources = ['ihm/assembly/systemic.py', 'ihm/assembly/systemic_evidence.py',
+               'ihm/assembly/native_environment_evidence.py', 'ihm/native/session.py', 'ihm/native/__init__.py', 'scripts/native_body_ports.h',
                'scripts/native_biogears_stream.cpp', 'data/runtime/physiology/native_biogears_stream']
     from ihm.native import RUNTIME
     library=(RUNTIME/'biogears-build/outputs/Release/lib' if config.engine_variant=='upstream'
@@ -101,6 +103,8 @@ def run_systemic(root, output_dir, config=None, **options):
     frames = []
     with NativeSession(SessionConfig(state_path=config.state_path, engine_variant=config.engine_variant,
                                     horizon_s=config.seconds), out/'native') as body:
+        from .native_environment_evidence import freeze_native_environment
+        freeze_native_environment(root,out/'native')
         initial_state = body.save_state()
         current = 0
         for tick in boundaries:
@@ -152,6 +156,36 @@ def run_systemic(root, output_dir, config=None, **options):
     return result
 
 
+def validate_record(data,protocol):
+    """Recompute protocol, sample and storage validity from actual observations."""
+    config=data['configuration']
+    if protocol not in PROTOCOLS or config['protocol']!=protocol:raise ValueError('Systemic protocol identity mismatch')
+    total=_ticks(config['seconds'],86400,'seconds')
+    stride=_ticks(config['sample_interval_s'],config['seconds'],'sample_interval_s')
+    if total%stride:raise ValueError('Invalid systemic sample interval')
+    if protocol=='apnea' and total<9000 or protocol in ('exercise','meal_exercise') and total<150000:
+        raise ValueError('Incomplete systemic intervention horizon')
+    if data['actions']!=protocol_events(SimpleNamespace(protocol=protocol)):
+        raise ValueError('Declared actions do not match the named systemic protocol')
+    frames=data['frames']
+    if len(frames)!=total//stride+1:raise ValueError('Incomplete systemic observations')
+    required=['stomach_'+x for x in ('carbohydrate_g','protein_g','fat_g','sodium_g','calcium_mg','water_ml')]
+    required+=['liver_glycogen_g','muscle_glycogen_g','stored_protein_g','stored_fat_g']
+    keys=set(frames[0]['values'])
+    for i,frame in enumerate(frames):
+        time=frame['time_s'];values=frame['values']
+        if isinstance(time,bool) or not isinstance(time,(float,int)) or not math.isfinite(time) or abs(time-i*stride*.02)>1e-8:
+            raise ValueError('Invalid systemic sample clock')
+        if set(values)!=keys:raise ValueError('Changing systemic observation schema')
+        for key,value in values.items():
+            if value is not None and (isinstance(value,bool) or not isinstance(value,(float,int)) or not math.isfinite(value)):
+                raise ValueError('Invalid systemic observation')
+            if (key in required or '.mass_g' in key) and value is not None and value< -1e-10:
+                raise ValueError('Negative systemic local store')
+        if any(values.get(key) is None for key in required):raise ValueError('Missing required systemic store')
+    return True
+
+
 def verify_contrasts(results):
     """Require measured downstream changes; report magnitudes without clinical bounds."""
     checks = {}
@@ -160,7 +194,34 @@ def verify_contrasts(results):
     for protocol,control in required.items():
         if protocol in results and control not in results:missing_controls.append(dict(protocol=protocol,control=control))
     for name, result in results.items():
-        checks[name+'_local_stores'] = result['checks']['local_store_nonnegativity_passed']
+        checks[name+'_local_stores'] = validate_record(result,name)
+        if any(protocol in results for protocol in ('exercise','meal_exercise')):
+            events=[event for event in result['actions'] if event['kind']=='exercise']
+            maximum_intensity=max((event['value'] for event in events),default=0)
+            present=bool(result['frames'])
+            bounded=True;off_cleared=True;partition=True;peak=0.;active_count=0;post_stop_count=0
+            for frame in result['frames']:
+                demand=frame['values'].get('exercise_energy_demand_w')
+                capacity=frame['values'].get('maximum_work_rate_w')
+                total=frame['values'].get('metabolic_rate_w')
+                if demand is None or capacity is None or total is None or not all(math.isfinite(x) for x in (demand,capacity,total)) or capacity<=0:
+                    present=False;continue
+                peak=max(peak,demand)
+                bounded &= -1e-10<=demand<=maximum_intensity*capacity+1e-7
+                partition &= total-demand>=-1e-7
+                # Samples at action boundaries precede that action. The first
+                # later sample must reflect native removal of requested demand.
+                prior=[event for event in events if event['time_s']<frame['time_s']]
+                if not prior or prior[-1]['value']==0:off_cleared &= abs(demand)<1e-7
+                if prior and prior[-1]['value']>0:active_count+=1
+                if prior and prior[-1]['value']==0:post_stop_count+=1
+            checks[name+'_demand_present']=present
+            checks[name+'_demand_bounded']=present and bounded
+            checks[name+'_demand_off_cleared']=present and off_cleared
+            checks[name+'_requested_power_partition']=present and partition
+            if events:
+                checks[name+'_demand_activated']=present and peak>1
+                checks[name+'_active_and_poststop_samples']=active_count>0 and post_stop_count>0
     def changed(a,b,key,threshold):
         x,y=results[a],results[b]
         for identity in ('state_sha256','library_sha256','executable_sha256','patient_identity_input_sha256'):

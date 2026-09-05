@@ -72,6 +72,9 @@ inline std::map<std::string,double> body_ports(BioGearsEngine& bg) {
   v["co2_production_ml_per_min"]=t->GetCarbonDioxideProductionRate(VolumePerTimeUnit::mL_Per_min);
   v["respiratory_exchange_ratio"]=t->GetRespiratoryExchangeRatio();
   v["metabolic_rate_w"]=e->GetTotalMetabolicRate(PowerUnit::W);
+  v["exercise_energy_demand_w"]=e->GetExerciseEnergyDemand(PowerUnit::W);
+  v["basal_metabolic_rate_w"]=bg.GetPatient().GetBasalMetabolicRate(PowerUnit::W);
+  v["maximum_work_rate_w"]=bg.GetPatient().GetMaxWorkRate(PowerUnit::W);
   v["energy_deficit_w"]=e->GetEnergyDeficit(PowerUnit::W);
   v["core_temperature_c"]=e->GetCoreTemperature(TemperatureUnit::C);
   v["skin_temperature_c"]=e->GetSkinTemperature(TemperatureUnit::C);

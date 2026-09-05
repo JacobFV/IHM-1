@@ -71,6 +71,30 @@ def audit(root=ROOT):
             entries[-1]['regional_evidence']={'experiment':experiment,'source_receipts_current':False,'error':str(error)}
     for id in ['endocrine','gastrointestinal_hepatic','immune_hematologic','reproductive','special_senses','autonomic_visceral','connective_adipose_marrow']:
         add(id,'BioGears where implemented; detailed spatial ownership unresolved','scripts/native_biogears_rest.cpp',None,limitation='Requires a system-specific state/perturbation audit; native code presence alone is insufficient.')
+    systemic=[]
+    for run in read_experiment(root,'systemic')['runs']:
+        record=dict(id=run['id'],path=run['path'],sha256=run['sha256'],
+                    global_mechanical_feedback=False,empirical_validation=False)
+        try:
+            data=read_experiment(root,'systemic-'+run['id'])
+            record.update(source_receipts_current=True,clock=data['clock'],
+                          acceptance=data.get('acceptance'),checks=data['checks'],
+                          mechanism_edges=data['mechanism_edges'],limitations=data['limitations'])
+        except (OSError,ValueError,KeyError) as error:
+            record.update(source_receipts_current=False,error=str(error))
+        systemic.append(record)
+    mechanical_materializations={}
+    for key,relative in [
+        ('material_domains','data/derived/material-domains/pelvis-0.004m/manifest.json'),
+        ('garment_tissue','data/derived/garment-tissue-display-v2/manifest.json'),
+        ('native_reflex_gait','data/sources/scone-predictive-locomotion.json'),
+        ('textile_friction','data/sources/human-skin-textile-friction.json')]:
+        path=root/relative
+        if path.exists():
+            raw=path.read_bytes()
+            mechanical_materializations[key]=dict(path=relative,sha256=hashlib.sha256(raw).hexdigest(),
+                evidence=json.loads(raw),canonical_global_state_connected=False,
+                interpretation='Separate source/region materialization with retained provenance; inspect its own acceptance and parameter limits')
     references={}
     for kind in ('compression','contact'):
         path=root/'data/derived/mechanics-reference'/kind/'benchmark.json'
@@ -84,7 +108,8 @@ def audit(root=ROOT):
         workspace_changes=subprocess.check_output(['git','status','--short'],cwd=root,text=True).splitlines(),
         artifacts=artifacts, anatomy={'representation_count':len(anatomy['entities']), 'roles':dict(collections.Counter(e['role'] for e in anatomy['entities']))},
         execution={'frames':len(frames),'moving_entity_count':len(moving),'moving_entity_ids':moving,'physiology_channels':sorted(channels), 'stale_dependencies':stale},
-        capabilities=entries,reference_mechanics=references,microstructure_evidence=ImplicitHuman.open(root).microstructure_evidence(),
+        capabilities=entries,systemic_experiments=systemic,mechanical_materializations=mechanical_materializations,
+        reference_mechanics=references,microstructure_evidence=ImplicitHuman.open(root).microstructure_evidence(),
         interpretation='Canonical recorded integration is established only by frame fields/channels. Regional artifacts, source acquisitions and native reference benchmarks have separate receipts. This audit does not assert calibrated mechanisms or empirical validity.')
 
 

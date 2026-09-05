@@ -1,5 +1,6 @@
 """Exercise persistent native ownership, action timing, and invalid-command isolation."""
 import json
+import hashlib
 from pathlib import Path
 import tempfile
 from ihm.native.session import SessionConfig, NativeSession, Meal
@@ -24,12 +25,25 @@ def main():
     root = Path(__file__).resolve().parents[1]
     state = root/'data/derived/canonical/native_baseline_v1/states/native_stabilized.xml'
     out = Path(tempfile.mkdtemp(prefix='session-', dir=root/'data/derived/audits'))
-    config = SessionConfig(state_path=state, engine_variant='whole_body_integrity', horizon_s=180)
+    config = SessionConfig(state_path=state, engine_variant='whole_body_integrity_energy', horizon_s=180)
     batch_dir = out/'batch'
     stream_dir = out/'stream'
-    run_native(NativeConfig(seconds=1, state_path=state, engine_variant='whole_body_integrity', sample_hz=50), batch_dir)
+    run_native(NativeConfig(seconds=1, state_path=state, engine_variant=config.engine_variant, sample_hz=50), batch_dir)
     batch = load_trajectory(batch_dir)
     with NativeSession(config, stream_dir) as parity:
+        launch=json.loads((stream_dir/'execution-inputs.json').read_text())
+        environment=json.loads((stream_dir/'environment-inputs/manifest.json').read_text())
+        assert environment['capture']['stage']=='pre_start'
+        detached=Path(launch['selected_resource_tree'])
+        assert detached==stream_dir/'runtime-resources'
+        for name in ('patients','substances','environments','nutrition','config','ecg','xsd','UCEDefs.conf','BioGearsConfiguration.xml'):
+            assert (stream_dir/name).resolve()==detached/name
+        selected_state=Path(launch['selected_patient_input'])
+        assert selected_state==stream_dir/'input-state.xml' and not selected_state.is_symlink()
+        assert selected_state.stat().st_ino!=state.stat().st_ino
+        assert hashlib.sha256(selected_state.read_bytes()).hexdigest()==launch['selected_patient_input_sha256']
+        command=json.loads((stream_dir/'manifest.json').read_text())['command']
+        assert command[2]==str(selected_state)
         last = parity.step(1)
         errors = {a: abs(last['values'][a]-batch['values'][b][-1]) for a,b in
                   [('lung_volume_ml','TotalLungVolume(mL)'),('heart_rate_per_min','HeartRate(1/min)'),
@@ -45,6 +59,11 @@ def main():
         with NativeSession(config, out/label) as demand:
             demand.exercise(intensity)
             exercise_observations[label] = demand.step(120)['values']
+            values=exercise_observations[label]
+            target=intensity*values['maximum_work_rate_w']
+            assert abs(values['exercise_energy_demand_w']-target)<1e-5
+            demand.exercise(0)
+            assert demand.step(.02)['values']['exercise_energy_demand_w']==0, 'stopped demand remained active'
     demand_delta = {key: exercise_observations['exercise'][key]-exercise_observations['rest'][key]
                     for key in ('metabolic_rate_w', 'oxygen_consumption_ml_per_min')}
     assert all(value > 1 for value in demand_delta.values()), demand_delta
@@ -103,6 +122,7 @@ def main():
     report = {'passed': True, 'output': str(out), 'initial_time_s': initial['time_s'],
               'final_time_s': final['time_s'], 'apnea_excursion_ml': max(a)-min(a),
               'recovery_excursion_ml': max(b)-min(b), 'ports': len(final['values']), 'batch_parity_errors': errors,
+              'prestart_detached_resources_and_copied_state_selected': True,
               'exercise_minus_rest_120s': demand_delta}
     (out/'verification.json').write_text(json.dumps(report, indent=2)+'\n')
     print(json.dumps(report, indent=2))

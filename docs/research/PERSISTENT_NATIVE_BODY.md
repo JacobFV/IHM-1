@@ -2,13 +2,22 @@
 
 2026-09-05. `NativeSession` owns a continuing BioGears process and advances its native 0.02 s solver on integer ticks. Commands change that process, and snapshots observe the same blood, gas, nutrient, endocrine, renal and thermal state. This is an executable interface for online coupling; it does not itself supply a whole-body mechanical feedback law.
 
-The bridge exposes 177 explicitly named quantities, including chemical respiratory requests, applied respiratory pressure, airflow, circulating nutrients and hormones, stomach/chyme contents, glycogen and other stores. Optional absent/native nonfinite quantities are JSON null. Required storage quantities must be present in systemic experiment acceptance. Overlapping compartment names are not independent mass reservoirs and must not be summed.
+The bridge exposes 180 explicitly named quantities, including chemical respiratory requests, applied respiratory pressure, airflow, circulating nutrients and hormones, stomach/chyme contents, glycogen, exercise demand, basal metabolic power and maximum work rate. Optional absent/native nonfinite quantities are JSON null. Required storage quantities must be present in systemic experiment acceptance. Overlapping compartment names are not independent mass reservoirs and must not be summed.
 
 `SessionConfig` permits up to 24 simulated hours per process; output cadence is independent of the native timestep. `Meal` specifies carbohydrate/protein/fat/sodium in g, calcium in mg and water in mL. Apnea severity uses the native action. Exercise intensity requests native lumped physiological demand; it is not calculated mechanical work or an IBM cortical command.
 
 ## Reproducible boundary
 
 The build script writes a source/executable manifest. Startup verifies those identities, the selected variant library, and actual resolved dependency paths and hashes. The saved state supplies patient identity when loading a state; an unused initialization default cannot relabel it. Command receipts record attempts before writing to stdin and acknowledgments afterward. Protocol sequences and native elapsed time are checked. A reader thread drains native output, preserves logs and propagates engine failures. Invalid Python inputs do not issue commands or advance the native clock.
+
+Before spawning the process, startup archives the resolved native environment,
+materializes a detached tree of its runtime resources and selects that tree
+through session-owned links. A saved input state is copied and hash-checked;
+the actual command reads that copy. `execution-inputs.json` binds these selected
+paths to the native and environment manifests. Dynamic libraries still load
+from their recorded resolved paths; they are archived for reproduction, not
+redirected to a new loader environment. Earlier post-start archives retain
+their original capture phase and cannot acquire a retrospective startup claim.
 
 Only one controller thread may command a session. A timeout or failed acknowledgment terminates that owned process. This is fail-closed execution, not rollback of already advanced native state. Checkpoints retain unique copies of native XML and hashes; exact continuation of all upstream controller latches remains unestablished.
 
@@ -31,6 +40,23 @@ the regression. The original no-effect runs remain in
 `data/derived/systemic/exertion_v1/` with failed contrast checks; they are not
 exercise validation. This comparison tests causal execution, not physiological
 agreement between those two energy-related quantities.
+
+The independent source audit then identified a more consequential native
+bookkeeping defect: thermal control repeatedly reset total metabolic rate while
+exercise demand accumulated, and stopping the action left demand active.
+`whole_body_integrity_energy` separates non-exercise and exercise requested
+power and clears stopped demand. The updated persistent test observes
+148.68468 W and 217.24680 mL/min exercise-minus-rest differences after 120 s,
+requires demand to reach the requested bounded target, and verifies exact
+zero demand on the first step after stop. The native branch/full-body audit is
+documented in [ENERGY_DEMAND_INTEGRITY.md](ENERGY_DEMAND_INTEGRITY.md).
+
+Longer execution also exposed mixed-unit water-depletion roundoff: a complete
+debit from an L-stored scalar could leave a negative remainder of about
+5.3e-20 mL. The next preflight correctly rejected that value.
+`whole_body_integrity_depletion` sets a known completely emptied water pool to
+exact zero; it does not normalize arbitrary negative input. Earlier failed
+one-hour runs are retained under `data/derived/systemic/exertion_v2/`.
 
 The `whole_body_integrity` and `whole_body_integrity_renal` variants preserve prior source libraries and record isolated calcium and renal mass-transfer corrections. Their local native branch evidence is documented separately in [GI_MASS_INTEGRITY.md](GI_MASS_INTEGRITY.md) and [RENAL_MASS_INTEGRITY.md](RENAL_MASS_INTEGRITY.md).
 

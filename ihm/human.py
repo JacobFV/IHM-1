@@ -44,6 +44,8 @@ ASSETS={
  'kidney_graph':'data/derived/microstructure/kidney/example_graph.npz',
  'kidney_statistics':'data/derived/microstructure/kidney/statistics.json',
  'kidney_slab':'data/derived/microstructure/kidney/slab_validation.json',
+ 'penile_constitutive':'data/measurements/biomechanics/khorshidi_2024.json',
+ 'penile_constitutive_source':'data/raw/biomechanics/human-penile-mechanics-2024/paper.pdf',
 }
 CANONICAL_ASSETS = ('canonical_anatomy', 'canonical_profile', 'canonical_brain',
                     'canonical_mechanics', 'canonical_body')
@@ -210,6 +212,8 @@ class ImplicitHuman:
                 'Canonical anatomy uses recorded inter-template fits and synthesis priors; source families retain distinct specimen identities.',
                 'Frozen circuit responses and fitted temporal spectra have different meanings and validity domains.'])
         if 'systemic_backend' in self.assets:result['materializations'].append('body-systemic')
+        if all(key in self.assets for key in ('penile_constitutive','penile_constitutive_source')):
+            result['materializations'].append('penile-constitutive')
         return result
     def microstructure_evidence(self):
         """Acquired organ evidence; availability does not confer population validity."""
@@ -231,6 +235,12 @@ class ImplicitHuman:
                         evidence_kind='native_initialized_state_or_parameter',source=graph['source'],independently_calibrated=False))
         return fields
     def materialize(self,kind,**options):
+        if kind=='penile-constitutive':
+            for key in ('penile_constitutive','penile_constitutive_source'):
+                if key not in self.assets or digest(self.root/self.assets[key]['path'])!=self.assets[key]['sha256']:
+                    raise ValueError('Constitutive evidence changed or is unavailable; reopen the implicit body')
+            from ihm.calibration.penile import penile_material
+            return penile_material(evidence_root=self.root,**options)
         if kind=='body-systemic':
             from ihm.assembly.systemic import SystemicConfig
             from ihm.native.session import RUNTIME
@@ -238,7 +248,9 @@ class ImplicitHuman:
             library=(RUNTIME/'biogears-build/outputs/Release/lib' if config.engine_variant=='upstream'
                      else RUNTIME/'variants'/config.engine_variant)/'libbiogears.so.8.0.0'
             paths=[Path(config.state_path).resolve(), RUNTIME/'native_biogears_stream', library,
-                   self.root/'ihm/assembly/systemic.py',self.root/'ihm/native/session.py',
+                   self.root/'ihm/assembly/systemic.py',self.root/'ihm/assembly/systemic_evidence.py',
+                   self.root/'ihm/assembly/native_environment_evidence.py',
+                   self.root/'ihm/native/session.py',self.root/'ihm/native/__init__.py',
                    self.root/'scripts/native_body_ports.h',self.root/'scripts/native_biogears_stream.cpp']
             return SystemicPredictor(self.root,config,{str(path):digest(path) for path in paths})
         if kind=='kidney-arterial-geometry':
@@ -332,7 +344,7 @@ class ImplicitHuman:
         self=cls.open(root);self.assets=data['assets'];self._cache={}
         for key in self.assets:
             if key not in ASSETS or self.assets[key]['path']!=ASSETS[key]:raise ValueError('unsupported evidence location')
-            if key=='kidney_graph':
+            if key in ('kidney_graph','penile_constitutive_source'):
                 asset=self.assets[key];path=(self.root/asset['path']).resolve()
                 if not path.is_relative_to(self.root) or digest(path)!=asset['sha256']:
                     raise ValueError('Evidence changed: '+key+'; reopen or rebuild the substrate')

@@ -6,6 +6,8 @@ from ihm.native import _sha
 from ihm.temporal import finite_laplace, spectral_estimate
 from .respiration import BodyRespiration
 from .systemic_evidence import resolve_sources
+from .native_environment_evidence import resolve_native_environment
+from .systemic_native_evidence import resolve_systemic_execution
 
 ALIASES={'heart_rate_per_min':'HeartRate(1/min)', 'mean_arterial_pressure_mmhg':'MeanArterialPressure(mmHg)',
          'lung_volume_ml':'TotalLungVolume(mL)', 'arterial_co2_mmhg':'ArterialCarbonDioxidePressure(mmHg)',
@@ -16,9 +18,22 @@ SELECTED=('heart_rate_per_min','arterial_pressure_mmhg','lung_volume_ml','respir
           'insulin_synthesis_pmol_per_min','liver_glycogen_g','metabolic_rate_w')
 
 
+def require_generic_thermal_domain(data):
+    """These generic protocols are not cold/heat-exposure experiments.
+
+    Limits are the retained Energy::CalculateVitalSigns native event thresholds,
+    not fitted normal-population intervals or an empirical validation claim.
+    """
+    temperatures=[frame['values'].get('core_temperature_c') for frame in data['frames']]
+    if not temperatures or any(value is None or not np.isfinite(value) for value in temperatures):
+        raise ValueError('Generic-body display requires observed core temperature')
+    if min(temperatures)<35. or max(temperatures)>38.8:
+        raise ValueError('Generic-body experiment crosses native hypo/hyperthermia thresholds; retain as an out-of-domain research result')
+
+
 def accepted_systemic_sources(root, path):
     """Bind default-view acceptance to the exact matched native experiment set."""
-    from .systemic import verify_contrasts
+    from .systemic import PROTOCOLS, verify_contrasts
     root, path=Path(root).resolve(),Path(path).resolve()
     report_path=path.parent.parent/'contrasts.json'
     report=json.loads(report_path.read_text())
@@ -26,18 +41,29 @@ def accepted_systemic_sources(root, path):
         raise ValueError('Default display requires a passed, source-bound contrast report')
     results={}; sources={str(report_path.relative_to(root)):_sha(report_path)}
     for protocol, receipt in report['inputs'].items():
+        if protocol not in PROTOCOLS:
+            raise ValueError('Unknown systemic protocol in acceptance report')
         file=(root/receipt['path']).resolve()
         if not file.is_relative_to(root) or _sha(file)!=receipt['sha256']:
             raise ValueError('Accepted systemic input changed')
         result=json.loads(file.read_text())
         if result['configuration']['protocol']!=protocol:
             raise ValueError('Contrast protocol identity mismatch')
+        require_generic_thermal_domain(result)
         results[protocol]=result
         sources[str(file.relative_to(root))]=receipt['sha256']
+        sources.update(resolve_sources(root,file.parent,result['runtime_sources']))
+        sources.update(resolve_native_environment(root,file.parent/'native'))
+        sources.update(resolve_systemic_execution(root,file.parent,result))
     if str(path.relative_to(root)) not in sources:
         raise ValueError('Display input was not part of the accepted contrast')
     if not verify_contrasts(results)['passed']:
         raise ValueError('Stored contrast acceptance cannot be reproduced')
+    pairs={'meal':'hydration','apnea':'rest','exercise':'rest','meal_exercise':'meal'}
+    participants={name for a,b in pairs.items() if a in results and b in results for name in (a,b)}
+    selected=json.loads(path.read_text())['configuration']['protocol']
+    if selected not in participants:
+        raise ValueError('Default display input did not participate in an accepted pair')
     return sources
 
 
@@ -45,6 +71,8 @@ def project_systemic(root, path):
     root, path=Path(root).resolve(),Path(path).resolve()
     data=json.loads(path.read_text())
     retained_sources=resolve_sources(root,path.parent,data['runtime_sources'])
+    if (path.parent/'native').exists():
+        retained_sources.update(resolve_native_environment(root,path.parent/'native'))
     t=np.array([frame['time_s'] for frame in data['frames']])
     dt=float(np.median(np.diff(t))) if len(t)>1 else float('nan')
     if len(t)<4 or not np.isfinite(t).all() or dt<=0 or not np.allclose(np.diff(t),dt,rtol=1e-8,atol=1e-8):
@@ -92,7 +120,9 @@ def project_systemic(root, path):
             psd=spectral_estimate(x,1/dt,nperseg=min(len(x),512)),
             laplace_real=laplace.real.tolist(),laplace_imag=laplace.imag.tolist()))
     sources={**retained_sources,str(path.relative_to(root)):_sha(path)}
-    for source in ('ihm/assembly/systemic_projection.py','ihm/assembly/systemic_evidence.py','ihm/assembly/respiration.py','ihm/temporal/spectra.py',
+    for source in ('ihm/assembly/systemic_projection.py','ihm/assembly/systemic_evidence.py',
+                   'ihm/assembly/systemic_native_evidence.py',
+                   'ihm/assembly/native_environment_evidence.py','ihm/assembly/systemic.py','ihm/assembly/respiration.py','ihm/temporal/spectra.py',
                    'data/derived/canonical/anatomy.json','data/derived/canonical/respiration.json'):
         sources[source]=_sha(root/source)
     return dict(schema='ihm.systemic-display.v1',model_id='ihm-body',has_body_projection=dense,

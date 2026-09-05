@@ -4,8 +4,10 @@ from copy import deepcopy
 import json
 from pathlib import Path
 import tempfile
+from unittest.mock import patch
 from ihm.native import _sha
-from ihm.assembly.systemic_projection import accepted_systemic_sources
+from ihm.assembly.systemic_projection import accepted_systemic_sources,require_generic_thermal_domain
+from ihm.assembly.systemic_evidence import freeze_sources
 
 
 def main():
@@ -24,13 +26,25 @@ def main():
     fixture={'checks':{'local_store_nonnegativity_passed':True},'native_manifest':{
         key:'shared' for key in ('state_sha256','library_sha256','executable_sha256','patient_identity_input_sha256')},
         'runtime_sources':{'code':'same'},'actions':[],
-        'frames':[{'time_s':t,'values':{'lung_volume_ml':3000.,'arterial_co2_mmhg':40.}} for t in (0,30,60,180)]}
+        'configuration':{'protocol':'rest','seconds':180,'sample_interval_s':30},
+        'frames':[{'time_s':t,'values':{'lung_volume_ml':3000.,'arterial_co2_mmhg':40.,'core_temperature_c':37.}} for t in range(0,181,30)]}
+    for frame in fixture['frames']:
+        frame['values'].update({key:1. for key in ['stomach_'+x for x in ('carbohydrate_g','protein_g','fat_g','sodium_g','calcium_mg','water_ml')]+['liver_glycogen_g','muscle_glycogen_g','stored_protein_g','stored_fat_g']})
     fixture['native_manifest'].update(dependency_sha256={'cdm':'same'},native_step_s=.02)
-    apnea=deepcopy(fixture);apnea['actions']=[{'time_s':30,'kind':'apnea','value':1}]
+    apnea=deepcopy(fixture);apnea['configuration']['protocol']='apnea'
+    apnea['actions']=protocol_events(SystemicConfig(protocol='apnea',seconds=180,sample_interval_s=30))
     for frame in apnea['frames'][2:]:
-        frame['values']={'lung_volume_ml':2800.,'arterial_co2_mmhg':45.}
+        frame['values'].update(lung_volume_ml=2800.,arterial_co2_mmhg=45.)
     assert not verify_contrasts({'apnea':apnea})['passed']
     assert verify_contrasts({'apnea':apnea,'rest':fixture})['passed']
+    for label,mutate in [('negative hidden by cached pass',lambda d:d['frames'][-1]['values'].update(stomach_water_ml=-1000)),
+                         ('wrong action kind',lambda d:d['actions'][0].update(kind='exercise')),
+                         ('missing required store',lambda d:d['frames'][-1]['values'].pop('stomach_water_ml')),
+                         ('invalid clock',lambda d:d['frames'][-1].update(time_s=181))]:
+        bad=deepcopy(apnea);mutate(bad)
+        try:verify_contrasts({'apnea':bad,'rest':fixture})
+        except ValueError:pass
+        else:raise AssertionError(label)
     bad=deepcopy(apnea);bad['native_manifest']['state_sha256']='other'
     try:verify_contrasts({'apnea':bad,'rest':fixture})
     except ValueError:pass
@@ -39,19 +53,51 @@ def main():
     try:verify_contrasts({'apnea':bad,'rest':fixture})
     except ValueError:pass
     else:raise AssertionError('initial-only difference accepted')
+    for temperature in (24.,39.,None,float('nan')):
+        cold=deepcopy(fixture);cold['frames'][-1]['values']['core_temperature_c']=temperature
+        try:require_generic_thermal_domain(cold)
+        except ValueError:pass
+        else:raise AssertionError('out-of-domain generic physiology published')
     # A published pass must bind the exact compared bytes, and its acceptance
     # must be reproducible. A boolean in a neighboring JSON file is insufficient.
-    with tempfile.TemporaryDirectory() as directory:
+    # Native environment identity has its own real-archive rejection suite;
+    # isolate paired acceptance here from ELF/resource acquisition.
+    with tempfile.TemporaryDirectory() as directory, patch('ihm.assembly.systemic_projection.resolve_native_environment',return_value={}), patch('ihm.assembly.systemic_projection.resolve_systemic_execution',return_value={}):
         root=Path(directory); inputs={}
+        solver=root/'solver.py';solver.write_text('retained numerical source')
         for name,data in [('rest',fixture),('apnea',apnea)]:
-            data=deepcopy(data);data['configuration']={'protocol':name}
+            data=deepcopy(data)
+            data['runtime_sources']={'solver.py':_sha(solver)}
             path=root/'experiment'/name/'systemic.json';path.parent.mkdir(parents=True)
             path.write_text(json.dumps(data))
+            freeze_sources(root,path.parent,data['runtime_sources'])
             inputs[name]={'path':str(path.relative_to(root)),'sha256':_sha(path)}
         report_path=root/'experiment/contrasts.json'
         report_path.write_text(json.dumps({'passed':True,'inputs':inputs}))
         source=root/inputs['apnea']['path']
-        assert len(accepted_systemic_sources(root,source))==3
+        resolved=accepted_systemic_sources(root,source)
+        control_copy=root/'experiment/rest/inputs/solver.py'
+        assert str(control_copy.relative_to(root)) in resolved
+        original=control_copy.read_bytes();control_copy.write_text('changed control solver')
+        try:accepted_systemic_sources(root,source)
+        except ValueError:pass
+        else:raise AssertionError('corrupted control evidence accepted')
+        control_copy.write_bytes(original)
+        extra=deepcopy(data);extra['configuration']['protocol']='hydration'
+        extra['native_manifest']['library_sha256']='unrelated'
+        extra_path=root/'experiment/hydration/systemic.json';extra_path.parent.mkdir()
+        extra_path.write_text(json.dumps(extra))
+        extra_inputs={**inputs,'hydration':{'path':str(extra_path.relative_to(root)),'sha256':_sha(extra_path)}}
+        report_path.write_text(json.dumps({'passed':True,'inputs':extra_inputs}))
+        try:accepted_systemic_sources(root,extra_path)
+        except ValueError:pass
+        else:raise AssertionError('unpaired extra experiment published')
+        extra_inputs['../../escaped']=extra_inputs.pop('hydration')
+        report_path.write_text(json.dumps({'passed':True,'inputs':extra_inputs}))
+        try:accepted_systemic_sources(root,extra_path)
+        except ValueError:pass
+        else:raise AssertionError('unsafe protocol accepted')
+        report_path.write_text(json.dumps({'passed':True,'inputs':inputs}))
         source.write_text(source.read_text()+' ')
         try:accepted_systemic_sources(root,source)
         except ValueError:pass

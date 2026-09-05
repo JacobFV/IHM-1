@@ -1,6 +1,6 @@
 # Shared systemic experiments and canonical projection
 
-2026-09-05. `human.materialize('body-systemic', ...)` constructs an evidence-bound native experiment. Rest, matched hydration, mixed meal, apnea/restoration, exercise/recovery and mixed-meal/exercise protocols use one continuing physiological state per condition. The default corrected source variant is `whole_body_integrity_gi_water`. Samples retain source identities, native units, exact action times, required-store checks, and state checkpoints. Exercise acceptance remains under a separate native energy audit; a protocol being executable does not establish physiological fidelity.
+2026-09-05. `human.materialize('body-systemic', ...)` constructs an evidence-bound native experiment. Rest, matched hydration, mixed meal, apnea/restoration, exercise/recovery and mixed-meal/exercise protocols use one continuing physiological state per condition. The default corrected source variant is `whole_body_integrity_depletion`. Samples retain source identities, native units, exact action times, required-store checks, and state checkpoints. Exercise and long-horizon thermal acceptance require separate source audits; a protocol being executable does not establish physiological fidelity.
 
 Source hashes are captured before execution. A causal comparison requires identical initial state, native library, executable, resolved dependencies, timestep and executing-source identities, equal initial observations, matching sample clocks, and equal observations before the first differing intervention. Empty collections and unpaired interventions cannot report a successful causal contrast. Required stomach and glycogen/protein/fat stores cannot pass by being null; negative stores remain explicit failures. These checks do not establish global elemental or energy conservation.
 
@@ -17,9 +17,25 @@ bound to the exact input result hashes. It recomputes those contrast checks,
 writes immutable display records, and updates the index only after all requested
 projections succeed. Failed runs remain available on disk as research evidence.
 
+Publication recomputes required-store validity, uniform sample clocks and the
+named protocol's actual intervention schedule from observations. A cached
+`passed` value cannot override negative/missing stores. The embedded native
+manifest must equal the retained manifest. Sampled frames must agree with the
+retained native command acknowledgments; commands, clocks, intervention values,
+graceful termination and both checkpoint hashes are checked and included in
+the display's transitive source identities. The independent regression changes
+derived samples, labels, manifests and checkpoints in temporary copies and
+requires rejection. Historical input hashes remain distinct from the current
+code performing these acceptance checks.
+
 The mixed meal contains 60 g carbohydrate, 20 g protein, 20 g fat, 1 g sodium, 300 mg calcium and 500 mL water. Its hydration control receives the same water and electrolytes. This separates a macronutrient perturbation from that added fluid/electrolyte input. The shared initial state already contains source stomach water/electrolytes and is not described as an empty gut. Six-hour runs preserve the native 0.02 s timestep and sample every 30 s. Glucose, insulin synthesis and glycogen contrasts require changes after intervention; their magnitudes are execution evidence, not fitted human response curves.
 
 The three-minute respiratory pair samples at 10 Hz. Apnea is applied at 30 s and removed at 90 s. Native output shows a maximum between-condition lung-volume difference of 737.112 mL and arterial CO2 pressure difference of 6.17523 mmHg. Required local stores remain present and nonnegative. Raw traces, actions, states, manifests and contrasts are under `data/derived/systemic/respiratory_v3/`.
+
+The fresh `respiratory_v4` pair repeats this experiment on the depletion-corrected
+library with180 ports and prestart detached input selection. The two causal
+contrasts reproduce the same magnitudes. This pair now supplies the default
+rest/apnea projections; all v3 artifacts remain available and verifiable.
 
 ## One-body inspection
 
@@ -50,5 +66,23 @@ insulin synthesis and 18.1011 g liver glycogen, but the failed local-store check
 prevents publication as an accepted default experiment. The dry-gut correction
 preserves verified depletion as zero and unknown inputs as unknown; it also fixes
 zero-water division and carrier-availability defects, with native branch tests.
+
+The corrected `six_hour_v3` pair completes all 721 samples per condition with
+present, nonnegative required stores and the same three macronutrient contrasts.
+It remains excluded from ordinary meal-response display: core temperature falls
+to 24.163 °C with the meal and 24.194 °C with hydration. Passing local mass and
+causal checks is insufficient evidence of physiological homeostasis. Native
+thermal boundary algebra and initial-state compatibility are being audited
+before this run can support a normothermic generic-body prediction.
+
+The first energy-corrected one-hour group `exertion_v2` records completed
+hydration, meal and meal/exercise trajectories, but its rest and exercise
+conditions stop near 1199 s on the mixed-unit water-depletion error. Those
+conditions have no completed `systemic.json`; the whole group is unsuccessful.
+New group runners retain per-protocol errors while collecting other workers'
+outcomes, reject changed sources before a queued worker starts, and cannot
+declare a partial group successful. Exercise contrast acceptance additionally
+requires finite bounded demand, a nonnegative non-exercise power partition,
+explicit active/post-stop samples and cleared demand after stop.
 
 Unresolved biology remains substantial: swallowing, peristalsis and enteric control, enzymatic compartments and bile, intestinal lipid lymph transport, incretins, colon/microbiome/stool, independently calibrated macro digestion kinetics, exact elemental budgets, individual phrenic anatomy, and force/work exchange with whole-body mechanics. Native physiology implements coupled reduced mechanisms; it is not yet a complete calibrated human.
