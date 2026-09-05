@@ -38,6 +38,16 @@ def main():
     with NativeSession(SessionConfig(state_path=state, horizon_s=.3), out/'fractional-horizon') as fractional:
         for _ in range(3):last=fractional.step(.1)
         assert last['elapsed_s']==.3
+    # An acknowledged action must produce native demand, not merely carry an
+    # intensity scalar on an SEExercise whose mode is still NONE.
+    exercise_observations = {}
+    for label, intensity in [('rest', 0), ('exercise', .15)]:
+        with NativeSession(config, out/label) as demand:
+            demand.exercise(intensity)
+            exercise_observations[label] = demand.step(120)['values']
+    demand_delta = {key: exercise_observations['exercise'][key]-exercise_observations['rest'][key]
+                    for key in ('metabolic_rate_w', 'oxygen_consumption_ml_per_min')}
+    assert all(value > 1 for value in demand_delta.values()), demand_delta
     pending=NativeSession(config,out/'pending-close')
     pending.meal(Meal(carbohydrate_g=1))
     try:pending.close()
@@ -92,7 +102,8 @@ def main():
         final = body.snapshot()
     report = {'passed': True, 'output': str(out), 'initial_time_s': initial['time_s'],
               'final_time_s': final['time_s'], 'apnea_excursion_ml': max(a)-min(a),
-              'recovery_excursion_ml': max(b)-min(b), 'ports': len(final['values']), 'batch_parity_errors': errors}
+              'recovery_excursion_ml': max(b)-min(b), 'ports': len(final['values']), 'batch_parity_errors': errors,
+              'exercise_minus_rest_120s': demand_delta}
     (out/'verification.json').write_text(json.dumps(report, indent=2)+'\n')
     print(json.dumps(report, indent=2))
 

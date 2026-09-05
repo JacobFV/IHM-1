@@ -20,6 +20,18 @@ Native meal actions are deferred until the next physiological PreProcess. The up
 
 A separate 75.04 s action experiment suppresses respiratory volume excursion to zero in its settled apneic window and observes 666.225 mL excursion after restoration. These are source-model execution checks, not clinical validation or population confidence intervals.
 
+The first one-hour exercise contrast exposed an adapter defect: changing the
+generic intensity scalar on a default `SEExercise` leaves its action mode at
+`NONE`. Native acknowledgment therefore did not establish execution. The stream
+now constructs the action from `SEExercise::SEGeneric`, as the batch adapter
+already did. A matched 120 s native regression at intensity 0.15 observes
+exercise-minus-rest differences of 3.02431 W in reported metabolic rate and
+207.80081 mL/min in oxygen consumption. Both downstream effects are required by
+the regression. The original no-effect runs remain in
+`data/derived/systemic/exertion_v1/` with failed contrast checks; they are not
+exercise validation. This comparison tests causal execution, not physiological
+agreement between those two energy-related quantities.
+
 The `whole_body_integrity` and `whole_body_integrity_renal` variants preserve prior source libraries and record isolated calcium and renal mass-transfer corrections. Their local native branch evidence is documented separately in [GI_MASS_INTEGRITY.md](GI_MASS_INTEGRITY.md) and [RENAL_MASS_INTEGRITY.md](RENAL_MASS_INTEGRITY.md).
 
 ```sh

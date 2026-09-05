@@ -49,7 +49,11 @@ int main(int argc, char** argv) {
       double value;
       if(!(input>>value) || !std::isfinite(value) || value<0 || value>(op=="exercise"?.5:1.) || (input>>extra)) ok=false;
       else if(op=="apnea") { SEApnea a; a.GetSeverity().SetValue(value); ok=bg->ProcessAction(a); }
-      else { SEExercise a; a.GetGenericExercise().Intensity.SetValue(value); ok=bg->ProcessAction(a); }
+      else {
+        // Mutating GetGenericExercise() leaves the default action mode at NONE.
+        SEExercise::SEGeneric generic; generic.Intensity.SetValue(value);
+        SEExercise a { generic }; ok=bg->ProcessAction(a);
+      }
     } else if(op=="meal") {
       std::string name; double c,p,f,s,ca,w;
       if(!(input>>name>>c>>p>>f>>s>>ca>>w) || (input>>extra)) ok=false;
