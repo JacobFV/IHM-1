@@ -1,9 +1,10 @@
 """Detached native input archives; external paths are identities, never replay paths.
 
-Resource capture occurs after native startup. Without a prior resource inventory,
-matching startup bytes cannot be inferred retrospectively from these snapshots.
+Capture phase is explicit. Historical snapshots cannot retroactively establish
+startup bytes; prestart snapshots can supply a detached resource tree to a future
+process, whose actual launch/use must be recorded separately by its owner.
 """
-from pathlib import Path
+from pathlib import Path,PurePosixPath
 import datetime,hashlib,json,os,shutil,stat,struct,tempfile
 
 RESOURCES=('patients','substances','environments','nutrition','config','ecg','xsd','UCEDefs.conf','BioGearsConfiguration.xml')
@@ -51,18 +52,24 @@ def _interpreter(executable):
             return path
     return None
 
-def freeze_native_environment(root,native_directory):
+def freeze_native_environment(root,native_directory,*,before_start=False):
     """Archive startup-hashed dependencies and current runtime resources once.
 
     Return only workspace-relative immutable input paths and SHA-256 digests.
     Existing successful archives are resolved, never repinned to current inputs.
     Failed attempts remain in distinct ``.environment-capture-*`` directories.
     """
+    if not isinstance(before_start,bool):raise ValueError('Capture phase must be an explicit boolean')
     root,native=_paths(root,native_directory);final=native/'environment-inputs'
     if final.exists() or final.is_symlink():return resolve_native_environment(root,native)
     staging=Path(tempfile.mkdtemp(prefix='.environment-capture-',dir=native))
     began=datetime.datetime.now(datetime.timezone.utc).isoformat()
     try:
+        def check_prestart():
+            journal=native/'receipts.jsonl'
+            if before_start and ((journal.exists() and journal.read_bytes().strip()) or (native/'runner_stdout.log').exists()):
+                raise ValueError('Prestart capture requires no prior process output or action receipts')
+        check_prestart()
         native_manifest=native/'manifest.json';manifest_hash=_sha(native_manifest)
         manifest=json.loads(native_manifest.read_text())
         if manifest.get('schema')!='ihm.native-session.v1' or not manifest.get('dependency_sha256'):
@@ -131,12 +138,14 @@ def freeze_native_environment(root,native_directory):
         journal=native/'receipts.jsonl';prefix=journal.read_bytes() if journal.exists() else b''
         records=[json.loads(line) for line in prefix.splitlines() if line.strip()]
         commands=[r for r in records if 'command' in r]
+        check_prestart()
         capture={'started_utc':began,'finished_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),
-            'stage':'post_start_after_commands' if commands else 'post_start_before_first_action',
+            'stage':'pre_start' if before_start else 'post_start_after_commands' if commands else 'post_start_before_first_action',
             'command_count_at_capture':len(commands),'journal_prefix_bytes':len(prefix),
             'journal_prefix_sha256':hashlib.sha256(prefix).hexdigest(),
             'resources_verified_at_process_start':False,
-            'interpretation':'Dependencies match startup hashes. Resource bytes are observed at capture time; their identity during earlier initialization/actions is not retroactively established.'}
+            'interpretation':('Captured at the caller-declared boundary before Popen. A validated detached resource tree must be selected for startup; this capture does not attest subsequent process consumption.' if before_start else
+                'Dependencies match startup hashes. Resource bytes are observed at capture time; their identity during earlier initialization/actions is not retroactively established.')}
         receipt={'schema':SCHEMA,'native_directory':str(native.relative_to(root)),
             'native_manifest_sha256':manifest_hash,'capture':capture,'dependencies':dependencies,
             'executable':executable,'elf_interpreter':interpreter,'resources':resources,'blobs':blobs,
@@ -184,3 +193,106 @@ def resolve_native_environment(root,native_directory):
     actual={str(p.relative_to(archive)) for p in archive.rglob('*') if p.is_file()}
     if actual!=set(expected)|{'manifest.json'}:raise ValueError('Unexpected files in immutable native environment archive')
     return result
+
+
+def _resource_entries(receipt):
+    """Validate a complete logical tree before any destination paths are written."""
+    entries={}
+    for entry in receipt['resources']:
+        logical=entry.get('logical_path')
+        if not isinstance(logical,str) or not logical or '\\' in logical:
+            raise ValueError('Invalid resource logical path')
+        path=PurePosixPath(logical)
+        if path.is_absolute() or not path.parts or path.as_posix()!=logical or any(part in ('.','..') for part in path.parts) or path.parts[0] not in RESOURCES:
+            raise ValueError('Unsafe resource logical path: '+logical)
+        if logical in entries or entry.get('kind') not in ('file','directory'):
+            raise ValueError('Duplicate or unsupported resource entry: '+logical)
+        mode=entry.get('mode')
+        if isinstance(mode,bool) or not isinstance(mode,int) or not 0<=mode<=0o7777:
+            raise ValueError('Invalid resource mode: '+logical)
+        entries[logical]=entry
+    for name in RESOURCES:
+        expected='file' if name in ('UCEDefs.conf','BioGearsConfiguration.xml') else 'directory'
+        if entries.get(name,{}).get('kind')!=expected:raise ValueError('Missing resource root: '+name)
+    for logical in entries:
+        for parent in PurePosixPath(logical).parents:
+            if str(parent)=='.':continue
+            if entries.get(str(parent),{}).get('kind')!='directory':raise ValueError('Resource parent is not a retained directory: '+logical)
+    return entries
+
+
+def _validate_materialized_tree(tree,entries,archive_manifest_hash):
+    """Inspect regular owned files without following any directory or file links."""
+    if tree.is_symlink() or not tree.is_dir() or tree.stat().st_uid!=os.geteuid():
+        raise ValueError('Detached native resource tree is missing, indirect, or not owned')
+    receipt_path=tree/'materialization.json'
+    if receipt_path.is_symlink() or not receipt_path.is_file() or receipt_path.stat().st_nlink!=1 or receipt_path.stat().st_uid!=os.geteuid():
+        raise ValueError('Detached native resource receipt is indirect or shared')
+    record=json.loads(receipt_path.read_text())
+    expected_files={name:entry['sha256'] for name,entry in entries.items() if entry['kind']=='file'}
+    if record!={'schema':'ihm.native-runtime-resources.v1','archive_manifest_sha256':archive_manifest_hash,
+                'resource_file_sha256':expected_files,'resource_roots':list(RESOURCES)}:
+        raise ValueError('Detached native resource identity changed')
+    observed=set()
+    def walk(directory):
+        for path in directory.iterdir():
+            name=str(path.relative_to(tree));mode=path.lstat()
+            if stat.S_ISLNK(mode.st_mode) or mode.st_uid!=os.geteuid():raise ValueError('Indirect or nonowned native resource: '+name)
+            if name=='materialization.json':continue
+            entry=entries.get(name)
+            if entry is None:raise ValueError('Unexpected native resource: '+name)
+            observed.add(name)
+            if stat.S_IMODE(mode.st_mode)!=(entry['mode']&0o777):raise ValueError('Native resource permissions changed: '+name)
+            if entry['kind']=='directory':
+                if not stat.S_ISDIR(mode.st_mode):raise ValueError('Native resource directory changed: '+name)
+                walk(path)
+            elif not stat.S_ISREG(mode.st_mode) or mode.st_nlink!=1 or _sha(path)!=entry['sha256']:
+                raise ValueError('Detached native resource bytes or ownership changed: '+name)
+    walk(tree)
+    if observed!=set(entries):raise ValueError('Detached native resource tree is incomplete')
+    return tree
+
+
+def materialize_native_resources(root,native_directory):
+    """Return an absolute Path containing validated, detached resource files.
+
+    Reads only an already-resolved archive, never its original live paths. Every
+    output file is a new regular inode owned by this user. Source resource links
+    in native_directory are untouched: the process owner must explicitly select
+    this tree before Popen. Existing materializations are validated, never repaired.
+    """
+    root,native=_paths(root,native_directory)
+    resolve_native_environment(root,native)
+    archive=native/'environment-inputs';manifest_path=archive/'manifest.json'
+    manifest_hash=_sha(manifest_path);receipt=json.loads(manifest_path.read_text())
+    entries=_resource_entries(receipt);final=native/'runtime-resources'
+    if final.exists() or final.is_symlink():return _validate_materialized_tree(final,entries,manifest_hash)
+    staging=Path(tempfile.mkdtemp(prefix='.resource-materialization-',dir=native))
+    try:
+        # Parents remain writable during copying; recorded permission bits are
+        # applied afterward. Setuid/setgid/sticky bits are never recreated.
+        for name,entry in sorted(entries.items(),key=lambda item:(item[0].count('/'),item[0])):
+            target=staging/name
+            if entry['kind']=='directory':target.mkdir()
+            else:
+                source=archive/entry['blob']
+                with target.open('xb') as output,source.open('rb') as source_stream:
+                    shutil.copyfileobj(source_stream,output)
+                if target.stat().st_nlink!=1 or _sha(target)!=entry['sha256']:
+                    raise ValueError('Archived resource changed during materialization: '+name)
+        record={'schema':'ihm.native-runtime-resources.v1','archive_manifest_sha256':manifest_hash,
+                'resource_file_sha256':{name:entry['sha256'] for name,entry in entries.items() if entry['kind']=='file'},
+                'resource_roots':list(RESOURCES)}
+        (staging/'materialization.json').write_text(json.dumps(record,indent=2)+'\n')
+        for name,entry in sorted(entries.items(),key=lambda item:item[0].count('/'),reverse=True):
+            (staging/name).chmod(entry['mode']&0o777)
+        if _sha(manifest_path)!=manifest_hash:raise ValueError('Archive receipt changed during materialization')
+        resolve_native_environment(root,native)
+        _validate_materialized_tree(staging,entries,manifest_hash)
+        if final.exists() or final.is_symlink():raise ValueError('Another materialization already owns this resource tree')
+        staging.rename(final)
+        return _validate_materialized_tree(final,entries,manifest_hash)
+    except BaseException as error:
+        if staging.exists():
+            (staging/'failure.json').write_text(json.dumps({'error_type':type(error).__name__,'error':str(error)},indent=2)+'\n')
+        raise

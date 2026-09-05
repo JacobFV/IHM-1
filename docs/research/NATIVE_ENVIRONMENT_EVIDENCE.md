@@ -7,8 +7,15 @@
 ```python
 from ihm.assembly.native_environment_evidence import (
     freeze_native_environment, resolve_native_environment,
+    materialize_native_resources,
 )
 
+# Inside the process owner, after writing manifest.json and BEFORE Popen:
+immutable_inputs = freeze_native_environment(root, native_directory, before_start=True)
+resource_tree = materialize_native_resources(root, native_directory)
+# The owner must select resource_tree's roots for startup before spawning.
+
+# Legacy after-readiness capture remains available, with honest timing:
 with NativeSession(config, native_directory) as native:
     # NativeSession has received ready. Capture before save/meal/step actions.
     immutable_inputs = freeze_native_environment(root, native_directory)
@@ -18,7 +25,7 @@ with NativeSession(config, native_directory) as native:
 immutable_inputs = resolve_native_environment(root, native_directory)
 ```
 
-Both functions return workspace-relative paths mapped to SHA-256 digests. The mapping includes the original native manifest, the archive manifest, and every archived blob. Publication should merge it into source dependencies for **each** compared experiment, including controls. No API call edits `systemic.json`, `source_receipts.json`, the native manifest, or original binaries/resources.
+The freeze/resolve functions return workspace-relative paths mapped to SHA-256 digests. The mapping includes the original native manifest, the archive manifest, and every archived blob. Publication should merge it into source dependencies for **each** compared experiment, including controls. `materialize_native_resources` returns an absolute `Path` to `native/runtime-resources`. No API call edits `systemic.json`, `source_receipts.json`, the native manifest, or original binaries/resources.
 
 The archive is `native/environment-inputs/manifest.json` plus `blobs/<sha256>`. It preserves 38 startup-linked dependency files in the current native build, including system libraries and `libbiogears_cdm`, and the executable. PT_INTERP is parsed directly from the retained ELF bytes without executing a loader or shell. The legacy native manifest omitted the direct loader line in `ldd`; the interpreter therefore has an explicitly current-capture identity, not a claimed startup hash.
 
@@ -28,7 +35,15 @@ The resource allowlist is `patients`, `substances`, `environments`, `nutrition`,
 
 Capturing after native `ready` is still **after initialization**. Existing runs have no startup resource inventory against which to compare those bytes. The receipt always records `resources_verified_at_process_start: false`; it distinguishes `post_start_before_first_action` from `post_start_after_commands` using the command-receipt prefix at capture time. The prefix length/hash and command count are metadata; dynamic journals themselves are not archived or bound as immutable inputs.
 
-For future runs, calling immediately after readiness prevents earlier user actions from preceding capture, but does not retroactively prove what initialization read. For a strict startup resource guarantee, a future launcher must inventory and hold resources before spawning, then validate the same versions after readiness. This module does not claim that stronger guarantee.
+Future process owners can request `before_start=True` after writing the native manifest and before spawning. A new capture records `stage: pre_start`; nonempty receipts or an existing process-output log reject that phase claim. This remains a caller-declared lifecycle boundary, not independent process tracing. The capture alone does not attest consumption, so `resources_verified_at_process_start` remains false. The process owner must select the detached resource roots before `Popen`, validate their identity, and record the actual launch association separately. Existing successful archives are never relabeled when a later caller passes a different phase flag.
+
+## Detached resource consumption
+
+`materialize_native_resources` first validates the archive, then recreates its exact logical resource inventory using regular blob copies. It does not open any captured original resource paths, and does not change the native directory's existing resource-root symlinks. Each resource file is a distinct inode, owned by the current user, with link count one. Empty directories and ordinary permission bits are preserved; setuid/setgid/sticky bits are not recreated. The private top-level materialization directory is newly owned storage.
+
+Logical paths must be relative, normalized, beneath an allowed resource root, unique, and have a recorded directory parent. Absolute paths, traversal, duplicate entries, missing roots, file parents, extra output files, indirect files/directories and shared hardlinks are rejected. An existing `runtime-resources` tree is checked in full rather than repaired or overwritten. `materialization.json` binds its file hashes to the archive manifest. Failed attempts remain in separate `.resource-materialization-*` directories.
+
+The native process owner may replace only the resource symlink roots it created itself with links to this detached tree. It must preserve unrelated files, handle startup cleanup, and associate the consumed tree with its launch receipt. When initializing from a patient XML, it should also compare the detached patient input to `patient_identity_input_sha256`; a change between earlier patient parsing and capture must fail. Explicit saved-state inputs are outside the resource-tree helper. Libraries and the ELF loader are archived but not rebound by this helper, and process environment/dynamic `dlopen` inputs remain outside its guarantee.
 
 Linked dependency copies must match the exact hashes in the native startup manifest. If the current executable or main library has changed, the module can recover the matching version from that run's already-validated adjacent `frozen-sources.json` archive. The source of copied bytes is recorded separately from the original startup path. It never substitutes a newer binary, searches unrelated directories, or relaxes workspace containment for historical copies.
 
@@ -47,8 +62,11 @@ Run behavioral verification and optionally capture a real native directory:
 ```sh
 OPENBLAS_NUM_THREADS=1 .venv/bin/python scripts/verify_native_environment_evidence.py
 OPENBLAS_NUM_THREADS=1 .venv/bin/python scripts/verify_native_environment_evidence.py --capture data/derived/systemic/respiratory_v3/rest/native
+OPENBLAS_NUM_THREADS=1 .venv/bin/python scripts/verify_native_environment_evidence.py --held data/derived/systemic/exertion_v2/rest/native
 ```
 
 The verifier uses real temporary files and an ELF executable. It checks detached survival after original library/resource mutation and executable deletion; rejection of corrupted blobs, external symlinks, hardlinks, and omitted startup dependencies; exclusion of state outputs; empty-directory retention; explicit capture timing; historical executable recovery; and preservation of failed capture attempts. API-missing, missing-dependency, hardlink, and historical-executable recovery tests were observed failing before implementation of the corresponding behavior.
+
+The added prestart suite also tests malformed logical inventories, prestart rejection after an action, unchanged legacy phase metadata, idempotent materialization, and a separate process actually opening detached bytes after the live resource changes. The held-archive check relocates a copy of the real `exertion_v2/rest` archive into an isolated temporary workspace, materializes all 172 resource files, and has a separate consumer read `UCEDefs.conf`. The original run and archive remain unchanged. Its receipt is retained under `artifacts/verification/native-environment-prestart/held-resources.json`.
 
 An archive is evidence preservation, not a complete portable runtime or a bitwise replay guarantee. The legacy manifest does not identify arbitrary later `dlopen` modules, all process environment values, kernel/CPU behavior or native serializer omissions. Resource timing remains qualified above. Original libraries retain their licenses; local copying does not grant redistribution rights.
