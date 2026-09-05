@@ -1,0 +1,45 @@
+{
+  "id": "scone-predictive-locomotion",
+  "reference": "https://github.com/tgeijten/scone-core.git",
+  "revision": "39c4b7a52a90dff838ebe7a1cb8afe58af1aaae1",
+  "license": "Apache-2.0; see source THIRD_PARTY_NOTICES.md for dependency licenses",
+  "status": "acquired_built_and_natively_evaluated",
+  "ingested": true,
+  "scope": "Shipped planar H0914 nine-DOF fourteen-muscle model and optimized Geyer/Herr-derived reflex controller; not canonical 3D subject gait",
+  "artifacts": [
+    {
+      "path": "data/raw/mechanics/scone-core/acquisition.json",
+      "sha256": "ec2deb40266d394fabdd5108500f9a50f7f5869bc3d9ff457c11968cab2a7fe3"
+    },
+    {
+      "path": "data/raw/mechanics/scone-core/submodule_receipts.json",
+      "sha256": "651352f73c6e7b63c2dd4fb5866728ca7b857df778b299c2139aea1f1e9febfd"
+    },
+    {
+      "path": "data/runtime/scone/build_manifest.json",
+      "sha256": "c5f20c6f4d053c6b2ffebaede52be0f2ac8c3073bdfd26a66e150040b6c9f888"
+    },
+    {
+      "path": "data/runtime/scone/compatibility_patches.json",
+      "sha256": "d8e478245ac4d732af3a210e48d639f007290690e0a3c8b800a77c6c8e1ccbc4"
+    }
+  ],
+  "source_files": [
+    "scenarios/Examples2/Gait - H0914 - OpenSim4.scone",
+    "scenarios/Examples2/data/H0914M_osim4.osim",
+    "scenarios/Examples2/data/ControllerGH2010v9.scone",
+    "scenarios/Examples2/data/ResultH0914Gait10.par",
+    "scenarios/Examples2/data/InitStateGait10.zml"
+  ],
+  "limitations": [
+    "Optimized source parameters, not newly fitted human observations.",
+    "Native OpenSim4 compatibility variant is explicitly patched and hashed; donor preserved.",
+    "Controller-off removes all gait reflex outputs after one second; muscle activation floor and passive mechanics remain.",
+    "Planar contact gait is not canonical 3D walking, voluntary cortical control, genital mechanics or independently validated physiology."
+  ],
+  "acceptance": {
+    "report_path": "data/derived/locomotion/scone_acceptance/run-dh29z67v/report.json",
+    "sha256": "524e6a72d9ae42cd5e618d04db6af733e455118e79d30be71bd270d1a41fe00c",
+    "passed": true
+  }
+}
