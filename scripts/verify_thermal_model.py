@@ -16,11 +16,20 @@ c=np.array([2.,2.]);w=np.array([[0.,1.],[1.,0.]])
 k=np.diag(w.sum(axis=1))-w; old=np.array([10.,0.]);new=np.linalg.solve(np.diag(c)+k,c*old)
 a=heat_step_audit(c,w,np.zeros(2),np.zeros(2),np.zeros(2),old,new,1.)
 assert a['heat_balance_residual_W']<1e-12 and a['internal_column_sum_max_W_K']<1e-12
+# One-node finite-capacity cooling checks boundary sign and endpoint evaluation.
+cooled=heat_step_audit([2],[[0]],[1],[0],[0],[10],[20/3],1)
+assert cooled['heat_balance_residual_W']<1e-12 and cooled['boundary_heat_into_body_W']<0
+# Internal directed circulatory cycle is conservative without symmetry.
+cycle=np.array([[0,0,2],[2,0,0],[0,2,0]],float)
+kcycle=np.diag(cycle.sum(axis=1))-cycle
+old3=np.array([10.,20.,30.]);new3=np.linalg.solve(np.eye(3)+kcycle,old3)
+assert heat_step_audit(np.ones(3),cycle,np.zeros(3),np.zeros(3),np.zeros(3),old3,new3,1)['heat_balance_residual_W']<1e-12
 # Nonconservative flow matrix must be diagnosed, never silently balanced.
 bad=w.copy();bad[0,1]=2
 assert heat_step_audit(c,bad,np.zeros(2),np.zeros(2),np.zeros(2),old,new,1.)['internal_column_sum_max_W_K']>0
 if '--artifacts' in sys.argv:
     root=Path(__file__).resolve().parents[1];index=json.loads((root/'data/derived/thermal/index.json').read_text())
+    assert index['models']==index['runs']  # API descriptor compatibility
     assert index['node_count']==85 and len(index['body_regions'])==17
     package,_=load_source(root)
     import importlib

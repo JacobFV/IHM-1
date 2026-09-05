@@ -283,3 +283,25 @@ test("hour-scale spectra disclose sampling limits and exclude aliased pulse chan
   expect(names.some((n) => n === "ArterialPressure")).toBe(false);
   await expect(page.locator("#chart svg")).toBeVisible();
 });
+
+test("published supine thermal model and measured bedding boundaries remain separate source trajectories", async ({
+  page,
+}) => {
+  await page.goto("/");
+  for (const run of [
+    "lying_default",
+    "supine_mattress",
+    "supine_blanket",
+    "supine_duvet",
+  ]) {
+    await page.locator("#trajectory-run").selectOption(`thermal:${run}`);
+    await page.locator("#variable").selectOption("CentralBloodTemperature");
+    await expect(page.locator("#chart svg")).toBeVisible();
+    await expect(page.locator("#chart")).toContainText("degC");
+    await expect(page.locator("#chart-note")).toContainText("85 thermal nodes");
+    if (run !== "lying_default")
+      await expect(page.locator("#chart-note")).toContainText(
+        "applied uniformly",
+      );
+  }
+});

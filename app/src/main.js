@@ -38,6 +38,7 @@ let manifest,
   temporal = {},
   reproductive = null,
   csfAvailable = false,
+  thermalIndex = null,
   spectral = false,
   flowFrames = 0,
   playing = false,
@@ -643,7 +644,13 @@ function drawChart() {
           (activeRun === "csf:native_map_driven"
             ? "One-way native MAP forcing; unmatched subjects and initial state; no ICP feedback."
             : "Separate literature model, not measured or patient-calibrated ICP.")
-        : "Upstream native simulation · model output, not a human recording.";
+        : activeRun.startsWith("thermal:")
+          ? "JOS-3 source supine model · 85 thermal nodes / 17 regions · one hour after neutral standing initialization. " +
+            (activeRun === "thermal:lying_default"
+              ? "Source default environment."
+              : "Published whole-body bedding resistance applied uniformly; regional contact measurements unavailable.") +
+            " Separate source subject; no clinical bed-rest calibration."
+          : "Upstream native simulation · model output, not a human recording.";
   if (!x?.length || !y?.length) {
     $("chart").innerHTML =
       '<p class="empty">No recorded data available for this view.</p>';
@@ -692,6 +699,12 @@ async function pollRuns() {
       (csfAvailable
         ? '<option value="csf:baseline">CSF · source baseline</option><option value="csf:native_map_driven">CSF · one-way native MAP · unmatched initial state</option><option value="csf:hypotension">CSF · source hypotension ramp</option>'
         : "") +
+      (thermalIndex?.runs || [])
+        .map(
+          (r) =>
+            `<option value="thermal:${esc(r.id)}">${esc(r.label)}</option>`,
+        )
+        .join("") +
       runs
         .map(
           (r) =>
@@ -724,17 +737,23 @@ $("trajectory-run").onchange = async () => {
     phys =
       activeRun === "reproductive"
         ? trajectoryFromChannels(reproductive)
-        : activeRun.startsWith("csf:")
+        : activeRun.startsWith("thermal:")
           ? trajectoryFromChannels(
               await api(
-                `/api/csf?run=${encodeURIComponent(activeRun.slice(4))}`,
+                `/api/thermal?run=${encodeURIComponent(activeRun.slice(8))}`,
               ),
             )
-          : await api(
-              activeRun === "baseline"
-                ? "/api/physiology"
-                : `/api/physiology?run=${encodeURIComponent(activeRun)}`,
-            );
+          : activeRun.startsWith("csf:")
+            ? trajectoryFromChannels(
+                await api(
+                  `/api/csf?run=${encodeURIComponent(activeRun.slice(4))}`,
+                ),
+              )
+            : await api(
+                activeRun === "baseline"
+                  ? "/api/physiology"
+                  : `/api/physiology?run=${encodeURIComponent(activeRun)}`,
+              );
     phys._run = activeRun;
     updateVariables();
   } catch (e) {
@@ -931,6 +950,7 @@ async function start() {
     api("/api/evidence"),
     api("/api/reproductive"),
     api("/api/csf/index"),
+    api("/api/thermal/index"),
   ]);
   if (results[0].status === "fulfilled") phys = results[0].value;
   if (results[1].status === "fulfilled") {
@@ -949,6 +969,7 @@ async function start() {
       : "Whole-body calibration incomplete";
   if (results[3].status === "fulfilled") reproductive = results[3].value;
   csfAvailable = results[4].status === "fulfilled";
+  if (results[5].status === "fulfilled") thermalIndex = results[5].value;
   updateVariables();
   await pollRuns();
   setInterval(pollRuns, 5000);

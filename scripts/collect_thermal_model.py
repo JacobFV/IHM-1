@@ -10,7 +10,9 @@ def sha(path):return hashlib.sha256(path.read_bytes()).hexdigest()
 def write(path,value):path.write_text(json.dumps(value,separators=(',',':'),allow_nan=False))
 def main():
     raw=ROOT/'data/raw/thermal';raw.mkdir(parents=True,exist_ok=True);repo=raw/'JOS-3'
-    if not repo.exists():subprocess.run(['git','clone',SOURCE_URL+'.git',str(repo)],check=True)
+    if not repo.exists():
+        subprocess.run(['git','clone','--no-checkout',SOURCE_URL+'.git',str(repo)],check=True)
+        subprocess.run(['git','-C',str(repo),'checkout','--detach',REVISION],check=True)
     actual=subprocess.check_output(['git','-C',str(repo),'rev-parse','HEAD'],text=True).strip()
     if actual!=REVISION:raise ValueError('Checkout must be pinned to '+REVISION)
     if subprocess.check_output(['git','-C',str(repo),'status','--porcelain'],text=True).strip():raise ValueError('JOS-3 source checkout is modified')
@@ -40,7 +42,7 @@ def main():
         write(out/f'{profile}.json',fine)
         runs.append(dict(id=profile,label=fine['label'],trajectory_path=str((out/f'{profile}.json').relative_to(ROOT)),coefficient_path=str((out/f'{profile}-coefficients.json').relative_to(ROOT)),configuration=fine['configuration'],refinement=refinement,audit={k:v for k,v in fine['audit'].items() if k!='steps'},final={c['id']:c['values'][-1] for c in fine['channels'] if c['id'] in ['MeanSkinTemperature','CentralBloodTemperature','Met','RES']},limitations=fine['limitations']))
         print(profile,refinement,runs[-1]['audit'],runs[-1]['final'],flush=True)
-    index=dict(schema_version=1,id='jos3_thermal',source_kind='source_model_simulation',source=provenance,node_count=coefficient['node_count'],body_regions=coefficient['body_regions'],runs=runs)
+    index=dict(schema_version=1,id='jos3_thermal',source_kind='source_model_simulation',source=provenance,node_count=coefficient['node_count'],body_regions=coefficient['body_regions'],runs=runs,models=runs)
     write(out/'index.json',index)
     # Standalone scientific comparison of independently sourced cases.
     import matplotlib;matplotlib.use('Agg')
