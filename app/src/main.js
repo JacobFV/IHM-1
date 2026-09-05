@@ -19,6 +19,7 @@ import "./style.css";
 import { attachedHairPositions } from "./hair_motion.js";
 import { RegionalView, ElectricRegionalView } from "./regional.js";
 import { ClothingView } from "./clothing.js";
+import { prepareSystemic, systemicLabel, systemicSnapshot } from "./systemic.js";
 const $ = (id) => document.getElementById(id),
   esc = (s) =>
     String(s ?? "").replace(
@@ -105,6 +106,89 @@ const regionalControls=document.createElement('div');
 regionalControls.id='regional-controls';
 regionalControls.innerHTML='<label class="field-label" for="regional-study">Active materialization</label><select id="regional-study"><option value="body">Whole-body replay</option><option value="forearm-touch">Forearm · contact & IBM receptors</option><option value="skin-electric">Skin · non-neural electricity</option></select><select id="regional-condition" aria-label="Regional electrical intervention" hidden><option value="wound_shunt">Barrier shunt</option><option value="baseline">Intact baseline</option><option value="electrode">Electrode pair</option><option value="membrane_perturbation">Membrane perturbation</option></select><p id="regional-note" class="muted">Detailed studies share this body’s material coordinates.</p>';
 $('anatomy-view').before(regionalControls);
+const systemicControls=document.createElement('div');
+systemicControls.id='systemic-controls';
+systemicControls.innerHTML='<label class="field-label" for="systemic-study">Whole-body experiment</label><select id="systemic-study"><option value="">Resting body playback</option></select><p id="systemic-note" class="muted">Checking completed native experiments…</p><button id="systemic-refresh" class="text-button">Refresh experiments</button><label id="systemic-speed-label" class="field-label" for="systemic-speed" hidden>Recorded playback speed</label><select id="systemic-speed" hidden><option value="1">1× · recorded time</option><option value="10">10×</option><option value="60">60×</option><option value="300">300×</option></select>';
+regionalControls.after(systemicControls);
+const systemicMonitor=document.createElement('div');
+systemicMonitor.id='systemic-monitor';systemicMonitor.hidden=true;
+systemicMonitor.innerHTML='<div class="eyebrow">SHARED NATIVE STATE</div><h2 id="systemic-title">Whole-body mechanisms</h2><p id="systemic-selected" class="muted"></p><dl id="systemic-readouts"></dl><details class="evidence-fold"><summary>Executing pathways & limits</summary><div id="systemic-mechanisms"></div></details>';
+$('details').after(systemicMonitor);
+let systemicSelection='',activeSystemic=null,systemicRequest=0,systemicCatalog=[],systemicIndexLast=0,systemicIndexRequest=0;
+const spatialTrajectory=()=>systemicSelection?activeSystemic?.trajectory:bodyTrajectory;
+function clearSystemic(){
+  const wasSystemic=!!systemicSelection;
+  systemicRequest++;systemicSelection='';activeSystemic=null;playing=false;
+  $('systemic-study').value='';systemicMonitor.hidden=true;
+  $('systemic-speed').hidden=true;$('systemic-speed-label').hidden=true;
+  if(systemicCatalog.length)$('systemic-note').textContent='Select a computed protocol to inspect shared native state.';
+  if(wasSystemic)useBodyPhysiology();
+}
+async function loadSystemicIndex(){
+  systemicIndexLast=Date.now();const request=++systemicIndexRequest;
+  try {
+    const data=await api('/api/body/experiments/systemic');if(request!==systemicIndexRequest)return;
+    systemicCatalog=data.runs||[];
+    $('systemic-study').innerHTML='<option value="">Resting body playback</option>'+systemicCatalog.map(r=>`<option value="${esc(r.id)}">${esc(r.label)} · ${r.duration_s>=3600?`${(r.duration_s/3600).toPrecision(3)} h`:`${r.duration_s} s`}</option>`).join('');
+    $('systemic-study').value=systemicSelection;
+    if(!systemicSelection)$('systemic-note').textContent=systemicCatalog.length?'Select a computed protocol to inspect shared native state.':'No completed native experiments are available yet.';
+  }catch(error){if(!systemicSelection)$('systemic-note').textContent='Completed native experiments are not available yet. Refresh after computation finishes.';}
+}
+$('systemic-refresh').onclick=loadSystemicIndex;
+$('systemic-study').onchange=async()=>{
+  const id=$('systemic-study').value,request=++systemicRequest;
+  regionalRequest++;closeRegional();$('regional-study').value='body';
+  systemicSelection=id;activeSystemic=null;playing=false;activeRun='body';
+  systemicMonitor.hidden=true;
+  if(!id){clearSystemic();useBodyPhysiology();updateSigma();setupFrames();return;}
+  phys={};updateSigma();updateVariables();setupFrames();
+  $('systemic-note').textContent='Loading recorded native systemic state…';
+  try {
+    const data=await api('/api/body/experiments/systemic-'+encodeURIComponent(id));
+    if(request!==systemicRequest||systemicSelection!==id||modelId!=='ihm-body')return;
+    if(!validBodyTrajectory(data))throw Error('Native systemic record has an invalid body trajectory');
+    const label=systemicCatalog.find(r=>r.id===id)?.label||id;
+    activeSystemic=prepareSystemic(data,id,label);phys=activeSystemic.physiology;
+    const cadence=Number((data.clock?.sample_interval_s??data.configuration.sample_interval_s).toPrecision(6));
+    $('systemic-note').textContent=`${label} · ${cadence} s recorded samples · ${data.has_body_projection?'computed respiratory body projection':'reference body; no body projection at this cadence'}`;
+    $('systemic-speed').value=cadence>1?'300':'1';$('systemic-speed').hidden=false;$('systemic-speed-label').hidden=false;
+    $('systemic-title').textContent=label;systemicMonitor.hidden=false;
+    $('systemic-mechanisms').innerHTML=(data.mechanism_edges||[]).map(e=>`<p><strong>${esc(e.source)} → ${esc(e.target)}</strong><br>${esc(e.status)}<br><small>${esc(e.implementation)}</small></p>`).join('')+(data.limitations||[]).map(s=>`<p class="muted">${esc(s)}</p>`).join('');
+    spectral=false;$('tab-phys').classList.add('active');$('tab-spectral').classList.remove('active');
+    updateSigma();updateVariables();
+    const preferred=data.configuration?.protocol?.includes('meal')?'Aorta.Glucose.concentration_mg_per_dl':'arterial_co2_mmhg';
+    if(phys.values[preferred])$('variable').value=preferred;
+    setupFrames();drawChart();
+  }catch(error){if(request===systemicRequest){activeSystemic=null;phys={};$('systemic-note').textContent=error.message;updateSigma();updateVariables();setupFrames();}}
+};
+function updateSystemicReadouts(){
+  if(!activeSystemic)return;
+  const data=activeSystemic.trajectory,index=Number($('time').value),selected=systemicSnapshot(data,index,$('variable').value);
+  $('systemic-selected').textContent=`${selected.label} · ${selected.value===null?'unavailable':selected.value.toPrecision(5)+' '+selected.unit} · t = ${selected.time_s} s`;
+  const metadata=data.fields[selected.name];
+  $('systemic-selected').title=metadata?[metadata.owner,metadata.support,metadata.evidence].filter(Boolean).join(' · '):'';
+  const names=data.configuration?.protocol?.includes('meal')||data.configuration?.protocol==='hydration'
+    ? ['stomach_carbohydrate_g','Aorta.Glucose.concentration_mg_per_dl','insulin_synthesis_pmol_per_min','liver_glycogen_g','urine_volume_ml']
+    : ['arterial_co2_mmhg','arterial_o2_mmhg','respiratory_request_cmh2o','respiratory_applied_cmh2o','lung_volume_ml','metabolic_rate_w'];
+  $('systemic-readouts').innerHTML=names.filter(n=>data.fields[n]).map(name=>{
+    const s=systemicSnapshot(data,index,name);return `<dt>${esc(s.label)}</dt><dd>${s.value===null?'Unavailable':s.value.toPrecision(5)+' '+esc(s.unit)}</dd>`;
+  }).join('');
+}
+function syncSystemicSelectors(){
+  for(const id of ['trajectory-run','spectral-run']){
+    const select=$(id);
+    if(systemicSelection){
+      if(select.dataset.beforeSystemic===undefined)select.dataset.beforeSystemic=select.value;
+      select.querySelectorAll('option[data-systemic]').forEach(o=>o.remove());
+      const option=new Option(`Native systemic · ${activeSystemic?.label||systemicSelection}`,'systemic:'+systemicSelection);
+      option.dataset.systemic='true';select.add(option);select.value=option.value;
+    }else if(select.dataset.beforeSystemic!==undefined){
+      select.querySelectorAll('option[data-systemic]').forEach(o=>o.remove());
+      const old=select.dataset.beforeSystemic;delete select.dataset.beforeSystemic;
+      select.value=[...select.options].some(o=>o.value===old)?old:select.options[0]?.value||'';
+    }
+  }
+}
 const clothingControls=document.createElement('div');
 clothingControls.id='clothing-components';
 clothingControls.innerHTML='<div class="section-heading">CLOTHING</div><label class="system-row"><input id="garment-shirt" type="checkbox" checked><span>Sleeveless shirt</span></label><label class="system-row"><input id="garment-shorts" type="checkbox" checked><span>Shorts</span></label><p id="clothing-status" class="muted">Fitting garments to the assembled body…</p><details class="evidence-fold"><summary>Garment construction & mechanics</summary><p>Engineered patterns fitted to canonical skin sections with assumed ease. Shirt motion follows the computed thoracic field. This display has no solved fabric friction or deformable genital contact. Garment visibility is independent of the native thermal clothing input.</p></details>';
@@ -210,8 +294,9 @@ try {
   renderer.setAnimationLoop((now) => {
     controls.update();
     const frameIndex = Number($("time").value);
-    const bodyInterval = regionalView?.active ? (regionalView instanceof ElectricRegionalView ? 1000*regionalView.data.clock.dt_s : 33) : modelId === "ihm-body" && bodyTrajectory
-      ? 1000 * ((bodyTrajectory.frames[frameIndex+1]?.time_s ?? bodyTrajectory.frames[frameIndex].time_s + .1) - bodyTrajectory.frames[frameIndex].time_s)
+    const trajectory=spatialTrajectory();
+    const bodyInterval = regionalView?.active ? (regionalView instanceof ElectricRegionalView ? 1000*regionalView.data.clock.dt_s : 33) : modelId === "ihm-body" && trajectory
+      ? 1000 * ((trajectory.frames[frameIndex+1]?.time_s ?? trajectory.frames[frameIndex]?.time_s + .1) - trajectory.frames[frameIndex]?.time_s)/(activeSystemic?Number($('systemic-speed').value):1)
       : 160;
     if (playing && flowFrames && now - lastTick >= bodyInterval) {
       $("time").value = (Number($("time").value) + 1) % flowFrames;
@@ -343,6 +428,7 @@ function rebuildSystems() {
   syncLayers();
 }
 function chooseModel() {
+  clearSystemic();
   regionalRequest++;
   closeRegional();
   $('regional-study').value='body';
@@ -353,6 +439,7 @@ function chooseModel() {
   $("patient").disabled = modelId === "ihm-body";
   $("body-controls").hidden = modelId !== "ihm-body";
   $('regional-controls').hidden = modelId !== 'ihm-body';
+  $('systemic-controls').hidden = modelId !== 'ihm-body';
   $("scenario-description").textContent = modelId === "ihm-body"
     ? "Run this generic body's physiology, mechanics and brain model. Playback uses computed states."
     : "Run a native source profile and inspect its recorded response.";
@@ -407,6 +494,7 @@ function syncCanonicalProfile() {
   $("patient").value = "IHMGenericMale";
 }
 function useBodyPhysiology() {
+  if(systemicSelection){if(activeSystemic){phys=activeSystemic.physiology;updateVariables();}return;}
   if (!bodyTrajectory) return;
   const frames = bodyTrajectory.frames;
   const channels = [...new Set(frames.flatMap(f => Object.keys(f.physiology || {})))].filter(key => frames.some(f => Number.isFinite(f.physiology?.[key])));
@@ -414,6 +502,7 @@ function useBodyPhysiology() {
   updateVariables();
 }
 function receivePhysiology(value){
+  if(systemicSelection)return;
   if(regionalReturnPhys!==null)regionalReturnPhys=value;
   else phys=value;
 }
@@ -443,7 +532,7 @@ async function loadBodyTrajectory(run) {
     bodyTrajectory = null;
     bodyError = error.message;
   }
-  if (modelId === "ihm-body") setupFrames();
+  if (modelId === "ihm-body"&&!systemicSelection&&!regionalView?.active) setupFrames();
   $("body-status").textContent = bodySummary
     ? `${bodySummary.entity_count?.toLocaleString() || "Canonical"} anatomical entities · ${bodyTrajectory ? "computed body playback available" : "reference anatomy; body trajectory unavailable"}`
     : bodyTrajectory ? "Computed generic body state available" : "Reference anatomy available; body trajectory unavailable";
@@ -568,7 +657,9 @@ async function loadVisible(rows) {
         ? ""
         : "No structures match these filters.";
     updateDisplay();
-    setupFrames();
+    // Loading/filtering geometry does not create a new body trajectory. Apply
+    // the selected snapshot to new meshes without resetting the user's clock.
+    if(modelId==='ihm-body')updateFrame();else setupFrames();
   }
 }
 function createGeometry(s, g) {
@@ -725,7 +816,7 @@ function updateDisplay() {
 function setupFrames() {
   $('posture').disabled=!!regionalView?.active;
   if (modelId === "ihm-body") {
-    flowFrames = regionalView?.active ? regionalView.data.frames.length : bodyTrajectory?.frames.length || 0;
+    flowFrames = regionalView?.active ? regionalView.data.frames.length : spatialTrajectory()?.frames.length || 0;
     $("flow-field").hidden = true;
     $("play").disabled = flowFrames < 2;
     $("time").disabled = !flowFrames;
@@ -775,7 +866,7 @@ function updateFrame() {
     return;
   }
   if (modelId === "ihm-body") {
-    const frame = bodyTrajectory?.frames[Number($("time").value)];
+    const trajectory=spatialTrajectory(),frame = trajectory?.frames[Number($("time").value)];
     const skinField = frame?.respiration?.skin_field;
     const skinIds = new Set(skinField?.entity_ids || []);
     let deformedSkins = 0;
@@ -798,19 +889,20 @@ function updateFrame() {
         if (skinIds.has(id)) deformedSkins++;
       }
       const motionId = hair?.skin_entity_id || id;
-      const transform = bodyTransform(frame?.entities?.[motionId], bodyTrajectory?.centroids_m[motionId]);
+      const transform = bodyTransform(frame?.entities?.[motionId], trajectory?.centroids_m[motionId]);
       object.matrixAutoUpdate = false;
       object.matrix.set(...transform);
       object.matrixWorldNeedsUpdate = true;
     });
-    clothingView?.update(frame,bodyTrajectory?.centroids_m);
+    clothingView?.update(frame,trajectory?.centroids_m);
     $("flow-legend").hidden = !frame;
     const p = frame?.physiology || {};
     const values = [["HeartRate(1/min)", "HR", "/min"], ["MeanArterialPressure(mmHg)", "MAP", "mmHg"]]
       .filter(([key]) => Number.isFinite(p[key])).map(([key,label,unit]) => `${label} ${Number(p[key]).toFixed(1)} ${unit}`);
-    $("flow-legend").textContent = frame ? `Computed body state · ${Object.keys(frame.entities).length} tissue transforms${deformedSkins ? ` · ${deformedSkins} thoracic skin field${deformedSkins === 1 ? "" : "s"}` : ""}${values.length ? " · " + values.join(" · ") : ""}` : "";
+    $("flow-legend").textContent = frame ? activeSystemic&&!trajectory.has_body_projection?`Native systemic record · reference anatomy · no body projection · ${Number((trajectory.clock?.sample_interval_s??trajectory.configuration.sample_interval_s).toPrecision(6))} s samples`:`Computed body state · ${Object.keys(frame.entities).length} tissue transforms${deformedSkins ? ` · ${deformedSkins} thoracic skin field${deformedSkins === 1 ? "" : "s"}` : ""}${values.length ? " · " + values.join(" · ") : ""}` : "";
     $("time-value").textContent = frame ? `${Number(frame.time_s).toFixed(3)} s` : "Body trajectory unavailable";
     $("time-value").title = frame ? "Computed snapshots; omitted tissues retain reference geometry. No interpolation or extrapolation." : bodyError;
+    if(activeSystemic){updateSystemicReadouts();if(!spectral)drawChart();}
     return;
   }
   $("flow-legend").hidden = !flowFrames;
@@ -908,14 +1000,16 @@ function spectralRun() {
     const id=regionalView instanceof ElectricRegionalView ? 'skin-electric:'+regionalView.condition : 'forearm-touch';
     return regionalSpectra.find(r=>r.id===id);
   }
+  if(systemicSelection)return activeSystemic?.spectralRun;
   return (
     temporal.runs?.find((r) => r.id === $("spectral-run").value) ||
     temporal.runs?.[0]
   );
 }
 function updateVariables() {
-  $('spectral-run').disabled=!!regionalView?.active;
-  $('trajectory-run').disabled=!!regionalView?.active;
+  syncSystemicSelectors();
+  $('spectral-run').disabled=!!regionalView?.active||!!systemicSelection;
+  $('trajectory-run').disabled=!!regionalView?.active||!!systemicSelection;
   $("spectral-controls").hidden = !spectral;
   $("trajectory-controls").hidden = spectral;
   const vars = spectral
@@ -931,7 +1025,7 @@ function updateVariables() {
               ? 1
               : 0,
         )
-        .map((id) => ({ id, label: id }));
+        .map((id) => ({ id, label: activeSystemic?systemicLabel(id):id }));
   const old = $("variable").value;
   $("variable").innerHTML = vars
     .map((v) => `<option value="${esc(v.id)}">${esc(v.label)}</option>`)
@@ -940,6 +1034,7 @@ function updateVariables() {
   drawChart();
 }
 function drawChart() {
+  updateSystemicReadouts();
   const id = $("variable").value,
     v = spectralRun()?.variables.find((x) => x.id === id),
     series = spectralSeries(
@@ -956,11 +1051,13 @@ function drawChart() {
   $("chart-note").textContent = spectral
     ? $("spectral-mode").value === "laplace"
       ? "Finite-horizon transform magnitude |L(σ + iω)| · mean removed · not an infinite-time transfer function."
+      : activeSystemic ? activeSystemic.spectralRun.limitations[0]
       : spectralRun()?.sample_rate_hz <= 1
         ? "1 Hz source output · Nyquist 0.5 Hz; instantaneous arterial pressure and lung volume excluded as aliased. 900 s windows resolve 1/900 Hz. Drift does not establish a physiological cycle."
         : spectralRun()?.limitations?.[0] ||
           temporal.limitations?.[0] ||
           "Finite observation horizon. Power spectra do not establish causality."
+    : activeSystemic ? `${activeSystemic.label} · native shared state · ${Number((activeSystemic.trajectory.clock?.sample_interval_s??activeSystemic.trajectory.configuration.sample_interval_s).toPrecision(6))} s recorded samples. Selected value follows the body clock. Generic source model; calibration remains incomplete.`
     : regionalView?.active
       ? 'Computed regional materialization at a pinned body site. Explicit parameter priors; inspect the regional evidence and charge/force audit.'
     : activeRun === "body"
@@ -987,10 +1084,13 @@ function drawChart() {
   const valid = y.filter(Number.isFinite),
     min = Math.min(...valid),
     max = Math.max(...valid);
+  const currentValue=activeSystemic&&!spectral?y[Number($('time').value)]:y.at(-1);
+  const cursor=activeSystemic&&!spectral&&x.at(-1)>x[0]?600*(x[Number($('time').value)]-x[0])/(x.at(-1)-x[0]):null;
   $("chart").innerHTML =
-    `<div class="chart-values"><strong>${Number(y.at(-1)).toPrecision(5)}</strong><span>${esc(spectral ? series.unit || "Source units" : phys.units?.[id] || id.match(/\(([^)]+)\)/)?.[1] || "Source units")}</span></div><svg viewBox="0 0 600 120" preserveAspectRatio="none" aria-label="${esc(id)} ${spectral ? "power spectrum" : "trajectory"}" role="img"><defs><linearGradient id="fade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8ec9bd" stop-opacity=".2"/><stop offset="1" stop-color="#8ec9bd" stop-opacity="0"/></linearGradient></defs><path d="M0 0H600 M0 40H600 M0 80H600 M0 120H600" stroke="#ffffff0b" fill="none"/><path d="${chartPath(x, y)}" fill="none" stroke="#8ec9bd" stroke-width="2" vector-effect="non-scaling-stroke"/></svg><div class="chart-axis"><span>${Number(x[0]).toPrecision(3)} ${spectral ? "Hz" : phys.time_unit || "s"}</span><span>range ${min.toPrecision(4)} — ${max.toPrecision(4)}</span><span>${Number(x.at(-1)).toPrecision(3)} ${spectral ? "Hz" : phys.time_unit || "s"}</span></div>`;
+    `<div class="chart-values"><strong>${Number.isFinite(currentValue)?currentValue.toPrecision(5):'Unavailable'}</strong><span>${esc(spectral ? series.unit || "Source units" : phys.units?.[id] || id.match(/\(([^)]+)\)/)?.[1] || "Source units")}</span></div><svg viewBox="0 0 600 120" preserveAspectRatio="none" aria-label="${esc(id)} ${spectral ? "power spectrum" : "trajectory"}" role="img"><defs><linearGradient id="fade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8ec9bd" stop-opacity=".2"/><stop offset="1" stop-color="#8ec9bd" stop-opacity="0"/></linearGradient></defs><path d="M0 0H600 M0 40H600 M0 80H600 M0 120H600" stroke="#ffffff0b" fill="none"/><path d="${chartPath(x, y)}" fill="none" stroke="#8ec9bd" stroke-width="2" vector-effect="non-scaling-stroke"/>${Number.isFinite(cursor)?`<path d="M${cursor} 0V120" stroke="#e9c58c" stroke-width="1"/>`:''}</svg><div class="chart-axis"><span>${Number(x[0]).toPrecision(3)} ${spectral ? "Hz" : phys.time_unit || "s"}</span><span>range ${valid.length?min.toPrecision(4)+' — '+max.toPrecision(4):'unavailable'}</span><span>${Number(x.at(-1)).toPrecision(3)} ${spectral ? "Hz" : phys.time_unit || "s"}</span></div>`;
 }
 async function pollRuns() {
+  if(Date.now()-systemicIndexLast>30000)loadSystemicIndex();
   try {
     const data = await api("/api/scenarios");
     const runs = data.runs || [];
@@ -1042,6 +1142,7 @@ async function pollRuns() {
         )
         .join("");
     $("trajectory-run").value = activeRun;
+    syncSystemicSelectors();
     const chosen = runs.find((r) => r.id === activeRun);
     $("run-status").textContent = latest
       ? `${latest.id} · ${latest.status}${latest.error ? ` · ${latest.error}` : ""}`
@@ -1051,7 +1152,7 @@ async function pollRuns() {
     if (
       chosen &&
       ["completed", "complete", "succeeded"].includes(chosen.status) &&
-      (regionalReturnPhys || phys)._run !== chosen.id
+      !systemicSelection && (regionalReturnPhys || phys)._run !== chosen.id
     ) {
       const received = await api(`/api/physiology?run=${encodeURIComponent(chosen.id)}`);
       received._run = chosen.id;receivePhysiology(received);
@@ -1063,6 +1164,7 @@ async function pollRuns() {
   }
 }
 $("trajectory-run").onchange = async () => {
+  if(systemicSelection)return;
   activeRun = $("trajectory-run").value;
   const requestedRun=activeRun;
   try {
@@ -1153,6 +1255,8 @@ $("scenario-form").onsubmit = async (e) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(config),
     });
+    clearSystemic();
+    if(modelId==='ihm-body')setupFrames();
     activeRun = run.id;
     $("run-status").textContent = `${run.id} · ${run.status}`;
     await pollRuns();
@@ -1174,6 +1278,7 @@ $("posture").onclick = () => {
 };
 $("model").onchange = chooseModel;
 $('regional-study').onchange=async()=>{
+  const wasSystemic=!!systemicSelection;clearSystemic();if(wasSystemic)useBodyPhysiology();
   const request=++regionalRequest,kind=$('regional-study').value;
   playing=false;
   closeRegional();
