@@ -1,0 +1,39 @@
+# Remaining-glucose reaction integrity
+
+The retained native Tissue implementation can consume the same glucose twice within one metabolic call. An isolated variant corrects that demonstrated availability error. This does **not** establish that the one-hour hypoglycemia or acid–base trajectories are physiologically correct.
+
+## Reproduction and narrow correction
+
+Source is BioGears revision `3f16a5fa1dade9c511b88d923606fa51cc35e95d`, `projects/biogears/libBiogears/src/engine/Systems/Tissue.cpp`. The aerobic glucose branches at lines 1296–1344 debit mass, while the anaerobic availability calculation at line 1406 reads molarity again. The next nonbrain glucose `Balance(Mass)` is at line 1463. Thus that second molarity still describes the earlier pool, including glucose already converted aerobically to CO₂.
+
+`scripts/audit_native_substrate_integrity.py` invokes the actual native method through its existing test friend, restricting the consumption list to liver and setting explicit, balanced intracellular substrate pools. It does not replace the metabolic calculation. With 1e-8 mol glucose, ample O₂ and no amino acids/TAG/ketones, the RH predecessor produces 6e-8 mol CO₂ **and** 2e-8 mol lactate, with final glucose zero. Carbon increases from 6e-8 to 1.2e-7 mol. With O₂ sufficient for half the glucose, carbon increases from 6e-8 to 9e-8 mol. Pure anaerobic and adequate-glucose control cases conserve glucose carbon. The original failing probes and source/library/state hashes are retained in `data/derived/audits/substrate-source-0fjrdy1l`.
+
+`scripts/build_biogears_substrate_variant.py` creates `whole_body_integrity_substrate_availability` over `whole_body_integrity_evaporation_humidity`. Its single equation change computes anaerobic available glucose as current mass divided by glucose molar mass. No stoichiometry, rate, hormone gain, clipping rule or canonical default changes. The build verifies every inherited object hash, replaces only the Tissue object, relinks, and preserves the donor and predecessor bytes.
+
+Library SHA-256: `429c63730b3be08b8cf158b16c34817185424cadf7a240abdcd49b4b98d687f7`. Parent SHA-256: `ab485812968b17e16915b04a6e5144bb1e1ec7f5bf78213936c3334d087c0a5a`. Complete commands and receipts are in `data/runtime/physiology/variants/whole_body_integrity_substrate_availability/manifest.json`.
+
+## Independent native reaction ledger
+
+`scripts/verify_native_substrate_integrity.py` measures actual mass changes, CO₂ and lactate products, and the native fatigue-derived energy deficit after resetting its averaging accumulator. Six cases cover aerobic depletion, mixed aerobic/anaerobic depletion, no O₂, adequate glucose, scarce amino acids/TAG, and scarce O₂ with amino acids/TAG. Each case reloads the frozen state; source demand and controlled pools are explicit. The test narrows the tissue list to one nonbrain compartment, so its requested energy is 80% of basal interval energy; this is a branch fixture, not a whole-body simulation.
+
+The independently reconstructed source energy is `686 * aerobic_glucose + 2 * ATP_energy * anaerobic_glucose + 387.189 * AA_used + 7554 * TAG_used` kcal, with reaction extents in mol. ATP energy is read from native configuration (12.4282982791587 kcal/mol in this state). O₂ consumption is checked against `6 * aerobic_glucose + 1.875 * AA_used + 72.5 * TAG_used`. Native accounted energy is reconstructed from requested basal interval energy and the actual emitted fatigue fraction. Both ledgers match to 1e-12 absolute tolerance; fixed glucose carbon closes to 1e-12 mol. These tolerances are numerical branch checks, not physiological accuracy bounds. They do not constitute a complete elemental oxygen/hydrogen balance: water is not tracked in these source reactions.
+
+The 33 acceptance checks pass, including the predecessor's expected carbon failure and exact equality of unaffected control branches. In the ample-O₂ depletion case the corrected result is 6e-8 mol CO₂ and zero lactate. In the half-O₂ case it is 3e-8 mol CO₂ plus 1e-8 mol lactate. Initial and final one-hour exercise state copies, compiled probe, and dependency hashes are retained with the reports.
+
+## Remaining source limitations
+
+The TAG shortage branch at line 1274 compares moles with grams, but this audit did not demonstrate an active whole-pool deletion defect: `localHormoneFactor` is clamped to [-2,0], giving a rate multiplier at most .001; the held TAG molar mass is 807.339 g/mol, so the problematic expression does not select full deletion for positive pools. No TAG equation is changed.
+
+The amino-acid source assumes alanine for heat of combustion but uses 1.5 CO₂ and 0.5 urea per amino-acid molecule. Under a literal three-carbon alanine interpretation this leaves one carbon unaccounted for. The expanded native ledger records actual urea production and total carbon residual separately, rather than certifying this lumped pathway as atom-balanced. The glucose correction neither resolves nor conceals that remaining model assumption.
+
+Hepatic.cpp:347–355 converts all available liver extracellular lactate to glucose each call at the source tuning factor of one, with no ATP or O₂ debit; the source itself notes the unresolved energetic cost. This is a separate missing pathway cost, not justification to invent a calibrated Cori-cycle rate. Likewise, blood pH depends on CO₂ and strong-ion chemistry. The parallel electrolyte audit owns the meal sodium/counterion question. Removing fictitious glucose-derived lactate alone cannot certify either acid–base control or normal glycemia.
+
+## Inheritance and replay scope
+
+`data/derived/audits/substrate-inheritance-f850b_y0/verification.json` records GI 6, renal 20, dry-GI 11, energy 15 and depletion 5 passing checks. The retained thermal inheritance harness deliberately omits historical cross-variant rest equality because thermal laws differ; its branch, demand/stop, downstream-store and 1205-second depletion assertions remain. Harness substitutions and all original verifier hashes are retained.
+
+The next numerical comparison uses the identical frozen 3600-second exercise state and both libraries for a short continuation, keeping its already accumulated abnormal chemistry intact. It cannot retroactively validate or repair the preceding hour. A full matched hour starting from one frozen initial state is required before attributing changes in hypoglycemia, lactate or pH to this correction; canonical defaults remain root-owned and unchanged by this work.
+
+The completed paired continuation is `data/derived/audits/substrate-replay-t8cmviiu/report.json`. All seven reported samples (0–60 s at 10 s intervals) are exactly equal across libraries for aortic glucose/lactate, arterial pH, total metabolic rate and muscle glycogen. Glucose rises from 48.6828 to 49.5633 mg/dL, lactate rises from 65.1418 to 65.3629 mg/dL, and pH changes from 7.32335 to 7.32447. This probe therefore provides **no evidence that the correction improves the existing one-hour abnormalities**. Serialized output byte hashes differ and are retained; sample equality is not a claim of byte-identical full state. The driver now accepts an explicit `--state` for independently frozen earlier intervention-state replays.
+
+The final expanded reaction report is `data/derived/audits/substrate-integrity-7g17hof9/report.json` (33 checks). For the scarce-AA/TAG fixture, actual urea production is `4.999999999536625e-10 mol`; total reaction carbon has `-1.0000000000463443e-9 mol` residual under the literal alanine carbon count, while the glucose-specific carbon residual is `1.99e-23 mol`. The source energy ledger differs from native accounted energy by `5.00e-20 kcal`. These separate values prevent the glucose fix from being mistaken for a complete atomic or physiological validation.
