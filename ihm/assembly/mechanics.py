@@ -62,7 +62,7 @@ class BodyMechanics:
         self.mass=np.array([e['mass_kg'] for e in self.specs])
         self.inertia=np.array([e['inertia_diagonal_kg_m2'] for e in self.specs])
         if (self.mass<=0).any() or (self.inertia<=0).any():raise ValueError('Positive mass and inertia required')
-        self.time=0.;self.work=0.;self.dissipation=0.;self.affine_work=0.;self._soft_energy=0.
+        self.time=0.;self.work=0.;self.dissipation=0.;self.affine_work=0.;self._soft_energy=0.;self.prescribed_work=0.
         self.links=[]
         stiffness=np.zeros(n)
         for link in payload['links']:
@@ -108,13 +108,27 @@ class BodyMechanics:
         self._k=(j.T@sparse.diags(ks)@j).tocsc();self._c=(j.T@sparse.diags(cs)@j).tocsc()
         self._solvers={}
 
-    def _advance(self,h,forces,torques):
-        key=round(h,12)
+    def _advance(self,h,forces,torques,prescribed=None):
+        prescribed={} if prescribed is None else prescribed
+        fixed=tuple(sorted(prescribed));key=(round(h,12),fixed)
         if key not in self._solvers:
-            self._solvers[key]=factorized((sparse.diags(self.mass)+h*self._c+h*h*self._k).tocsc())
+            matrix=(sparse.diags(self.mass)+h*self._c+h*h*self._k).tocsc()
+            free=np.array([i for i in range(len(self.ids)) if i not in prescribed],int)
+            solve=factorized(matrix[free][:,free].tocsc()) if len(free) else None
+            coupling=matrix[free][:,list(fixed)]
+            self._solvers[key]=(matrix,free,coupling,solve)
         # f already includes -Cv. Solve a velocity increment so damping is
         # counted once. Linearized backward Euler: (M+hC+h²K)dv=h(f-hKv).
-        dv=self._solvers[key](h*(forces-h*(self._k@self.v)))
+        matrix,free,coupling,solve=self._solvers[key]
+        rhs=h*(forces-h*(self._k@self.v));dv=np.zeros_like(self.v)
+        if fixed:
+            ix=list(fixed)
+            targets=np.array([prescribed[i] for i in fixed])
+            dv[ix]=(targets-self.x[ix])/h-self.v[ix]
+            if len(free):dv[free]=solve(rhs[free]-coupling@dv[ix])
+        else:dv=solve(rhs)
+        self.prescribed_reactions=np.zeros_like(self.x)
+        if fixed:self.prescribed_reactions[ix]=(matrix@dv-rhs)[ix]/h
         self.v+=dv;self.x+=h*self.v
         self.orientation_reactions=-torques
 
@@ -128,9 +142,9 @@ class BodyMechanics:
 
     def _soft_solve(self,drivers,activations):
         energy=0.;pressure_reactions={};material_residual=0.
-        volume=drivers.get('volume_ratios',{});pressure=drivers.get('pressure_pa',{})
-        changed=set(volume)|set(pressure)|{id for id,a in activations.items() if a}|self._soft_previous
-        self._soft_previous=set(volume)|set(pressure)|{id for id,a in activations.items() if a}
+        volume=drivers.get('volume_ratios',{});pressure=drivers.get('pressure_pa',{});gradients=drivers.get('deformation_gradients',{})
+        changed=set(volume)|set(pressure)|set(gradients)|{id for id,a in activations.items() if a}|self._soft_previous
+        self._soft_previous=set(volume)|set(pressure)|set(gradients)|{id for id,a in activations.items() if a}
         for id in changed:
             i=self.index[id];e=self.specs[i]
             if e['constitutive']=='rigid':raise ValueError('Soft boundary requires a deformable entity')
@@ -167,9 +181,11 @@ class BodyMechanics:
                 q=(lo+hi)/2
             axis=np.asarray(e['fiber_axis']);axial=np.outer(axis,axis)
             f=ratio**(1/3)*(math.exp(q)*axial+math.exp(-q/2)*(np.eye(3)-axial))
+            if e['id'] in gradients:
+                f=np.asarray(gradients[e['id']],float);ratio=float(np.linalg.det(f))
             self.deformation[i]=f
             w,piola=neo_hookean(f,mu,lam);energy+=w*e.get('material_volume_m3',e['volume_m3'])
-            if e['id'] in volume or e['id'] in pressure:
+            if e['id'] in volume or e['id'] in pressure or e['id'] in gradients:
                 sigma=piola@f.T/ratio
                 pressure_reactions[e['id']]=float(np.trace(sigma)/3)
                 if p:material_residual=max(material_residual,abs(float(np.trace(sigma)/3)-p))
@@ -180,15 +196,23 @@ class BodyMechanics:
         dt=float(dt);drivers={} if drivers is None else drivers
         if not isinstance(drivers,dict):raise ValueError('Drivers must be an object')
         if not math.isfinite(dt) or not 0<dt<=1:raise ValueError('dt must be in (0,1] seconds')
-        allowed={'activation','volume_ratios','pressure_pa','external_forces_n'}
+        allowed={'activation','volume_ratios','pressure_pa','external_forces_n','prescribed_translations_m','deformation_gradients'}
         if set(drivers)-allowed:raise ValueError('Unknown mechanics driver')
         for key,value in drivers.items():
             if not isinstance(value,dict):raise ValueError('Driver maps must be objects')
-        for key in ['volume_ratios','pressure_pa','external_forces_n']:
+        for key in ['volume_ratios','pressure_pa','external_forces_n','prescribed_translations_m','deformation_gradients']:
             if set(drivers.get(key,{}))-set(self.ids):raise ValueError('Unknown canonical entity')
         # Validate all boundary maps before any state, energy or time mutation.
-        volumes=drivers.get('volume_ratios',{});pressures=drivers.get('pressure_pa',{})
+        volumes=drivers.get('volume_ratios',{});pressures=drivers.get('pressure_pa',{});gradients=drivers.get('deformation_gradients',{})
         if set(volumes)&set(pressures):raise ValueError('Choose volume or pressure boundary per tissue')
+        if set(gradients)&(set(volumes)|set(pressures)):raise ValueError('Choose a single affine, volume or pressure boundary per tissue')
+        for id,value in gradients.items():
+            f=np.asarray(value,float)
+            if self.specs[self.index[id]]['constitutive']=='rigid':raise ValueError('Cannot prescribe rigid body deformation')
+            if f.shape!=(3,3) or not np.isfinite(f).all() or not .25<=float(np.linalg.det(f))<=4:raise ValueError('Finite positive deformation with determinant .25..4 required')
+        for value in drivers.get('prescribed_translations_m',{}).values():
+            vector=np.asarray(value,float)
+            if vector.shape!=(3,) or not np.isfinite(vector).all():raise ValueError('Expected finite prescribed translation vector')
         for id,value in volumes.items():
             if isinstance(value,bool) or not math.isfinite(float(value)) or not .25<=float(value)<=4:raise ValueError('Invalid finite volume ratio')
             if self.specs[self.index[id]]['constitutive']=='rigid':raise ValueError('Cannot deform rigid body')
@@ -215,13 +239,15 @@ class BodyMechanics:
         soft_energy,pressures,pressure_residual=self._soft_solve(drivers,activations)
         self.affine_work+=soft_energy-self._soft_energy;self._soft_energy=soft_energy
         nstep=max(1,math.ceil(dt/self.max_substep));h=dt/nstep
+        prescribed={self.index[id]:self.x0[self.index[id]]+np.asarray(vec,float) for id,vec in drivers.get('prescribed_translations_m',{}).items()}
+        prescribed_start={i:self.x[i].copy() for i in prescribed}
         ext=np.zeros_like(self.x)
         for id,vec in drivers.get('external_forces_n',{}).items():
             vec=np.asarray(vec,float)
             if vec.shape!=(3,) or not np.isfinite(vec).all():raise ValueError('Expected finite force vector')
             ext[self.index[id]]=vec
         residual=torque_residual=0.;link_energy=0.;forces_by_muscle={}
-        for _ in range(nstep):
+        for substep in range(nstep):
             forces=np.zeros_like(self.x);torques=np.zeros_like(self.x);link_energy=0.;active_power=0.;damping_power=0.
             # Vectorized point attachments retain the same force-gradient law.
             def arms(index,offset):
@@ -252,10 +278,13 @@ class BodyMechanics:
             residual=max(residual,float(np.linalg.norm(forces.sum(axis=0))))
             torque_residual=max(torque_residual,float(np.linalg.norm((np.cross(self.x,forces)+torques).sum(axis=0))))
             # Reference orientations are constrained; holding moments are output.
-            self._advance(h,forces+ext,torques)
+            boundary={i:prescribed_start[i]+(target-prescribed_start[i])*(substep+1)/nstep for i,target in prescribed.items()}
+            self._advance(h,forces+ext,torques,boundary)
             velocity=self.v[self._seg_a]-self.v[self._seg_b]
             active_power=float(np.sum(active[self._seg_m,None]*direction*velocity))
-            self.work+=h*(active_power+float(np.sum(ext*self.v)));self.dissipation+=h*damping_power
+            boundary_work=h*float(np.sum(self.prescribed_reactions*self.v))
+            self.prescribed_work+=boundary_work
+            self.work+=h*(active_power+float(np.sum(ext*self.v)))+boundary_work;self.dissipation+=h*damping_power
         self.time+=dt
         # Evaluate stored energy at returned positions, not the previous substep.
         delta=self.x[self._link_b]+arms(self._link_b,self._link_ob)-self.x[self._link_a]-arms(self._link_a,self._link_oa)
@@ -268,10 +297,13 @@ class BodyMechanics:
         return {'schema_version':1,'model_id':self.payload['model_id'],'time_s':self.time,
                 'entities':{id:{'translation_m':(self.x[i]-self.x0[i]).tolist(),'centroid_m':self.x[i].tolist(),'rotation_matrix':self.r[i].tolist(),'deformation_gradient':self.deformation[i].tolist()} for i,id in enumerate(self.ids)},
                 'muscle_forces_n':forces_by_muscle,'pressure_reactions_pa':pressures,
+                'prescribed_reactions_n':{self.ids[i]:self.prescribed_reactions[i].tolist() for i in prescribed},
                 'orientation_reaction_torques_nm':{id:self.orientation_reactions[i].tolist() for i,id in enumerate(self.ids)},
                 'audit':{'internal_force_residual_n':residual,'internal_torque_residual_nm':torque_residual,
                          'elastic_energy_j':soft_energy+link_energy,'kinetic_energy_j':kinetic,
                          'accumulated_active_external_work_j':self.work,'accumulated_dissipation_j':self.dissipation,
+                         'accumulated_prescribed_boundary_work_j':self.prescribed_work,
+                         'dirichlet_position_residual_m':max((float(np.linalg.norm(self.x[i]-target)) for i,target in prescribed.items()),default=0.),
                          'prescribed_affine_boundary_work_j':self.affine_work,'energy_balance_residual_j':soft_energy+link_energy+kinetic+self.dissipation-self.work-self.affine_work,
                          'pressure_equilibrium_residual_pa':pressure_residual,'substeps':nstep,
                          'numerical_scope':'force/torque cancellation; affine boundary work equals quasistatic elastic energy change; dynamic work and dissipation use discrete quadrature; energy residual includes implicit numerical damping',
