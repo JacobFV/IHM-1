@@ -1,12 +1,25 @@
 # Shared systemic experiments and canonical projection
 
-2026-09-05. `human.materialize('body-systemic', ...)` constructs an evidence-bound native experiment. Rest, matched hydration, mixed meal, apnea/restoration, exercise/recovery and mixed-meal/exercise protocols use one continuing physiological state per condition. The default corrected source variant is `whole_body_integrity_renal`. Samples retain source identities, native units, exact action times, required-store checks, and state checkpoints.
+2026-09-05. `human.materialize('body-systemic', ...)` constructs an evidence-bound native experiment. Rest, matched hydration, mixed meal, apnea/restoration, exercise/recovery and mixed-meal/exercise protocols use one continuing physiological state per condition. The default corrected source variant is `whole_body_integrity_gi_water`. Samples retain source identities, native units, exact action times, required-store checks, and state checkpoints. Exercise acceptance remains under a separate native energy audit; a protocol being executable does not establish physiological fidelity.
 
 Source hashes are captured before execution. A causal comparison requires identical initial state, native library, executable, resolved dependencies, timestep and executing-source identities, equal initial observations, matching sample clocks, and equal observations before the first differing intervention. Empty collections and unpaired interventions cannot report a successful causal contrast. Required stomach and glycogen/protein/fat stores cannot pass by being null; negative stores remain explicit failures. These checks do not establish global elemental or energy conservation.
 
+Input bytes are copied into each experiment's `inputs/` tree and bound by
+`frozen-sources.json`. Historical results therefore retain their actual source
+code, executable, variant library and initial state when current development
+changes those files. Altered archive bytes are rejected; an unarchived stale
+input is still rejected. The original executing-source identities remain in the
+record. Display projection has its own current code/anatomy identities. This
+separates reproducible historical execution from the projection that displays it.
+
+Default display publication also requires a passed matched-contrast report
+bound to the exact input result hashes. It recomputes those contrast checks,
+writes immutable display records, and updates the index only after all requested
+projections succeed. Failed runs remain available on disk as research evidence.
+
 The mixed meal contains 60 g carbohydrate, 20 g protein, 20 g fat, 1 g sodium, 300 mg calcium and 500 mL water. Its hydration control receives the same water and electrolytes. This separates a macronutrient perturbation from that added fluid/electrolyte input. The shared initial state already contains source stomach water/electrolytes and is not described as an empty gut. Six-hour runs preserve the native 0.02 s timestep and sample every 30 s. Glucose, insulin synthesis and glycogen contrasts require changes after intervention; their magnitudes are execution evidence, not fitted human response curves.
 
-The three-minute respiratory pair samples at 10 Hz. Apnea is applied at 30 s and removed at 90 s. Native output shows a maximum between-condition lung-volume difference of 737.112 mL and arterial CO2 pressure difference of 6.17523 mmHg. Required local stores remain present and nonnegative. Raw traces, actions, states, manifests and contrasts are under `data/derived/systemic/respiratory_v2/`.
+The three-minute respiratory pair samples at 10 Hz. Apnea is applied at 30 s and removed at 90 s. Native output shows a maximum between-condition lung-volume difference of 737.112 mL and arterial CO2 pressure difference of 6.17523 mmHg. Required local stores remain present and nonnegative. Raw traces, actions, states, manifests and contrasts are under `data/derived/systemic/respiratory_v3/`.
 
 ## One-body inspection
 
@@ -19,15 +32,23 @@ Actual sampled variables also produce finite-window Laplace transforms and Hann 
 ```sh
 OPENBLAS_NUM_THREADS=1 .venv/bin/python scripts/build_systemic_experiments.py \
   --protocols rest apnea --seconds 180 --sample-interval .1 \
-  --output data/derived/systemic/respiratory_v2
+  --output data/derived/systemic/respiratory_v3
 OPENBLAS_NUM_THREADS=1 .venv/bin/python scripts/build_systemic_experiments.py \
   --protocols hydration meal --seconds 21600 --sample-interval 30 \
-  --output data/derived/systemic/six_hour_v2 --workers 2
+  --output data/derived/systemic/six_hour_v3 --workers 2
 OPENBLAS_NUM_THREADS=1 .venv/bin/python scripts/build_systemic_display.py \
-  data/derived/systemic/respiratory_v2/rest data/derived/systemic/respiratory_v2/apnea
+  data/derived/systemic/respiratory_v3/rest data/derived/systemic/respiratory_v3/apnea
 OPENBLAS_NUM_THREADS=1 .venv/bin/python scripts/verify_systemic_projection.py
 ```
 
 These commands require fresh output directories for experiments. Completed canonical display records may be rebuilt from unchanged source experiments. An earlier six-hour attempt was explicitly interrupted for provenance correction, and a first respiratory run exposed a floating remaining-horizon comparison. Their partial data and failures are retained; neither is reported as completed evidence.
+
+The completed `six_hour_v2` pair failed because depleted stomach sodium became
+an invalid scalar. Its native macronutrient perturbation produced maximum
+between-condition differences of 9.73913 mg/dL aortic glucose, 1.75324 pmol/min
+insulin synthesis and 18.1011 g liver glycogen, but the failed local-store check
+prevents publication as an accepted default experiment. The dry-gut correction
+preserves verified depletion as zero and unknown inputs as unknown; it also fixes
+zero-water division and carrier-availability defects, with native branch tests.
 
 Unresolved biology remains substantial: swallowing, peristalsis and enteric control, enzymatic compartments and bile, intestinal lipid lymph transport, incretins, colon/microbiome/stool, independently calibrated macro digestion kinetics, exact elemental budgets, individual phrenic anatomy, and force/work exchange with whole-body mechanics. Native physiology implements coupled reduced mechanisms; it is not yet a complete calibrated human.

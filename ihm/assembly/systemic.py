@@ -14,7 +14,7 @@ class SystemicConfig:
     protocol: str = 'rest'
     seconds: float = 21600
     sample_interval_s: float = 30
-    engine_variant: str = 'whole_body_integrity_renal'
+    engine_variant: str = 'whole_body_integrity_gi_water'
     state_path: str | Path = BASE/'data/derived/canonical/native_baseline_v1/states/native_stabilized.xml'
 
     def __post_init__(self):
@@ -83,7 +83,7 @@ def run_systemic(root, output_dir, config=None, **options):
     if out.exists() and any(out.iterdir()):
         raise ValueError('Systemic experiment requires a fresh output directory')
     out.mkdir(parents=True, exist_ok=True)
-    sources = ['ihm/assembly/systemic.py', 'ihm/native/session.py', 'scripts/native_body_ports.h',
+    sources = ['ihm/assembly/systemic.py', 'ihm/assembly/systemic_evidence.py', 'ihm/native/session.py', 'ihm/native/__init__.py', 'scripts/native_body_ports.h',
                'scripts/native_biogears_stream.cpp', 'data/runtime/physiology/native_biogears_stream']
     from ihm.native import RUNTIME
     library=(RUNTIME/'biogears-build/outputs/Release/lib' if config.engine_variant=='upstream'
@@ -91,6 +91,8 @@ def run_systemic(root, output_dir, config=None, **options):
     sources.extend([str(library.relative_to(root)), str(Path(config.state_path).resolve().relative_to(root))])
     source_hashes={p:_sha(root/p) for p in sources}
     (out/'source_receipts.json').write_text(json.dumps(source_hashes,indent=2)+'\n')
+    from .systemic_evidence import freeze_sources
+    freeze_sources(root,out,source_hashes)
     events = protocol_events(config)
     total, stride = round(config.seconds*50), round(config.sample_interval_s*50)
     schedule = {round(e['time_s']*50): e for e in events}

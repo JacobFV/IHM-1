@@ -17,7 +17,8 @@ import xml.etree.ElementTree as ET
 from . import BASE, RUNTIME, SOURCE_REVISION, available_patients, number, _sha
 
 VARIANTS = ('upstream', 'saturation_bounds', 'saturation_bounds_heatflux',
-            'saturation_bounds_heatflux_thermal_units', 'whole_body_integrity', 'whole_body_integrity_renal')
+            'saturation_bounds_heatflux_thermal_units', 'whole_body_integrity', 'whole_body_integrity_renal',
+            'whole_body_integrity_gi_water')
 
 
 def runtime_patient(patient):

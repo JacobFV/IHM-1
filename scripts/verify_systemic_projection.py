@@ -4,6 +4,7 @@ from pathlib import Path
 import tempfile
 import numpy as np
 from ihm.assembly.systemic_projection import project_systemic
+from ihm.assembly.systemic_evidence import resolve_sources
 from ihm.app.experiments import read_experiment
 
 root=Path(__file__).resolve().parents[1]
@@ -23,6 +24,7 @@ assert np.ptp(steady)<1e-6 and np.ptp(recovered)>.001
 # A deliberately sparse *observational* reduction must never invent chest cycles.
 source=next(root/p for p in rest['runtime_sources'] if p.endswith('/rest/systemic.json'))
 coarse=json.loads(source.read_text())
+coarse['runtime_sources']=resolve_sources(root,source.parent,coarse['runtime_sources'])
 coarse['frames']=coarse['frames'][::300]
 coarse['configuration']['sample_interval_s']=30
 temp=Path(tempfile.mkdtemp(prefix='projection-',dir=root/'data/derived/audits'))/'coarse.json'

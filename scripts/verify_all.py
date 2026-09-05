@@ -18,12 +18,15 @@ commands += [[sys.executable,'scripts/'+name] for name in ['verify_canonical_ana
 commands += [[sys.executable,'scripts/'+name] for name in ['verify_body_contracts.py','verify_body_cosimulation.py','verify_body_respiration.py','verify_body_peripheral.py','verify_body_integration.py','verify_native_respiratory_port.py','verify_ibm_body_parity.py']]
 commands += [[sys.executable,'scripts/'+name] for name in ['verify_ibm_causal.py','verify_body_details.py','verify_body_hair.py','verify_body_vascular.py','verify_body_contact.py','verify_body_touch.py','verify_body_transport.py','verify_body_skin_electric.py','verify_body_projection.py','verify_reference_mechanics.py']]
 commands += [[sys.executable,'scripts/'+name] for name in ['verify_kidney_microstructure.py','verify_microstructure_binding.py','verify_experiment_binding.py','verify_reference_contact.py']]
-commands += [[sys.executable,'scripts/'+name] for name in ['verify_clothing.py','verify_material_domains.py','verify_contact_dynamics.py','verify_body_reflexes.py','verify_textile.py','verify_systemic_experiments.py','verify_systemic_projection.py']]
+commands += [[sys.executable,'scripts/'+name] for name in ['verify_clothing.py','verify_material_domains.py','verify_contact_dynamics.py','verify_body_reflexes.py','verify_textile.py','verify_systemic_experiments.py','verify_systemic_evidence.py','verify_systemic_projection.py']]
 if args.native:
- commands += [[sys.executable,'scripts/'+name] for name in ['verify_native_session.py','verify_native_locomotion.py','verify_native_gi_integrity.py','verify_native_renal_integrity.py','verify_native_dry_gi.py']]
+ commands += [[sys.executable,'scripts/'+name] for name in ['verify_native_session.py','verify_native_locomotion.py','verify_native_scone.py','verify_native_gi_integrity.py','verify_native_renal_integrity.py','verify_native_dry_gi.py']]
 if args.plan:
  print(json.dumps(commands,indent=2));raise SystemExit(0)
-results=[];out=root/'artifacts/verification';out.mkdir(parents=True,exist_ok=True)
+results=[];reports=root/'artifacts/verification';reports.mkdir(parents=True,exist_ok=True)
+out=reports/f'run-{time.time_ns()}';out.mkdir()
+if (reports/'report.json').exists():
+ (out/'previous-report.json').write_bytes((reports/'report.json').read_bytes())
 server=None
 env=os.environ.copy()
 if args.app:
@@ -36,6 +39,8 @@ for i,command in enumerate(commands):
  log=out/f'{i:02d}.log';log.write_text(run.stdout)
  result=dict(command=command,returncode=run.returncode,elapsed_s=time.time()-start,log=str(log.relative_to(root)))
  results.append(result);print(('PASS' if run.returncode==0 else 'FAIL')+' '+' '.join(command),flush=True)
- (out/'report.json').write_text(json.dumps(dict(all_passed=all(x['returncode']==0 for x in results),results=results),indent=2)+'\n')
+ report=json.dumps(dict(all_passed=all(x['returncode']==0 for x in results),results=results),indent=2)+'\n'
+ (out/'report.json').write_text(report)
+ (reports/'report.json').write_text(report)
 if server:server.shutdown();server.server_close()
 sys.exit(int(any(x['returncode'] for x in results)))

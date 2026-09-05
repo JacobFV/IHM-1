@@ -5,6 +5,7 @@ import numpy as np
 from ihm.native import _sha
 from ihm.temporal import finite_laplace, spectral_estimate
 from .respiration import BodyRespiration
+from .systemic_evidence import resolve_sources
 
 ALIASES={'heart_rate_per_min':'HeartRate(1/min)', 'mean_arterial_pressure_mmhg':'MeanArterialPressure(mmHg)',
          'lung_volume_ml':'TotalLungVolume(mL)', 'arterial_co2_mmhg':'ArterialCarbonDioxidePressure(mmHg)',
@@ -43,8 +44,7 @@ def accepted_systemic_sources(root, path):
 def project_systemic(root, path):
     root, path=Path(root).resolve(),Path(path).resolve()
     data=json.loads(path.read_text())
-    for source,expected in data['runtime_sources'].items():
-        if _sha(root/source)!=expected:raise ValueError('Systemic source changed: '+source)
+    retained_sources=resolve_sources(root,path.parent,data['runtime_sources'])
     t=np.array([frame['time_s'] for frame in data['frames']])
     dt=float(np.median(np.diff(t))) if len(t)>1 else float('nan')
     if len(t)<4 or not np.isfinite(t).all() or dt<=0 or not np.allclose(np.diff(t),dt,rtol=1e-8,atol=1e-8):
@@ -91,8 +91,8 @@ def project_systemic(root, path):
         variables.append(dict(name=name,unit=data['fields'][name]['unit'],removed_sample_mean=mean,
             psd=spectral_estimate(x,1/dt,nperseg=min(len(x),512)),
             laplace_real=laplace.real.tolist(),laplace_imag=laplace.imag.tolist()))
-    sources={**data['runtime_sources'],str(path.relative_to(root)):_sha(path)}
-    for source in ('ihm/assembly/systemic_projection.py','ihm/assembly/respiration.py','ihm/temporal/spectra.py',
+    sources={**retained_sources,str(path.relative_to(root)):_sha(path)}
+    for source in ('ihm/assembly/systemic_projection.py','ihm/assembly/systemic_evidence.py','ihm/assembly/respiration.py','ihm/temporal/spectra.py',
                    'data/derived/canonical/anatomy.json','data/derived/canonical/respiration.json'):
         sources[source]=_sha(root/source)
     return dict(schema='ihm.systemic-display.v1',model_id='ihm-body',has_body_projection=dense,
@@ -102,7 +102,7 @@ def project_systemic(root, path):
                            coupling_mode='native observation → reduced thoracic projection' if dense else 'chemical observation; geometry at reference',
                            playback='finite computed record; no interpolated or invented cycles'),
                 mechanism_edges=data['mechanism_edges'],actions=data['actions'],native_manifest=data['native_manifest'],
-                runtime_sources=sources,summary=data['summary'],checks=data['checks'],
+                runtime_sources=sources,executing_sources=data['runtime_sources'],summary=data['summary'],checks=data['checks'],
                 spectra=dict(frequency_hz=frequency.tolist(),sigma_per_s=sigma.tolist(),variables=variables,
                              convention='s = sigma + 2 pi i f; finite trapezoidal integral of mean-subtracted signal',
                              unit='signal unit times seconds',interpretation='Finite-window descriptors, not physiological poles or identified causal transfer functions'),

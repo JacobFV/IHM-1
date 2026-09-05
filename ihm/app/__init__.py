@@ -35,7 +35,8 @@ class Jobs:
         for name,label in [('saturation_bounds','Saturation bounds correction'),('saturation_bounds_heatflux','Bounds and evaporation telemetry corrections'),
                            ('saturation_bounds_heatflux_thermal_units','Thermal dimensional correction'),
                            ('whole_body_integrity','Calcium transfer integrity correction'),
-                           ('whole_body_integrity_renal','Calcium and renal transfer integrity corrections')]:
+                           ('whole_body_integrity_renal','Calcium and renal transfer integrity corrections'),
+                           ('whole_body_integrity_gi_water','Calcium, renal and dry-gut integrity corrections')]:
             directory=RUNTIME/'variants'/name;manifest=directory/'manifest.json';library=directory/'libbiogears.so.8.0.0'
             if manifest.is_file() and library.is_file():
                 metadata=read_json(manifest)
@@ -47,7 +48,7 @@ class Jobs:
                 else:matches=cached[1]
                 variants.append(dict(id=name,label=label,available=matches,status='local source patch; execution regression checked, not independent clinical validation',scope=metadata['scope'],library_sha256=metadata['library_sha256']))
         available={v['id'] for v in variants if v['available']}
-        preferred=next(name for name in ('whole_body_integrity_renal','whole_body_integrity','saturation_bounds_heatflux_thermal_units','saturation_bounds_heatflux','upstream') if name in available)
+        preferred=next(name for name in ('whole_body_integrity_gi_water','whole_body_integrity_renal','whole_body_integrity','saturation_bounds_heatflux_thermal_units','saturation_bounds_heatflux','upstream') if name in available)
         return {'available':(RUNTIME/'native_biogears_rest').is_file(),'patients':available_patients(),'runs':runs,'engine_variants':variants,'default_engine_variant':preferred,
                 'limits':{'max_seconds':600,'max_pending':4,'parallel_runs':1}}
     def submit(self,data,canonical=False):
