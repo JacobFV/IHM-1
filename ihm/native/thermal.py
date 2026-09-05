@@ -5,13 +5,28 @@ its thermal equations. A context-managed boundary substitution implements the
 paper's total-resistance inputs; it is identified separately from source defaults.
 """
 from pathlib import Path
-import contextlib,hashlib,importlib.util,json,sys,threading
+import contextlib,hashlib,importlib.util,json,subprocess,sys,threading
 import numpy as np
 
 REVISION='3c74ee2af2f79aa360093cc517e38bf465ec8c5b'
 SOURCE_URL='https://github.com/TanabeLab/JOS-3'
 BEDDING_DOI='10.1016/j.buildenv.2025.113074'
 _LOCK=threading.RLock()
+MAX_DURATION_S=604800
+MIN_STEP_S=.01
+MAX_STEP_S=3600
+MAX_STEPS=100000
+
+def thermal_clock(seconds,dt):
+    """Bound work and reject invalid clocks before constructing the source model."""
+    if any(isinstance(v,(bool,np.bool_)) or not isinstance(v,(int,float,np.integer,np.floating)) or not np.isfinite(v) for v in (seconds,dt)):
+        raise ValueError('duration and timestep must be finite numbers, not booleans')
+    if not 0<seconds<=MAX_DURATION_S or not MIN_STEP_S<=dt<=MAX_STEP_S:
+        raise ValueError('duration must be in (0, 604800] s; timestep in [0.01, 3600] s')
+    steps=round(seconds/dt)
+    if not 1<=steps<=MAX_STEPS or abs(seconds/dt-steps)>1e-9:
+        raise ValueError('duration must contain an integer 1..100000 timesteps')
+    return steps
 
 def total_resistance(total_insulation_clo):
     value=np.asarray(total_insulation_clo,float)
@@ -22,20 +37,29 @@ def total_resistance(total_insulation_clo):
 def heat_step_audit(capacity,transfer,boundary,operative,heat,old,new,dt):
     """Exact backward-Euler ledger; transfer[i,j] is heat into i from j (W/K)."""
     c,w,b,to,q,t0,t1=map(lambda x:np.asarray(x,float),(capacity,transfer,boundary,operative,heat,old,new))
+    if c.ndim!=1 or not c.size:raise ValueError('nonempty one-dimensional heat capacities required')
     n=len(c)
-    if dt<=0 or not np.isfinite(dt) or w.shape!=(n,n) or any(x.shape!=(n,) for x in [b,to,q,t0,t1]) or not all(np.isfinite(x).all() for x in [c,w,b,to,q,t0,t1]) or (c<=0).any():raise ValueError('invalid finite heat system')
-    k=np.diag(w.sum(axis=1))-w
-    storage=c*(t1-t0)/dt
-    boundary_heat=b*(to-t1)
-    residual=storage+k@t1-boundary_heat-q
-    return dict(heat_balance_residual_W=float(abs(storage.sum()-boundary_heat.sum()-q.sum())),
-        node_equation_residual_max_W=float(abs(residual).max()),internal_column_sum_max_W_K=float(abs(k.sum(axis=0)).max()),
-        storage_W=float(storage.sum()),boundary_heat_into_body_W=float(boundary_heat.sum()),net_metabolic_minus_evaporative_respiratory_W=float(q.sum()))
+    if dt<=0 or not np.isfinite(dt) or w.shape!=(n,n) or any(x.shape!=(n,) for x in [b,to,q,t0,t1]) or not all(np.isfinite(x).all() for x in [c,w,b,to,q,t0,t1]) or (c<=0).any() or (w<0).any() or (b<0).any():raise ValueError('invalid finite heat system')
+    with np.errstate(over='raise',invalid='raise',divide='raise'):
+        k=np.diag(w.sum(axis=1))-w
+        storage=c*(t1-t0)/dt
+        boundary_heat=b*(to-t1)
+        residual=storage+k@t1-boundary_heat-q
+        result=dict(heat_balance_residual_W=float(abs(storage.sum()-boundary_heat.sum()-q.sum())),
+            node_equation_residual_max_W=float(abs(residual).max()),internal_column_sum_max_W_K=float(abs(k.sum(axis=0)).max()),
+            storage_W=float(storage.sum()),boundary_heat_into_body_W=float(boundary_heat.sum()),net_metabolic_minus_evaporative_respiratory_W=float(q.sum()))
+    if not np.isfinite(list(result.values())).all():raise FloatingPointError('nonfinite heat ledger')
+    return result
 
 def load_source(root):
     root=Path(root);folder=root/'data/raw/thermal/JOS-3'
     metadata=json.loads((root/'data/raw/thermal/source.json').read_text())
     if metadata['revision']!=REVISION:raise ValueError('unexpected JOS-3 revision')
+    actual=subprocess.check_output(['git','-C',str(folder),'rev-parse','HEAD'],text=True).strip()
+    changed=subprocess.check_output(['git','-C',str(folder),'status','--porcelain','--untracked-files=all'],text=True).strip()
+    if actual!=REVISION or changed:raise ValueError('JOS-3 checkout must be clean at the pinned revision')
+    required={str(p.relative_to(folder)) for p in (folder/'src/jos3').glob('*.py')}|{'LICENSE','README.md'}
+    if set(metadata['source_sha256'])!=required:raise ValueError('incomplete JOS-3 source hash inventory')
     for relative,expected in metadata['source_sha256'].items():
         if hashlib.sha256((folder/relative).read_bytes()).hexdigest()!=expected:raise ValueError('JOS-3 source changed: '+relative)
     name='jos3'
@@ -43,17 +67,21 @@ def load_source(root):
     if name not in sys.modules:
         spec=importlib.util.spec_from_file_location(name,folder/'src/jos3/__init__.py',submodule_search_locations=[str(folder/'src/jos3')])
         module=importlib.util.module_from_spec(spec);sys.modules[name]=module;spec.loader.exec_module(module)
-    return sys.modules[name],metadata
+    # Keep historical acquisition/artifact provenance unchanged; identify this execution separately.
+    provenance={**metadata,'runtime_adapter_path':'ihm/native/thermal.py',
+        'runtime_adapter_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
+    return sys.modules[name],provenance
 
 @contextlib.contextmanager
 def bedding_boundary(package,total_insulation):
     """Paper Eq7/8 boundary, under a lock; original source functions restored."""
-    th=sys.modules[package.__name__+'.thermoregulation'];original=(th.dry_r,th.wet_r)
-    rt,ret=total_resistance(total_insulation)
-    th.dry_r=lambda *a,**kw:np.full(17,rt)
-    th.wet_r=lambda *a,**kw:np.full(17,ret)
-    try:yield
-    finally:th.dry_r,th.wet_r=original
+    with _LOCK:
+        th=sys.modules[package.__name__+'.thermoregulation'];original=(th.dry_r,th.wet_r)
+        rt,ret=total_resistance(total_insulation)
+        th.dry_r=lambda *a,**kw:np.full(17,rt)
+        th.wet_r=lambda *a,**kw:np.full(17,ret)
+        try:yield
+        finally:th.dry_r,th.wet_r=original
 
 PROFILES={
  'lying_default':dict(label='JOS-3 · lying · source default environment',paper=False),
@@ -63,7 +91,8 @@ PROFILES={
 }
 
 def run_thermal(root,profile='lying_default',seconds=3600,dt=30):
-    if profile not in PROFILES or not np.isfinite([seconds,dt]).all() or seconds<=0 or dt<=0 or abs(seconds/dt-round(seconds/dt))>1e-9:raise ValueError('invalid profile or exact timestep clock')
+    if not isinstance(profile,str) or profile not in PROFILES:raise ValueError('unknown thermal profile')
+    steps=thermal_clock(seconds,dt)
     with _LOCK:
         package,provenance=load_source(root);config=PROFILES[profile]
         model=package.JOS3(**(dict(height=1.68,weight=61.5,fat=15,age=20,sex='female',ci=2.59) if config['paper'] else {}),ex_output='all')
@@ -72,7 +101,7 @@ def run_thermal(root,profile='lying_default',seconds=3600,dt=30):
         initial=model._bodytemp.copy();history=[];audits=[];states=[initial.copy()];captured={}
         previous_profile=sys.getprofile()
         def observe(frame,event,arg):
-            if frame.f_code is model._run.__func__.__code__ and event=='return':
+            if frame.f_code is model._run.__func__.__code__ and event=='return' and arg is not None:
                 loc=frame.f_locals;c=model._cap;d=loc['dtime']
                 w=(loc['arr_bf']+loc['arr_cdt'])*c[:,None]/d
                 b=loc['arrB']*c/d;q=loc['arrQ']*c/d
@@ -84,7 +113,7 @@ def run_thermal(root,profile='lying_default',seconds=3600,dt=30):
         with context:
             try:
                 sys.setprofile(observe)
-                for _ in range(round(seconds/dt)):
+                for _ in range(steps):
                     model.simulate(1,dtime=dt);history.append(model._history[-1]);states.append(model._bodytemp.copy())
             finally:sys.setprofile(previous_profile)
         states=np.asarray(states);matrix=sys.modules[package.__name__+'.matrix']

@@ -1,9 +1,9 @@
 """Numerical and source-boundary checks, independent of clinical validation."""
 from pathlib import Path
-import sys,json
+import sys,json,hashlib,tempfile
 import numpy as np
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
-from ihm.native.thermal import total_resistance, heat_step_audit, run_thermal, load_source
+from ihm.native.thermal import total_resistance, heat_step_audit, run_thermal, load_source, bedding_boundary
 
 rt,ret=total_resistance(2.78)
 assert abs(rt-.4309)<1e-14 and abs(ret-rt/(.38*16.5))<1e-14
@@ -27,6 +27,18 @@ assert heat_step_audit(np.ones(3),cycle,np.zeros(3),np.zeros(3),np.zeros(3),old3
 # Nonconservative flow matrix must be diagnosed, never silently balanced.
 bad=w.copy();bad[0,1]=2
 assert heat_step_audit(c,bad,np.zeros(2),np.zeros(2),np.zeros(2),old,new,1.)['internal_column_sum_max_W_K']>0
+# Invalid clocks must fail before source import or model initialization.
+for seconds,dt in [(True,1),(1,True),(1e-300,30),(3600,1e-10),(604801,1),(3600,.01),(1,1.01),(1,float('inf'))]:
+    try:run_thermal(Path('/not-a-source-checkout'),seconds=seconds,dt=dt)
+    except ValueError:pass
+    else:raise AssertionError('invalid/unbounded thermal clock accepted')
+try:heat_step_audit([1],[[0]],[1],[0],[1e308],[0],[1e308],1e-300)
+except FloatingPointError:pass
+else:raise AssertionError('overflowed heat ledger accepted')
+for capacity,transfer,boundary in [([],[],[]),([1],[[-1]],[0]),([1],[[0]],[-1])]:
+    try:heat_step_audit(capacity,transfer,boundary,[0],[0],[0],[0],1)
+    except ValueError:pass
+    else:raise AssertionError('invalid thermal coefficients accepted')
 if '--artifacts' in sys.argv:
     root=Path(__file__).resolve().parents[1];index=json.loads((root/'data/derived/thermal/index.json').read_text())
     assert index['models']==index['runs']  # API descriptor compatibility
@@ -34,7 +46,23 @@ if '--artifacts' in sys.argv:
     package,_=load_source(root)
     import importlib
     th=importlib.import_module(package.__name__+'.thermoregulation'); original=th.dry_r
+    original_wet=th.wet_r
+    try:
+        with bedding_boundary(package,2.78):
+            raise RuntimeError('intentional boundary failure')
+    except RuntimeError:pass
+    assert th.dry_r is original and th.wet_r is original_wet
+    with tempfile.TemporaryDirectory() as directory:
+        temporary=Path(directory);raw=temporary/'data/raw/thermal';raw.mkdir(parents=True)
+        (raw/'JOS-3').symlink_to(root/'data/raw/thermal/JOS-3',target_is_directory=True)
+        metadata=json.loads((root/'data/raw/thermal/source.json').read_text());metadata['source_sha256']={}
+        (raw/'source.json').write_text(json.dumps(metadata))
+        try:load_source(temporary)
+        except ValueError as error:assert 'inventory' in str(error)
+        else:raise AssertionError('empty source hash inventory accepted')
     short=run_thermal(root,'supine_blanket',seconds=15,dt=15)
+    assert short['source']['runtime_adapter_sha256']==hashlib.sha256((root/'ihm/native/thermal.py').read_bytes()).hexdigest()
+    assert short['source']['adapter_sha256']==json.loads((root/'data/raw/thermal/source.json').read_text())['adapter_sha256']
     assert th.dry_r is original
     again=run_thermal(root,'supine_blanket',seconds=15,dt=15)
     assert short['node_temperature_C']==again['node_temperature_C']

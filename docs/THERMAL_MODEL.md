@@ -54,3 +54,21 @@ At the finest recorded step (0.9375 s), the actual one-hour results are:
 | Pajamas/duvet | 37.00398 | 35.82317 | 0.000059 °C |
 
 Maximum whole-body discrete heat residual across these runs is below 3.3×10⁻⁹ W. The final-node refinement errors decrease with halving the final steps. Tests also verify positive capacities, nonnegative symmetric conductive couplings, restoration of the original boundary functions, deterministic repeated source initialization, and source-file hashes. These checks concern the implemented numerical model and its evidence record.
+
+## Independent runtime review
+
+The wrapper validates clocks before loading or initializing JOS-3: duration is
+positive and at most 604800 s; timesteps are 0.01–3600 s; the duration must contain
+1–100000 whole timesteps. Boolean, nonfinite, fractional-step, and excessive-work
+requests are rejected explicitly. These are computational bounds, not physiological
+safety limits. The heat ledger rejects invalid coefficients and arithmetic overflow
+instead of returning infinite diagnostic values.
+
+Runtime source verification checks the actual clean Git checkout and complete source
+hash inventory, rather than trusting the revision string alone. Historical acquisition
+and generated-artifact `adapter_sha256` fields remain intact; new executions additionally
+record `runtime_adapter_sha256` for the code actually executing them. Boundary substitution
+holds the shared reentrant lock and restores both source functions even after an exception.
+The observation hook preserves a source exception rather than replacing it with a missing
+local-variable error during exception unwinding. None of these changes modifies the
+source thermal equations or the recorded initialization procedure.
