@@ -82,10 +82,11 @@ class BodyBrain:
             -(self.theta['v_rest_mv'] - self.theta['v_half_mv']) / self.theta['slope_mv']))
         self.time_s = 0.
 
-    def _rhs(self, state, availability, temperature_factor):
+    def _rhs(self, state, availability, temperature_factor, sensory_drive=None):
         v, r, a = state.T
         gain = self.coupling['recurrent_drive_nS_per_Hz']
-        drive = availability * (self.coupling['tonic_drive_nS'] + gain * (self.weights @ r))
+        drive = availability * (self.coupling['tonic_drive_nS'] + gain * (self.weights @ r)
+                                + (0. if sensory_drive is None else sensory_drive))
         x = {'neural.exc.potential': v, 'neural.exc.activity': r,
              'neural.exc.adaptation': a, 'neural.exc.ampa': drive * .7,
              'neural.exc.nmda': drive * .3,
@@ -96,7 +97,7 @@ class BodyBrain:
             rates['neural.exc.potential'] + inhibition['neural.exc.potential'],
             rates['neural.exc.activity'], rates['neural.exc.adaptation']))
 
-    def step(self, dt_s, physiology=None):
+    def step(self, dt_s, physiology=None, sensory_inputs_hz=None):
         """Advance seconds; MAP mmHg, saturation fraction, temperature Celsius.
 
         Missing inputs use labeled priors. Returns commands without applying them
@@ -112,6 +113,16 @@ class BodyBrain:
         pressure, oxygen, temperature = (values[k] for k in INPUT_BASELINES)
         if not (0 <= pressure <= 300 and 0 <= oxygen <= 1 and 20 <= temperature <= 45):
             raise ValueError('Input outside supported units/range: MAP [0,300] mmHg, O2 [0,1], temperature [20,45] C')
+        sensory_inputs_hz = {} if sensory_inputs_hz is None else sensory_inputs_hz
+        if not isinstance(sensory_inputs_hz, dict) or set(sensory_inputs_hz) - set(self.ids):
+            raise ValueError('Unknown sensory brain region')
+        sensory = np.zeros(len(self.ids))
+        for key, value in sensory_inputs_hz.items():
+            if isinstance(value, bool) or not math.isfinite(float(value)) or not 0 <= float(value) <= 1000:
+                raise ValueError('Sensory inputs must be finite excess rates in [0,1000] Hz')
+            sensory[self.ids.index(key)] = float(value)
+        # New body bridge prior, outside the exact preserved IBM neural functions.
+        sensory_drive = .02 * sensory  # nS per excess afferent Hz; uncalibrated.
         availability = float(np.clip(pressure / self.coupling['map_reference_mmHg'], 0., 1.)
                              * np.clip(oxygen / .98, 0., 1.))
         temperature_factor = self.coupling['temperature_Q10'] ** ((temperature - 37.) / 10.)
@@ -119,10 +130,10 @@ class BodyBrain:
         h = dt_s / steps
         y = self.state.copy()
         for _ in range(steps):
-            k1 = self._rhs(y, availability, temperature_factor)
-            k2 = self._rhs(y + h * k1 / 2, availability, temperature_factor)
-            k3 = self._rhs(y + h * k2 / 2, availability, temperature_factor)
-            k4 = self._rhs(y + h * k3, availability, temperature_factor)
+            k1 = self._rhs(y, availability, temperature_factor, sensory_drive)
+            k2 = self._rhs(y + h * k1 / 2, availability, temperature_factor, sensory_drive)
+            k3 = self._rhs(y + h * k2 / 2, availability, temperature_factor, sensory_drive)
+            k4 = self._rhs(y + h * k3, availability, temperature_factor, sensory_drive)
             y += h * (k1 + 2*k2 + 2*k3 + k4) / 6
         if not np.isfinite(y).all():
             raise FloatingPointError('Non-finite brain integration; original state retained')
@@ -133,6 +144,12 @@ class BodyBrain:
         stress = 1. - availability
         sympathetic = float(np.clip(.2 + .7 * stress + .02 * max(0., temperature - 37.)
                                      + .05 * (1. - medulla_rate / 20.), 0., 1.))
+        motor_drive = {}
+        for hemi in ['lh', 'rh']:
+            sensory_id, motor_id = f'brain-{hemi}-postcentral', f'brain-{hemi}-precentral'
+            if sensory_id in self.ids and motor_id in self.ids:
+                afferent = sensory[self.ids.index(sensory_id)]
+                motor_drive[motor_id] = min(100., float(afferent / 100. * y[self.ids.index(motor_id), 1]))
         return {'time_s': self.time_s, 'model_id': self.data['id'],
                 'regional_state': {'node_ids': self.ids, 'potential_mV': y[:,0].tolist(),
                                    'activity_hz': y[:,1].tolist(), 'adaptation_mV': y[:,2].tolist()},
@@ -141,6 +158,9 @@ class BodyBrain:
                     'applied_to_body': False, 'calibration': 'uncalibrated generic transfer prior',
                     'ports': self.data['ports']['efferent']},
                 'physiology_inputs': values,
+                'sensory_inputs_hz': dict(sensory_inputs_hz),
+                'regional_motor_drive_hz': motor_drive,
+                'somatic_readout_scope': 'Uncalibrated stimulus-gated precentral-rate prior; no learned motor policy; zero afferent gate gives zero motor drive',
                 'input_provenance': {k: 'caller_supplied' if k in supplied else 'assumed_baseline' for k in values},
                 'solver': {'method': 'RK4', 'substeps': steps, 'step_s': h},
                 'oxygen_perfusion_availability': availability,
