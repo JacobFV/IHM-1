@@ -23,6 +23,21 @@ def verify_kernel():
         except ValueError:pass
         else:raise AssertionError('Unmapped or unsupported tissue accepted')
     print('PASS heterogeneous tetrahedral energy gradient, momentum/torque and explicit tissue scope')
+    from ihm.human import ImplicitHuman
+    human=ImplicitHuman.open();body=human.materialize('penile-volume')
+    assert 'penile-volume' in human.describe()['materializations']
+    assert len(body.region.tets)==5172 and body.evidence['canonical_handoff_applied'] is False
+    assert body.material_owner_ids==('body-bp3d-FJ3132','body-bp3d-FJ3133')
+    assert body.minimum_jacobian()>0.999999999
+    print('PASS implicit body materializes the qualified source-shaped CC/CS volume')
+    from ihm.assembly.penile_volume import source_cc_cs_domain
+    with tempfile.TemporaryDirectory() as tmp:
+        root=Path(tmp);parent=root/'domain';parent.mkdir()
+        (parent/'manifest.json').write_text(json.dumps({'artifacts':{'../../outside': 'untrusted'}}))
+        try:source_cc_cs_domain(parent,evidence_root=root)
+        except ValueError as e:assert 'escapes' in str(e)
+        else:raise AssertionError('Parent artifact path escaped evidence root')
+    print('PASS material evidence path containment')
 
 def verify_experiment(output,*,existing=False):
     from ihm.assembly.penile_volume import run_penile_volume,PenileTetrahedra,TISSUES

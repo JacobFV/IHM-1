@@ -85,4 +85,57 @@ declare a partial group successful. Exercise contrast acceptance additionally
 requires finite bounded demand, a nonnegative non-exercise power partition,
 explicit active/post-stop samples and cleared demand after stop.
 
+## Fresh thermal initialization and integrated replay
+
+The runner accepts `--state` to bind every condition to the same explicitly
+retained initial state. Its group receipt now includes that state, the actual
+variant library and stream executable before any workers start, in addition to
+the implementation files. A queued condition rejects changed input bytes.
+The four successive thermal research variants are available to native batch
+and session configuration; registering them does not change the app default.
+
+The final variant, `whole_body_integrity_evaporation_humidity`, includes clothing
+and film resistance, regional skin perfusion, sweat-area and evaporative
+capacity, and local humidity corrections. See
+[the thermal audit](LONG_HORIZON_THERMAL_AUDIT.md) and
+[the evaporation audit](NATIVE_EVAPORATION_AUDIT.md). Its fresh initialization is
+retained under `data/derived/audits/thermal-final-initial-state-ctkr8bap/`, with
+state SHA-256 `cba7ffb523728d86e8f07b2a30b215b040676c30580e8accda722d175bd687b3`.
+It starts at 37.0481°C and is not claimed to be a thermal equilibrium.
+
+`exertion_v3` completes all five one-hour conditions from that same state, with
+721 observations each. All tracked required local stores remain nonnegative
+and seven named intervention contrasts pass. Core temperatures stay between
+37.0481 and 37.4119°C. Exercise raises requested metabolic power by 150.12 W;
+the demand clears after its ten-minute interval. These are numerical execution
+results, not independently fitted human responses. In particular, reported
+total metabolic power does not rise after the meal alone; this record does not
+establish diet-induced thermogenesis. Independent trajectory review additionally
+finds exercise aortic glucose as low as32.896mg/dL and arterial pH7.2987; the
+combined meal/exercise condition reaches44.127mg/dL and pH7.5456. Successful
+execution and finite stores do not make these ordinary healthy responses.
+Reported zero energy deficit is also insufficient: the source call to
+`ManageEnergyDeficit()` is commented out. The six-hour `six_hour_v4` replay
+also completes721 observations per condition with nonnegative tracked stores
+and three causal contrasts. Meal/hydration final core temperatures are36.7791
+and36.8491°C, respectively, but arterial pH reaches7.5088/7.5108. It remains
+excluded by the independent homeostasis screen. The source counterion audit
+finds nutrient cotransport moving existing gastric/chyme sodium into blood
+without an implemented chloride counterpart; this needs a separate explicit
+electrolyte/charge mechanism, not a pH reset.
+
+The default-view gate independently requires finite observed aortic glucose
+at least70mg/dL and, for ordinary rest/meal/exercise protocols, arterial
+pH7.35–7.45. These values correspond to retained native screening thresholds;
+the glucose screen uses the observed aorta while the native event uses vena
+cava, and the pH screen does not diagnose a metabolic disorder without
+bicarbonate and cause attribution. The deliberately imposed apnea protocol
+permits respiratory pH perturbation and still requires finite observations.
+The glucose boundary is consistent with the
+[NIDDK screening description](https://www.niddk.nih.gov/health-information/diabetes/overview/preventing-problems/low-blood-glucose-hypoglycemia).
+These are rejection screens, not population calibration or a complete set of
+physiological validity tests. No part of the failed five-condition group is
+published by extracting only favorable conditions. Complete inputs and
+trajectories remain available for diagnosis.
+
 Unresolved biology remains substantial: swallowing, peristalsis and enteric control, enzymatic compartments and bile, intestinal lipid lymph transport, incretins, colon/microbiome/stool, independently calibrated macro digestion kinetics, exact elemental budgets, individual phrenic anatomy, and force/work exchange with whole-body mechanics. Native physiology implements coupled reduced mechanisms; it is not yet a complete calibrated human.

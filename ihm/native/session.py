@@ -14,11 +14,11 @@ import subprocess
 import threading
 import shutil
 import xml.etree.ElementTree as ET
-from . import BASE, RUNTIME, SOURCE_REVISION, available_patients, number, _sha
+from . import BASE, RUNTIME, SOURCE_REVISION, available_patients, number, _sha, THERMAL_RESEARCH_VARIANTS
 
 VARIANTS = ('upstream', 'saturation_bounds', 'saturation_bounds_heatflux',
             'saturation_bounds_heatflux_thermal_units', 'whole_body_integrity', 'whole_body_integrity_renal',
-            'whole_body_integrity_gi_water', 'whole_body_integrity_energy', 'whole_body_integrity_depletion')
+            'whole_body_integrity_gi_water', 'whole_body_integrity_energy', 'whole_body_integrity_depletion')+THERMAL_RESEARCH_VARIANTS
 
 
 def runtime_patient(patient):

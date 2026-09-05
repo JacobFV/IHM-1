@@ -4,19 +4,24 @@ import json
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from ihm.assembly.systemic import SystemicConfig, run_systemic, verify_contrasts
-from ihm.native import _sha
+from ihm.native import _sha,RUNTIME
 
 p=argparse.ArgumentParser()
 p.add_argument('--protocols', nargs='+', default=['hydration','meal'])
 p.add_argument('--seconds', type=float, default=21600)
 p.add_argument('--sample-interval', type=float, default=30)
 p.add_argument('--variant', default='whole_body_integrity_depletion')
+p.add_argument('--state',help='Explicit retained initial state shared by every condition')
 p.add_argument('--output', required=True)
 p.add_argument('--workers', type=int, default=2)
 args=p.parse_args()
 if not 1<=args.workers<=6:p.error('--workers must be 1..6')
 if len(set(args.protocols))!=len(args.protocols):p.error('duplicate protocols')
 root=Path(__file__).resolve().parents[1]
+shared=SystemicConfig(seconds=args.seconds,sample_interval_s=args.sample_interval,engine_variant=args.variant,
+                      **({'state_path':args.state} if args.state else {}))
+state_path=Path(shared.state_path).resolve()
+if not state_path.is_relative_to(root):p.error('Retain the initial state inside this workspace')
 out=Path(args.output).resolve()
 if not out.is_relative_to(root):p.error('Experiment groups must be retained inside this workspace')
 if out.exists() and any(out.iterdir()):
@@ -28,6 +33,9 @@ source_identity={name:_sha(root/name) for name in ('ihm/assembly/systemic.py','i
                                                 'ihm/assembly/systemic_evidence.py','ihm/assembly/native_environment_evidence.py',
                                                 'ihm/native/__init__.py','scripts/native_body_ports.h',
                                                 'scripts/native_biogears_stream.cpp')}
+library=(RUNTIME/'biogears-build/outputs/Release/lib' if args.variant=='upstream' else RUNTIME/'variants'/args.variant)/'libbiogears.so.8.0.0'
+for path in (state_path,library,RUNTIME/'native_biogears_stream'):
+    source_identity[str(path.relative_to(root))]=_sha(path)
 (out/'group-configuration.json').write_text(json.dumps(dict(options=vars(args),
     source_identity=source_identity),indent=2)+'\n')
 def run(protocol):
@@ -35,7 +43,7 @@ def run(protocol):
         raise RuntimeError('Executing source changed before queued protocol start; restart in a fresh group')
     print('Running '+protocol, flush=True)
     result=run_systemic(root,out/protocol,SystemicConfig(protocol=protocol,
-        seconds=args.seconds,sample_interval_s=args.sample_interval,engine_variant=args.variant))
+        seconds=args.seconds,sample_interval_s=args.sample_interval,engine_variant=args.variant,state_path=state_path))
     print(json.dumps({'protocol':protocol,'checks':result['checks']}),flush=True)
     return protocol,result
 results={};failures={}

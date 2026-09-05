@@ -22,7 +22,7 @@ class PenileTetrahedra(DynamicTetrahedra):
     nonlinear stability bound. Each accepted step still requires positive J.
     """
     def __init__(self,vertices_m,tetrahedra,*,material_index,material_tissues,density_kg_m3,
-                 fixed_nodes=(),material_owner_ids=()):
+                 fixed_nodes=(),material_owner_ids=(),evidence_root=BASE):
         labels=np.asarray(material_index);tissues=tuple(material_tissues)
         if not tissues or len(set(tissues))!=len(tissues) or any(t not in TISSUES for t in tissues):
             raise ValueError('Explicit supported CC/CS tissue laws required')
@@ -30,7 +30,7 @@ class PenileTetrahedra(DynamicTetrahedra):
             raise ValueError('Every tetrahedron must have a valid material index')
         if set(labels)!=set(range(len(tissues))):raise ValueError('Every declared tissue must own tetrahedra')
         self.material_index=labels.copy();self.material_tissues=tissues
-        self.laws=tuple(penile_material(t) for t in tissues)
+        self.laws=tuple(penile_material(t,evidence_root=evidence_root) for t in tissues)
         moduli=[law.initial_moduli() for law in self.laws]
         shear=np.array([m['shear_pa'] for m in moduli])[labels]
         bulk=np.array([m['bulk_pa'] for m in moduli])[labels]
@@ -49,17 +49,23 @@ class PenileTetrahedra(DynamicTetrahedra):
         return force,float(self.region.volumes@density)
 
 
-def source_cc_cs_domain(parent=None):
+def source_cc_cs_domain(parent=None,*,evidence_root=BASE):
     """Select exact retained CC/CS cells; do not repopulate removed glans cells."""
-    directory=Path(parent or BASE/'data/derived/material-domains/pelvis-0.004m')
+    evidence_root=Path(evidence_root).resolve()
+    directory=Path(parent or evidence_root/'data/derived/material-domains/pelvis-0.004m').resolve()
+    if not directory.is_relative_to(evidence_root):raise ValueError('Material domain must remain within its evidence root')
     manifest=json.loads((directory/'manifest.json').read_text())
     for name,digest in manifest['artifacts'].items():
-        if _sha(directory/name)!=digest:raise ValueError('Parent material domain artifact changed')
+        path=(directory/name).resolve()
+        if not path.is_relative_to(directory):raise ValueError('Material artifact escapes its domain')
+        if _sha(path)!=digest:raise ValueError('Parent material domain artifact changed')
     ids=tuple(m['source_id'] for m in manifest['material_regions'])
     if ids[:2]!=SOURCE_IDS:raise ValueError('Parent CC/CS material identities changed')
     for surface in manifest['source_surfaces']:
-        if surface['id'] in SOURCE_IDS and _sha(BASE/surface['path'])!=surface['source_sha256']:
-            raise ValueError('Source anatomy geometry changed')
+        if surface['id'] in SOURCE_IDS:
+            path=(evidence_root/surface['path']).resolve()
+            if not path.is_relative_to(evidence_root):raise ValueError('Source geometry escapes its evidence root')
+            if _sha(path)!=surface['source_sha256']:raise ValueError('Source anatomy geometry changed')
     with np.load(directory/'pelvic-domain.npz',allow_pickle=False) as raw:
         selected=np.flatnonzero(np.isin(raw['material_index'],[0,1]))
         nodes,reverse=np.unique(raw['tetrahedra'][selected],return_inverse=True)
@@ -71,6 +77,29 @@ def source_cc_cs_domain(parent=None):
                 'parent_node_indices':nodes,'parent_tetrahedron_indices':selected}
     if len(fixed)<3:raise ValueError('Retained source domain lacks its prescribed support')
     return arrays,manifest,directory
+
+
+def materialize_penile_volume(evidence_root=BASE):
+    """Explicit detached CC/CS body, with qualified source and mass ownership."""
+    root=Path(evidence_root).resolve()
+    arrays,manifest,directory=source_cc_cs_domain(evidence_root=root)
+    body=PenileTetrahedra(arrays['vertices_m'],arrays['tetrahedra'],
+        material_index=arrays['material_index'],material_tissues=TISSUES,
+        density_kg_m3=arrays['density_kg_m3'],fixed_nodes=arrays['fixed_nodes'],
+        material_owner_ids=SOURCE_IDS,evidence_root=root)
+    paths=[directory/'manifest.json',directory/'pelvic-domain.npz',
+           root/'data/measurements/biomechanics/khorshidi_2024.json',
+           root/'data/raw/biomechanics/human-penile-mechanics-2024/paper.pdf']
+    paths.extend(root/s['path'] for s in manifest['source_surfaces'] if s['id'] in SOURCE_IDS)
+    body.evidence=dict(kind='detached_source_volume_with_ex_vivo_constitutive_fits',
+        frame=manifest['frame'],source_sha256={str(path.relative_to(root)):_sha(path) for path in paths},
+        materials=[law.describe() for law in body.laws],spacing_m=manifest['spacing_m'],
+        density_basis='retained canonical mass allocation; not independently measured tissue density',
+        replaces_source_owners=list(SOURCE_IDS),canonical_handoff_applied=False,
+        geometry_assumptions=['CC/CS cells retained exactly; glans-owned cells excluded without reassignment',
+                              'Shared nodes bond the tissue interface; posterior support is an engineering fixture',
+                              'Tunica, fascia, glans, urethral lumen, perfusion and global contact unresolved'])
+    return body
 
 
 def run_penile_volume(output_dir,*,law='published',dt_s=.00005,seconds=.03,parent=None):

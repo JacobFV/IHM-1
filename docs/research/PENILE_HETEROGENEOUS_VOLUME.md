@@ -35,3 +35,20 @@ OPENBLAS_NUM_THREADS=1 .venv/bin/python scripts/verify_penile_volume.py --experi
 ```
 
 Reverification writes a new receipt beneath `artifacts/verification/penile-volume-audit-*`; it does not rewrite retained experiment data. The full run and subsequent extended source-volume checks are logged under `artifacts/verification/penile-constitutive/volume-v1.log` and `volume-audit-v1.log`.
+
+## Explicit materialization
+
+```python
+from ihm.human import ImplicitHuman
+volume = ImplicitHuman.open().materialize('penile-volume')
+evidence = volume.evidence
+```
+
+This constructs the actual detached 5,172-element heterogeneous dynamic body,
+using the opened body's evidence root. Both the parent partition and acquired
+constitutive evidence are hash checked. Its evidence records the source frame,
+discretization, effective density basis and source owner identities.
+`canonical_handoff_applied` remains false: constructing this predictor does not
+add a second copy of its mass to the canonical body or replace the older garment
+fixture. The quick verifier exercises this public materialization in addition
+to the constitutive and heterogeneous virtual-work checks.

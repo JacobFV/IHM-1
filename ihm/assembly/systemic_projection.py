@@ -31,6 +31,30 @@ def require_generic_thermal_domain(data):
         raise ValueError('Generic-body experiment crosses native hypo/hyperthermia thresholds; retain as an out-of-domain research result')
 
 
+def require_generic_homeostasis(data):
+    """Screen ordinary display claims, independently of solver/contrast success.
+
+    The glucose floor uses the source BloodChemistry event value (70 mg/dL),
+    applied here to the observed aorta, not the source event's vena cava. The
+    resting pH interval uses the source Energy acid-base screening values;
+    bicarbonate is not used here, so this does not diagnose metabolic disease.
+    These rejection gates are not a complete physiological validation domain.
+    Apnea intentionally perturbs respiratory acid-base state and is labeled as
+    an intervention; normal-rest pH screening does not apply to that protocol.
+    """
+    require_generic_thermal_domain(data)
+    protocol=data['configuration']['protocol']
+    for name,low,high in [('Aorta.Glucose.concentration_mg_per_dl',70.,None),
+                          ('arterial_ph',None if protocol=='apnea' else 7.35,
+                                         None if protocol=='apnea' else 7.45)]:
+        values=[frame['values'].get(name) for frame in data['frames']]
+        if not values or any(value is None or not np.isfinite(value) for value in values):
+            raise ValueError('Generic-body display requires finite observed '+name)
+        if (low is not None and min(values)<low) or (high is not None and max(values)>high):
+            raise ValueError('Generic-body experiment exceeds homeostatic display bounds for '+name+
+                             '; retain the complete trajectory as an out-of-domain research result')
+
+
 def accepted_systemic_sources(root, path):
     """Bind default-view acceptance to the exact matched native experiment set."""
     from .systemic import PROTOCOLS, verify_contrasts
@@ -49,7 +73,7 @@ def accepted_systemic_sources(root, path):
         result=json.loads(file.read_text())
         if result['configuration']['protocol']!=protocol:
             raise ValueError('Contrast protocol identity mismatch')
-        require_generic_thermal_domain(result)
+        require_generic_homeostasis(result)
         results[protocol]=result
         sources[str(file.relative_to(root))]=receipt['sha256']
         sources.update(resolve_sources(root,file.parent,result['runtime_sources']))

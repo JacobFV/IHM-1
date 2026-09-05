@@ -46,6 +46,8 @@ ASSETS={
  'kidney_slab':'data/derived/microstructure/kidney/slab_validation.json',
  'penile_constitutive':'data/measurements/biomechanics/khorshidi_2024.json',
  'penile_constitutive_source':'data/raw/biomechanics/human-penile-mechanics-2024/paper.pdf',
+ 'penile_volume':'data/derived/material-domains/pelvis-0.004m/manifest.json',
+ 'penile_volume_data':'data/derived/material-domains/pelvis-0.004m/pelvic-domain.npz',
 }
 CANONICAL_ASSETS = ('canonical_anatomy', 'canonical_profile', 'canonical_brain',
                     'canonical_mechanics', 'canonical_body')
@@ -214,6 +216,8 @@ class ImplicitHuman:
         if 'systemic_backend' in self.assets:result['materializations'].append('body-systemic')
         if all(key in self.assets for key in ('penile_constitutive','penile_constitutive_source')):
             result['materializations'].append('penile-constitutive')
+            if all(key in self.assets for key in ('penile_volume','penile_volume_data')):
+                result['materializations'].append('penile-volume')
         return result
     def microstructure_evidence(self):
         """Acquired organ evidence; availability does not confer population validity."""
@@ -235,6 +239,13 @@ class ImplicitHuman:
                         evidence_kind='native_initialized_state_or_parameter',source=graph['source'],independently_calibrated=False))
         return fields
     def materialize(self,kind,**options):
+        if kind=='penile-volume':
+            if options:raise ValueError('The source-volume materialization uses its explicit retained CC/CS partition')
+            for key in ('penile_volume','penile_volume_data','penile_constitutive','penile_constitutive_source'):
+                if key not in self.assets or digest(self.root/self.assets[key]['path'])!=self.assets[key]['sha256']:
+                    raise ValueError('Volume or constitutive evidence changed; reopen the implicit body')
+            from ihm.assembly.penile_volume import materialize_penile_volume
+            return materialize_penile_volume(self.root)
         if kind=='penile-constitutive':
             for key in ('penile_constitutive','penile_constitutive_source'):
                 if key not in self.assets or digest(self.root/self.assets[key]['path'])!=self.assets[key]['sha256']:
@@ -344,7 +355,7 @@ class ImplicitHuman:
         self=cls.open(root);self.assets=data['assets'];self._cache={}
         for key in self.assets:
             if key not in ASSETS or self.assets[key]['path']!=ASSETS[key]:raise ValueError('unsupported evidence location')
-            if key in ('kidney_graph','penile_constitutive_source'):
+            if key in ('kidney_graph','penile_constitutive_source','penile_volume_data'):
                 asset=self.assets[key];path=(self.root/asset['path']).resolve()
                 if not path.is_relative_to(self.root) or digest(path)!=asset['sha256']:
                     raise ValueError('Evidence changed: '+key+'; reopen or rebuild the substrate')

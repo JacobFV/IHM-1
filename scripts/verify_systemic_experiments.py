@@ -6,7 +6,7 @@ from pathlib import Path
 import tempfile
 from unittest.mock import patch
 from ihm.native import _sha
-from ihm.assembly.systemic_projection import accepted_systemic_sources,require_generic_thermal_domain
+from ihm.assembly.systemic_projection import accepted_systemic_sources,require_generic_thermal_domain,require_generic_homeostasis
 from ihm.assembly.systemic_evidence import freeze_sources
 
 
@@ -27,7 +27,8 @@ def main():
         key:'shared' for key in ('state_sha256','library_sha256','executable_sha256','patient_identity_input_sha256')},
         'runtime_sources':{'code':'same'},'actions':[],
         'configuration':{'protocol':'rest','seconds':180,'sample_interval_s':30},
-        'frames':[{'time_s':t,'values':{'lung_volume_ml':3000.,'arterial_co2_mmhg':40.,'core_temperature_c':37.}} for t in range(0,181,30)]}
+        'frames':[{'time_s':t,'values':{'lung_volume_ml':3000.,'arterial_co2_mmhg':40.,'core_temperature_c':37.,
+                  'arterial_ph':7.4,'Aorta.Glucose.concentration_mg_per_dl':85.}} for t in range(0,181,30)]}
     for frame in fixture['frames']:
         frame['values'].update({key:1. for key in ['stomach_'+x for x in ('carbohydrate_g','protein_g','fat_g','sodium_g','calcium_mg','water_ml')]+['liver_glycogen_g','muscle_glycogen_g','stored_protein_g','stored_fat_g']})
     fixture['native_manifest'].update(dependency_sha256={'cdm':'same'},native_step_s=.02)
@@ -58,6 +59,22 @@ def main():
         try:require_generic_thermal_domain(cold)
         except ValueError:pass
         else:raise AssertionError('out-of-domain generic physiology published')
+    require_generic_homeostasis(fixture)
+    for key,values in [('arterial_ph',(7.29,7.50,None,float('nan'))),
+                       ('Aorta.Glucose.concentration_mg_per_dl',(32.9,69.99,None,float('inf')))]:
+        for value in values:
+            bad=deepcopy(fixture);bad['frames'][-1]['values'][key]=value
+            try:require_generic_homeostasis(bad)
+            except ValueError:pass
+            else:raise AssertionError('Abnormal or absent homeostatic observation accepted: '+key)
+    # Apnea deliberately perturbs respiratory acid-base state; it is not a
+    # normal-rest claim. Its glucose and finite-pH requirements still apply.
+    perturbation=deepcopy(apnea);perturbation['frames'][-1]['values']['arterial_ph']=7.48
+    require_generic_homeostasis(perturbation)
+    perturbation['frames'][-1]['values']['arterial_ph']=None
+    try:require_generic_homeostasis(perturbation)
+    except ValueError:pass
+    else:raise AssertionError('Apnea accepted without observed pH')
     # A published pass must bind the exact compared bytes, and its acceptance
     # must be reproducible. A boolean in a neighboring JSON file is insufficient.
     # Native environment identity has its own real-archive rejection suite;
