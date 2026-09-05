@@ -630,143 +630,6 @@ dd {
   background: #3b514e;
   border-radius: 5px;
 }
-@media (min-width: 1500px) {
-  main {
-    grid-template-columns: 280px minmax(400px, 1fr) 320px;
-  }
-  aside {
-    padding: 28px 25px;
-  }
-  .viewport {
-    height: calc(100vh - 380px);
-  }
-}
-@media (max-width: 1150px) {
-  main {
-    grid-template-columns: 215px minmax(360px, 1fr);
-  }
-  .inspector {
-    grid-column: 1/-1;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-  }
-  .inspector > .section-heading {
-    grid-column: 1/-1;
-    margin-bottom: 0;
-  }
-  .scenario {
-    margin: 0;
-    border: 0;
-    padding: 0;
-  }
-  .evidence {
-    grid-column: 1/-1;
-  }
-  .header-right {
-    font-size: 8px;
-  }
-  .display-controls {
-    gap: 12px;
-  }
-  .display-controls label {
-    gap: 6px;
-  }
-  .display-controls input {
-    width: 55px;
-  }
-}
-@media (max-width: 700px) {
-  header {
-    padding: 0 17px;
-    height: 68px;
-  }
-  .header-right {
-    display: none;
-  }
-  main {
-    display: flex;
-    flex-direction: column;
-  }
-  .library {
-    max-height: none;
-    padding: 18px;
-  }
-  .library > .section-heading,
-  .library > .field-label,
-  .library > .muted,
-  .library-footer {
-    display: none;
-  }
-  .search {
-    margin: 10px 0;
-  }
-  #systems {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px 14px;
-  }
-  .system-row small,
-  .results-heading {
-    display: none;
-  }
-  .structures {
-    max-height: 100px;
-    flex: none;
-  }
-  .layer-title {
-    margin: 12px 0;
-  }
-  .viewport {
-    height: 560px;
-  }
-  .view-heading {
-    left: 20px;
-    top: 20px;
-  }
-  .view-tools {
-    top: 90px;
-    left: 20px;
-    right: auto;
-  }
-  .view-footer {
-    font-size: 8px;
-    flex-direction: column;
-  }
-  .display-controls {
-    padding: 0 14px;
-    gap: 8px;
-  }
-  .display-controls label {
-    font-size: 9px;
-  }
-  .display-controls input {
-    width: 45px;
-  }
-  .display-controls output {
-    font-size: 8px;
-  }
-  .signals {
-    padding: 22px 20px;
-  }
-  .signal-select > span {
-    font-size: 8px;
-  }
-  .inspector {
-    display: block;
-  }
-  .inspector > .section-heading {
-    margin-bottom: 20px;
-  }
-  .scenario {
-    border-top: 1px solid #2c393a;
-    margin-top: 25px;
-    padding-top: 25px;
-  }
-  .tabs button {
-    padding: 6px 8px;
-  }
-}
 .spectral-controls {
   display: flex;
   gap: 8px;
@@ -793,24 +656,6 @@ dd {
   background: transparent;
   color: #9ab5af;
   border-color: #344746;
-}
-@media (max-width: 700px) {
-  #flow-field {
-    width: 59px;
-    font-size: 8px;
-  }
-  .display-controls {
-    gap: 6px;
-  }
-  #time {
-    width: 35px;
-  }
-  .display-controls label input {
-    width: 33px;
-  }
-  .display-controls label output {
-    display: none;
-  }
 }
 .flow-legend {
   position: absolute;
@@ -882,3 +727,93 @@ dd {
 .layer-opacity { width: calc(100% - 25px); height: 8px; margin: 0 0 5px 25px; accent-color: #8fc4b4; }
 .layer-opacity:disabled { opacity: .2; }
 #layer-note { font-size: 10px; line-height: 1.5; }
+
+/* The scene owns the window. Each information panel owns its overflow. */
+html, body, #app { width: 100%; height: 100%; min-width: 0; overflow: hidden; }
+#app { height: 100dvh; display: grid; grid-template-rows: auto minmax(0, 1fr); }
+header { min-width: 0; height: 64px; padding: 0 20px; gap: 20px; z-index: 30; }
+.workspace-tools { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+.workspace-tools button {
+  border: 1px solid #34474a; border-radius: 5px; background: #1c2a2c;
+  padding: 9px 11px; font-size: 11px; white-space: nowrap; color: #99aeaa;
+}
+.workspace-tools button span { margin-right: 4px; }
+.workspace-tools button[aria-expanded="true"], .workspace-tools button[aria-pressed="true"] {
+  color: #d0eadf; background: #2a403b; border-color: #52766a;
+}
+.workspace-tools button:hover { background: #324846; }
+#workspace {
+  --library-width: clamp(230px, 18vw, 280px);
+  --inspector-width: clamp(260px, 21vw, 320px);
+  display: grid; grid-template-columns: var(--library-width) minmax(0, 1fr) var(--inspector-width);
+  min-height: 0; min-width: 0; overflow: hidden; position: relative;
+}
+#workspace[data-library="false"] { --library-width: 0px; }
+#workspace[data-inspector="false"] { --inspector-width: 0px; }
+[hidden] { display: none !important; }
+.library, .inspector, .signals {
+  min-width: 0; min-height: 0; overflow: auto; overscroll-behavior: contain;
+  scrollbar-gutter: stable; overflow-wrap: anywhere;
+}
+.library, .inspector { height: 100%; max-height: none; padding: 20px 18px; }
+.library { display: block; grid-column: 1; grid-row: 1; }
+.inspector { grid-column: 3; grid-row: 1; }
+.structures { overflow: visible; max-height: none; }
+.library-footer { padding-bottom: 10px; }
+.center { grid-column: 2; grid-row: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+.viewport { flex: 1 1 0; height: auto; min-height: 0; min-width: 0; }
+.viewport canvas { position: absolute; inset: 0; }
+.view-heading { left: 22px; top: 20px; right: 22px; }
+.view-heading h1 { font-size: 21px; max-width: 100%; }
+.view-heading p { max-width: 100%; }
+.view-tools { top: 105px; left: 22px; right: auto; flex-wrap: wrap; }
+.display-controls { flex: 0 0 auto; height: auto; min-height: 54px; padding: 10px 16px; gap: 12px; flex-wrap: wrap; }
+.display-controls label { gap: 6px; }
+.display-controls label input { width: 60px; }
+.display-controls #time { flex: 1 1 50px; max-width: 180px; min-width: 35px; }
+.display-controls #time-value { flex-shrink: 0; }
+.signals { flex: 0 1 clamp(180px, 28dvh, 300px); padding: 18px 22px; border-top: 1px solid #2b393a; }
+.signal-header { gap: 12px; flex-wrap: wrap; }
+.signal-select { min-width: 0; }
+.signal-select > span { min-width: 0; text-align: right; }
+.chart-values { flex-wrap: wrap; }
+.spectral-controls { flex-wrap: wrap; }
+.spectral-controls select { min-width: 90px; }
+#details, .scenario, .evidence { min-width: 0; }
+#details h2, dd { overflow-wrap: anywhere; }
+@media (max-width: 1000px) {
+  header { padding: 0 14px; gap: 12px; }
+  .brand { font-size: 10px; letter-spacing: 1px; gap: 10px; }
+  .brand small { font-size: 9px; }
+  #workspace { grid-template-columns: minmax(0, 1fr); }
+  .center { grid-column: 1; }
+  .library, .inspector {
+    position: absolute; inset-block: 0; width: min(330px, calc(100% - 32px));
+    z-index: 20; box-shadow: 0 5px 30px #0008;
+  }
+  .library { left: 0; }
+  .inspector { right: 0; }
+}
+@media (max-width: 600px) {
+  header { height: auto; padding: 10px 12px; display: flex; flex-wrap: wrap; gap: 10px; }
+  .brandmark { font-size: 25px; }
+  .brand small { display: none; }
+  .workspace-tools { width: 100%; gap: 5px; }
+  .workspace-tools button { flex: 1; min-width: 0; padding: 8px 5px; font-size: 10px; }
+  .workspace-tools button span { margin-right: 2px; }
+  .view-heading { left: 16px; right: 16px; top: 18px; }
+  .view-heading h1 { font-size: 20px; }
+  .view-tools { left: 16px; top: 110px; right: 16px; }
+  .view-tools button { padding: 7px; font-size: 9px; }
+  .view-footer { left: 16px; right: 16px; font-size: 8px; flex-direction: column; gap: 5px; }
+  .orientation { left: 16px; bottom: 66px; }
+  .flow-legend { right: 16px; bottom: 66px; max-width: 74%; }
+  .display-controls { gap: 8px; padding: 10px 12px; }
+  .display-controls label { font-size: 9px; }
+  .display-controls label input { width: 45px; }
+  .display-controls #time { max-width: none; }
+  .display-controls #flow-field { width: 65px; }
+  .signals { padding: 16px; flex-basis: min(34dvh, 280px); }
+  .signal-header h2 { font-size: 16px; }
+  .tabs button { padding: 6px 8px; }
+}
