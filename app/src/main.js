@@ -18,6 +18,7 @@ import {
 import "./style.css";
 import { attachedHairPositions } from "./hair_motion.js";
 import { RegionalView, ElectricRegionalView } from "./regional.js";
+import { ClothingView } from "./clothing.js";
 const $ = (id) => document.getElementById(id),
   esc = (s) =>
     String(s ?? "").replace(
@@ -104,6 +105,38 @@ const regionalControls=document.createElement('div');
 regionalControls.id='regional-controls';
 regionalControls.innerHTML='<label class="field-label" for="regional-study">Active materialization</label><select id="regional-study"><option value="body">Whole-body replay</option><option value="forearm-touch">Forearm · contact & IBM receptors</option><option value="skin-electric">Skin · non-neural electricity</option></select><select id="regional-condition" aria-label="Regional electrical intervention" hidden><option value="wound_shunt">Barrier shunt</option><option value="baseline">Intact baseline</option><option value="electrode">Electrode pair</option><option value="membrane_perturbation">Membrane perturbation</option></select><p id="regional-note" class="muted">Detailed studies share this body’s material coordinates.</p>';
 $('anatomy-view').before(regionalControls);
+const clothingControls=document.createElement('div');
+clothingControls.id='clothing-components';
+clothingControls.innerHTML='<div class="section-heading">CLOTHING</div><label class="system-row"><input id="garment-shirt" type="checkbox" checked><span>Sleeveless shirt</span></label><label class="system-row"><input id="garment-shorts" type="checkbox" checked><span>Shorts</span></label><p id="clothing-status" class="muted">Fitting garments to the assembled body…</p><details class="evidence-fold"><summary>Garment construction & mechanics</summary><p>Engineered patterns fitted to canonical skin sections with assumed ease. Shirt motion follows the computed thoracic field. This display has no solved fabric friction or deformable genital contact. Garment visibility is independent of the native thermal clothing input.</p></details>';
+$('layer-note').after(clothingControls);
+let clothingView=null,clothingRequest=0;
+for(const id of ['shirt','shorts'])$('garment-'+id).onchange=()=>{
+  clothingView?.setEnabled(id,$('garment-'+id).checked);updateClothingStatus();
+};
+function updateClothingStatus(){
+  const count=[...clothingView?.meshes.values()||[]].filter(m=>m.visible).length;
+  if(clothingView?.meshes.size)$('clothing-status').textContent=`Fitted to canonical skin · ${count} garment${count===1?'':'s'} shown · geometric pattern prior`;
+}
+async function loadClothing(){
+  const request=++clothingRequest;
+  clothingView?.dispose();clothingView=null;
+  $('clothing-components').hidden=modelId!=='ihm-body';
+  if(modelId!=='ihm-body'||!group)return;
+  const skin=manifest.structures.find(s=>s.model_id===modelId&&s.id==='body-bp3d-FJ2810');
+  if(!skin){$('clothing-status').textContent='Garment fit unavailable: canonical skin reference is missing.';return;}
+  $('clothing-status').textContent='Fitting garments to the assembled body…';
+  try {
+    const geometry=await api(skin.geometry_url||`/api/geometry/${encodeURIComponent(skin.id)}`);
+    if(request!==clothingRequest||modelId!=='ihm-body')return;
+    clothingView=new ClothingView(group);clothingView.fit(geometry,skin);
+    for(const id of ['shirt','shorts'])clothingView.setEnabled(id,$('garment-'+id).checked);
+    updateClothingStatus();updateDisplay();updateFrame();
+  }catch(error){
+    if(request!==clothingRequest)return;
+    clothingView?.dispose();clothingView=null;
+    $('clothing-status').textContent=`Garment fit unavailable: ${error.message}`;
+  }
+}
 
 let manifest,
   modelId,
@@ -276,7 +309,10 @@ function syncLayers() {
 function applyAnatomyView() {
   if ($("anatomy-view").value==='custom') return;
   const available=[...new Set(manifest.structures.filter(s=>s.model_id===modelId).map(s=>s.system))];
-  ({systems, opacity:layerOpacity}=anatomyView($("anatomy-view").value,available));
+  if($('anatomy-view').value==='clothed'){
+    ({systems, opacity:layerOpacity}=anatomyView('core',available));
+    if(available.includes('integumentary'))systems.add('integumentary');
+  }else ({systems, opacity:layerOpacity}=anatomyView($("anatomy-view").value,available));
   $("search").value='';
   $("opacity").value='1';
   syncLayers();
@@ -293,7 +329,7 @@ function rebuildSystems() {
     const matching=anatomyView(v.id,names).systems;
     const count=rows.filter(s=>matching.has(s.system)).length;
     return `<option value="${v.id}" ${count?'':'disabled'}>${esc(v.label)} · ${count}</option>`;
-  }).join('')+'<option value="custom">Custom layers</option>';
+  }).join('')+(modelId==='ihm-body'?'<option value="clothed">Dressed human · skin & internal anatomy</option>':'')+'<option value="custom">Custom layers</option>';
   $("anatomy-view").value='custom';
   $("systems").innerHTML = names.map(name=>
     `<div class="system-item"><label class="system-row"><input type="checkbox" value="${esc(name)}" ${systems.has(name) ? "checked" : ""}><i style="background:${colors[name] || "#91abb0"}"></i><span>${esc(name.replaceAll("_", " "))}</span><small>${rows.filter(x=>x.system===name).length}</small></label><input class="layer-opacity" type="range" min=".05" max="1" step=".01" value="1" data-opacity="${esc(name)}" aria-label="${esc(name)} layer opacity"></div>`).join('');
@@ -327,6 +363,8 @@ function chooseModel() {
   loadController?.abort();
   objects.forEach(dispose);
   objects.clear();
+  clothingRequest++;
+  clothingView?.dispose();clothingView=null;
   group?.clear();
   if (group) group.rotation.x = 0;
   $("posture").textContent = "Supine view";
@@ -353,12 +391,14 @@ function chooseModel() {
   if (modelId === "ihm-body") {
     const available = [...new Set(manifest.structures.filter(x => x.model_id === modelId).map(x => x.system))];
     ({systems, opacity: layerOpacity} = anatomyView("core", available));
-    $("anatomy-view").value = "core";
+    if(available.includes('integumentary'))systems.add('integumentary');
+    $("anatomy-view").value = "clothed";
     syncLayers();
   }
   setupFrames();
   resetCamera();
   refresh();
+  loadClothing();
 }
 function syncCanonicalProfile() {
   if (modelId !== "ihm-body") return;
@@ -678,6 +718,7 @@ function updateDisplay() {
       }
     }),
   );
+  clothingView?.setClipping(clip < 100 ? [plane] : []);
   $("opacity-value").textContent = `${Math.round(opacity * 100)}%`;
   $("clip-value").textContent = clip === 100 ? "Off" : `${clip}%`;
 }
@@ -762,6 +803,7 @@ function updateFrame() {
       object.matrix.set(...transform);
       object.matrixWorldNeedsUpdate = true;
     });
+    clothingView?.update(frame,bodyTrajectory?.centroids_m);
     $("flow-legend").hidden = !frame;
     const p = frame?.physiology || {};
     const values = [["HeartRate(1/min)", "HR", "/min"], ["MeanArterialPressure(mmHg)", "MAP", "mmHg"]]
