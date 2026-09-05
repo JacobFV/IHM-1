@@ -10,6 +10,9 @@ import {
   spectralSeries,
   trajectoryFromChannels,
   scalarCoordinates,
+  defaultModelId,
+  bodyTransform,
+  validBodyTrajectory,
 } from "./state.js";
 import "./style.css";
 const $ = (id) => document.getElementById(id),
@@ -26,9 +29,14 @@ const $ = (id) => document.getElementById(id),
         })[c],
     );
 document.querySelector("#app").innerHTML =
-  `<header><div class="brand"><span class="brandmark">ih<span>•</span></span><div>INTEGRATED HUMAN<small>Computational physiology workbench</small></div></div><div class="header-right"><span class="live-dot"></span> LOCAL RESEARCH ENVIRONMENT <span class="version">v0.3</span></div></header><main><aside class="library"><div class="section-heading"><span>ANATOMY LIBRARY</span><span id="total">—</span></div><label class="field-label" for="model">Source model</label><select id="model"><option>Loading source families…</option></select><p class="muted" id="model-note">Reading the source manifest.</p><label class="field-label" for="anatomy-view">Explore anatomy</label><select id="anatomy-view" aria-label="Anatomy view"></select><p id="layer-note" class="muted"></p><div class="search"><span>⌕</span><input id="search" placeholder="Find a structure…" aria-label="Search anatomy"></div><div class="section-heading layer-title">SYSTEM LAYERS <button id="all" class="text-button">Show all</button></div><div id="systems"></div><div class="section-heading results-heading">STRUCTURES <span id="count">0</span></div><div id="structures" class="structures"></div><div class="library-footer"><span class="live-dot"></span> Source geometry · independent frames</div></aside><section class="center"><div class="viewport" id="viewport"><div class="view-heading"><div class="eyebrow">SPATIAL EXPLORER</div><h1 id="view-title">Human anatomy</h1><p id="frame-label">Source-defined coordinates</p></div><div class="view-tools"><button id="reset" title="Reset camera">↺ <span>Reset view</span></button><button id="posture" title="Rigid display rotation only; native posture is not established">Supine view</button><button id="front">Anterior</button><button id="side">Lateral</button></div><div id="scene-status" role="status">Loading anatomical assets…</div><div id="flow-legend" class="flow-legend" hidden></div><div class="orientation">Y <span>↑</span><br><small>X →</small></div><div class="view-footer"><span id="render-count">0 structures visible</span><span>Drag to orbit · Scroll to zoom · Click to inspect</span></div></div><div class="display-controls"><label>Opacity <input id="opacity" type="range" min=".05" max="1" step=".05" value="1"><output id="opacity-value">100%</output></label><label>Section <input id="clip" type="range" min="0" max="100" value="100"><output id="clip-value">Off</output></label><select id="flow-field" aria-label="Vascular field"><option value="velocity">Velocity</option><option value="pressure">Pressure</option></select><button id="play" disabled aria-label="Play spatial time series">▶</button><input id="time" type="range" min="0" max="0" value="0" aria-label="Spatial time frame" disabled><output id="time-value">No flow frames</output></div><section class="signals"><div class="signal-header"><div><div class="eyebrow">TEMPORAL OBSERVATORY</div><h2>Physiology & dynamics</h2></div><div class="tabs"><button id="tab-phys" class="active">Trajectory</button><button id="tab-spectral">Spectrum</button></div></div><div id="spectral-controls" class="spectral-controls" hidden><select id="spectral-run" aria-label="Spectral evidence source"></select><select id="spectral-mode" aria-label="Spectral representation"><option value="psd">Fourier power density</option><option value="laplace">Finite Laplace magnitude</option></select><select id="sigma" aria-label="Laplace damping" hidden></select></div><div id="trajectory-controls" class="spectral-controls"><select id="trajectory-run" aria-label="Recorded physiology run"><option value="baseline">Recorded resting baseline</option></select></div><div class="signal-select"><select id="variable" aria-label="Physiology variable"></select><span id="signal-source">Awaiting simulation data</span></div><div id="chart" class="chart"><p class="empty">Loading physiological trajectories…</p></div><p id="chart-note" class="muted">Native simulation evidence is distinct from human measurements.</p></section></section><aside class="inspector"><div class="section-heading">STRUCTURE INSPECTOR <span>↗</span></div><div id="details"><div class="inspector-symbol">◎</div><h2>Explore the body</h2><p class="muted">Select a structure in the viewport or library to inspect its source, coordinate frame, and evidence status.</p></div><div class="scenario"><div class="eyebrow">NATIVE PHYSIOLOGY</div><h2>Run a scenario</h2><p class="muted">Execute the upstream BioGears engine and inspect its recorded response.</p><form id="scenario-form"><label class="field-label" for="engine-variant">Native implementation</label><select id="engine-variant"><option value="">Loading implementations…</option></select><p id="variant-note" class="muted">Source corrections do not establish clinical calibration.</p><label class="field-label" for="patient">Upstream patient</label><select id="patient"><option value="StandardMale">StandardMale</option></select><label class="field-label" for="scenario">Protocol</label><select id="scenario"><option value="baseline">Resting baseline</option><option value="exercise">Exercise & recovery</option><option value="hemorrhage_saline">Hemorrhage, saline & recovery</option></select><p id="protocol-note" class="muted">Record the upstream resting state.</p><label class="field-label" for="duration">Duration · seconds</label><input id="duration" type="number" min="1" max="600" value="60" required><label class="field-label" for="ambient">Ambient temperature · °C · optional</label><input id="ambient" type="number" min="10" max="35" step="any" placeholder="Upstream conditions"><label class="field-label" for="clothing">Clothing · clo · optional</label><input id="clothing" type="number" min="0" max="3" step="any" placeholder="Upstream conditions"><p class="muted">Blank values preserve upstream environment and clothing.</p><button class="primary" id="run" type="submit">Run native simulation <span>↗</span></button></form><div id="run-status" class="run-status" role="status">Checking native backend…</div></div><div class="evidence"><div class="section-heading">EVIDENCE BOUNDARY</div><p>Geometry describes anatomy. Simulation describes model behavior. Neither alone establishes patient-specific calibration.</p><div id="evidence-status" class="tag">Uncertainty remains explicit</div><details class="evidence-fold"><summary>Human measurement fit</summary><div id="calibration-details"><p>Loading calibration evidence…</p></div></details><details class="evidence-fold"><summary>System coverage</summary><div id="coverage-details"><p>Coverage data unavailable.</p></div></details><details class="evidence-fold"><summary>Conservative exchange</summary><div id="coupling-details"><p>Exchange data unavailable.</p></div></details><details class="evidence-fold"><summary>Vascular CFD audit</summary><div id="vascular-audit"><p>Audit unavailable.</p></div></details></div></aside></main>`;
+  `<header><div class="brand"><span class="brandmark">ih<span>•</span></span><div>INTEGRATED HUMAN<small>Computational physiology workbench</small></div></div><div class="header-right"><span class="live-dot"></span> LOCAL RESEARCH ENVIRONMENT <span class="version">v0.3</span></div></header><main><aside class="library"><div class="section-heading"><span>GENERIC HUMAN</span><span id="total">—</span></div><button id="canonical-body" class="text-button">Explore the assembled body</button><p id="body-status" class="muted">Loading the canonical body state.</p><details id="source-inspection" class="evidence-fold"><summary>Advanced · source evidence inspection</summary><label class="field-label" for="model">Body or source model</label><select id="model"><option>Loading source families…</option></select></details><p class="muted" id="model-note">Reading the anatomical assembly.</p><label class="field-label" for="anatomy-view">Explore anatomy</label><select id="anatomy-view" aria-label="Anatomy view"></select><p id="layer-note" class="muted"></p><div class="search"><span>⌕</span><input id="search" placeholder="Find a structure…" aria-label="Search anatomy"></div><div class="section-heading layer-title">SYSTEM LAYERS <button id="all" class="text-button">Show all</button></div><div id="systems"></div><div class="section-heading results-heading">STRUCTURES <span id="count">0</span></div><div id="structures" class="structures"></div><div class="library-footer"><span class="live-dot"></span> One body · traceable sources and assumptions</div></aside><section class="center"><div class="viewport" id="viewport"><div class="view-heading"><div class="eyebrow">SPATIAL EXPLORER</div><h1 id="view-title">Human anatomy</h1><p id="frame-label">Source-defined coordinates</p></div><div class="view-tools"><button id="reset" title="Reset camera">↺ <span>Reset view</span></button><button id="posture" title="Rigid display rotation only; native posture is not established">Supine view</button><button id="front">Anterior</button><button id="side">Lateral</button></div><div id="scene-status" role="status">Loading anatomical assets…</div><div id="flow-legend" class="flow-legend" hidden></div><div class="orientation">Y <span>↑</span><br><small>X →</small></div><div class="view-footer"><span id="render-count">0 structures visible</span><span>Drag to orbit · Scroll to zoom · Click to inspect</span></div></div><div class="display-controls"><label>Opacity <input id="opacity" type="range" min=".05" max="1" step=".05" value="1"><output id="opacity-value">100%</output></label><label>Section <input id="clip" type="range" min="0" max="100" value="100"><output id="clip-value">Off</output></label><select id="flow-field" aria-label="Vascular field"><option value="velocity">Velocity</option><option value="pressure">Pressure</option></select><button id="play" disabled aria-label="Play spatial time series">▶</button><input id="time" type="range" min="0" max="0" value="0" aria-label="Spatial time frame" disabled><output id="time-value">No flow frames</output></div><section class="signals"><div class="signal-header"><div><div class="eyebrow">TEMPORAL OBSERVATORY</div><h2>Physiology & dynamics</h2></div><div class="tabs"><button id="tab-phys" class="active">Trajectory</button><button id="tab-spectral">Spectrum</button></div></div><div id="spectral-controls" class="spectral-controls" hidden><select id="spectral-run" aria-label="Spectral evidence source"></select><select id="spectral-mode" aria-label="Spectral representation"><option value="psd">Fourier power density</option><option value="laplace">Finite Laplace magnitude</option></select><select id="sigma" aria-label="Laplace damping" hidden></select></div><div id="trajectory-controls" class="spectral-controls"><select id="trajectory-run" aria-label="Recorded physiology run"><option value="baseline">Recorded resting baseline</option></select></div><div class="signal-select"><select id="variable" aria-label="Physiology variable"></select><span id="signal-source">Awaiting simulation data</span></div><div id="chart" class="chart"><p class="empty">Loading physiological trajectories…</p></div><p id="chart-note" class="muted">Native simulation evidence is distinct from human measurements.</p></section></section><aside class="inspector"><div class="section-heading">STRUCTURE INSPECTOR <span>↗</span></div><div id="details"><div class="inspector-symbol">◎</div><h2>Explore the body</h2><p class="muted">Select a structure in the viewport or library to inspect its source, coordinate frame, and evidence status.</p></div><div class="scenario"><div class="eyebrow">NATIVE PHYSIOLOGY</div><h2>Run a scenario</h2><p id="scenario-description" class="muted">Execute the body model and inspect its recorded response.</p><form id="scenario-form"><label class="field-label" for="engine-variant">Native implementation</label><select id="engine-variant"><option value="">Loading implementations…</option></select><p id="variant-note" class="muted">Source corrections do not establish clinical calibration.</p><label class="field-label" for="patient">Model profile</label><select id="patient"><option value="StandardMale">StandardMale</option></select><label class="field-label" for="scenario">Protocol</label><select id="scenario"><option value="baseline">Resting baseline</option><option value="exercise">Exercise & recovery</option><option value="hemorrhage_saline">Hemorrhage, saline & recovery</option></select><p id="protocol-note" class="muted">Record the upstream resting state.</p><label class="field-label" for="duration">Duration · seconds</label><input id="duration" type="number" min="1" max="600" value="60" required><label class="field-label" for="ambient">Ambient temperature · °C · optional</label><input id="ambient" type="number" min="10" max="35" step="any" placeholder="Upstream conditions"><label class="field-label" for="clothing">Clothing · clo · optional</label><input id="clothing" type="number" min="0" max="3" step="any" placeholder="Upstream conditions"><p class="muted">Blank values preserve upstream environment and clothing.</p><button class="primary" id="run" type="submit">Run native simulation <span>↗</span></button></form><div id="run-status" class="run-status" role="status">Checking native backend…</div></div><div class="evidence"><div class="section-heading">EVIDENCE BOUNDARY</div><p>Geometry describes anatomy. Simulation describes model behavior. Neither alone establishes patient-specific calibration.</p><div id="evidence-status" class="tag">Uncertainty remains explicit</div><details class="evidence-fold"><summary>Human measurement fit</summary><div id="calibration-details"><p>Loading calibration evidence…</p></div></details><details class="evidence-fold"><summary>System coverage</summary><div id="coverage-details"><p>Coverage data unavailable.</p></div></details><details class="evidence-fold"><summary>Conservative exchange</summary><div id="coupling-details"><p>Exchange data unavailable.</p></div></details><details class="evidence-fold"><summary>Vascular CFD audit</summary><div id="vascular-audit"><p>Audit unavailable.</p></div></details></div></aside></main>`;
 let manifest,
   modelId,
+  bodyTrajectory = null,
+  bodySummary = null,
+  bodyError = "Body trajectory unavailable",
+  bodyRequest = 0,
+  canonicalRuns = new Set(),
   systems = new Set(),
   layerOpacity = new Map(),
   selected = null,
@@ -89,7 +97,11 @@ try {
   }).observe(viewport);
   renderer.setAnimationLoop((now) => {
     controls.update();
-    if (playing && now - lastTick > 160) {
+    const frameIndex = Number($("time").value);
+    const bodyInterval = modelId === "ihm-body" && bodyTrajectory
+      ? 1000 * ((bodyTrajectory.frames[frameIndex+1]?.time_s ?? bodyTrajectory.frames[frameIndex].time_s + .1) - bodyTrajectory.frames[frameIndex].time_s)
+      : 160;
+    if (playing && flowFrames && now - lastTick >= bodyInterval) {
       $("time").value = (Number($("time").value) + 1) % flowFrames;
       updateFrame();
       lastTick = now;
@@ -177,7 +189,7 @@ function syncLayers() {
   });
   const total=manifest.structures.filter(s=>s.model_id===modelId).length;
   const selectedCount=manifest.structures.filter(s=>s.model_id===modelId && systems.has(s.system)).length;
-  $("layer-note").textContent=`${selectedCount} of ${total} source meshes enabled. Each layer has its own opacity.`;
+  $("layer-note").textContent=`${selectedCount} of ${total} anatomical structures enabled. Each layer has its own opacity.`;
   $("all").textContent=systems.size===$("systems").querySelectorAll('input[type="checkbox"]').length?'Hide all':'Show all';
 }
 function applyAnatomyView() {
@@ -215,6 +227,15 @@ function rebuildSystems() {
 }
 function chooseModel() {
   modelId = $("model").value;
+  $("total").textContent = manifest.structures.filter(s => s.model_id === modelId).length.toLocaleString();
+  playing = false;
+  $("patient").disabled = modelId === "ihm-body";
+  $("scenario-description").textContent = modelId === "ihm-body"
+    ? "Run this generic body's physiology, mechanics and brain model. Playback uses computed states."
+    : "Run a native source profile and inspect its recorded response.";
+  syncCanonicalProfile();
+  if (modelId === "ihm-body" && activeRun === "baseline") activeRun = "body";
+  if (modelId === "ihm-body" && activeRun === "body" && bodyTrajectory) useBodyPhysiology();
   selected = null;
   loadController?.abort();
   objects.forEach(dispose);
@@ -242,8 +263,47 @@ function chooseModel() {
     );
   }
   rebuildSystems();
+  if (modelId === "ihm-body") {
+    const available = [...new Set(manifest.structures.filter(x => x.model_id === modelId).map(x => x.system))];
+    ({systems, opacity: layerOpacity} = anatomyView("core", available));
+    $("anatomy-view").value = "core";
+    syncLayers();
+  }
+  setupFrames();
   resetCamera();
   refresh();
+}
+function syncCanonicalProfile() {
+  if (modelId !== "ihm-body") return;
+  if (![...$("patient").options].some(o => o.value === "IHMGenericMale"))
+    $("patient").add(new Option("IHMGenericMale · this body", "IHMGenericMale"));
+  $("patient").value = "IHMGenericMale";
+}
+function useBodyPhysiology() {
+  if (!bodyTrajectory) return;
+  const frames = bodyTrajectory.frames;
+  const channels = [...new Set(frames.flatMap(f => Object.keys(f.physiology || {})))].filter(key => frames.some(f => Number.isFinite(f.physiology?.[key])));
+  phys = {time_s: frames.map(f => f.time_s), values: Object.fromEntries(channels.map(key => [key, frames.map(f => Number.isFinite(f.physiology?.[key]) ? f.physiology[key] : null)])), metadata: {source_kind: "Computed generic body physiology"}};
+  updateVariables();
+}
+async function loadBodyTrajectory(run) {
+  const request = ++bodyRequest;
+  try {
+    const data = await api("/api/body/trajectory" + (run ? `?run=${encodeURIComponent(run)}` : ""));
+    if (request !== bodyRequest) return;
+    if (!validBodyTrajectory(data)) throw Error("No valid computed body frames available");
+    bodyTrajectory = data;
+    bodyError = "";
+    if (activeRun === "body") useBodyPhysiology();
+  } catch (error) {
+    if (request !== bodyRequest) return;
+    bodyTrajectory = null;
+    bodyError = error.message;
+  }
+  if (modelId === "ihm-body") setupFrames();
+  $("body-status").textContent = bodySummary
+    ? `${bodySummary.entity_count?.toLocaleString() || "Canonical"} anatomical entities · ${bodyTrajectory ? "computed body playback available" : "reference anatomy; body trajectory unavailable"}`
+    : bodyTrajectory ? "Computed generic body state available" : "Reference anatomy available; body trajectory unavailable";
 }
 function dispose(o) {
   o.traverse((x) => {
@@ -443,6 +503,18 @@ function createGeometry(s, g) {
   object.userData.units = g.units || "source units";
   return object;
 }
+function canonicalEvidence(s) {
+  if (s.model_id !== "ihm-body") return "";
+  const u = s.uncertainty || {};
+  const registration = model()?.registrations?.[u.registration_or_synthesis?.registration_id];
+  const assumptions = (s.assumptions || []).map(id => {
+    const item = model()?.assumption_ledger?.find(a => a.id === id);
+    return `<li><strong>${esc(id)}</strong><br>${esc(item?.statement || "See canonical assumption ledger")}</li>`;
+  }).join("");
+  const numerical = u.display_numerics || {};
+  const triangleCount = s.display_geometry?.source_faces;
+  return `<section class="canonical-evidence"><h3>What this representation supports</h3><dl><dt>Biological uncertainty</dt><dd>${esc(u.biological?.status || "Biological variation is not quantified for this generic body.")} No calibrated confidence percentage.</dd><dt>Registration & synthesis</dt><dd>${esc((s.evidence_kind || u.registration_or_synthesis?.kind || "Source-backed representation").replaceAll("_", " "))}.${registration?.held_out_rms_m !== undefined ? ` Held-out geometric fit: ${(registration.held_out_rms_m*1000).toFixed(2)} mm RMS. This is a registration diagnostic, not biological accuracy.` : " See the explicit assumptions below."}</dd><dt>Display & numerical precision</dt><dd>${triangleCount === undefined ? "Structural geometry" : `${Number(triangleCount).toLocaleString()} acquired triangles`}; ${numerical.display_reduction_applied === false ? "no additional display reduction" : "see representation metadata"}. Coordinates displayed in meters; source surface resolution and computed transform precision do not establish biological certainty.</dd><dt>Canonical frame</dt><dd>${esc(model()?.frame)} · meters</dd></dl>${assumptions ? `<details class="evidence-fold"><summary>Source dependencies & modeling assumptions</summary><ul>${assumptions}</ul></details>` : ""}</section>`;
+}
 function selectStructure(s) {
   if (!s) return;
   selected = s;
@@ -454,7 +526,7 @@ function selectStructure(s) {
   );
   const source = s.source || {};
   $("details").innerHTML =
-    `<div class="eyebrow">${esc(s.system)} / ${esc(s.kind || "mesh")}</div><h2>${esc(s.name)}</h2><span class="tag">${esc(s.calibration_status || "Not independently calibrated")}</span><dl><dt>Source</dt><dd>${esc(source.label || model()?.name)}</dd><dt>Coordinate frame</dt><dd>${esc(source.frame || model()?.frame || "Source-defined")}</dd><dt>Specimen</dt><dd>${esc(source.specimen || "See source metadata")}</dd><dt>Units</dt><dd>${esc(source.units || model()?.source_units || "Source units")}</dd><dt>Evidence status</dt><dd>${esc(source.status || s.status || "Source geometry; physiological registration unverified")}</dd>${s.path_interpretation ? `<dt>Muscle path interpretation</dt><dd>${esc(s.path_interpretation)}</dd><dt>Wrapping solution</dt><dd>${s.wrap_solved ? "Solved by source" : "Unsolved; attachment chords only"}</dd>` : ""}${
+    `<div class="eyebrow">${esc(s.system)} / ${esc(s.kind || "mesh")}</div><h2>${esc(s.name)}</h2><span class="tag">${esc(s.calibration_status || "Not independently calibrated")}</span><dl><dt>Source</dt><dd>${esc(source.label || model()?.name)}</dd><dt>Original source frame</dt><dd>${esc(source.frame || model()?.frame || "Source-defined")}</dd><dt>Specimen</dt><dd>${esc(source.specimen || "See source metadata")}</dd><dt>Original source units</dt><dd>${esc(source.units || model()?.source_units || "Source units")}</dd><dt>Evidence status</dt><dd>${esc(source.status || s.status || "Source geometry; physiological registration unverified")}</dd>${s.path_interpretation ? `<dt>Muscle path interpretation</dt><dd>${esc(s.path_interpretation)}</dd><dt>Wrapping solution</dt><dd>${s.wrap_solved ? "Solved by source" : "Unsolved; attachment chords only"}</dd>` : ""}${
       s.native_mechanics
         ? `<dt>Native mechanics · source simulation</dt><dd>Activation ${esc(s.native_mechanics.activation)} · path length ${Number(s.native_mechanics.length_m).toFixed(4)} m<br>Tendon force ${Number(s.native_mechanics.tendon_force_N).toFixed(3)} N<br>Active / passive fiber force ${Number(s.native_mechanics.active_fiber_force_N).toFixed(3)} / ${Number(s.native_mechanics.passive_fiber_force_N).toFixed(3)} N</dd><dt>Joint moment arms</dt><dd>${Object.entries(
             s.native_mechanics.moment_arms_m || {},
@@ -464,7 +536,8 @@ function selectStructure(s) {
               "<br>",
             )}</dd><dt>Mechanical validity</dt><dd>Source default pose; external force balance ${s.native_mechanics.external_force_balance_solved ? "solved" : "not solved"}. No subject calibration.</dd>`
         : ""
-    }${s.classification ? `<dt>Anatomical grouping</dt><dd>${esc(s.classification.classification_basis || s.classification.status)} · ${esc((s.classification.systems || []).join(", "))}${s.classification.ambiguous_primary ? " · multiple supported primary groups" : ""}</dd>` : ""}${s.source_collections ? `<dt>Source collections</dt><dd>${esc(s.source_collections.join(", "))}</dd>` : ""}${s.evaluation_warnings?.length ? `<dt>Source evaluation caveat</dt><dd>${esc(s.evaluation_warnings.join("; "))}</dd>` : ""}${source.geometry_stage ? `<dt>Geometry stage</dt><dd>${esc(source.geometry_stage)}</dd>` : ""}${s.display_geometry ? `<dt>Surface geometry</dt><dd>${esc(s.display_geometry.source_faces)} original triangles · display budget ${esc(s.display_geometry.target_faces)}. Original mesh retained.</dd>` : ""}${source.license ? `<dt>Asset license</dt><dd>${esc(source.license)}</dd>` : ""}${source.sha256 ? `<dt>SHA-256</dt><dd class="hash">${esc(source.sha256)}</dd>` : ""}</dl>${/^https?:\/\//.test(source.url || "") ? `<a class="source-link" href="${esc(source.url)}" target="_blank" rel="noopener noreferrer">Open original source ↗</a>` : ""}`;
+    }${s.classification ? `<dt>Anatomical grouping</dt><dd>${esc(s.classification.classification_basis || s.classification.status)} · ${esc((s.classification.systems || []).join(", "))}${s.classification.ambiguous_primary ? " · multiple supported primary groups" : ""}</dd>` : ""}${s.source_collections ? `<dt>Source collections</dt><dd>${esc(s.source_collections.join(", "))}</dd>` : ""}${s.evaluation_warnings?.length ? `<dt>Source evaluation caveat</dt><dd>${esc(s.evaluation_warnings.join("; "))}</dd>` : ""}${source.geometry_stage ? `<dt>Geometry stage</dt><dd>${esc(source.geometry_stage)}</dd>` : ""}${s.display_geometry ? `<dt>Surface geometry</dt><dd>${esc(s.display_geometry.source_faces)} original triangles · display budget ${esc(s.display_geometry.target_faces ?? s.display_geometry.source_faces)}. Original mesh retained.</dd>` : ""}${source.license ? `<dt>Asset license</dt><dd>${esc(source.license)}</dd>` : ""}${source.sha256 ? `<dt>SHA-256</dt><dd class="hash">${esc(source.sha256)}</dd>` : ""}</dl>${/^https?:\/\//.test(source.url || "") ? `<a class="source-link" href="${esc(source.url)}" target="_blank" rel="noopener noreferrer">Open original source ↗</a>` : ""}`;
+  $("details").querySelector(":scope > dl")?.insertAdjacentHTML("beforebegin", canonicalEvidence(s));
   $("structures")
     .querySelectorAll("button")
     .forEach((b) => b.classList.toggle("selected", b.dataset.id === s.id));
@@ -493,6 +566,19 @@ function updateDisplay() {
   $("clip-value").textContent = clip === 100 ? "Off" : `${clip}%`;
 }
 function setupFrames() {
+  if (modelId === "ihm-body") {
+    flowFrames = bodyTrajectory?.frames.length || 0;
+    $("flow-field").hidden = true;
+    $("play").disabled = flowFrames < 2;
+    $("time").disabled = !flowFrames;
+    $("time").max = Math.max(0, flowFrames - 1);
+    $("time").value = 0;
+    playing = false;
+    $("play").textContent = "▶";
+    updateFrame();
+    return;
+  }
+  $("flow-field").hidden = false;
   const scalar = [...objects.values()].find(
     (o) => o.visible && o.userData.scalarFields,
   );
@@ -520,6 +606,23 @@ function setupFrames() {
   updateFrame();
 }
 function updateFrame() {
+  if (modelId === "ihm-body") {
+    const frame = bodyTrajectory?.frames[Number($("time").value)];
+    objects.forEach((object, id) => {
+      const transform = bodyTransform(frame?.entities?.[id], bodyTrajectory?.centroids_m[id]);
+      object.matrixAutoUpdate = false;
+      object.matrix.set(...transform);
+      object.matrixWorldNeedsUpdate = true;
+    });
+    $("flow-legend").hidden = !frame;
+    const p = frame?.physiology || {};
+    const values = [["HeartRate(1/min)", "HR", "/min"], ["MeanArterialPressure(mmHg)", "MAP", "mmHg"]]
+      .filter(([key]) => Number.isFinite(p[key])).map(([key,label,unit]) => `${label} ${Number(p[key]).toFixed(1)} ${unit}`);
+    $("flow-legend").textContent = frame ? `Computed body state · ${Object.keys(frame.entities).length} tissue transforms${values.length ? " · " + values.join(" · ") : ""}` : "";
+    $("time-value").textContent = frame ? `${Number(frame.time_s).toFixed(3)} s` : "Body trajectory unavailable";
+    $("time-value").title = frame ? "Computed snapshots; omitted tissues retain reference geometry. No interpolation or extrapolation." : bodyError;
+    return;
+  }
   $("flow-legend").hidden = !flowFrames;
   const index = Number($("time").value);
   let label = "";
@@ -662,7 +765,9 @@ function drawChart() {
         : spectralRun()?.limitations?.[0] ||
           temporal.limitations?.[0] ||
           "Finite observation horizon. Power spectra do not establish causality."
-    : activeRun === "reproductive"
+    : activeRun === "body"
+      ? "Computed physiology for IHMGenericMale on the body playback clock. Recorded model states; empirical calibration remains incomplete."
+      : activeRun === "reproductive"
       ? `Schlosser–Selgrade source model · ${phys.channel_types?.[id]?.replaceAll("_", " ") || "source channel"} · 0–10 day example; E2/P4/inhibin are prescribed, not a generated full cycle.`
       : activeRun.startsWith("csf:")
         ? "Ursino–Lodi source simulation; rounded published initial state. " +
@@ -715,9 +820,11 @@ async function pollRuns() {
       $("patient").value = selectedPatient;
     else if ((data.patients || []).includes("StandardMale"))
       $("patient").value = "StandardMale";
+    syncCanonicalProfile();
+    canonicalRuns = new Set(runs.filter(r => r.canonical_body).map(r => r.id));
     const latest = runs.at(-1);
     $("trajectory-run").innerHTML =
-      '<option value="baseline">Recorded resting baseline</option>' +
+      '<option value="body">Computed generic body state</option><option value="baseline">Recorded source resting baseline</option>' +
       (reproductive
         ? '<option value="reproductive">Gonadotropin regulation · source model · 0–10 days</option>'
         : "") +
@@ -750,6 +857,7 @@ async function pollRuns() {
     ) {
       phys = await api(`/api/physiology?run=${encodeURIComponent(chosen.id)}`);
       phys._run = chosen.id;
+      if (chosen.canonical_body) await loadBodyTrajectory(chosen.id);
       updateVariables();
     }
   } catch (e) {
@@ -759,6 +867,7 @@ async function pollRuns() {
 $("trajectory-run").onchange = async () => {
   activeRun = $("trajectory-run").value;
   try {
+    if (activeRun === "body") { useBodyPhysiology(); return; }
     phys =
       activeRun === "reproductive"
         ? trajectoryFromChannels(reproductive)
@@ -780,6 +889,7 @@ $("trajectory-run").onchange = async () => {
                   : `/api/physiology?run=${encodeURIComponent(activeRun)}`,
               );
     phys._run = activeRun;
+    if (canonicalRuns.has(activeRun)) await loadBodyTrajectory(activeRun);
     updateVariables();
   } catch (e) {
     $("chart").innerHTML = `<p class="empty">${esc(e.message)}</p>`;
@@ -813,14 +923,14 @@ $("scenario-form").onsubmit = async (e) => {
     const config = scenarioInput(
       $("scenario").value,
       $("duration").value,
-      $("patient").value,
+      modelId === "ihm-body" ? "IHMGenericMale" : $("patient").value,
       {
         ambient_temperature_c: $("ambient").value,
         clothing_clo: $("clothing").value,
         engine_variant: $("engine-variant").value,
       },
     );
-    const run = await api("/api/scenarios", {
+    const run = await api(modelId === "ihm-body" ? "/api/body/scenarios" : "/api/scenarios", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(config),
@@ -845,6 +955,12 @@ $("posture").onclick = () => {
   updateDisplay();
 };
 $("model").onchange = chooseModel;
+$("canonical-body").onclick = () => {
+  if (!manifest?.models.some(m => m.id === "ihm-body")) return;
+  $("model").value = "ihm-body";
+  $("source-inspection").open = false;
+  chooseModel();
+};
 $("anatomy-view").onchange = applyAnatomyView;
 $("search").oninput = () => manifest && refresh();
 $("all").onclick = () => {
@@ -870,6 +986,7 @@ $("time").oninput = updateFrame;
 $("flow-field").onchange = updateFrame;
 $("play").onclick = () => {
   playing = !playing;
+  lastTick = performance.now();
   $("play").textContent = playing ? "Ⅱ" : "▶";
 };
 $("variable").onchange = drawChart;
@@ -966,7 +1083,9 @@ async function start() {
     $("model").innerHTML = manifest.models
       .map((m) => `<option value="${esc(m.id)}">${esc(m.name)}</option>`)
       .join("");
+    $("model").value = defaultModelId(manifest.models);
     chooseModel();
+    api("/api/body").then(data => { bodySummary = data; }).catch(() => {}).finally(() => loadBodyTrajectory());
   } catch (e) {
     $("scene-status").textContent = `Anatomy unavailable · ${e.message}`;
     $("model").innerHTML = "<option>Source manifest unavailable</option>";
@@ -982,6 +1101,7 @@ async function start() {
     api("/api/thermal/index"),
   ]);
   if (results[0].status === "fulfilled") phys = results[0].value;
+  if (activeRun === "body" && bodyTrajectory) useBodyPhysiology();
   if (results[1].status === "fulfilled") {
     temporal = results[1].value;
     $("spectral-run").innerHTML = (temporal.runs || [])

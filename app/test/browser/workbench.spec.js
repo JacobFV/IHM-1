@@ -1,4 +1,9 @@
 import { test, expect } from "@playwright/test";
+async function selectSource(page, id) {
+  if (!await page.locator("#source-inspection").evaluate(el => el.open))
+    await page.locator("#source-inspection summary").click();
+  await page.locator("#model").selectOption(id);
+}
 test("real source anatomy renders and research controls remain connected", async ({
   page,
 }) => {
@@ -23,14 +28,14 @@ test("real source anatomy renders and research controls remain connected", async
     canvas.x + canvas.width * 0.5,
     canvas.y + canvas.height * 0.5,
   );
-  await expect(page.locator("#details dl")).toBeVisible();
+  await expect(page.locator("#details > dl")).toBeVisible();
   const skeletal = page.locator('#systems input[value="skeletal"]');
   await skeletal.uncheck();
   await expect(page.locator("#count")).not.toHaveText(before);
   await skeletal.check();
   await expect(page.locator("#count")).toHaveText(before);
   await page.locator("#structures button").first().click();
-  await expect(page.locator("#details dl")).toBeVisible();
+  await expect(page.locator("#details > dl")).toBeVisible();
   await page.locator("#search").fill("this-structure-does-not-exist");
   await expect(page.locator("#count")).toHaveText("0");
   await expect(page.locator("#scene-status")).toContainText("No structures");
@@ -70,7 +75,7 @@ test("measured Laplace evidence and archived vascular playback use actual data",
   await page.locator("#sigma").selectOption("1");
   await expect(page.locator("#chart svg")).toBeVisible();
   await expect(page.locator("#chart-note")).toContainText("Finite-horizon");
-  await page.locator("#model").selectOption("vascular-cerebral");
+  await selectSource(page, "vascular-cerebral");
   await expect(page.locator("#play")).toBeEnabled({ timeout: 60000 });
   await page.locator("#play").click();
   await expect(page.locator("#time")).not.toHaveValue("0");
@@ -105,6 +110,7 @@ test("native scenario form submits selected-preset hemorrhage and saline with st
   );
   await page.goto("/");
   await expect(page.locator("#run-status")).not.toContainText("Checking");
+  await selectSource(page, "bodyparts3d");
   await page.locator("#patient").selectOption("StandardFemale");
   await expect(page.locator("#patient")).toHaveValue("StandardFemale");
   await page
@@ -142,7 +148,7 @@ test("OpenSim source family exposes native wrapped paths and force provenance", 
   page,
 }) => {
   await page.goto("/");
-  await page.locator("#model").selectOption("opensim-rajagopal");
+  await selectSource(page, "opensim-rajagopal");
   await expect(page.locator("#scene-status")).toHaveText("", {
     timeout: 60000,
   });
@@ -171,7 +177,7 @@ test("anatomy inspection remains available without a WebGL context", async ({
     "3D rendering unavailable",
   );
   await page.locator("#structures button").first().click();
-  await expect(page.locator("#details dl")).toBeVisible();
+  await expect(page.locator("#details > dl")).toBeVisible();
 });
 test("coverage, circuit balance and CFD uncertainty are exposed with measured and source-model context", async ({
   page,
@@ -215,7 +221,7 @@ test("native BETSE cells expose voltage, ions, constant protein field and source
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto("/");
-  await page.locator("#model").selectOption("betse-tissue");
+  await selectSource(page, "betse-tissue");
   await expect(page.locator("#play")).toBeEnabled();
   await expect(page.locator("#flow-legend")).toContainText("Vmem");
   await page.locator("#structures button").first().click();
@@ -255,7 +261,7 @@ test("CSF source trajectories retain coupling boundaries and environment overrid
   await expect(page.locator("#ambient")).toHaveValue("");
   await expect(page.locator("#clothing")).toHaveValue("");
   let payload;
-  await page.route("**/api/scenarios", async (route) => {
+  await page.route("**/api/body/scenarios", async (route) => {
     if (route.request().method() !== "POST") return route.continue();
     payload = route.request().postDataJSON();
     await route.fulfill({
@@ -328,11 +334,11 @@ test('full source anatomy is discoverable by tissue and supports independent lay
   await expect(page.locator('#systems input[value="integumentary"]')).not.toBeChecked();
   await page.getByLabel('Anatomy view',{exact:true}).selectOption('all');
   await expect(page.getByLabel('integumentary layer opacity',{exact:true})).toHaveValue('0.18');
-  await page.locator('#model').selectOption('published-lymphatic-network');
+  await selectSource(page, 'published-lymphatic-network');
   await expect(page.locator('#scene-status')).toHaveText('',{timeout:120000});
   await page.locator('#structures button').first().click();
   await expect(page.locator('#details')).toContainText('lymph');
-  await page.locator('#model').selectOption('z-anatomy');
+  await selectSource(page, 'z-anatomy');
   await expect(page.locator('#systems input[value="lymphatic"]')).toBeChecked();
   await expect(page.locator('#count')).toHaveText('163');
   await expect(page.locator('#scene-status')).toHaveText('',{timeout:120000});

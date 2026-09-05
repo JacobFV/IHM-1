@@ -159,3 +159,36 @@ export function anatomyView(id, available) {
   const systems=new Set(available.filter(s=>id==='all'||(id==='internal'?s!=='integumentary':view.systems.includes(s))));
   return {systems, opacity: new Map(available.map(s=>[s, s==='integumentary' && id==='all' ? .18 : 1]))};
 }
+
+export function defaultModelId(models) {
+  return models.find(m => m.id === 'ihm-body')?.id || models[0]?.id;
+}
+
+// Row-major homogeneous transform T(c+t) R F T(-c). Sparse frames are full
+// snapshots for their listed entities; omitted entities return to reference.
+export function bodyTransform(state, centroid) {
+  const identity = [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1];
+  if (!state) return identity;
+  const finite3 = v => Array.isArray(v) && v.length === 3 && v.every(Number.isFinite);
+  if (!finite3(centroid)) throw Error('Body motion needs a finite reference centroid');
+  const t = state.translation_m || [0,0,0];
+  const R = state.rotation_matrix || [[1,0,0],[0,1,0],[0,0,1]];
+  const F = state.deformation_gradient || [[1,0,0],[0,1,0],[0,0,1]];
+  if (!finite3(t) || ![R,F].every(m => Array.isArray(m) && m.length === 3 && m.every(finite3)))
+    throw Error('Invalid body transform');
+  const determinant = m => m[0][0]*(m[1][1]*m[2][2]-m[1][2]*m[2][1])-m[0][1]*(m[1][0]*m[2][2]-m[1][2]*m[2][0])+m[0][2]*(m[1][0]*m[2][1]-m[1][1]*m[2][0]);
+  if (determinant(R) <= 0 || determinant(F) <= 0) throw Error('Folded or collapsed body transform');
+  const A = R.map(row => [0,1,2].map(j => row.reduce((v,r,k) => v+r*F[k][j],0)));
+  return [...A.flatMap((row,i) => [...row, centroid[i]+t[i]-row.reduce((v,a,j)=>v+a*centroid[j],0)]), 0,0,0,1];
+}
+
+export function validBodyTrajectory(data) {
+  if (!Array.isArray(data?.frames) || !data.frames.length || !data.centroids_m) return false;
+  try {
+    for (const [i,frame] of data.frames.entries()) {
+      if (!Number.isFinite(frame.time_s) || (i && frame.time_s <= data.frames[i-1].time_s) || !frame.entities || Array.isArray(frame.entities)) return false;
+      for (const [id,state] of Object.entries(frame.entities)) bodyTransform(state,data.centroids_m[id]);
+    }
+    return true;
+  } catch { return false; }
+}
