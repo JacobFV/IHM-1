@@ -1,5 +1,9 @@
 // Thin adapter for the upstream BioGears API; no physiological equations changed.
 #include <cassert>
+#include <iomanip>
+#include <biogears/cdm/compartment/SECompartmentManager.h>
+#include <biogears/cdm/compartment/fluid/SELiquidCompartment.h>
+#include <biogears/cdm/compartment/fluid/SEGasCompartment.h>
 #include <biogears/cdm/engine/PhysiologyEngineTrack.h>
 #include <biogears/cdm/properties/SEProperties.h>
 #include <biogears/engine/BioGearsPhysiologyEngine.h>
@@ -100,13 +104,31 @@ int main(int argc, char** argv) {
   // Schedule both actions and tracking with integer native steps. The upstream
   // duration overload floors floating quotients, and its tracker clock can drift.
   bg->SetAutoTrackFlag(false);
+  // Separate named compartment telemetry preserves the original physiological CSV.
+  // These source compartments can overlap; never sum them as independent storage.
+  const std::vector<std::string> liquid_names={"LeftHeart","RightHeart","LiverVasculature","LeftKidneyVasculature","RightKidneyVasculature","SkinVasculature","SkinTissueExtracellular","SkinTissueIntracellular","Lymph"};
+  const std::vector<std::string> gas_names={"LeftLungPulmonary","RightLungPulmonary"};
+  const auto& compartments=bg->GetCompartments();
+  std::ofstream body("body_compartments.csv");body<<std::setprecision(17)<<"Time(s)";
+  for(const auto& name:liquid_names){if(!compartments.GetLiquidCompartment(name))return 6;body<<","<<name<<"Volume(mL),"<<name<<"Pressure(mmHg)";}
+  for(const auto& name:gas_names){if(!compartments.GetGasCompartment(name))return 6;body<<","<<name<<"GasVolume(mL)";}
+  body<<"\n";
+  auto record_body=[&](){
+    body<<bg->GetSimulationTime(TimeUnit::s);
+    for(const auto& name:liquid_names){const auto* c=compartments.GetLiquidCompartment(name);body<<","<<c->GetVolume(VolumeUnit::mL)<<","<<c->GetPressure(PressureUnit::mmHg);}
+    for(const auto& name:gas_names)body<<","<<compartments.GetGasCompartment(name)->GetVolume(VolumeUnit::mL);
+    body<<"\n";
+  };
+  record_body();
   long elapsed_steps = 0;
   auto advance_to = [&](long target) {
     while (elapsed_steps < target) {
       if (!bg->AdvanceModelTime(false)) return false;
       ++elapsed_steps;
-      if (elapsed_steps % sample_stride == 0)
+      if (elapsed_steps % sample_stride == 0) {
         bg->GetEngineTrack()->TrackData(bg->GetSimulationTime(TimeUnit::s), true);
+        record_body();
+      }
     }
     return true;
   };

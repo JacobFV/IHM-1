@@ -46,16 +46,24 @@ class Jobs:
         preferred='saturation_bounds_heatflux' if any(v['id']=='saturation_bounds_heatflux' and v['available'] for v in variants) else 'upstream'
         return {'available':(RUNTIME/'native_biogears_rest').is_file(),'patients':available_patients(),'runs':runs,'engine_variants':variants,'default_engine_variant':preferred,
                 'limits':{'max_seconds':600,'max_pending':4,'parallel_runs':1}}
-    def submit(self,data):
+    def submit(self,data,canonical=False):
         from ihm.native import NativeConfig
         if not isinstance(data,dict) or 'state_path' in data:raise ValueError('State paths are not accepted by the web API')
+        if canonical:
+            from ihm.assembly.body import CanonicalBody
+            body=CanonicalBody.from_workspace(self.root)
+            data=dict(data)
+            patient=body.payload['profile']['native_patient']
+            if data.get('patient',patient)!=patient:raise ValueError('Canonical scenarios require the shared generic body profile')
+            data['patient']=patient
         config=NativeConfig.from_dict(data)
         if config.seconds>600:raise ValueError('Web scenarios are bounded to 600 seconds')
         if len(config.interventions)>20:raise ValueError('Web scenarios permit at most 20 actions')
         from dataclasses import asdict
         with self.lock:
             if sum(r['status'] in ('queued','running') for r in self.runs)>=4:raise ValueError('Scenario queue full; wait for a run to finish')
-            job={'id':time.strftime('%Y%m%d-%H%M%S')+'-'+uuid.uuid4().hex[:8],'status':'queued','config':asdict(config),'created_unix':time.time()}
+            job={'id':time.strftime('%Y%m%d-%H%M%S')+'-'+uuid.uuid4().hex[:8],'status':'queued','config':asdict(config),'created_unix':time.time(),'canonical_body':canonical}
+            if canonical:job['canonical_sources']=body.payload['sources'];job['canonical_runtime_sources']=body.payload['runtime_sources'];job['canonical_patient_sha256']=body.payload['profile']['native_patient_sha256']
             self.runs.append(job);self._save(job)
         self.pool.submit(self._execute,job,config)
         return dict(job)
@@ -66,7 +74,17 @@ class Jobs:
         from ihm.native import run_native
         with self.lock:job['status']='running';self._save(job)
         try:
+            if job.get('canonical_body'):
+                from ihm.assembly.body import CanonicalBody
+                body=CanonicalBody.from_workspace(self.root)
+                if body.payload['sources']!=job['canonical_sources'] or body.payload['runtime_sources']!=job['canonical_runtime_sources'] or body.payload['profile']['native_patient_sha256']!=job['canonical_patient_sha256']:raise ValueError('Canonical body changed after scenario submission; submit a new run')
             summary=run_native(config,self.directory/job['id']/'output')
+            if job.get('canonical_body'):
+                from ihm.assembly.body import CanonicalBody
+                current=CanonicalBody.from_workspace(self.root)
+                if current.payload['sources']!=job['canonical_sources'] or current.payload['runtime_sources']!=job['canonical_runtime_sources']:raise ValueError('Canonical body changed during native execution; original native output retained')
+                trajectory=body.simulate(self.directory/job['id']/'output',self.directory/job['id']/'body-trajectory.json')
+                summary['canonical_body']={'frames':len(trajectory['frames']),'clock':trajectory['clock'],'audit':trajectory['audit']}
             with self.lock:job.update(status='completed',summary=summary);self._save(job)
         except Exception as e:
             with self.lock:job.update(status='failed',error=str(e));self._save(job)
@@ -117,6 +135,35 @@ def create_server(root=None,port=8765,host='127.0.0.1'):
             try:
                 derived=root/'data/derived'
                 if path=='/api/manifest':return self._send(self.server.manifest()[0])
+                if path=='/api/body':
+                    from ihm.assembly.body import CanonicalBody
+                    return self._send(CanonicalBody.from_workspace(root).describe())
+                if path=='/api/body/certainty':
+                    from ihm.assembly.body import CanonicalBody
+                    return self._send(CanonicalBody.from_workspace(root).certainty(query.get('entity',[''])[0]))
+                if path=='/api/body/spectra':
+                    from ihm.assembly.body import CanonicalBody,read_native
+                    spectra=read_json(derived/'canonical/trajectory-spectra.json');body=CanonicalBody.from_workspace(root)
+                    if spectra.get('canonical_sources')!=body.payload['sources'] or spectra.get('runtime_sources')!=body.payload['runtime_sources']:return self._error('Canonical spectra are stale; rematerialize the native run',409)
+                    native=read_native(spectra['native_directory'])
+                    if spectra.get('native_summary_sha256')!=native['input_hashes']['summary.json'] or any(native['input_hashes'][key]!=value for key,value in spectra['source_files'].items()):return self._error('Native spectra inputs changed; rematerialize',409)
+                    return self._send(spectra)
+                if path=='/api/body/trajectory':
+                    run=query.get('run',[None])[0]
+                    if run:
+                        if not SAFE_ID.fullmatch(run):raise ValueError('Invalid run ID')
+                        found=next((j for j in self.server.jobs.list()['runs'] if j['id']==run and j['status']=='completed' and j.get('canonical_body')),None)
+                        if not found:return self._error('Completed canonical run not found',404)
+                        file=derived/'scenarios'/run/'body-trajectory.json'
+                    else:file=derived/'canonical/trajectory.json'
+                    trajectory=read_json(file)
+                    from ihm.assembly.body import CanonicalBody
+                    body=CanonicalBody.from_workspace(root)
+                    if trajectory.get('runtime_sources')!=body.payload['runtime_sources'] or any(trajectory['sources'].get(key)!=value for key,value in body.payload['sources'].items()):return self._error('Canonical trajectory is stale; rematerialize the native run',409)
+                    from ihm.assembly.body import read_native
+                    native=read_native(trajectory['sources']['native_run']['directory'])
+                    if native['input_hashes']!=trajectory['sources']['native_run']['files']:return self._error('Native trajectory inputs changed; rematerialize',409)
+                    return self._send(trajectory)
                 if path.startswith('/api/geometry/'):
                     id=path.removeprefix('/api/geometry/')
                     if not SAFE_ID.fullmatch(id):return self._error('Invalid structure ID')
@@ -186,14 +233,15 @@ def create_server(root=None,port=8765,host='127.0.0.1'):
             except (ValueError,KeyError,TypeError) as e:return self._error(str(e),400)
         def do_POST(self):
             if not self._authorized(post=True):return self._error('Only local workbench requests are accepted',403)
-            if self.path!='/api/scenarios':return self._error('Endpoint not found',404)
+            if self.path not in ('/api/scenarios','/api/body/scenarios'):return self._error('Endpoint not found',404)
             if self.headers.get('Content-Type','').split(';')[0]!='application/json':return self._error('Expected application/json',415)
             try:
                 length=int(self.headers.get('Content-Length','0'))
                 if not 0<length<=32768:raise ValueError('JSON request must be 1–32768 bytes')
                 data=json.loads(self.rfile.read(length),parse_constant=lambda v:(_ for _ in ()).throw(ValueError('Nonfinite JSON number')))
                 if not self.server.jobs.list()['available']:return self._error('Native backend unavailable; build it locally',503)
-                return self._send(self.server.jobs.submit(data),202)
+                return self._send(self.server.jobs.submit(data,canonical=self.path=='/api/body/scenarios'),202)
+            except FileNotFoundError:return self._error('Required canonical/native artifact unavailable; build the body first',503)
             except (ValueError,TypeError,KeyError) as e:return self._error(str(e),400)
     server_class=type('IPv6Server',(Server,),{'address_family':socket.AF_INET6}) if host=='::1' else Server
     server=server_class((host,port),Handler);server.root=root;server.jobs=Jobs(root);server.manifest_lock=threading.Lock();return server

@@ -43,6 +43,7 @@ commands += [
  [sys.executable,'scripts/verify_body_mechanics.py'],
  [sys.executable,'scripts/verify_body_certainty.py'],
  [sys.executable,'scripts/verify_canonical_body.py'],
+ [sys.executable,'scripts/verify_canonical_jobs.py'],
  [sys.executable,'-m','ihm','integrated','--output','artifacts/integrated-human.json']]
 if args.plan:
  print(json.dumps(commands,indent=2));raise SystemExit(0)

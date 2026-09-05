@@ -1,0 +1,9 @@
+# Canonical generic human
+
+User authorization explicitly changes the objective from independent source views to one assembled generic body. Cross-source registration and synthesis are authorized when constrained by known data and recorded assumptions. Preserve source evidence without allowing it to dictate the main product workflow.
+
+The canonical coordinate frame is the existing BodyParts3D physical display frame in meters (X left, Y superior, Z anterior, with recorded origin). Its scaffold supplies source geometry. Registered additions and synthesized tissues become entities of the same model with unique identities, material/functional roles, physical connections and an assumption ledger. Source views remain evidence inspection tools.
+
+Anatomy assembly must avoid duplicated competing organs, expose fit residuals and inferred geometry, retain original data, and assign coherent rigid/soft/muscle/tendon/ligament/neural/vascular roles. Mechanics must execute actual deformation/force calculations with conserved exchange and tested constitutive behavior, and map source-based muscle attachments where available. Brain integration should reuse concrete IBM representations/assets, with explicit frame registration and source-model parameter identity. A body state unifies native physiological signals, canonical entities, mechanics and brain inputs; archived trajectories may supply recorded drivers but must not be misrepresented as live feedback.
+
+Verification distinguishes source fidelity, anatomical coherence, mechanical numerical validity and empirical calibration. The generic assembled model is not a patient-specific or fully experimentally validated twin. Missing empirical quantities may use recorded priors/assumptions rather than silently stopping model assembly or claiming measurement.

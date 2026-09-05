@@ -3,6 +3,23 @@
 A body-wide probabilistic substrate, modeled after `../IBM-1`. Explicit predictors
 are dependency-traced views of shared physical state, evidence and processes.
 
+The primary 3D view is now **one canonical generic body** with 2,408 anatomical
+entities, including registered lung lobes, thyroid and lymphatic structures,
+explicit skin-layer priors, source-informed mechanics and an 80-region IBM-derived
+brain. Source viewers remain available as evidence inspection. Acquired,
+registered and directly synthesized structures retain separate provenance and
+uncertainty; an unmeasured property never acquires a confidence percentage merely
+by being rendered.
+
+The [canonical body runtime](docs/CANONICAL_BODY_RUNTIME.md) materializes actual
+native physiological samples into synchronized tissue and neural states. The
+30-second generic baseline has 1,500 native samples and 301 display frames, with
+finite Laplace spectra computed from the native clock. Source hashes, synthesized
+transfer assumptions and numerical approximation remain attached. **This is an
+executable research assembly, not a complete or independently validated digital
+twin.** Mechanical and neural feedback into native physiology, articulated motion,
+whole-body voltage coupling and calibrated tissue-resolved drainage remain open.
+
 The anatomy viewer preserves full source surface topology: 6,681,030 triangles
 from BodyParts3D and 8,111,194 from Z-Anatomy, with source frames and overlapping
 ancestry retained separately. [Anatomical grouping](docs/ANATOMY_COVERAGE.md) now
@@ -62,7 +79,7 @@ energy and blood-chemistry mechanisms remain together. See the
 [actual multisystem traces](artifacts/native-multisystem-physiology.png).
 This is a resting upstream patient; native supine posture and independent calibration are not established. The
 3D viewer distinguishes a rigid display pose from the separate physical
-hydrostatic adjunct; it does not imply registered 3D whole-body dynamics.
+hydrostatic adjunct; the canonical body adds explicit registered geometry and reduced one-way tissue drivers, without claiming a volumetric whole-body contact/flow solution.
 
 The [supine thermal model](docs/THERMAL_MODEL.md) uses the authors' JOS-3
 implementation and separately identified bedding boundaries. It retains 85 node

@@ -14,7 +14,7 @@ names=['verify.py','verify_evidence.py','verify_skin.py','verify_fluids.py','ver
 commands=[[sys.executable,'scripts/'+name]+(['--artifacts'] if name=='verify_thermal_model.py' else []) for name in names]
 if args.native:commands += [[sys.executable,'scripts/verify_native.py','--engine-clock'],[sys.executable,'scripts/verify_native_opensim.py','--corrected']]
 if args.app:commands += [['npm','--prefix','app','test'],['npm','--prefix','app','run','build'],['npm','--prefix','app','run','test:browser']]
-commands += [[sys.executable,'scripts/'+name] for name in ['verify_canonical_anatomy.py','verify_body_brain.py','verify_body_mechanics.py','verify_body_certainty.py','verify_canonical_body.py']]
+commands += [[sys.executable,'scripts/'+name] for name in ['verify_canonical_anatomy.py','verify_body_brain.py','verify_body_mechanics.py','verify_body_certainty.py','verify_canonical_body.py','verify_canonical_jobs.py']]
 if args.plan:
  print(json.dumps(commands,indent=2));raise SystemExit(0)
 results=[];out=root/'artifacts/verification';out.mkdir(parents=True,exist_ok=True)
