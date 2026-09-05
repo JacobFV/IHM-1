@@ -1,0 +1,13 @@
+{
+  "id": "human-reference-atlas",
+  "reference": "https://apps.humanatlas.io/api/grlc/",
+  "modality": "anatomical and tissue spatial metadata",
+  "role": "support and partition registration",
+  "access": "public API; inspect individual data-object terms",
+  "limitations": "atlas geometry is not patient-specific physiology",
+  "status": "acquired_indexed",
+  "ingested": true,
+  "raw_path": "data/raw/semantics",
+  "derived_manifest": "data/derived/semantics/index.json",
+  "physiological_dynamic_calibration": false
+}

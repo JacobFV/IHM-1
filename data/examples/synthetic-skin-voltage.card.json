@@ -1,0 +1,11 @@
+{
+  "id": "synthetic-skin-voltage",
+  "kind": "synthetic",
+  "components": [
+    "skin.surface_0.potential",
+    "skin.cell_0.membrane_voltage"
+  ],
+  "reference": "Locally generated demonstration; no human records",
+  "species": "human",
+  "status": "local"
+}

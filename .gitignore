@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+.cache/
+dist/
+artifacts/
+
+/data/raw/
+/data/derived/
+/.venv-physiology/
+/data/runtime/

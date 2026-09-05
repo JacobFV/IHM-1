@@ -1,0 +1,13 @@
+{
+  "id": "nhanes",
+  "reference": "https://wwwn.cdc.gov/nchs/nhanes/default.aspx",
+  "modality": "examinations, laboratories, questionnaires",
+  "role": "population priors with survey design",
+  "access": "public cycle-specific files",
+  "limitations": "cross-sectional measurements are not individual temporal dynamics",
+  "status": "acquired_indexed",
+  "ingested": true,
+  "raw_path": "data/raw/population/nhanes-2017-2018",
+  "derived_manifest": "data/derived/population/nhanes-2017-2018/index.json",
+  "physiological_dynamic_calibration": false
+}

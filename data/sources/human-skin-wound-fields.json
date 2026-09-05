@@ -1,0 +1,10 @@
+{
+  "id": "human-skin-wound-fields",
+  "reference": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3086402/",
+  "modality": "surface voltage and electric-field measurements",
+  "role": "measurement model and skin electrical evidence",
+  "access": "publication; raw observations not bundled",
+  "limitations": "mouse and human results require species-specific extraction",
+  "status": "catalog_only",
+  "ingested": false
+}

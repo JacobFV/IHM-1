@@ -1,0 +1,10 @@
+{
+  "id": "mimic-iv",
+  "reference": "https://physionet.org/content/mimiciv/3.1/",
+  "modality": "clinical records and laboratory measurements",
+  "role": "subject state and clinical process fitting",
+  "access": "credentialed; obtain authorized local exports",
+  "limitations": "hospital cohort; observation timing and treatment confounding",
+  "status": "catalog_only",
+  "ingested": false
+}

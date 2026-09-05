@@ -1,0 +1,20 @@
+[
+  {
+    "id": "cgm-0",
+    "subject": "synthetic-person",
+    "time": 0,
+    "component": "device.glucose",
+    "value": 5.8,
+    "unit": "mmol/L",
+    "variance": 0.16
+  },
+  {
+    "id": "cgm-1",
+    "subject": "synthetic-person",
+    "time": 300,
+    "component": "device.glucose",
+    "value": 6.2,
+    "unit": "mmol/L",
+    "variance": 0.16
+  }
+]

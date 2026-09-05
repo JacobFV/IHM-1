@@ -1,0 +1,11 @@
+{
+  "id": "synthetic-wearable",
+  "kind": "synthetic",
+  "components": [
+    "device.heart_rate",
+    "device.temperature"
+  ],
+  "reference": "Locally generated demonstration; no human records",
+  "species": "human",
+  "status": "local"
+}

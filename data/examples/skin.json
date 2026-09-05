@@ -1,0 +1,20 @@
+[
+  {
+    "id": "surface-0",
+    "subject": "synthetic-skin",
+    "time": 0,
+    "component": "skin.surface_0.potential",
+    "value": -28,
+    "unit": "mV",
+    "variance": 4
+  },
+  {
+    "id": "membrane-0",
+    "subject": "synthetic-skin",
+    "time": 0,
+    "component": "skin.cell_0.membrane_voltage",
+    "value": -65,
+    "unit": "mV",
+    "variance": 25
+  }
+]

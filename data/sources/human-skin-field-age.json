@@ -1,0 +1,10 @@
+{
+  "id": "human-skin-field-age",
+  "reference": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3228273/",
+  "modality": "wound electric fields over age and healing",
+  "role": "candidate validation stratification",
+  "access": "publication; raw observations not bundled",
+  "limitations": "age/context effects; wound closure is not identical to restored barrier",
+  "status": "catalog_only",
+  "ingested": false
+}

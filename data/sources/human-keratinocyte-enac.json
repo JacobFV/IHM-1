@@ -1,0 +1,10 @@
+{
+  "id": "human-keratinocyte-enac",
+  "reference": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3666251/",
+  "modality": "cell migration and channel perturbation",
+  "role": "candidate electrotaxis mechanism",
+  "access": "publication; raw observations not bundled",
+  "limitations": "cultured keratinocytes; not a whole-human morphogenesis model",
+  "status": "catalog_only",
+  "ingested": false
+}

@@ -1,0 +1,10 @@
+{
+  "id": "synthetic-cgm",
+  "kind": "synthetic",
+  "components": [
+    "device.glucose"
+  ],
+  "reference": "Locally generated demonstration; no human records",
+  "species": "human",
+  "status": "local"
+}

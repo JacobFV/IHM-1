@@ -1,0 +1,11 @@
+{
+  "id": "synthetic-lab",
+  "kind": "synthetic",
+  "components": [
+    "metabolic.glucose",
+    "endocrine.insulin"
+  ],
+  "reference": "Locally generated demonstration; no human records",
+  "species": "human",
+  "status": "local"
+}

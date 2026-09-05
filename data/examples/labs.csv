@@ -1,0 +1,4 @@
+id,subject,time,component,value,unit,variance
+lab-0,synthetic-person,0,metabolic.glucose,108,mg/dL,81
+insulin-0,synthetic-person,0,endocrine.insulin,12,mU/L,4
+lab-1,synthetic-person,600,metabolic.glucose,117,mg/dL,81

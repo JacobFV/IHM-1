@@ -1,0 +1,10 @@
+{
+  "id": "levin-bioelectric-framework",
+  "reference": "https://pmc.ncbi.nlm.nih.gov/articles/PMC4244194/",
+  "modality": "mechanistic synthesis",
+  "role": "ontology rationale for non-neural membrane voltage and gap junctions",
+  "access": "open article",
+  "limitations": "review across organisms; no quantitative human predictor calibration",
+  "status": "catalog_only",
+  "ingested": false
+}
