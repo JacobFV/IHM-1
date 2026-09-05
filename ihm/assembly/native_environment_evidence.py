@@ -61,7 +61,7 @@ def freeze_native_environment(root,native_directory,*,before_start=False):
     """
     if not isinstance(before_start,bool):raise ValueError('Capture phase must be an explicit boolean')
     root,native=_paths(root,native_directory);final=native/'environment-inputs'
-    if final.exists() or final.is_symlink():return resolve_native_environment(root,native)
+    if final.exists() or final.is_symlink():return _resolve_native_archive(root,native)
     staging=Path(tempfile.mkdtemp(prefix='.environment-capture-',dir=native))
     began=datetime.datetime.now(datetime.timezone.utc).isoformat()
     try:
@@ -157,13 +157,13 @@ def freeze_native_environment(root,native_directory,*,before_start=False):
         # Rename a newly created directory only; never merge or repair an existing archive.
         if final.exists() or final.is_symlink():raise ValueError('Another capture already owns this archive')
         staging.rename(final)
-        return resolve_native_environment(root,native)
+        return _resolve_native_archive(root,native)
     except BaseException as error:
         if staging.exists():
             (staging/'failure.json').write_text(json.dumps({'started_utc':began,'error_type':type(error).__name__,'error':str(error)},indent=2)+'\n')
         raise
 
-def resolve_native_environment(root,native_directory):
+def _resolve_native_archive(root,native_directory):
     """Validate archive closure without opening its original external identities."""
     root,native=_paths(root,native_directory);archive=native/'environment-inputs';receipt_path=archive/'manifest.json'
     if archive.is_symlink() or not archive.is_dir() or receipt_path.is_symlink():raise ValueError('Native environment archive is missing or indirect')
@@ -221,6 +221,106 @@ def _resource_entries(receipt):
     return entries
 
 
+def _owned_regular(path):
+    if path.is_symlink() or not path.is_file():
+        raise ValueError('Selected native input is missing or indirect: '+str(path))
+    info=path.stat()
+    if info.st_uid!=os.geteuid() or info.st_nlink!=1:
+        raise ValueError('Selected native input is not independently owned: '+str(path))
+    return _sha(path)
+
+
+def _absolute_identity(value):
+    """Parse recorded identities lexically; never inspect an old absolute path."""
+    if not isinstance(value,str) or '\\' in value or '\0' in value:
+        raise ValueError('Invalid absolute native input identity')
+    path=PurePosixPath(value)
+    if not path.is_absolute() or path.as_posix()!=value or any(p in ('.','..') for p in path.parts) or value.startswith('//'):
+        raise ValueError('Unsafe absolute native input identity')
+    return path
+
+
+def resolve_native_execution_inputs(root,native_directory):
+    """Validate pre-Popen input selection against detached files, not old paths.
+
+    A selection receipt is evidence of selected inputs, not process tracing or
+    proof that initialization completed. Relocation retains native_directory's
+    workspace-relative layout and maps recorded native-local absolute identities.
+    """
+    root,native=_paths(root,native_directory)
+    _resolve_native_archive(root,native)
+    archive_manifest=native/'environment-inputs/manifest.json'
+    archive=json.loads(archive_manifest.read_text())
+    if archive.get('capture',{}).get('stage')!='pre_start':
+        raise ValueError('Execution selection is required only for explicit prestart captures')
+    launch_path=native/'execution-inputs.json';launch_hash=_owned_regular(launch_path)
+    launch=json.loads(launch_path.read_text());startup=json.loads((native/'manifest.json').read_text())
+    entries=_resource_entries(archive);tree=native/'runtime-resources'
+    _validate_materialized_tree(tree,entries,_sha(archive_manifest))
+    for key,path in (('native_manifest_sha256',native/'manifest.json'),
+                     ('environment_manifest_sha256',archive_manifest),
+                     ('resource_materialization_sha256',tree/'materialization.json')):
+        if _digest(launch.get(key))!=_sha(path):raise ValueError('Execution selection receipt differs from '+key)
+    recorded_tree=_absolute_identity(launch.get('selected_resource_tree'))
+    if recorded_tree.name!='runtime-resources':raise ValueError('Selected resource tree is not native-local')
+    recorded_native=recorded_tree.parent
+    relative=PurePosixPath(archive['native_directory'])
+    if tuple(recorded_native.parts[-len(relative.parts):])!=relative.parts:
+        raise ValueError('Selected resource tree has a different native directory identity')
+    # Existing absolute root links remain verifiable after moving an archive to
+    # another workspace. Their text is checked; their old targets are never read.
+    for name in RESOURCES:
+        link=native/name
+        if not link.is_symlink():raise ValueError('Selected native resource root is missing or not a selection link: '+name)
+        target=os.readlink(link)
+        if target not in (str(recorded_tree/name),str(tree/name),str(PurePosixPath('runtime-resources')/name)):
+            raise ValueError('Native resource selection escapes the detached tree: '+name)
+    command=startup.get('command',[]);configuration=startup.get('configuration',{})
+    patient=configuration.get('patient')
+    if not isinstance(patient,str) or not patient or any(c in patient for c in '/\\\0') or patient in ('.','..'):
+        raise ValueError('Invalid selected patient identity')
+    if len(command)!=4 or command[1]!=patient:
+        raise ValueError('Native command does not match selected patient')
+    selected=_absolute_identity(launch.get('selected_patient_input'))
+    initial=startup.get('initialization_patient_used')
+    if initial is True:
+        if configuration.get('state_path') is not None or startup.get('state_sha256') is not None or command[2]!='-':
+            raise ValueError('Patient initialization conflicts with state selection')
+        local=PurePosixPath('runtime-resources')/'patients'/(patient+'.xml')
+        expected_hash=startup.get('patient_identity_input_sha256')
+    elif initial is False:
+        local=PurePosixPath('input-state.xml')
+        if not configuration.get('state_path') or _absolute_identity(command[2])!=recorded_native/local:
+            raise ValueError('Native command does not select the retained state')
+        expected_hash=startup.get('state_sha256')
+        if expected_hash!=startup.get('patient_identity_input_sha256'):
+            raise ValueError('State and patient input identities disagree')
+    else:raise ValueError('Native patient initialization mode is missing')
+    if selected!=recorded_native/local:raise ValueError('Selected patient input is not the declared native-local input')
+    patient_path=native/str(local)
+    if _digest(launch.get('selected_patient_input_sha256'))!=_digest(expected_hash) or _owned_regular(patient_path)!=expected_hash:
+        raise ValueError('Selected patient input bytes differ from startup')
+    result={str(launch_path.relative_to(root)):launch_hash,
+            str((tree/'materialization.json').relative_to(root)):_sha(tree/'materialization.json'),
+            str(patient_path.relative_to(root)):expected_hash}
+    for name,entry in entries.items():
+        if entry['kind']=='file':result[str((tree/name).relative_to(root))]=entry['sha256']
+    return result
+
+
+def resolve_native_environment(root,native_directory):
+    """Resolve retained inputs; new prestart runs also require execution selection."""
+    root,native=_paths(root,native_directory)
+    result=_resolve_native_archive(root,native)
+    receipt=json.loads((native/'environment-inputs/manifest.json').read_text())
+    phase=receipt.get('capture',{}).get('stage')
+    if phase not in ('pre_start','post_start_before_first_action','post_start_after_commands'):
+        raise ValueError('Native environment capture phase is missing or unknown')
+    if phase=='pre_start':
+        result.update(resolve_native_execution_inputs(root,native))
+    return result
+
+
 def _validate_materialized_tree(tree,entries,archive_manifest_hash):
     """Inspect regular owned files without following any directory or file links."""
     if tree.is_symlink() or not tree.is_dir() or tree.stat().st_uid!=os.geteuid():
@@ -262,7 +362,7 @@ def materialize_native_resources(root,native_directory):
     this tree before Popen. Existing materializations are validated, never repaired.
     """
     root,native=_paths(root,native_directory)
-    resolve_native_environment(root,native)
+    _resolve_native_archive(root,native)
     archive=native/'environment-inputs';manifest_path=archive/'manifest.json'
     manifest_hash=_sha(manifest_path);receipt=json.loads(manifest_path.read_text())
     entries=_resource_entries(receipt);final=native/'runtime-resources'
@@ -287,7 +387,7 @@ def materialize_native_resources(root,native_directory):
         for name,entry in sorted(entries.items(),key=lambda item:item[0].count('/'),reverse=True):
             (staging/name).chmod(entry['mode']&0o777)
         if _sha(manifest_path)!=manifest_hash:raise ValueError('Archive receipt changed during materialization')
-        resolve_native_environment(root,native)
+        _resolve_native_archive(root,native)
         _validate_materialized_tree(staging,entries,manifest_hash)
         if final.exists() or final.is_symlink():raise ValueError('Another materialization already owns this resource tree')
         staging.rename(final)
