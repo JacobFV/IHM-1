@@ -157,3 +157,15 @@ test("environment overrides are optional, bounded and preserve explicit zero clo
     scenarioInput("baseline", 2, "StandardMale", { clothing_clo: -1 }),
   );
 });
+
+test("engine variant is explicit and restricted to verified source implementations", () => {
+  assert.equal(
+    scenarioInput("baseline", 2, "StandardFemale", {
+      engine_variant: "saturation_bounds_heatflux",
+    }).engine_variant,
+    "saturation_bounds_heatflux",
+  );
+  assert.throws(() =>
+    scenarioInput("baseline", 2, "StandardMale", { engine_variant: "unknown" }),
+  );
+});

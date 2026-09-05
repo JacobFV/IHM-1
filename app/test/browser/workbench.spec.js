@@ -107,7 +107,9 @@ test("native scenario form submits selected-preset hemorrhage and saline with st
   await expect(page.locator("#run-status")).not.toContainText("Checking");
   await page.locator("#patient").selectOption("StandardFemale");
   await expect(page.locator("#patient")).toHaveValue("StandardFemale");
-  await page.locator("#patient").selectOption("StandardMale");
+  await page
+    .locator("#engine-variant")
+    .selectOption("saturation_bounds_heatflux");
   await page.locator("#scenario").selectOption("hemorrhage_saline");
   await page.locator("#duration").fill("2");
   const responsePromise = page.waitForResponse(
@@ -118,13 +120,16 @@ test("native scenario form submits selected-preset hemorrhage and saline with st
   const response = await responsePromise;
   expect(response.ok()).toBeTruthy();
   const run = await response.json();
-  expect(response.request().postDataJSON().patient).toBe("StandardMale");
+  expect(response.request().postDataJSON().patient).toBe("StandardFemale");
   expect(
     response
       .request()
       .postDataJSON()
       .interventions.map((a) => a.kind),
   ).toEqual(["hemorrhage", "hemorrhage", "saline", "saline"]);
+  expect(response.request().postDataJSON().engine_variant).toBe(
+    "saturation_bounds_heatflux",
+  );
   console.log("Native browser run:", run.id);
   await expect(page.locator("#run-status")).toContainText(run.id);
   await expect(page.locator("#run-status")).toContainText(

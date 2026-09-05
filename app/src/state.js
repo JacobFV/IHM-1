@@ -78,6 +78,15 @@ export function scenarioInput(
           ]
         : [];
   const overrides = {};
+  if (environment.engine_variant !== undefined) {
+    if (
+      !["upstream", "saturation_bounds", "saturation_bounds_heatflux"].includes(
+        environment.engine_variant,
+      )
+    )
+      throw Error("Unknown engine variant");
+    overrides.engine_variant = environment.engine_variant;
+  }
   for (const [key, low, high] of [
     ["ambient_temperature_c", 10, 35],
     ["clothing_clo", 0, 3],
