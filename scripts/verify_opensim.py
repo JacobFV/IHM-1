@@ -40,5 +40,9 @@ class DisplayTests(unittest.TestCase):
             self.assertTrue(np.isfinite(points).all());self.assertEqual(data['units'],'m')
             if row['kind']=='mesh':
                 indices=np.asarray(data['indices']);self.assertGreaterEqual(indices.min(),0);self.assertLess(indices.max(),len(points))
-            else:self.assertFalse(data['wrap_solved']);self.assertEqual(len(points)%2,0)
+            else:
+                self.assertEqual(len(points)%2,0)
+                if data['wrap_solved']:
+                    self.assertGreater(data['native_mechanics']['length_m'],0)
+                    self.assertEqual(data['native_mechanics']['engine_variant'],'wrap_8_0.0005_cache')
 if __name__=='__main__':unittest.main()
