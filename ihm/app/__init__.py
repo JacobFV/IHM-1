@@ -144,6 +144,9 @@ def create_server(root=None,port=8765,host='127.0.0.1'):
                 if path=='/api/human':
                     from ihm.human import ImplicitHuman
                     return self._send(ImplicitHuman.open(root).describe())
+                if path=='/api/anatomy/coverage':return self._send(read_json(derived/'anatomy/anatomy_coverage.json'))
+                if path=='/api/anatomy/fidelity':return self._send(read_json(derived/'anatomy/fidelity.json'))
+                if path=='/api/lymphatic':return self._send(read_json(derived/'lymphatic/graph.json'))
                 if path=='/api/native-targets':return self._send(read_json(derived/'calibration/native-target-audit.json'))
                 if path=='/api/thermal/index':return self._send(read_json(derived/'thermal/index.json'))
                 if path=='/api/thermal':

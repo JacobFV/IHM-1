@@ -1,0 +1,14 @@
+{
+  "id": "z-anatomy",
+  "reference": "https://github.com/Z-Anatomy/Models-of-human-anatomy/tree/702db27cf1395bf067158e86c7659b6e37a7be2c",
+  "modality": "authored three-dimensional reference anatomy",
+  "role": "separate anatomical source frame and annotated surface supports",
+  "access": "public archive; mixed third-party terms retained in provenance",
+  "status": "acquired_indexed_verified",
+  "ingested": true,
+  "raw_path": "data/raw/anatomy/extended",
+  "derived_manifest": "data/derived/anatomy/extended/source_index.json",
+  "provenance_sha256": "401dc0c7e710facb21f40c3b9ca9ab44d78b0693aba9cb73c748abff8256ca0c",
+  "physiological_dynamic_calibration": false,
+  "independent_subject": false
+}

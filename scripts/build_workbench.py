@@ -11,6 +11,10 @@ root=Path(__file__).resolve().parents[1]
 commands=[
  [sys.executable,'scripts/build_spatial_atlas.py'],
  [sys.executable,'scripts/build_opensim_display.py'],
+ [sys.executable,'scripts/build_extended_anatomy.py','--append-manifest','data/derived/app/manifest.json'],
+ [sys.executable,'scripts/build_lymph_network.py','--append'],
+ [sys.executable,'scripts/audit_anatomy_coverage.py'],
+ [sys.executable,'scripts/verify_anatomy_fidelity.py'],
  [str(root/'.venv-physiology/bin/python'),'scripts/export_betse_tissue.py'],
  [sys.executable,'scripts/calibrate_skin.py'],
  [sys.executable,'-c','from ihm.coupling.circuit import build_skin_circuit; build_skin_circuit(".")'],

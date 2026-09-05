@@ -877,3 +877,8 @@ dd {
 #protocol-note {
   font-size: 10px;
 }
+
+.system-item { border-bottom: 1px solid #ffffff05; padding-bottom: 3px; }
+.layer-opacity { width: calc(100% - 25px); height: 8px; margin: 0 0 5px 25px; accent-color: #8fc4b4; }
+.layer-opacity:disabled { opacity: .2; }
+#layer-note { font-size: 10px; line-height: 1.5; }

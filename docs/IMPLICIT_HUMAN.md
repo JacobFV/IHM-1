@@ -101,3 +101,10 @@ including unmapped or ambiguous entries. Exact-quantity comparisons expose
 point deviations without inventing a clinical pass tolerance. See
 [native target audit](NATIVE_TARGET_AUDIT.md). The searchable catalog also
 retains thermal capacities, conductances and boundary values with their units.
+
+
+Anatomical assets include the source-ontology crosswalk, full-resolution fidelity
+receipts and published lymphatic graph. Its 1,117 source edge lengths enter the
+searchable evidence catalog as model-geometry constraints; radii, flow directions
+and flow rates remain unknown. The three-dimensional graph does not silently
+replace the native lumped lymph circuit or register itself to another atlas.

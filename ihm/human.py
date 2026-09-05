@@ -14,6 +14,9 @@ from ihm.runtime.gaussian import covariance
 ASSETS={
  'coverage':'data/derived/system-coverage.json',
  'anatomy':'data/derived/app/manifest.json',
+ 'anatomy_coverage':'data/derived/anatomy/anatomy_coverage.json',
+ 'anatomy_fidelity':'data/derived/anatomy/fidelity.json',
+ 'lymph_network':'data/derived/lymphatic/graph.json',
  'native':'data/derived/native-circuits/graph.json',
  'population':'data/derived/population/nhanes-2017-2018/joint-population-prior.json',
  'skin_field':'data/derived/calibration/skin-fit.json',

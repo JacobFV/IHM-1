@@ -1,4 +1,4 @@
-"""Build real, decimated 3D display assets; physical source identities remain separate."""
+"""Project full source surfaces into display frames; preserve authoritative topology."""
 import csv
 import gzip
 import json
@@ -8,11 +8,12 @@ import numpy as np
 import trimesh
 from ihm.forge.acquisition import sha256
 from ihm.spatial.vtk import surface,read_arrays
+from ihm.spatial.anatomy import AnatomyOntology
 
 OUT=Path('data/derived/app');GEOM=OUT/'geometry'
 COLORS={'cardiac':'#cd6474','skeletal':'#d9c6a6','muscular':'#b95864','arterial':'#ef725f','venous':'#598ed4','nervous':'#e8c568',
 'lymphatic':'#78b991','respiratory':'#99bad1','digestive':'#c49a67','urinary':'#a47fad','reproductive':'#d58cba',
-'endocrine':'#dab25c','integumentary':'#d4ac98','connective':'#8dafa6','other':'#9badb4'}
+'endocrine':'#dab25c','integumentary':'#d4ac98','connective':'#8dafa6','sensory':'#c5aece','other':'#9badb4'}
 
 def dump(path,data):
     data=json.dumps(data,separators=(',',':'),allow_nan=False).encode()
@@ -21,22 +22,15 @@ def dump(path,data):
             with gzip.GzipFile(fileobj=f,mode='wb',mtime=0) as z:z.write(data)
     else:Path(path).write_bytes(data)
 
-def classify(names):
-    text=' | '.join(names).lower()
-    for system,words in [('cardiac',['heart','myocardium','cardiac','atrioventricular','wall of atrium','wall of ventricle']),('skeletal',['bone organ','tooth','cartilage']),('muscular',['muscle organ','muscle tissue']),
-      ('arterial',['artery','arterial']),('venous',['vein','venous']),('lymphatic',['lymph','spleen','thymus']),
-      ('nervous',['nerve','brain','spinal cord','ganglion']),('respiratory',['lung','bronch','trachea','larynx','nasal']),
-      ('urinary',['kidney','ureter','urinary','renal pelvis']),('reproductive',['testis','penis','prostate','seminal','epididym','ductus deferens']),
-      ('endocrine',['thyroid','adrenal','pituitary','pineal']),('digestive',['liver','pancreas','stomach','intestin','colon','rectum','esophag','gallbladder','duoden','jejun','ileum']),
-      ('integumentary',['skin','nail','hair','mammary']),('connective',['ligament','tendon','fascia','aponeurosis'])]:
-        if any(word in text for word in words):return system
-    return 'other'
-
-def mesh_payload(vertices,faces,max_faces=700):
+def mesh_payload(vertices,faces,max_faces=None):
+    """Full source topology by default; optional explicit preview projection."""
     m=trimesh.Trimesh(vertices=vertices,faces=faces,process=False)
-    if len(faces)>max_faces:m=m.simplify_quadric_decimation(face_count=max_faces)
-    return {'positions':np.round(m.vertices,7).ravel().tolist(),'indices':m.faces.ravel().tolist(),
-            'normals':np.round(m.vertex_normals,6).ravel().tolist(),'display_decimation':True,'original_faces':len(faces)}
+    reduced=max_faces is not None and len(faces)>max_faces
+    if reduced:m=m.simplify_quadric_decimation(face_count=max_faces)
+    return {'positions':np.asarray(m.vertices).ravel().tolist(),'indices':np.asarray(m.faces).ravel().tolist(),
+            'normals':np.asarray(m.vertex_normals).ravel().tolist(),'display_decimation':reduced,
+            'original_faces':len(faces),'original_vertices':len(vertices),'display_faces':len(m.faces),
+            'projection':'quadric preview' if reduced else 'source topology; recorded coordinate transform only'}
 
 def build():
     GEOM.mkdir(parents=True,exist_ok=True);structures=[];models=[]
@@ -44,6 +38,7 @@ def build():
     old_structures={s['id']:s for s in old.get('structures',[])}
     old_models={m['id']:m for m in old.get('models',[])}
     atlas=json.loads(Path('data/derived/anatomy/bodyparts3d_index.json').read_text())
+    ontology=AnatomyOntology()
     counts=Counter(c['concept_id'] for m in atlas['meshes'] for c in m['concepts'])
     rotation=np.array([[1,0,0],[0,0,1],[0,-1,0.]])
     all_bounds=np.array([m['bounds_in_source_coordinates'] for m in atlas['meshes']]).reshape(-1,3)@rotation.T*.001
@@ -57,19 +52,24 @@ def build():
     models.append(model)
     for i,entry in enumerate(atlas['meshes']):
         name=min(entry['concepts'],key=lambda c:(counts[c['concept_id']],-len(c['name'])))['name'] if entry['concepts'] else entry['element_id']
-        system=classify([c['name'] for c in entry['concepts']]);id='bp3d-'+entry['element_id']
+        classification=ontology.classify(entry['concepts'],entry['element_id'])
+        name=classification.get('preferred_name') or name
+        system=classification['system'];id='bp3d-'+entry['element_id']
+        budget=None
         p=GEOM/(id+'.json.gz')
         cached=old_structures.get(id,{})
-        cache_valid=(p.exists() and cached.get('source',{}).get('sha256')==entry['sha256']
+        cache_valid=(p.exists() and cached.get('display_geometry',{}).get('resolution')=='full-source'
+                     and cached.get('source',{}).get('sha256')==entry['sha256']
                      and cached.get('geometry_sha256')==sha256(p)
                      and old_models.get(model['id'],{}).get('display_transform')==model['display_transform'])
         if not cache_valid:
             m=trimesh.load(entry['source_path'],force='mesh',process=False)
-            dump(p,mesh_payload(np.asarray(m.vertices)@rotation.T*.001-center,np.asarray(m.faces)))
+            dump(p,mesh_payload(np.asarray(m.vertices)@rotation.T*.001-center,np.asarray(m.faces),budget))
         structures.append({'id':id,'name':name,'system':system,'model_id':model['id'],'kind':'mesh','geometry_url':'/api/geometry/'+id,
-            'color':COLORS[system],'calibration_status':'reference anatomical surface','concepts':entry['concepts'],
+            'color':COLORS[system],'calibration_status':'reference anatomical surface','concepts':entry['concepts'],'classification':classification,
             'source':{'label':'BodyParts3D 4.0','url':'https://dbarchive.biosciencedbc.jp/en/bodyparts3d/download.html',
-                'sha256':entry['sha256'],'frame':model['source_frame'],'specimen':'adult male reference atlas','units':'mm','status':'acquired'},
+                'sha256':entry['sha256'],'path':entry['source_path'],'license':'CC BY 4.0','frame':model['source_frame'],'specimen':'adult male reference atlas','units':'mm','status':'acquired'},
+            'display_geometry':{'resolution':'full-source','target_faces':entry['faces'],'source_faces':entry['faces'],'source_vertices':entry['vertices'],'surface_only':True},
             'geometry_sha256':sha256(p),'default_visible':system in ('cardiac','skeletal','respiratory','digestive','urinary')})
         if i%400==0:print('atlas',i,flush=True)
     vascular=json.loads(Path('data/derived/vascular/vmr_index.json').read_text())
@@ -81,7 +81,7 @@ def build():
             'calibration_status':'archived source case; no independent validation',
             'bounds':{'min':((v.min(0)-center)*scale).tolist(),'max':((v.max(0)-center)*scale).tolist()},
             'display_transform':{'scale':float(scale),'translation':(-center*scale).tolist()},'source_metadata':next(c['source_metadata'] for c in vascular['cases'] if c['case_id']==case)}
-        models.append(vm);id=modelid+'-wall';p=GEOM/(id+'.json.gz');dump(p,mesh_payload((v-center)*scale,f,12000))
+        models.append(vm);id=modelid+'-wall';p=GEOM/(id+'.json.gz');dump(p,mesh_payload((v-center)*scale,f))
         source={'label':'Vascular Model Repository '+case,'url':'https://www.vascularmodel.com/','sha256':sha256(file),'frame':case,
                 'specimen':case,'units':'unconfirmed source units','status':'archived; saved job status Simulation failed'}
         structures.append({'id':id,'name':title+' wall','system':'arterial','model_id':modelid,'kind':'mesh','geometry_url':'/api/geometry/'+id,
@@ -109,7 +109,7 @@ def build():
     manifest={'schema_version':1,'models':models,'structures':structures,'systems':[{'id':k,'name':k.title(),'color':v} for k,v in COLORS.items()],
         'bounds':models[0]['bounds'],'whole_body_calibrated':False,'cross_family_registration':False,
         'limitations':['Different model families have different specimens; selecting a common display does not register them.',
-                      'Display decimation never replaces original physical geometry.','Vascular archived jobs contain failure flags; flow is not certified converged.']}
+                      'Full source surface topology is displayed by default; original files remain authoritative.','Vascular archived jobs contain failure flags; flow is not certified converged.']}
     dump(OUT/'manifest.json',manifest);print('manifest',len(structures),'structures',flush=True)
 
 if __name__=='__main__':build()

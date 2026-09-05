@@ -1,0 +1,13 @@
+{
+  "id": "published-lymphatic-network",
+  "reference": "https://doi.org/10.3390/math8122236",
+  "modality": "published model graph, coordinates and edge lengths",
+  "role": "lymphatic network topology support; no flow/radius identification",
+  "access": "publisher supplementary archive; see retained licensing context",
+  "status": "acquired_indexed_verified",
+  "ingested": true,
+  "raw_path": "data/raw/lymphatic",
+  "derived_manifest": "data/derived/lymphatic/graph.json",
+  "physiological_dynamic_calibration": false,
+  "measured_dataset": false
+}

@@ -111,6 +111,9 @@ def append_to_manifest(manifest_path=ROOT / 'data/derived/app/manifest.json'):
     """Explicit integration hook; build() does not edit the shared application manifest."""
     import shutil
     fragment = json.loads((OUT / 'manifest_fragment.json').read_text())
+    source_geometry=OUT/'geometry'/(MODEL+'.json.gz')
+    if sha(source_geometry)!=fragment['structures'][0]['geometry_sha256'] or sha(OUT/'graph.json')!=fragment['models'][0]['graph_sha256']:
+        raise ValueError('Lymphatic graph/display identity changed before integration')
     manifest_path = Path(manifest_path)
     manifest = json.loads(manifest_path.read_text())
     for key in ('models', 'structures'):

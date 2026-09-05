@@ -1,5 +1,6 @@
 """Join declared physiology, executed native mechanisms and actual observation coverage."""
 import json
+from collections import Counter
 from pathlib import Path
 from ihm import body
 from ihm.forge.acquisition import sha256
@@ -22,7 +23,7 @@ DOMAINS=[
 ('immune','Immune and inflammation',['immune'],['BloodChemistry'],['Spleen'],[]),
 ('hematopoietic','Hematopoiesis and spleen',['hematopoietic','splenic'],['BloodChemistry'],['Spleen','Bone'],[]),
 ('musculoskeletal','Bone, muscle, joints and tendons',['bone','joint','tendon','mechanical','structural'],['Tissue'],['Bone','Muscle'],['skeletal','muscular','connective']),
-('sensory','Sensory systems',['sensory'],['Nervous'],[],[]),
+('sensory','Sensory systems',['sensory'],['Nervous'],[],['sensory']),
 ('csf','Cerebrospinal fluid',['csf'],[],[],[]),
 ('reproductive','Reproductive and pregnancy-specific',['reproductive','uterine','placental'],[],[],['reproductive']),
 ('thermal','Thermoregulation and environment',['thermal'],['Energy','Environment'],['Internal','External','Clothing'],[]),
@@ -40,7 +41,9 @@ def build(root=Path('.')):
         physical=[c for c in components if c['id'].split('.')[0] in prefixes]
         systems=[s['type'] for s in g['systems'] if any(s['type']=='BioGears'+key+'SystemData' or s['type']=='BioGears'+key+'Data' for key in native)]
         comps=[c['id'] for c in g['compartments'] if any(key.lower() in c['name'].lower() for key in compnames)]
-        meshes=[s['id'] for s in manifest['structures'] if s['model_id']=='bodyparts3d' and s['system'] in geometry]
+        matched=[s for s in manifest['structures'] if s['system'] in geometry]
+        meshes=[s['id'] for s in matched]
+        geometry_by_family=dict(Counter(s['model_id'] for s in matched))
         observations=[c['id'] for c in physical if c['id'] in measured]
         limitations=[]
         if id in ('immune','hematopoietic','sensory','lymphatic'):limitations.append('Native presence is partial coverage; it does not establish all minor mechanisms or cell populations.')
@@ -58,7 +61,7 @@ def build(root=Path('.')):
         if id=='musculoskeletal':status='native_tissue_and_opensim_mechanics'
         rows.append({'id':id,'name':name,'components':physical,'components_count':len(physical),'native_systems':systems,
                      'native_compartments':comps,'native_compartment_match':'literal name keyword; does not establish a coordinate transform',
-                     'measured_components':observations,'geometry_count':len(meshes),'geometry_ids':meshes,'status':status,'limitations':limitations})
+                     'measured_components':observations,'geometry_count':len(meshes),'geometry_ids':meshes,'geometry_by_family':geometry_by_family,'geometry_families_are_independent':True,'status':status,'limitations':limitations})
     declared={c['id'] for row in rows for c in row['components']}
     missing=set(registry.components)-declared
     if missing:raise ValueError(f'Unclassified declared quantities: {sorted(missing)}')

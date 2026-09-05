@@ -59,6 +59,22 @@ def verify():
             for axis in range(3):
                 expected = sum(t['rotation'][axis][j]*p[j] for j in range(3))*.001+t['translation'][axis]
                 assert math.isclose(positions[offset+axis], expected, abs_tol=1e-12)
+    import tempfile
+    from pathlib import Path
+    from unittest.mock import patch
+    import build_lymph_network as builder
+    with tempfile.TemporaryDirectory() as td:
+        fixture=Path(td);(fixture/'geometry').mkdir()
+        (fixture/'manifest_fragment.json').write_text(json.dumps(fragment))
+        (fixture/'geometry'/(MODEL+'.json.gz')).write_bytes(b'changed geometry')
+        (fixture/'graph.json').write_bytes(graph_path.read_bytes())
+        destination=fixture/'app.json';destination.write_text('{"models":[],"structures":[]}')
+        before=destination.read_bytes()
+        with patch.object(builder,'OUT',fixture):
+            try:builder.append_to_manifest(destination)
+            except ValueError:pass
+            else:raise AssertionError('changed lymphatic geometry accepted')
+        assert destination.read_bytes()==before
     report = {'passed': True, 'source_vertices': 996, 'source_edges': 1117, 'lymph_node_flags': 272,
               'connected_components': 1, 'rendered_segments': 1117,
               'max_source_length_vs_chord_error_mm': max_length_error,

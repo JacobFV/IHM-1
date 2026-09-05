@@ -305,3 +305,39 @@ test("published supine thermal model and measured bedding boundaries remain sepa
       );
   }
 });
+
+test('full source anatomy is discoverable by tissue and supports independent layer transparency', async ({page})=>{
+  const errors=[];page.on('pageerror',e=>errors.push(e.message));
+  await page.goto('/');
+  await page.getByLabel('Anatomy view',{exact:true}).selectOption('muscles');
+  await expect(page.locator('#systems input[value="muscular"]')).toBeChecked();
+  await expect(page.locator('#systems input[value="arterial"]')).not.toBeChecked();
+  expect(Number(await page.locator('#count').innerText())).toBeGreaterThan(400);
+  await expect(page.locator('#scene-status')).toHaveText('',{timeout:120000});
+  await page.getByLabel('Anatomy view',{exact:true}).selectOption('skin');
+  await page.locator('#search').fill('skin');
+  await page.locator('#structures button').first().click();
+  await expect(page.locator('#details')).toContainText('203382 original triangles');
+  await expect(page.locator('#scene-status')).toHaveText('',{timeout:120000});
+  await page.getByLabel('integumentary layer opacity',{exact:true}).fill('0.25');
+  await page.getByLabel('integumentary layer opacity',{exact:true}).dispatchEvent('input');
+  await expect(page.getByLabel('integumentary layer opacity',{exact:true})).toHaveValue('0.25');
+  await page.getByLabel('Anatomy view',{exact:true}).selectOption('blood');
+  expect(Number(await page.locator('#count').innerText())).toBeGreaterThan(1000);
+  await expect(page.locator('#systems input[value="venous"]')).toBeChecked();
+  await expect(page.locator('#systems input[value="integumentary"]')).not.toBeChecked();
+  await page.getByLabel('Anatomy view',{exact:true}).selectOption('all');
+  await expect(page.getByLabel('integumentary layer opacity',{exact:true})).toHaveValue('0.18');
+  await page.locator('#model').selectOption('published-lymphatic-network');
+  await expect(page.locator('#scene-status')).toHaveText('',{timeout:120000});
+  await page.locator('#structures button').first().click();
+  await expect(page.locator('#details')).toContainText('lymph');
+  await page.locator('#model').selectOption('z-anatomy');
+  await expect(page.locator('#systems input[value="lymphatic"]')).toBeChecked();
+  await expect(page.locator('#count')).toHaveText('163');
+  await expect(page.locator('#scene-status')).toHaveText('',{timeout:120000});
+  await page.locator('#structures button').filter({hasText:/node/i}).first().click();
+  await expect(page.locator('#details')).toContainText('CC-BY-SA-4.0');
+  await expect(page.locator('#details')).toContainText('source-authored evaluated viewport surface');
+  expect(errors).toEqual([]);
+});

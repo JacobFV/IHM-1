@@ -81,6 +81,13 @@ def main():
         for parameter in model['parameters']:
             add('ursino-lodi-1997',parameter['id'],parameter['value'],parameter['unit'],
                 'published_csf_model_parameter',str(p),json.dumps(model['source']),parameter)
+    p=ROOT/'lymphatic/graph.json'
+    if p.exists():
+        inputs.append(p);graph=read(p)
+        for edge in graph['edges']:
+            raw={**edge,'evidence_kind':graph['evidence_kind'],'measured_dataset':False,'source_sha256':sha256(p),'flow_direction':None,'radius_mm':None,'flow_ml_s':None}
+            add('published-lymphatic-network',str(edge['id'])+'/length',edge['source_length_mm'],'mm',
+                'published_model_geometry_not_measurement',str(p),json.dumps(graph['provenance']),raw)
     p=ROOT/'thermal/index.json'
     if p.exists():
         inputs.append(p);index=read(p)

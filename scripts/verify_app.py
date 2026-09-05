@@ -21,6 +21,10 @@ try:
  else:raise AssertionError('duplicate bind unexpectedly succeeded')
  m=get('/api/manifest');assert len(m['structures'])>=2234
  g=get(m['structures'][0]['geometry_url']);assert len(g['positions'])>10 and len(g['indices'])>3
+ coverage=get('/api/anatomy/coverage');assert coverage
+ assert get('/api/anatomy/fidelity')['summary']['source_triangles']==6681030
+ lymph=get('/api/lymphatic');assert len(lymph['nodes'])==996 and len(lymph['edges'])==1117
+ assert lymph['directed'] is False and all(e['flow_ml_s'] is None for e in lymph['edges'])
  thermal=get('/api/thermal/index');assert len(thermal['runs'])==4
  assert get('/api/thermal?run=lying_default')['configuration']['posture']=='lying'
  assert rejected('/api/thermal?run=../../secret')==404

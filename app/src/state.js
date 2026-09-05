@@ -142,3 +142,20 @@ export function scalarCoordinates(cellIds, values, range) {
       : Math.max(0, Math.min(1, (values[id] - low) / (high - low)));
   });
 }
+
+export const anatomyViews = [
+  {id: 'core', label: 'Core organs & skeleton', systems: ['skeletal','cardiac','respiratory','digestive','urinary','endocrine','reproductive']},
+  {id: 'muscles', label: 'Muscles', systems: ['muscular','connective']},
+  {id: 'blood', label: 'Blood vessels & heart', systems: ['arterial','venous','cardiac']},
+  {id: 'lymph', label: 'Lymphatic structures', systems: ['lymphatic']},
+  {id: 'skin', label: 'Skin & integument', systems: ['integumentary']},
+  {id: 'nerves', label: 'Nervous system', systems: ['nervous']},
+  {id: 'internal', label: 'All internal layers'},
+  {id: 'all', label: 'All layers · translucent skin'},
+];
+export function anatomyView(id, available) {
+  const view=anatomyViews.find(v=>v.id===id);
+  if (!view) throw Error('Unknown anatomy view');
+  const systems=new Set(available.filter(s=>id==='all'||(id==='internal'?s!=='integumentary':view.systems.includes(s))));
+  return {systems, opacity: new Map(available.map(s=>[s, s==='integumentary' && id==='all' ? .18 : 1]))};
+}

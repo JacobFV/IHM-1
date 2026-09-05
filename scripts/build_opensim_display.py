@@ -55,9 +55,8 @@ def build():
         id=MODEL+'-bone-'+entry['name'];p=OUT/'geometry'/(id+'.json.gz')
         mesh=trimesh.Trimesh(vertices=vertices-center,faces=faces,process=False)
         original_faces=len(faces)
-        if len(faces)>2500:mesh=mesh.simplify_quadric_decimation(face_count=2500)
         dump(p,{'positions':np.asarray(mesh.vertices).ravel().tolist(),'indices':np.asarray(mesh.faces).ravel().tolist(),'normals':np.asarray(mesh.vertex_normals).ravel().tolist(),'units':'m','original_faces':original_faces,'display_decimation':len(mesh.faces)<original_faces})
-        structure(id,entry['path'].stem+' · '+entry['body'],'skeletal','mesh',p,{'body_frame':entry['body'],'geometry_source':str(entry['path'].relative_to(ROOT)),'geometry_source_sha256':sha(entry['path'])})
+        structure(id,entry['path'].stem+' · '+entry['body'],'skeletal','mesh',p,{'body_frame':entry['body'],'geometry_source':str(entry['path'].relative_to(ROOT)),'geometry_source_sha256':sha(entry['path']),'display_geometry':{'resolution':'full-source','source_faces':original_faces,'target_faces':original_faces,'surface_only':True}})
     for muscle in m['muscles']:
         points=np.asarray([p['ground_m'] for p in muscle['points']])@rotation.T-center
         pairs=np.asarray([[a,b] for a,b in zip(points,points[1:])]).reshape(-1,3)

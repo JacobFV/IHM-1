@@ -3,6 +3,11 @@
 A body-wide probabilistic substrate, modeled after `../IBM-1`. Explicit predictors
 are dependency-traced views of shared physical state, evidence and processes.
 
+The anatomy viewer preserves full source surface topology: 6,681,030 triangles
+from BodyParts3D and 8,111,194 from Z-Anatomy, with source frames and overlapping
+ancestry retained separately. [Anatomical grouping](docs/ANATOMY_COVERAGE.md) now
+uses recorded ontology paths rather than name substrings.
+
 The acquired evidence now materializes into an executable native multisystem
 engine, measured population beliefs, human wound-field predictors, source-derived
 skin–lymph circuits and temporal predictors. A local 3D workbench displays the
@@ -32,6 +37,8 @@ through the same API. The original illustrative scaffold remains available separ
 | Collection | Local contents | Details |
 |---|---|---|
 | BodyParts3D | 2,234 OBJ meshes and anatomical ontology tables | [Anatomy](docs/ANATOMY_DATA.md) |
+| Z-Anatomy | 2,581 full-resolution evaluated surfaces; 495 muscles, 158 lymph-node groups, 256 body-surface regions | [Extended anatomy](docs/EXTENDED_ANATOMY.md) |
+| Published lymphatic graph | 996 vertices, 1,117 structural edges and source lengths; model-derived, not measured | [Lymphatic network](docs/LYMPH_NETWORK.md) |
 | OpenSim | 34 model variants, 343 meshes, 4,480 muscle path/attachment points across variants | [Anatomy](docs/ANATOMY_DATA.md) |
 | Vascular Model Repository | Three human meshes, nine flow waveforms, BCs, 201 cerebral pressure/velocity time states | [Vascular](docs/VASCULAR_DATA.md) |
 | Integrated physiology | HumMod, Physiomodel, Physiolibrary, BioGears and BETSE sources; 14,672 parameter/equation candidates and 475 literature targets | [Physiology](docs/PHYSIOLOGY_DATA.md) |
@@ -40,9 +47,9 @@ through the same API. The original illustrative scaffold remains available separ
 | Supine thermoregulation | Pinned JOS-3, 85 thermal nodes, 17 regions, four one-hour cases and measured bedding resistance | [Thermal model](docs/THERMAL_MODEL.md) |
 | Human skin wound fields | 40-person experiment, 155 numeric table cells, 16 group means/SEMs | [Skin measurements](docs/INTEGUMENTARY_DATA.md) |
 
-The local raw corpus is approximately 5.60 GB including retained archives and
-extracted assets. The searchable catalog contains 35,539 parameter/constraint
-records, **not 35,539 experimentally calibrated coefficients**. All source models
+The local raw corpus is approximately 6.00 GB including retained archives and
+extracted assets. The searchable catalog contains 36,656 parameter/constraint
+records, **not 36,656 experimentally calibrated coefficients**. All source models
 and overlapping variants retain their identities. BETSE's actual full solver has
 also run locally on 212 cells; this was a generic-tissue execution check, not human
 wound validation.

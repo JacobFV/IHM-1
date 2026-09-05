@@ -50,3 +50,27 @@ The native implementation selector uses available API descriptors and defaults t
 Browser verification completed the corrected StandardFemale 2-second hemorrhage/saline protocol with `saturation_bounds_heatflux` (run `20260905-000949-80412525`), including completed status and recorded trajectory. Full production browser suite: nine flows passed; unit suite: ten tests passed.
 
 The independent JOS-3 trajectory menu includes source-default lying and three supine bedding cases using published manikin total insulation. All 85 thermal nodes are simulated. Chart notes identify the neutral standing initialization, one-hour transient, uniformly applied whole-body boundary, and absence of clinical bed-rest calibration. See [THERMAL_MODEL.md](THERMAL_MODEL.md) for source hashes, resistance equations, and the conservative heat audit.
+
+## Anatomy expansion and source fidelity
+
+The **Explore anatomy** selector exposes muscles, blood vessels, lymphatic
+structures, skin/integument, nerves, and internal layers without hunting through
+hidden checkboxes. Each system has an independent opacity slider. The all-layer
+view starts skin at 18% opacity so internal structures remain visible.
+
+BodyParts3D and OpenSim now display full original surface topology. Z-Anatomy
+retains full authored evaluated surfaces, along with its original pre-modifier
+geometry. The additional family starts with its 163 lymphatic objects; these
+include 158 node groups, not 158 individual lymph nodes. The published lymphatic
+network is a separate coordinate frame with 996 vertices and 1,117 structural
+edges. No alignment or flow connection between these source families is implied.
+
+The source inspector shows ontology grouping evidence, asset licensing,
+evaluated-geometry status and any retained evaluation warnings. The authoritative
+files, hashes and coordinates are retained independently of browser rendering.
+CFD arrows still use an explicit display sampling of the full retained archived
+field; rendering density does not change the underlying dataset.
+
+See [anatomy coverage](ANATOMY_COVERAGE.md), [extended anatomy](EXTENDED_ANATOMY.md)
+and [lymphatic graph](LYMPH_NETWORK.md). The full atlas topology/coordinate audit
+is `data/derived/anatomy/fidelity.json` and `/api/anatomy/fidelity`.

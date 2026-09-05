@@ -169,3 +169,14 @@ test("engine variant is explicit and restricted to verified source implementatio
     scenarioInput("baseline", 2, "StandardMale", { engine_variant: "unknown" }),
   );
 });
+
+import { anatomyView } from '../src/state.js';
+test('anatomy views retain source availability and separate skin from internal layers',()=>{
+ const available=['skeletal','muscular','arterial','venous','cardiac','integumentary'];
+ assert.deepEqual([...anatomyView('blood',available).systems],['arterial','venous','cardiac']);
+ assert.equal(anatomyView('lymph',available).systems.size,0);
+ assert.equal(anatomyView('internal',available).systems.has('integumentary'),false);
+ assert.equal(anatomyView('all',available).opacity.get('integumentary'),.18);
+ assert.equal(anatomyView('skin',available).opacity.get('integumentary'),1);
+ assert.throws(()=>anatomyView('invented',available));
+});
