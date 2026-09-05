@@ -1,0 +1,877 @@
+{
+  "schema": "ihm.body_skin_transport.v1",
+  "seed": 417,
+  "stochastic_steps": false,
+  "model": {
+    "schema": "ihm.regional_skin_transport.v1",
+    "native_blood_storage_connected": false,
+    "coupling_mode": "isolated_regional_native_law_transfer",
+    "time_s": 0.0,
+    "parameters": {
+      "scale": 1.6460407311876462e-07,
+      "external_reservoir_volume_multiplier": 1000.0,
+      "arterial_pa": 15125.300732670239,
+      "venous_pa": 530.2438926546556,
+      "pressure_reference_pa": {
+        "blood": 1158.4427930464249,
+        "interstitium": -1831.279954664984,
+        "lymph": 671.6906604467194
+      },
+      "compliance_m3_pa": {
+        "blood": 2.2963916728132795e-14,
+        "interstitium": 1.7098509188108712e-13,
+        "lymph": 4.938527618962968e-13
+      },
+      "resistance_pa_s_m3": {
+        "arterial_supply": 1.101074886938494e+16,
+        "venous_return": 600564463258695.0,
+        "filtration": 4.994068460146241e+17,
+        "lymph_uptake": 9.988136920292485e+16,
+        "lymph_return": 1.6714756316705464e+16
+      },
+      "lymph_drive_pa": 2668.8351086486637,
+      "albumin_ps_m3_s": 2.9929958615184966e-16,
+      "albumin_reflection": 0.954,
+      "fluid_oncotic_reflection": 1.0,
+      "max_internal_dt_s": 1.0
+    },
+    "volumes_m3": {
+      "blood": 2.7859732750468265e-11,
+      "interstitium": 2.139324955611334e-10,
+      "lymph": 3.317162878015315e-10,
+      "arterial_reservoir": 5.735085161131332e-07,
+      "venous_reservoir": 5.735085161131332e-07
+    },
+    "albumin_kg": {
+      "blood": 1.2539796303431272e-09,
+      "interstitium": 4.139610692472235e-09,
+      "lymph": 6.62449859645398e-09,
+      "arterial_reservoir": 2.5813887142262495e-05,
+      "venous_reservoir": 2.5791912530369967e-05
+    },
+    "initial_volumes_m3": {
+      "blood": 2.7859732750468265e-11,
+      "interstitium": 2.139324955611334e-10,
+      "lymph": 3.317162878015315e-10,
+      "arterial_reservoir": 5.735085161131332e-07,
+      "venous_reservoir": 5.735085161131332e-07
+    },
+    "initial_albumin_kg": {
+      "blood": 1.2539796303431272e-09,
+      "interstitium": 4.139610692472235e-09,
+      "lymph": 6.62449859645398e-09,
+      "arterial_reservoir": 2.5813887142262495e-05,
+      "venous_reservoir": 2.5791912530369967e-05
+    },
+    "integrated_flows_m3": {
+      "arterial_supply": 0.0,
+      "venous_return": 0.0,
+      "filtration": 0.0,
+      "lymph_uptake": 0.0,
+      "lymph_return": 0.0
+    },
+    "integrated_albumin_kg": {
+      "arterial_supply": 0.0,
+      "venous_return": 0.0,
+      "filtration": 0.0,
+      "lymph_uptake": 0.0,
+      "lymph_return": 0.0
+    },
+    "attachment": {
+      "unit_id": "body-detail-microvascular-left-0",
+      "territory": "left forearm skin",
+      "material_attachment": {
+        "entity_id": "body-bp3d-FJ2810",
+        "face_index": 192812,
+        "barycentric": [
+          0.3333333333333333,
+          0.3333333333333333,
+          0.3333333333333333
+        ],
+        "normal_depth_m": 0.001
+      },
+      "boundary_association": {
+        "kind": "named_territory_boundary",
+        "supply": "left forearm cutaneous arterial territory",
+        "return": "left forearm cutaneous venous territory",
+        "pressure_nodes": {
+          "supply": 0,
+          "return": 1
+        },
+        "evidence_kind": "inferred_territory_prior",
+        "native_blood_storage_connected": false,
+        "native_parent_vessel_id": null,
+        "uncertainty": "No measured terminal vessel correspondence; prescribed isolated pressure boundaries"
+      },
+      "geometric_lumen_volume_m3": 2.7859732750468265e-11
+    },
+    "provenance": [
+      {
+        "path": "data/derived/coupling/native-skin-circuit.json",
+        "sha256": "e0cf9e1873c114499423ce9f5030420df584dce5b5902222ab6bd938b5a6faff"
+      },
+      {
+        "path": "data/derived/canonical/microvascular.json",
+        "sha256": "bced04a8686b928207eb1add90be5a6a928b56f69be34b2991cb023a67176bd7"
+      },
+      {
+        "path": "data/derived/physiology/native_baseline_v2/states/native_stabilized.xml",
+        "sha256": "42aa7af3ec40a4bfab582a6e2658d1869e28545cd9c831d709a89599e00117b1"
+      },
+      {
+        "path": "ihm/assembly/skin_transport.py",
+        "sha256": "02fadd31dd4e0a6237c3d98ec1b367a66d8fc73fdce9a331777213838515ac14"
+      },
+      {
+        "path": "scripts/verify_body_transport.py",
+        "sha256": "5af0812dbb0ef32c4fac267c5eeb483f09712bd5a1c84c9e162ec7c172236f08"
+      },
+      {
+        "path": "scripts/build_body_transport.py",
+        "sha256": "2034514ab1eed327537dab3f96679f9aab8095f46f2dbc3b27df9f7ca319826c"
+      },
+      {
+        "path": "docs/research/REGIONAL_SKIN_TRANSPORT.md",
+        "sha256": "40e4348ac9281250438a20d5659b8a64f70e3106e375f3be89cc6f4b7f2423f7"
+      },
+      {
+        "path": "data/raw/physiology/biogears/projects/biogears/libBiogears/src/engine/Systems/Diffusion.cpp",
+        "sha256": "9f90e429a87ae1ba3b7071fc14525905e768d23a27a0f21d15a2581a49b7d48b"
+      },
+      {
+        "path": "data/raw/physiology/biogears/projects/biogears/libBiogears/src/engine/Systems/Tissue.cpp",
+        "sha256": "5557f75fe19946ea680b054bf1549b7bb331a518ab36f03d9b8fcde578a0e389"
+      },
+      {
+        "path": "data/raw/physiology/biogears/projects/biogears/libBiogears/src/engine/Controller/BioGears.cpp",
+        "sha256": "451ddda942a26e547a0ed4f1d5ba875fa7ca9e2c6275895b791f9c81e7a39166"
+      }
+    ],
+    "balance": {
+      "volume_residual_m3": 0.0,
+      "albumin_residual_kg": 0.0,
+      "node_volume_residual_m3": {
+        "blood": 0.0,
+        "interstitium": 0.0,
+        "lymph": 0.0,
+        "arterial_reservoir": 0.0,
+        "venous_reservoir": 0.0
+      },
+      "node_albumin_residual_kg": {
+        "blood": 0.0,
+        "interstitium": 0.0,
+        "lymph": 0.0,
+        "arterial_reservoir": 0.0,
+        "venous_reservoir": 0.0
+      },
+      "full_reservoir_volume_residual_m3": 0.0,
+      "full_reservoir_albumin_residual_kg": 0.0
+    }
+  },
+  "experiments": {
+    "scenarios": {
+      "baseline": {
+        "schema": "ihm.regional_skin_transport.v1",
+        "native_blood_storage_connected": false,
+        "coupling_mode": "isolated_regional_native_law_transfer",
+        "time_s": 600.0,
+        "parameters": {
+          "scale": 1.6460407311876462e-07,
+          "external_reservoir_volume_multiplier": 1000.0,
+          "arterial_pa": 15125.300732670239,
+          "venous_pa": 530.2438926546556,
+          "pressure_reference_pa": {
+            "blood": 1158.4427930464249,
+            "interstitium": -1831.279954664984,
+            "lymph": 671.6906604467194
+          },
+          "compliance_m3_pa": {
+            "blood": 2.2963916728132795e-14,
+            "interstitium": 1.7098509188108712e-13,
+            "lymph": 4.938527618962968e-13
+          },
+          "resistance_pa_s_m3": {
+            "arterial_supply": 1.101074886938494e+16,
+            "venous_return": 600564463258695.0,
+            "filtration": 4.994068460146241e+17,
+            "lymph_uptake": 9.988136920292485e+16,
+            "lymph_return": 1.6714756316705464e+16
+          },
+          "lymph_drive_pa": 2668.8351086486637,
+          "albumin_ps_m3_s": 2.9929958615184966e-16,
+          "albumin_reflection": 0.954,
+          "fluid_oncotic_reflection": 1.0,
+          "max_internal_dt_s": 1.0
+        },
+        "volumes_m3": {
+          "blood": 3.075217280845665e-11,
+          "interstitium": 2.136894442155237e-10,
+          "lymph": 3.277992255056183e-10,
+          "arterial_reservoir": 5.727541453259527e-07,
+          "venous_reservoir": 5.742641545738966e-07
+        },
+        "albumin_kg": {
+          "blood": 1.3853580485629603e-09,
+          "interstitium": 4.1257457859310764e-09,
+          "lymph": 6.545625925723122e-09,
+          "arterial_reservoir": 2.5779932559520334e-05,
+          "venous_reservoir": 2.5825828472271062e-05
+        },
+        "initial_volumes_m3": {
+          "blood": 2.7859732750468265e-11,
+          "interstitium": 2.139324955611334e-10,
+          "lymph": 3.317162878015315e-10,
+          "arterial_reservoir": 5.735085161131332e-07,
+          "venous_reservoir": 5.735085161131332e-07
+        },
+        "initial_albumin_kg": {
+          "blood": 1.2539796303431272e-09,
+          "interstitium": 4.139610692472235e-09,
+          "lymph": 6.62449859645398e-09,
+          "arterial_reservoir": 2.5813887142262495e-05,
+          "venous_reservoir": 2.5791912530369967e-05
+        },
+        "integrated_flows_m3": {
+          "arterial_supply": 7.543707871801551e-10,
+          "venous_return": 7.507051108587312e-10,
+          "filtration": 7.732362634355791e-13,
+          "lymph_uptake": 1.0162876090447605e-12,
+          "lymph_return": 4.9333499049581635e-12
+        },
+        "integrated_albumin_kg": {
+          "arterial_supply": 3.395458274214511e-08,
+          "venous_return": 3.3817425778703756e-08,
+          "filtration": 5.778545221556738e-12,
+          "lymph_uptake": 1.964345176271948e-11,
+          "lymph_return": 9.85161224935875e-11
+        },
+        "attachment": {
+          "unit_id": "body-detail-microvascular-left-0",
+          "territory": "left forearm skin",
+          "material_attachment": {
+            "entity_id": "body-bp3d-FJ2810",
+            "face_index": 192812,
+            "barycentric": [
+              0.3333333333333333,
+              0.3333333333333333,
+              0.3333333333333333
+            ],
+            "normal_depth_m": 0.001
+          },
+          "boundary_association": {
+            "kind": "named_territory_boundary",
+            "supply": "left forearm cutaneous arterial territory",
+            "return": "left forearm cutaneous venous territory",
+            "pressure_nodes": {
+              "supply": 0,
+              "return": 1
+            },
+            "evidence_kind": "inferred_territory_prior",
+            "native_blood_storage_connected": false,
+            "native_parent_vessel_id": null,
+            "uncertainty": "No measured terminal vessel correspondence; prescribed isolated pressure boundaries"
+          },
+          "geometric_lumen_volume_m3": 2.7859732750468265e-11
+        },
+        "provenance": [
+          {
+            "path": "data/derived/coupling/native-skin-circuit.json",
+            "sha256": "e0cf9e1873c114499423ce9f5030420df584dce5b5902222ab6bd938b5a6faff"
+          },
+          {
+            "path": "data/derived/canonical/microvascular.json",
+            "sha256": "bced04a8686b928207eb1add90be5a6a928b56f69be34b2991cb023a67176bd7"
+          },
+          {
+            "path": "data/derived/physiology/native_baseline_v2/states/native_stabilized.xml",
+            "sha256": "42aa7af3ec40a4bfab582a6e2658d1869e28545cd9c831d709a89599e00117b1"
+          },
+          {
+            "path": "ihm/assembly/skin_transport.py",
+            "sha256": "02fadd31dd4e0a6237c3d98ec1b367a66d8fc73fdce9a331777213838515ac14"
+          },
+          {
+            "path": "scripts/verify_body_transport.py",
+            "sha256": "5af0812dbb0ef32c4fac267c5eeb483f09712bd5a1c84c9e162ec7c172236f08"
+          },
+          {
+            "path": "scripts/build_body_transport.py",
+            "sha256": "2034514ab1eed327537dab3f96679f9aab8095f46f2dbc3b27df9f7ca319826c"
+          },
+          {
+            "path": "docs/research/REGIONAL_SKIN_TRANSPORT.md",
+            "sha256": "40e4348ac9281250438a20d5659b8a64f70e3106e375f3be89cc6f4b7f2423f7"
+          },
+          {
+            "path": "data/raw/physiology/biogears/projects/biogears/libBiogears/src/engine/Systems/Diffusion.cpp",
+            "sha256": "9f90e429a87ae1ba3b7071fc14525905e768d23a27a0f21d15a2581a49b7d48b"
+          },
+          {
+            "path": "data/raw/physiology/biogears/projects/biogears/libBiogears/src/engine/Systems/Tissue.cpp",
+            "sha256": "5557f75fe19946ea680b054bf1549b7bb331a518ab36f03d9b8fcde578a0e389"
+          },
+          {
+            "path": "data/raw/physiology/biogears/projects/biogears/libBiogears/src/engine/Controller/BioGears.cpp",
+            "sha256": "451ddda942a26e547a0ed4f1d5ba875fa7ca9e2c6275895b791f9c81e7a39166"
+          }
+        ],
+        "balance": {
+          "volume_residual_m3": -3.069615554396001e-25,
+          "albumin_residual_kg": 5.1052553431007177e-23,
+          "node_volume_residual_m3": {
+            "blood": 2.706108449270159e-26,
+            "interstitium": -5.278930959994176e-25,
+            "lymph": 1.9387045606711586e-25,
+            "arterial_reservoir": -3.0605682664462024e-22,
+            "venous_reservoir": -2.4474206373912706e-22
+          },
+          "node_albumin_residual_kg": {
+            "blood": 3.6344248164048653e-23,
+            "interstitium": 4.465482838079235e-24,
+            "lymph": 1.0249284777414859e-23,
+            "arterial_reservoir": -1.6484055246956736e-20,
+            "venous_reservoir": -1.0175645023382325e-19
+          },
+          "full_reservoir_volume_residual_m3": -5.511478572046681e-22,
+          "full_reservoir_albumin_residual_kg": -1.1818901348764856e-19
+        }
+      },
+      "venous_pressure": {
+        "schema": "ihm.regional_skin_transport.v1",
+        "native_blood_storage_connected": false,
+        "coupling_mode": "isolated_regional_native_law_transfer",
+        "time_s": 600.0,
+        "parameters": {
+          "scale": 1.6460407311876462e-07,
+          "external_reservoir_volume_multiplier": 1000.0,
+          "arterial_pa": 15125.300732670239,
+          "venous_pa": 530.2438926546556,
+          "pressure_reference_pa": {
+            "blood": 1158.4427930464249,
+            "interstitium": -1831.279954664984,
+            "lymph": 671.6906604467194
+          },
+          "compliance_m3_pa": {
+            "blood": 2.2963916728132795e-14,
+            "interstitium": 1.7098509188108712e-13,
+            "lymph": 4.938527618962968e-13
+          },
+          "resistance_pa_s_m3": {
+            "arterial_supply": 1.101074886938494e+16,
+            "venous_return": 600564463258695.0,
+            "filtration": 4.994068460146241e+17,
+            "lymph_uptake": 9.988136920292485e+16,
+            "lymph_return": 1.6714756316705464e+16
+          },
+          "lymph_drive_pa": 2668.8351086486637,
+          "albumin_ps_m3_s": 2.9929958615184966e-16,
+          "albumin_reflection": 0.954,
+          "fluid_oncotic_reflection": 1.0,
+          "max_internal_dt_s": 1.0
+        },
+        "volumes_m3": {
+          "blood": 4.380332771758538e-11,
+          "interstitium": 2.1436571048990888e-10,
+          "lymph": 3.327139515795938e-10,
+          "arterial_reservoir": 5.727844405193911e-07,
+          "venous_reservoir": 5.742152172332013e-07
+        },
+        "albumin_kg": {
+          "blood": 1.9751359389300476e-09,
+          "interstitium": 4.127154869927867e-09,
+          "lymph": 6.643755561079642e-09,
+          "arterial_reservoir": 2.5781296160377817e-05,
+          "venous_reservoir": 2.5823775554803944e-05
+        },
+        "initial_volumes_m3": {
+          "blood": 2.7859732750468265e-11,
+          "interstitium": 2.139324955611334e-10,
+          "lymph": 3.317162878015315e-10,
+          "arterial_reservoir": 5.735085161131332e-07,
+          "venous_reservoir": 5.735085161131332e-07
+        },
+        "initial_albumin_kg": {
+          "blood": 1.2539796303431272e-09,
+          "interstitium": 4.139610692472235e-09,
+          "lymph": 6.62449859645398e-09,
+          "arterial_reservoir": 2.5813887142262495e-05,
+          "venous_reservoir": 2.5791912530369967e-05
+        },
+        "integrated_flows_m3": {
+          "arterial_supply": 7.240755937426381e-10,
+          "venous_return": 7.067011200686825e-10,
+          "filtration": 1.430878706837877e-12,
+          "lymph_uptake": 9.976637780624773e-13,
+          "lymph_return": 0.0
+        },
+        "integrated_albumin_kg": {
+          "arterial_supply": 3.259098188465612e-08,
+          "venous_return": 3.186302443398797e-08,
+          "filtration": 6.801142081292328e-12,
+          "lymph_uptake": 1.9256964625656886e-11,
+          "lymph_return": 0.0
+        },
+        "attachment": {
+          "unit_id": "body-detail-microvascular-left-0",
+          "territory": "left forearm skin",
+          "material_attachment": {
+            "entity_id": "body-bp3d-FJ2810",
+            "face_index": 192812,
+            "barycentric": [
+              0.3333333333333333,
+              0.3333333333333333,
+              0.3333333333333333
+            ],
+            "normal_depth_m": 0.001
+          },
+          "boundary_association": {
+            "kind": "named_territory_boundary",
+            "supply": "left forearm cutaneous arterial territory",
+            "return": "left forearm cutaneous venous territory",
+            "pressure_nodes": {
+              "supply": 0,
+              "return": 1
+            },
+            "evidence_kind": "inferred_territory_prior",
+            "native_blood_storage_connected": false,
+            "native_parent_vessel_id": null,
+            "uncertainty": "No measured terminal vessel correspondence; prescribed isolated pressure boundaries"
+          },
+          "geometric_lumen_volume_m3": 2.7859732750468265e-11
+        },
+        "provenance": [
+          {
+            "path": "data/derived/coupling/native-skin-circuit.json",
+            "sha256": "e0cf9e1873c114499423ce9f5030420df584dce5b5902222ab6bd938b5a6faff"
+          },
+          {
+            "path": "data/derived/canonical/microvascular.json",
+            "sha256": "bced04a8686b928207eb1add90be5a6a928b56f69be34b2991cb023a67176bd7"
+          },
+          {
+            "path": "data/derived/physiology/native_baseline_v2/states/native_stabilized.xml",
+            "sha256": "42aa7af3ec40a4bfab582a6e2658d1869e28545cd9c831d709a89599e00117b1"
+          },
+          {
+            "path": "ihm/assembly/skin_transport.py",
+            "sha256": "02fadd31dd4e0a6237c3d98ec1b367a66d8fc73fdce9a331777213838515ac14"
+          },
+          {
+            "path": "scripts/verify_body_transport.py",
+            "sha256": "5af0812dbb0ef32c4fac267c5eeb483f09712bd5a1c84c9e162ec7c172236f08"
+          },
+          {
+            "path": "scripts/build_body_transport.py",
+            "sha256": "2034514ab1eed327537dab3f96679f9aab8095f46f2dbc3b27df9f7ca319826c"
+          },
+          {
+            "path": "docs/research/REGIONAL_SKIN_TRANSPORT.md",
+            "sha256": "40e4348ac9281250438a20d5659b8a64f70e3106e375f3be89cc6f4b7f2423f7"
+          },
+          {
+            "path": "data/raw/physiology/biogears/projects/biogears/libBiogears/src/engine/Systems/Diffusion.cpp",
+            "sha256": "9f90e429a87ae1ba3b7071fc14525905e768d23a27a0f21d15a2581a49b7d48b"
+          },
+          {
+            "path": "data/raw/physiology/biogears/projects/biogears/libBiogears/src/engine/Systems/Tissue.cpp",
+            "sha256": "5557f75fe19946ea680b054bf1549b7bb331a518ab36f03d9b8fcde578a0e389"
+          },
+          {
+            "path": "data/raw/physiology/biogears/projects/biogears/libBiogears/src/engine/Controller/BioGears.cpp",
+            "sha256": "451ddda942a26e547a0ed4f1d5ba875fa7ca9e2c6275895b791f9c81e7a39166"
+          }
+        ],
+        "balance": {
+          "volume_residual_m3": -6.333101564859118e-25,
+          "albumin_residual_kg": 6.638124415738047e-23,
+          "node_volume_residual_m3": {
+            "blood": -5.492996255234949e-25,
+            "interstitium": 7.79520792103195e-26,
+            "lymph": -1.6155871338926322e-25,
+            "arterial_reservoir": 5.657915389862709e-22,
+            "venous_reservoir": -5.893661864440322e-22
+          },
+          "node_albumin_residual_kg": {
+            "blood": 6.379630474315226e-23,
+            "interstitium": -3.0599220315926453e-24,
+            "lymph": 5.648092620088642e-24,
+            "arterial_reservoir": -2.205594385311393e-20,
+            "venous_reservoir": -1.0448945497769846e-20
+          },
+          "full_reservoir_volume_residual_m3": -2.42079576142472e-23,
+          "full_reservoir_albumin_residual_kg": -3.2438508106726395e-20
+        }
+      },
+      "inflow_reduction": {
+        "schema": "ihm.regional_skin_transport.v1",
+        "native_blood_storage_connected": false,
+        "coupling_mode": "isolated_regional_native_law_transfer",
+        "time_s": 600.0,
+        "parameters": {
+          "scale": 1.6460407311876462e-07,
+          "external_reservoir_volume_multiplier": 1000.0,
+          "arterial_pa": 15125.300732670239,
+          "venous_pa": 530.2438926546556,
+          "pressure_reference_pa": {
+            "blood": 1158.4427930464249,
+            "interstitium": -1831.279954664984,
+            "lymph": 671.6906604467194
+          },
+          "compliance_m3_pa": {
+            "blood": 2.2963916728132795e-14,
+            "interstitium": 1.7098509188108712e-13,
+            "lymph": 4.938527618962968e-13
+          },
+          "resistance_pa_s_m3": {
+            "arterial_supply": 1.101074886938494e+16,
+            "venous_return": 600564463258695.0,
+            "filtration": 4.994068460146241e+17,
+            "lymph_uptake": 9.988136920292485e+16,
+            "lymph_return": 1.6714756316705464e+16
+          },
+          "lymph_drive_pa": 2668.8351086486637,
+          "albumin_ps_m3_s": 2.9929958615184966e-16,
+          "albumin_reflection": 0.954,
+          "fluid_oncotic_reflection": 1.0,
+          "max_internal_dt_s": 1.0
+        },
+        "volumes_m3": {
+          "blood": 1.7939834489089032e-11,
+          "interstitium": 2.1305448164613045e-10,
+          "lymph": 3.2778854049946843e-10,
+          "arterial_reservoir": 5.733124933710153e-07,
+          "venous_reservoir": 5.737192645147288e-07
+        },
+        "albumin_kg": {
+          "blood": 8.075317918162021e-10,
+          "interstitium": 4.124948970626485e-09,
+          "lymph": 6.545446045219718e-09,
+          "arterial_reservoir": 2.5805064066754117e-05,
+          "venous_reservoir": 2.5801275767989918e-05
+        },
+        "initial_volumes_m3": {
+          "blood": 2.7859732750468265e-11,
+          "interstitium": 2.139324955611334e-10,
+          "lymph": 3.317162878015315e-10,
+          "arterial_reservoir": 5.735085161131332e-07,
+          "venous_reservoir": 5.735085161131332e-07
+        },
+        "initial_albumin_kg": {
+          "blood": 1.2539796303431272e-09,
+          "interstitium": 4.139610692472235e-09,
+          "lymph": 6.62449859645398e-09,
+          "arterial_reservoir": 2.5813887142262495e-05,
+          "venous_reservoir": 2.5791912530369967e-05
+        },
+        "integrated_flows_m3": {
+          "arterial_supply": 1.960227421183341e-10,
+          "venous_return": 2.0581530702953433e-10,
+          "filtration": 1.2733335017899394e-13,
+          "lymph_uptake": 1.0053472651817947e-12,
+          "lymph_return": 4.933094567244903e-12
+        },
+        "integrated_albumin_kg": {
+          "arterial_supply": 8.82307550837016e-09,
+          "venous_return": 9.264726435467636e-09,
+          "filtration": 4.7969114294269305e-12,
+          "lymph_uptake": 1.9458633275155846e-11,
+          "lymph_return": 9.851118450941938e-11
+        },
+        "attachment": {
+          "unit_id": "body-detail-microvascular-left-0",
+          "territory": "left forearm skin",
+          "material_attachment": {
+            "entity_id": "body-bp3d-FJ2810",
+            "face_index": 192812,
+            "barycentric": [
+              0.3333333333333333,
+              0.3333333333333333,
+              0.3333333333333333
+            ],
+            "normal_depth_m": 0.001
+          },
+          "boundary_association": {
+            "kind": "named_territory_boundary",
+            "supply": "left forearm cutaneous arterial territory",
+            "return": "left forearm cutaneous venous territory",
+            "pressure_nodes": {
+              "supply": 0,
+              "return": 1
+            },
+            "evidence_kind": "inferred_territory_prior",
+            "native_blood_storage_connected": false,
+            "native_parent_vessel_id": null,
+            "uncertainty": "No measured terminal vessel correspondence; prescribed isolated pressure boundaries"
+          },
+          "geometric_lumen_volume_m3": 2.7859732750468265e-11
+        },
+        "provenance": [
+          {
+            "path": "data/derived/coupling/native-skin-circuit.json",
+            "sha256": "e0cf9e1873c114499423ce9f5030420df584dce5b5902222ab6bd938b5a6faff"
+          },
+          {
+            "path": "data/derived/canonical/microvascular.json",
+            "sha256": "bced04a8686b928207eb1add90be5a6a928b56f69be34b2991cb023a67176bd7"
+          },
+          {
+            "path": "data/derived/physiology/native_baseline_v2/states/native_stabilized.xml",
+            "sha256": "42aa7af3ec40a4bfab582a6e2658d1869e28545cd9c831d709a89599e00117b1"
+          },
+          {
+            "path": "ihm/assembly/skin_transport.py",
+            "sha256": "02fadd31dd4e0a6237c3d98ec1b367a66d8fc73fdce9a331777213838515ac14"
+          },
+          {
+            "path": "scripts/verify_body_transport.py",
+            "sha256": "5af0812dbb0ef32c4fac267c5eeb483f09712bd5a1c84c9e162ec7c172236f08"
+          },
+          {
+            "path": "scripts/build_body_transport.py",
+            "sha256": "2034514ab1eed327537dab3f96679f9aab8095f46f2dbc3b27df9f7ca319826c"
+          },
+          {
+            "path": "docs/research/REGIONAL_SKIN_TRANSPORT.md",
+            "sha256": "40e4348ac9281250438a20d5659b8a64f70e3106e375f3be89cc6f4b7f2423f7"
+          },
+          {
+            "path": "data/raw/physiology/biogears/projects/biogears/libBiogears/src/engine/Systems/Diffusion.cpp",
+            "sha256": "9f90e429a87ae1ba3b7071fc14525905e768d23a27a0f21d15a2581a49b7d48b"
+          },
+          {
+            "path": "data/raw/physiology/biogears/projects/biogears/libBiogears/src/engine/Systems/Tissue.cpp",
+            "sha256": "5557f75fe19946ea680b054bf1549b7bb331a518ab36f03d9b8fcde578a0e389"
+          },
+          {
+            "path": "data/raw/physiology/biogears/projects/biogears/libBiogears/src/engine/Controller/BioGears.cpp",
+            "sha256": "451ddda942a26e547a0ed4f1d5ba875fa7ca9e2c6275895b791f9c81e7a39166"
+          }
+        ],
+        "balance": {
+          "volume_residual_m3": -1.3894049351476637e-25,
+          "albumin_residual_kg": -4.03250548619601e-23,
+          "node_volume_residual_m3": {
+            "blood": -1.7771458472818954e-26,
+            "interstitium": -1.570148745751902e-25,
+            "lymph": 3.3927329811745276e-26,
+            "arterial_reservoir": 4.9147453082720985e-22,
+            "venous_reservoir": -1.1608445921416052e-21
+          },
+          "node_albumin_residual_kg": {
+            "blood": -2.1299900773240463e-23,
+            "interstitium": -2.1057562703156568e-23,
+            "lymph": 2.0679515313825692e-24,
+            "arterial_reservoir": -7.772189035548248e-21,
+            "venous_reservoir": -2.6215007973030553e-20
+          },
+          "full_reservoir_volume_residual_m3": -6.694993082851068e-22,
+          "full_reservoir_albumin_residual_kg": -3.402731526828762e-20
+        }
+      },
+      "lymph_obstruction": {
+        "schema": "ihm.regional_skin_transport.v1",
+        "native_blood_storage_connected": false,
+        "coupling_mode": "isolated_regional_native_law_transfer",
+        "time_s": 600.0,
+        "parameters": {
+          "scale": 1.6460407311876462e-07,
+          "external_reservoir_volume_multiplier": 1000.0,
+          "arterial_pa": 15125.300732670239,
+          "venous_pa": 530.2438926546556,
+          "pressure_reference_pa": {
+            "blood": 1158.4427930464249,
+            "interstitium": -1831.279954664984,
+            "lymph": 671.6906604467194
+          },
+          "compliance_m3_pa": {
+            "blood": 2.2963916728132795e-14,
+            "interstitium": 1.7098509188108712e-13,
+            "lymph": 4.938527618962968e-13
+          },
+          "resistance_pa_s_m3": {
+            "arterial_supply": 1.101074886938494e+16,
+            "venous_return": 600564463258695.0,
+            "filtration": 4.994068460146241e+17,
+            "lymph_uptake": 9.988136920292485e+16,
+            "lymph_return": 1.6714756316705464e+16
+          },
+          "lymph_drive_pa": 2668.8351086486637,
+          "albumin_ps_m3_s": 2.9929958615184966e-16,
+          "albumin_reflection": 0.954,
+          "fluid_oncotic_reflection": 1.0,
+          "max_internal_dt_s": 1.0
+        },
+        "volumes_m3": {
+          "blood": 3.0752322394109085e-11,
+          "interstitium": 2.1470224098350864e-10,
+          "lymph": 3.317162878015315e-10,
+          "arterial_reservoir": 5.727541454987707e-07,
+          "venous_reservoir": 5.742592243924299e-07
+        },
+        "albumin_kg": {
+          "blood": 1.3853528394934375e-09,
+          "interstitium": 4.1453838753506464e-09,
+          "lymph": 6.62449859645398e-09,
+          "arterial_reservoir": 2.577993256729894e-05,
+          "venous_reservoir": 2.582572995894151e-05
+        },
+        "initial_volumes_m3": {
+          "blood": 2.7859732750468265e-11,
+          "interstitium": 2.139324955611334e-10,
+          "lymph": 3.317162878015315e-10,
+          "arterial_reservoir": 5.735085161131332e-07,
+          "venous_reservoir": 5.735085161131332e-07
+        },
+        "initial_albumin_kg": {
+          "blood": 1.2539796303431272e-09,
+          "interstitium": 4.139610692472235e-09,
+          "lymph": 6.62449859645398e-09,
+          "arterial_reservoir": 2.5813887142262495e-05,
+          "venous_reservoir": 2.5791912530369967e-05
+        },
+        "integrated_flows_m3": {
+          "arterial_supply": 7.543706143625581e-10,
+          "venous_return": 7.507082792965424e-10,
+          "filtration": 7.697454223752456e-13,
+          "lymph_uptake": 0.0,
+          "lymph_return": 0.0
+        },
+        "integrated_albumin_kg": {
+          "arterial_supply": 3.3954574963544035e-08,
+          "venous_return": 3.381742857151531e-08,
+          "filtration": 5.7731828784211264e-12,
+          "lymph_uptake": 0.0,
+          "lymph_return": 0.0
+        },
+        "attachment": {
+          "unit_id": "body-detail-microvascular-left-0",
+          "territory": "left forearm skin",
+          "material_attachment": {
+            "entity_id": "body-bp3d-FJ2810",
+            "face_index": 192812,
+            "barycentric": [
+              0.3333333333333333,
+              0.3333333333333333,
+              0.3333333333333333
+            ],
+            "normal_depth_m": 0.001
+          },
+          "boundary_association": {
+            "kind": "named_territory_boundary",
+            "supply": "left forearm cutaneous arterial territory",
+            "return": "left forearm cutaneous venous territory",
+            "pressure_nodes": {
+              "supply": 0,
+              "return": 1
+            },
+            "evidence_kind": "inferred_territory_prior",
+            "native_blood_storage_connected": false,
+            "native_parent_vessel_id": null,
+            "uncertainty": "No measured terminal vessel correspondence; prescribed isolated pressure boundaries"
+          },
+          "geometric_lumen_volume_m3": 2.7859732750468265e-11
+        },
+        "provenance": [
+          {
+            "path": "data/derived/coupling/native-skin-circuit.json",
+            "sha256": "e0cf9e1873c114499423ce9f5030420df584dce5b5902222ab6bd938b5a6faff"
+          },
+          {
+            "path": "data/derived/canonical/microvascular.json",
+            "sha256": "bced04a8686b928207eb1add90be5a6a928b56f69be34b2991cb023a67176bd7"
+          },
+          {
+            "path": "data/derived/physiology/native_baseline_v2/states/native_stabilized.xml",
+            "sha256": "42aa7af3ec40a4bfab582a6e2658d1869e28545cd9c831d709a89599e00117b1"
+          },
+          {
+            "path": "ihm/assembly/skin_transport.py",
+            "sha256": "02fadd31dd4e0a6237c3d98ec1b367a66d8fc73fdce9a331777213838515ac14"
+          },
+          {
+            "path": "scripts/verify_body_transport.py",
+            "sha256": "5af0812dbb0ef32c4fac267c5eeb483f09712bd5a1c84c9e162ec7c172236f08"
+          },
+          {
+            "path": "scripts/build_body_transport.py",
+            "sha256": "2034514ab1eed327537dab3f96679f9aab8095f46f2dbc3b27df9f7ca319826c"
+          },
+          {
+            "path": "docs/research/REGIONAL_SKIN_TRANSPORT.md",
+            "sha256": "40e4348ac9281250438a20d5659b8a64f70e3106e375f3be89cc6f4b7f2423f7"
+          },
+          {
+            "path": "data/raw/physiology/biogears/projects/biogears/libBiogears/src/engine/Systems/Diffusion.cpp",
+            "sha256": "9f90e429a87ae1ba3b7071fc14525905e768d23a27a0f21d15a2581a49b7d48b"
+          },
+          {
+            "path": "data/raw/physiology/biogears/projects/biogears/libBiogears/src/engine/Systems/Tissue.cpp",
+            "sha256": "5557f75fe19946ea680b054bf1549b7bb331a518ab36f03d9b8fcde578a0e389"
+          },
+          {
+            "path": "data/raw/physiology/biogears/projects/biogears/libBiogears/src/engine/Controller/BioGears.cpp",
+            "sha256": "451ddda942a26e547a0ed4f1d5ba875fa7ca9e2c6275895b791f9c81e7a39166"
+          }
+        ],
+        "balance": {
+          "volume_residual_m3": 4.006656092053728e-25,
+          "albumin_residual_kg": 0.0,
+          "node_volume_residual_m3": {
+            "blood": 4.0793575130788962e-25,
+            "interstitium": -7.371116298385134e-27,
+            "lymph": 0.0,
+            "arterial_reservoir": 1.115659851180896e-22,
+            "venous_reservoir": 1.617138097541169e-22
+          },
+          "node_albumin_residual_kg": {
+            "blood": 9.435028861932972e-24,
+            "interstitium": -9.43341327479908e-24,
+            "lymph": 0.0,
+            "arterial_reservoir": -1.2460648747498809e-20,
+            "venous_reservoir": 2.663521572420749e-20
+          },
+          "full_reservoir_volume_residual_m3": 2.736804604814119e-22,
+          "full_reservoir_albumin_residual_kg": 1.4174566976708682e-20
+        }
+      }
+    },
+    "refinement_interstitial_volumes_m3": [
+      2.1396088618522847e-10,
+      2.13960897210764e-10,
+      2.1396090297114824e-10
+    ],
+    "refinement_difference_ratio": 1.9140277871066724,
+    "dimensional_checks_passed": true,
+    "restart_exact": true,
+    "stress_balance": {
+      "volume_residual_m3": -5.945360652724886e-25,
+      "albumin_residual_kg": -8.271806125530277e-25,
+      "node_volume_residual_m3": {
+        "blood": -1.0339757656912846e-25,
+        "interstitium": -4.8467614016778965e-25,
+        "lymph": 0.0,
+        "arterial_reservoir": 0.0,
+        "venous_reservoir": -4.58594101478227e-22
+      },
+      "node_albumin_residual_kg": {
+        "blood": -1.6543612251060553e-24,
+        "interstitium": 1.1761474334738362e-24,
+        "lymph": 0.0,
+        "arterial_reservoir": 0.0,
+        "venous_reservoir": 7.307975275783489e-20
+      },
+      "full_reservoir_volume_residual_m3": -4.591886375434995e-22,
+      "full_reservoir_albumin_residual_kg": 7.307892557722234e-20
+    }
+  },
+  "parameter_status": "native source law and snapshot coefficients; regional scale and lymph allocation are uncalibrated priors",
+  "native_blood_storage_connected": false,
+  "ownership": "native full-skin remains native; isolated regional replica has private boundary reservoirs",
+  "limitations": [
+    "Synthetic microvascular lumen volume determines extensive scale; no measured forearm tissue volume or vessel registration.",
+    "Whole-body lymph storage scaled by skin lumen fraction is an explicit allocation prior.",
+    "Intracellular exchange, sweating, active lymph pumping changes, inflammation and blood rheology are omitted.",
+    "Native albumin flux is positive-only; oncotic fluid reflection 1 differs from albumin reflection 0.954 by native design.",
+    "Pressure boundaries are prescribed; external reservoirs track fluid and albumin but do not feed back to native engine."
+  ]
+}
