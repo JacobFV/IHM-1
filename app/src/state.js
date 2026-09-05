@@ -83,7 +83,7 @@ export function scenarioInput(
       !["upstream", "saturation_bounds", "saturation_bounds_heatflux",
         "saturation_bounds_heatflux_thermal_units", "whole_body_integrity",
         "whole_body_integrity_renal", "whole_body_integrity_gi_water",
-        "whole_body_integrity_energy"].includes(
+        "whole_body_integrity_energy", "whole_body_integrity_depletion"].includes(
         environment.engine_variant,
       )
     )
