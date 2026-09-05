@@ -18,6 +18,7 @@ import {
 import "./style.css";
 import "./monitors.css";
 import { attachedHairPositions } from "./hair_motion.js";
+import { attachElasticHair, updateElasticHair } from "./hair-view.js";
 import { RegionalView, ElectricRegionalView } from "./regional.js";
 import { ClothingView } from "./clothing.js";
 import { GarmentContactView } from "./garment-contact.js";
@@ -371,6 +372,7 @@ function applyAnatomyView() {
   if($('anatomy-view').value==='clothed'){
     ({systems, opacity:layerOpacity}=anatomyView('core',available));
     if(available.includes('integumentary'))systems.add('integumentary');
+    if(available.includes('hair'))systems.add('hair');
   }else ({systems, opacity:layerOpacity}=anatomyView($("anatomy-view").value,available));
   $("search").value='';
   $("opacity").value='1';
@@ -455,6 +457,7 @@ function chooseModel() {
     const available = [...new Set(manifest.structures.filter(x => x.model_id === modelId).map(x => x.system))];
     ({systems, opacity: layerOpacity} = anatomyView("core", available));
     if(available.includes('integumentary'))systems.add('integumentary');
+    if(available.includes('hair'))systems.add('hair');
     $("anatomy-view").value = "clothed";
     syncLayers();
   }
@@ -726,6 +729,7 @@ function createGeometry(s, g) {
     );
   }
   object.userData.structure = s;
+  attachElasticHair(object,g);
   if (g.attachment?.kind === "MaterialPoint" && g.attachment.reference_triangles_m) {
     object.userData.hairAttachment = g.attachment;
     object.userData.hairReference = positions.slice();
@@ -793,6 +797,10 @@ function selectStructure(s) {
   $("structures")
     .querySelectorAll("button")
     .forEach((b) => b.classList.toggle("selected", b.dataset.id === s.id));
+  if(Number.isFinite(s.simulated_guides)){
+    $('details').insertAdjacentHTML('beforeend',`<h3>Hair materialization</h3><dl><dt>Retained population prior</dt><dd>${Number(s.population_count).toLocaleString()} follicles</dd><dt>Simulation / display</dt><dd>${s.simulated_guides} elastic guides · ${Number(s.display_count).toLocaleString()} physical-radius fibers (${(100*s.display_density_fraction).toFixed(2)}% display density)</dd><dt>Material sources</dt><dd>${esc(s.material_source)}</dd><dt>Material scope</dt><dd>${esc(s.material_condition)}</dd><dt>Root geometry</dt><dd>${esc(s.geometry_certainty)}</dd><dt>Scalp cohort</dt><dd>${esc(s.scalp_geometry_cohort)}</dd></dl>`);
+  }
+  if(objects.get(s.id)?.userData.elasticHair)updateHairReadout(objects.get(s.id));
   if (s.kind === "scalar_mesh") updateFrame();
 }
 function updateDisplay() {
@@ -910,6 +918,12 @@ function applyBodyFrame(frame,trajectory){
     const skinIds = new Set(skinField?.entity_ids || []);
     let deformedSkins = 0;
     objects.forEach((object, id) => {
+      if(updateElasticHair(object,{frame,referenceCentroids:trajectory?.centroids_m,
+          recordKey:liveSceneFrame?'live-scene':systemicSelection||activeRun,
+          visible:object.visible&&!document.hidden,gravity_m_s2:frame?.environment?.gravity||[0,-9.81,0]})){
+        if(selected?.id===id)updateHairReadout(object);
+        return;
+      }
       const positions = object.geometry?.getAttribute("position");
       const hair = object.userData.hairAttachment;
       if (positions && hair) {
@@ -935,6 +949,13 @@ function applyBodyFrame(frame,trajectory){
     });
     clothingView?.update(frame,trajectory?.centroids_m);
     return deformedSkins;
+}
+function updateHairReadout(object){
+  const d=object.userData.hairDiagnostics;if(!d)return;
+  let panel=$('hair-dynamics-readout');
+  if(!panel){panel=document.createElement('div');panel.id='hair-dynamics-readout';$('details').append(panel);}
+  panel.textContent=`Elastic hair: ${d.simulated_guides??'not advanced'} guides · ${d.rendered_fibers??'reference'} rendered fibers. ${d.maximum_update_hz??10} Hz maximum; actual mechanical clock ${Number(d.time_s??0).toFixed(3)} s. ${d.reset_reason?'State reset: '+d.reset_reason+'. ':''}${d.paused?'Paused. ':''}Physical diameter unchanged. ${d.within_small_deflection===false?'Outside small-deflection range; quantitative interpretation is unsupported. ':'Linear beam guide model. '}No strand/body collision or follicle reaction feedback. ${liveSceneFrame?'Gravity from scene environment.':'Upright gravity prior applied to recorded root motion; view rotation is not a changed mechanical posture.'}`;
+  panel.className='muted';
 }
 function updateSourceFrame(){
   $("flow-legend").hidden = !flowFrames;
