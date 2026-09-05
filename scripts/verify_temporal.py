@@ -44,7 +44,7 @@ def main():
     try: finite_laplace([0,0,1],[1,2,3],[1])
     except ValueError: pass
     else: raise AssertionError('duplicate times accepted')
-    from ihm.temporal.atlas import _read
+    from ihm.temporal.atlas import _read, _run
     from tempfile import TemporaryDirectory
     with TemporaryDirectory() as directory:
         path=Path(directory)/'rounded.csv'
@@ -52,6 +52,16 @@ def main():
         _, clock, _, cadence = _read(path, sampling_rate_hz=125)
         np.testing.assert_allclose(clock, 100+np.arange(4)/125)
         assert cadence == .008
+    with TemporaryDirectory() as directory:
+        root=Path(directory);path=root/'slow.csv';t=np.arange(3600.)
+        values=np.column_stack([t,np.sin(2*np.pi*t/300),np.sin(2*np.pi*t*.8),np.sin(2*np.pi*t*.7)])
+        np.savetxt(path,values,delimiter=',',header='Time(s),CoreTemperature(degC),ArterialPressure(mmHg),TotalLungVolume(mL)',comments='')
+        run=_run(path,root,'analytic_slow','analytic_fixture',slow=True)
+        assert len(run['variables'])==1 and len(run['omitted_undersampled_channels'])==2
+        assert run['window_duration_s']==900
+        np.testing.assert_allclose(run['variables'][0]['dominant_frequency_hz'],1/300)
+        assert run['laplace']['sigma_per_s']==[0.,1/3600,1/600,1/60]
+        json.dumps(run,allow_nan=False)
     print('temporal: analytic Laplace, clock origin, PSD power, coherence, resolvent, stable forecast, serialization, no leakage, deficient rank and validation PASS')
 
 if __name__=='__main__': main()
