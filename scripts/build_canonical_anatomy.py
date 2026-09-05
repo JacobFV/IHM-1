@@ -206,8 +206,9 @@ def build():
                       independent_subject_count=0, dependent_source='Z-Anatomy derives in part from BodyParts3D',
                       source_index=file_record(ROOT/'data/derived/anatomy/extended/source_index.json'))
     exclusions, jacobians = [], []
+    missing_essential_organs = {'za-b0e9cdd77cc7f9fe', 'za-2de3d6737090b6f5', 'za-984141fb35e90177', 'za-915a592641ffe9b0', 'za-0667ce7832fc9367', 'za-05ffc920dd6517bb'}
     for z in za_index['meshes']:
-        if z['system'] != 'lymphatic' and 'parathyroid' not in z['name'].lower():
+        if z['id'] not in missing_essential_organs and z['system'] != 'lymphatic' and 'parathyroid' not in z['name'].lower():
             continue
         name = normalized_name(z['name'])
         if name in bp_by_name:
@@ -296,7 +297,7 @@ def build():
         'limits': ['Reference surface assembly, not a validated volumetric anatomical mesh.', 'Source meshes may contain overlaps, open surfaces and interfaces; support relations do not certify contact.', 'Bone landmarks and derivative atlases are not independent subject measurements.', 'Lymph node groups preserve authored group meshes; their number is not an individual lymph-node count.', 'Anatomical support connections alone do not establish physiological causality.']}
     write_json(OUT/'anatomy.json', assembly)
     model = copy.deepcopy(bp_model)
-    model.update(id=MODEL_ID, name='IHM · one generic human', description='A single body with acquired skeletal, muscle, organ, nerve and vascular surfaces; registered regional lymphatic additions and explicit skin-layer priors.',
+    model.update(id=MODEL_ID, name='IHM · one generic human', description='A single body with acquired skeletal, muscle, organ, nerve and vascular surfaces; registered lung parenchyma, regional lymphatic additions and explicit skin-layer priors.',
                  anatomy_path=str((OUT/'anatomy.json').relative_to(ROOT)), source_family_ids=['bodyparts3d', 'z-anatomy', 'published-lymphatic-network'],
                  cross_family_registration=True, calibration_status='generic anatomical assembly with recorded priors; not subject calibrated',
                  assumption_ledger=assumptions, registrations={'z_anatomy': {k:v for k,v in reg_report.items() if k not in ('landmarks', 'held_out_residuals_m')}},

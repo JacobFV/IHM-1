@@ -29,6 +29,7 @@ class RegistrationTests(unittest.TestCase):
         self.assertEqual(physical_role('costal cartilage', 'skeletal'), 'cartilage')
         self.assertEqual(physical_role('Achilles tendon', 'muscular'), 'tendon')
         self.assertEqual(physical_role('skin', 'integumentary'), 'skin')
+        self.assertEqual(physical_role('cavity of left ventricle', 'cardiac'), 'fluid_cavity')
         self.assertEqual(physical_role('Node of ligamentum arteriosum', 'lymphatic'), 'lymph_node_group')
 
 

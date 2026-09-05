@@ -95,6 +95,8 @@ def normalized_name(name):
 
 def physical_role(name, system):
     name = name.lower()
+    if name.startswith('cavity of '):
+        return 'fluid_cavity'
     if system == 'lymphatic' and 'node' in name:
         return 'lymph_node_group'
     if system in ('arterial', 'venous'):
@@ -167,6 +169,12 @@ def verify_assembly(assembly, root):
             assert e['assumptions'] and e['provenance']['source_ids']
         for connection in e['connections']:
             assert connection['entity_id'] in by_id and connection['entity_id'] != e['id']
+    lung_names = {'inferior lobe of left lung', 'inferior lobe of right lung', 'middle lobe of right lung', 'superior lobe of left lung', 'superior lobe of right lung'}
+    lungs = [e for e in entities if e['name'] in lung_names]
+    assert {e['name'] for e in lungs} == lung_names, 'Missing lung parenchymal lobes'
+    for e in lungs:
+        assert e['system'] == 'respiratory' and e['role'] == 'soft_organ'
+        assert e['centroid_m'][0] > 0 if 'left' in e['name'] else e['centroid_m'][0] < 0
     network = next(e for e in entities if e['role'] == 'lymphatic_network')
     graph = json.loads((root / network['graph']['path']).read_text())
     original_graph = json.loads((root / graph['source_graph']['path']).read_text())
