@@ -6,6 +6,7 @@ physical dissipation. This is nodal contact, not continuous/self collision.
 """
 from dataclasses import dataclass
 import numpy as np
+from scipy.spatial import cKDTree
 from .mechanics_backend import DeformableRegion
 
 def _finite_positive(value,name):
@@ -93,6 +94,7 @@ def resolve_node_triangle_contact(position_a_m,velocity_a_m_s,mass_a_kg,
     xa=np.array(position_a_m,float,copy=True);xb=np.array(position_b_m,float,copy=True)
     va=np.array(velocity_a_m_s,float,copy=True);vb=np.array(velocity_b_m_s,float,copy=True)
     ma=np.asarray(mass_a_kg,float);mb=np.asarray(mass_b_kg,float);tri=np.asarray(triangles_b)
+    kinetic_a_before=float(.5*np.sum(ma[:,None]*va*va));kinetic_b_before=float(.5*np.sum(mb[:,None]*vb*vb))
     ids=np.asarray(node_ids)
     for x,v,m in ((xa,va,ma),(xb,vb,mb)):
         if x.ndim!=2 or x.shape[1]!=3 or x.shape!=v.shape or m.shape!=(len(x),) or not all(np.isfinite(z).all() for z in (x,v,m)) or np.any(m<=0):raise ValueError('Finite nodal contact arrays and positive mass required')
@@ -108,18 +110,26 @@ def resolve_node_triangle_contact(position_a_m,velocity_a_m_s,mass_a_kg,
     wa=move_a/ma;wb=move_b/mb;ja=np.zeros_like(xa);jb=np.zeros_like(xb)
     correction_a=np.zeros_like(xa);correction_b=np.zeros_like(xb)
     loss=0.;contacts=0;edge_unresolved=0;penetration=0.;angular=np.zeros(3)
+    reference_triangles=xb[tri];centers=reference_triangles.mean(axis=1)
+    radius=float(np.linalg.norm(reference_triangles-centers[:,None,:],axis=2).max())
+    tree=cKDTree(centers);target_motion_bound=0.
     for i in ids:
-        gaps,normals,weights,inside,d2=_triangle_projection(xa[i],xb[tri])
+        # A conservative enclosing-sphere search, expanded by every accumulated
+        # target projection, cannot discard a triangle within the search band.
+        candidates=np.asarray(tree.query_ball_point(xa[i],radius+distance+target_motion_bound),int)
+        if not len(candidates):continue
+        gaps,normals,weights,inside,d2=_triangle_projection(xa[i],xb[tri[candidates]])
         k=int(np.argmin(d2))
         if d2[k]>distance**2 or gaps[k]>1e-12:continue
         if not inside[k]:edge_unresolved+=1;continue
-        nodes=tri[k];beta=weights[k];normal=normals[k];gap=float(gaps[k])
+        nodes=tri[candidates[k]];beta=weights[k];normal=normals[k];gap=float(gaps[k])
         inverse_mass=wa[i]+float(np.sum(beta**2*wb[nodes]))
         if inverse_mass==0:continue
         penetration=max(penetration,-gap);contacts+=1
         correction=max(0.,-gap)/inverse_mass*normal
         delta_a=wa[i]*correction;delta_b=-wb[nodes,None]*beta[:,None]*correction
         xa[i]+=delta_a;xb[nodes]+=delta_b;correction_a[i]+=delta_a;np.add.at(correction_b,nodes,delta_b)
+        target_motion_bound+=float(np.linalg.norm(delta_b,axis=1).max())
         relative=va[i]-beta@vb[nodes];vn=float(relative@normal)
         jn=max(-vn,0.)/inverse_mass
         tangential=relative-vn*normal;speed=np.linalg.norm(tangential)
@@ -137,7 +147,9 @@ def resolve_node_triangle_contact(position_a_m,velocity_a_m_s,mass_a_kg,
             'contact_count':contacts,'unresolved_edge_contacts':edge_unresolved,
             'max_preprojection_penetration_m':float(penetration),
             'paired_impulse_residual_ns':ja.sum(axis=0)+jb.sum(axis=0),
-            'angular_impulse_residual_nms':angular}
+            'angular_impulse_residual_nms':angular,
+            'kinetic_transfer_a_j':float(.5*np.sum(ma[:,None]*va*va)-kinetic_a_before),
+            'kinetic_transfer_b_j':float(.5*np.sum(mb[:,None]*vb*vb)-kinetic_b_before)}
 
 @dataclass(frozen=True)
 class NodeTriangleContact:

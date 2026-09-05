@@ -20,6 +20,8 @@ def verify():
     before=.5*np.sum(ma[:,None]*va**2)+.5*np.sum(mb[:,None]*vb**2)
     after=.5*np.sum(ma[:,None]*result['velocity_a_m_s']**2)+.5*np.sum(mb[:,None]*result['velocity_b_m_s']**2)
     assert abs(before-after-result['dissipation_j'])<1e-12
+    assert 'kinetic_transfer_a_j' in result, 'Interface impulse work receipt missing'
+    assert abs(result['kinetic_transfer_a_j']+result['kinetic_transfer_b_j']+result['dissipation_j'])<1e-12
     # Homogeneous strain uses the independently benchmarked native FEBio law.
     x,t=tetra_box((.02,.02,.02),(2,2,2))
     a=DynamicTetrahedra(x,t,mu_pa=500,lambda_pa=0,density_kg_m3=1000)
