@@ -36,6 +36,8 @@ Stomach, spleen, both kidneys and urinary bladder pass the candidate screen. All
 
 This identifies inputs for subsequent geometry validation and material ownership work. It does not certify self-intersection-free solids, assign tissue volume from the signed integrals, replace the canonical mass ledger or resolve inter-organ overlaps.
 
+Closed arterial and venous atlas envelopes do not distinguish vascular wall from lumen, provide wall thickness, or authorize assigning their enclosed space to tissue mass. Native blood remains the exclusive blood-state owner. Hollow-organ closure likewise does not establish lumen nesting, wall occupancy or the physical interpretation of an interface. All candidate counts here are geometric only.
+
 ## Reproduction and receipts
 
 ```sh
