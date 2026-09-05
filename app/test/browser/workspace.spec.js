@@ -87,3 +87,19 @@ test('narrow screens keep a useful scene and keyboard-operable drawers without p
   await expectNoPageOverflow(page);
   await expect(page.getByRole('button', { name: 'Focus mode', exact: true })).toBeVisible();
 });
+
+test('panel controls stay inside the screen through intermediate responsive widths', async ({page}) => {
+  await page.goto('/');
+  for (const width of [620,768,1000,1001]) {
+    await page.setViewportSize({width,height:650});
+    const boxes=await page.locator('.workspace-tools button').evaluateAll(buttons=>buttons.map(button=>{
+      const box=button.getBoundingClientRect();
+      return {left:box.left,right:box.right};
+    }));
+    for (const box of boxes) {
+      expect(box.left).toBeGreaterThanOrEqual(0);
+      expect(box.right).toBeLessThanOrEqual(width);
+    }
+    await expectNoPageOverflow(page);
+  }
+});

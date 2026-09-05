@@ -150,6 +150,8 @@ export const anatomyViews = [
   {id: 'lymph', label: 'Lymphatic structures', systems: ['lymphatic']},
   {id: 'skin', label: 'Skin & integument', systems: ['integumentary']},
   {id: 'nerves', label: 'Nervous system', systems: ['nervous']},
+  {id: 'hair', label: 'Hair & follicles', systems: ['hair','integumentary']},
+  {id: 'microvascular', label: 'Fine vascular beds', systems: ['microvascular','arterial','venous','cardiac']},
   {id: 'internal', label: 'All internal layers'},
   {id: 'all', label: 'All layers · translucent skin'},
 ];
@@ -188,7 +190,49 @@ export function validBodyTrajectory(data) {
     for (const [i,frame] of data.frames.entries()) {
       if (!Number.isFinite(frame.time_s) || (i && frame.time_s <= data.frames[i-1].time_s) || !frame.entities || Array.isArray(frame.entities)) return false;
       for (const [id,state] of Object.entries(frame.entities)) bodyTransform(state,data.centroids_m[id]);
+      if (frame.respiration?.skin_field) {
+        skinFieldParameters(frame.respiration.skin_field);
+        if (!Array.isArray(frame.respiration.skin_field.entity_ids) || !frame.respiration.skin_field.entity_ids.every(id => typeof id === "string")) return false;
+      }
     }
     return true;
   } catch { return false; }
+}
+
+function skinFieldParameters(field) {
+  const finite = (v, n) => Array.isArray(v) && v.length === n && v.every(Number.isFinite);
+  if (!finite(field.center_m, 3) || !finite(field.bounds_m?.min, 3) || !finite(field.bounds_m?.max, 3) ||
+      !finite(field.reference_radii_m, 2) || !finite(field.displacement_m, 3))
+    throw Error('Invalid thoracic skin field');
+  const c = field.center_m, low = field.bounds_m.min, high = field.bounds_m.max;
+  const [a,b] = field.reference_radii_m;
+  const y = field.thorax_y_offsets_m
+    ? field.thorax_y_offsets_m.map(v => v + c[1]) : field.thorax_y_m;
+  const lateralSpan = Math.max(high[0]-c[0], c[0]-low[0])-a;
+  if (!finite(y, 2) || !low.every((value,i) => value < high[i]) || a <= 0 || b <= 0 ||
+      lateralSpan <= 0 || y[0] <= low[1] || y[1] >= high[1] || y[0] >= y[1])
+    throw Error('Invalid thoracic skin support');
+  return {c,low,high,a,b,y,lateralSpan};
+}
+
+// Matches the regional basis in assembly/respiration.py. Always deform the
+// reference vertices, before the entity's centroid transform, without accumulation.
+export function deformSkinVertices(reference, field, output = new Float32Array(reference.length)) {
+  if (reference.length % 3 || output.length !== reference.length || reference === output)
+    throw Error('Skin deformation requires separate reference and output coordinates');
+  const params = field ? skinFieldParameters(field) : null;
+  const clamp = v => Math.max(0,Math.min(1,v));
+  const smooth = v => { const t = clamp(v); return t*t*(3-2*t); };
+  for (let i=0;i<reference.length;i+=3) {
+    const x=reference[i], y=reference[i+1], z=reference[i+2];
+    if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(z)) throw Error('Invalid skin reference coordinates');
+    output[i]=x; output[i+1]=y; output[i+2]=z;
+    if (!params) continue;
+    const {c,low,high,a,b,y:thorax,lateralSpan}=params;
+    const weight = smooth((y-low[1])/(thorax[0]-low[1])) * smooth((high[1]-y)/(high[1]-thorax[1])) *
+      (1-smooth((Math.abs(x-c[0])-a)/lateralSpan));
+    output[i] += weight*field.displacement_m[0]*Math.max(-1,Math.min(1,(x-c[0])/a));
+    output[i+2] += weight*field.displacement_m[1]*clamp((z-c[2]+b)/(2*b));
+  }
+  return output;
 }

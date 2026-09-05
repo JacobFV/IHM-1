@@ -13,6 +13,7 @@ import {
   defaultModelId,
   bodyTransform,
   validBodyTrajectory,
+  deformSkinVertices,
 } from "./state.js";
 import "./style.css";
 const $ = (id) => document.getElementById(id),
@@ -128,6 +129,8 @@ const colors = {
   urinary: "#c19678",
   lymphatic: "#8cab78",
   integumentary: "#c4a18d",
+  hair: "#5a4030",
+  microvascular: "#cf6679",
 };
 const viewport = $("viewport");
 let renderer, scene, camera, controls, group, webglError;
@@ -671,7 +674,19 @@ function setupFrames() {
 function updateFrame() {
   if (modelId === "ihm-body") {
     const frame = bodyTrajectory?.frames[Number($("time").value)];
+    const skinField = frame?.respiration?.skin_field;
+    const skinIds = new Set(skinField?.entity_ids || []);
+    let deformedSkins = 0;
     objects.forEach((object, id) => {
+      const positions = object.geometry?.getAttribute("position");
+      if (positions && (skinIds.has(id) || object.userData.skinReference)) {
+        object.userData.skinReference ||= positions.array.slice();
+        deformSkinVertices(object.userData.skinReference, skinIds.has(id) ? skinField : null, positions.array);
+        positions.needsUpdate = true;
+        object.geometry.computeVertexNormals();
+        object.geometry.computeBoundingSphere();
+        if (skinIds.has(id)) deformedSkins++;
+      }
       const transform = bodyTransform(frame?.entities?.[id], bodyTrajectory?.centroids_m[id]);
       object.matrixAutoUpdate = false;
       object.matrix.set(...transform);
@@ -681,7 +696,7 @@ function updateFrame() {
     const p = frame?.physiology || {};
     const values = [["HeartRate(1/min)", "HR", "/min"], ["MeanArterialPressure(mmHg)", "MAP", "mmHg"]]
       .filter(([key]) => Number.isFinite(p[key])).map(([key,label,unit]) => `${label} ${Number(p[key]).toFixed(1)} ${unit}`);
-    $("flow-legend").textContent = frame ? `Computed body state · ${Object.keys(frame.entities).length} tissue transforms${values.length ? " · " + values.join(" · ") : ""}` : "";
+    $("flow-legend").textContent = frame ? `Computed body state · ${Object.keys(frame.entities).length} tissue transforms${deformedSkins ? ` · ${deformedSkins} thoracic skin field${deformedSkins === 1 ? "" : "s"}` : ""}${values.length ? " · " + values.join(" · ") : ""}` : "";
     $("time-value").textContent = frame ? `${Number(frame.time_s).toFixed(3)} s` : "Body trajectory unavailable";
     $("time-value").title = frame ? "Computed snapshots; omitted tissues retain reference geometry. No interpolation or extrapolation." : bodyError;
     return;

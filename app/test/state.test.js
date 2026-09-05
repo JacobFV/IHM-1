@@ -180,3 +180,10 @@ test('anatomy views retain source availability and separate skin from internal l
  assert.equal(anatomyView('skin',available).opacity.get('integumentary'),1);
  assert.throws(()=>anatomyView('invented',available));
 });
+
+test('fine anatomy presets reveal inferred detail with the intended skin context', () => {
+  const available=['skeletal','integumentary','hair','microvascular','arterial','venous','cardiac'];
+  assert.deepEqual([...anatomyView('hair',available).systems],['integumentary','hair']);
+  assert.equal(anatomyView('hair',available).opacity.get('integumentary'),1);
+  assert.deepEqual([...anatomyView('microvascular',available).systems],['microvascular','arterial','venous','cardiac']);
+});

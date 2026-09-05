@@ -21,3 +21,33 @@ test('sparse frames reset missing tissues, invalid motion cannot fabricate geome
   assert.equal(validBodyTrajectory({frames:[{time_s:0,entities:{x:{translation_m:[1,0,0]}}}],centroids_m:{}}), false);
   assert.equal(validBodyTrajectory({frames:[{time_s:0,entities:{x:{translation_m:[1,0,0]}}}],centroids_m:{x:[0,0,0]}}), true);
 });
+
+test('computed skin displacement tapers at the thorax boundary and never moves the back or accumulates across frames', async () => {
+  const { deformSkinVertices } = await import('../src/state.js');
+  const field = {center_m:[0,0,0], bounds_m:{min:[-2,-2,-2],max:[2,2,2]},reference_radii_m:[1,1],thorax_y_offsets_m:[-1,1],displacement_m:[.1,.2,.3]};
+  const reference = new Float32Array([1,0,1,-1,0,-1,.5,1.5,0,2,0,1,1,2,1]);
+  const output = new Float32Array(reference.length);
+  deformSkinVertices(reference,field,output);
+  const expected = [1.1,0,1.2,-1.1,0,-1,.525,1.5,.05,2,0,1,1,2,1];
+  output.forEach((value,i) => assert.ok(Math.abs(value-expected[i])<1e-6));
+  const first = output.slice();
+  deformSkinVertices(reference,field,output);
+  assert.deepEqual(output,first);
+  deformSkinVertices(reference,null,output);
+  assert.deepEqual(output,reference);
+  assert.deepEqual(Array.from(reference),[1,0,1,-1,0,-1,.5,1.5,0,2,0,1,1,2,1]);
+});
+
+test('skin field is translation invariant and invalid field metadata cannot enter playback', async () => {
+  const { deformSkinVertices } = await import('../src/state.js');
+  const field={entity_ids:['skin'],center_m:[10,20,30],bounds_m:{min:[8,18,28],max:[12,22,32]},reference_radii_m:[1,1],thorax_y_offsets_m:[-1,1],displacement_m:[.1,.2,.3]};
+  const output=deformSkinVertices([11,20,31],field);
+  assert.ok(Math.abs(output[0]-11.1)<1e-5);
+  assert.ok(Math.abs(output[2]-31.2)<1e-5);
+  const trajectory={centroids_m:{},frames:[{time_s:0,entities:{},respiration:{skin_field:field}}]};
+  assert.equal(validBodyTrajectory(trajectory),true);
+  for (const broken of [{reference_radii_m:[0,1]},{displacement_m:[NaN,0,0]},{thorax_y_offsets_m:[-3,3]}]) {
+    assert.throws(()=>deformSkinVertices([11,20,31],{...field,...broken}));
+    assert.equal(validBodyTrajectory({...trajectory,frames:[{...trajectory.frames[0],respiration:{skin_field:{...field,...broken}}}]}),false);
+  }
+});

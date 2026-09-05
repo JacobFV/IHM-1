@@ -65,3 +65,25 @@ test('real canonical trajectory drives the body clock and physiology without ext
   await page.screenshot({path:'test-results/canonical-body.png',fullPage:true});
   expect(errors).toEqual([]);
 });
+
+test('computed thoracic skin field changes the rendered reference mesh and scrubs back exactly', async ({page}) => {
+  const field={entity_ids:['skin'],center_m:[0,0,0],bounds_m:{min:[-2,-2,-2],max:[2,2,2]},reference_radii_m:[1,1],thorax_y_offsets_m:[-1,1],displacement_m:[.2,.3,.1]};
+  await page.route('**/api/manifest',route=>route.fulfill({json:{models:[{id:'ihm-body',name:'Test skin',bounds:{min:[-2,-2,-2],max:[2,2,2]}}],structures:[{id:'skin',name:'Thoracic skin',model_id:'ihm-body',system:'integumentary',kind:'mesh'}]}}));
+  await page.route('**/api/geometry/skin',route=>route.fulfill({json:{positions:[-1,-1,1,1,-1,1,1,1,1,-1,1,1],indices:[0,1,2,0,2,3]}}));
+  await page.route('**/api/body',route=>route.fulfill({json:{name:'IHM',entity_count:1}}));
+  await page.route('**/api/body/trajectory',route=>route.fulfill({json:{centroids_m:{skin:[0,0,1]},frames:[{time_s:0,entities:{}},{time_s:1,entities:{},respiration:{skin_field:field}}]}}));
+  await page.goto('/');
+  await page.getByLabel('Anatomy view',{exact:true}).selectOption('skin');
+  await expect(page.locator('#play')).toBeEnabled();
+  await expect(page.locator('#scene-status')).toHaveText('');
+  await page.addStyleTag({content:'#viewport > :not(canvas) { visibility: hidden; }'});
+  const reference = await page.locator('#viewport canvas').screenshot();
+  await page.locator('#time').fill('1');
+  await page.locator('#time').dispatchEvent('input');
+  await expect(page.locator('#flow-legend')).toContainText('thoracic skin');
+  const expanded = await page.locator('#viewport canvas').screenshot();
+  expect(expanded.equals(reference)).toBe(false);
+  await page.locator('#time').fill('0');
+  await page.locator('#time').dispatchEvent('input');
+  expect((await page.locator('#viewport canvas').screenshot()).equals(reference)).toBe(true);
+});

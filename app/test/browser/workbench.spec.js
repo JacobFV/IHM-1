@@ -93,6 +93,7 @@ test("measured Laplace evidence and archived vascular playback use actual data",
     fullPage: true,
   });
   await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByRole("button", { name: "Anatomy panel", exact: true }).click();
   await expect(page.locator("#model")).toBeVisible();
   expect(
     await page.evaluate(
