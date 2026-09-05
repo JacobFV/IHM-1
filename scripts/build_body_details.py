@@ -4,10 +4,10 @@
 Canonical anatomy.json and manifest_fragment.json are always read-only inputs.
 """
 from pathlib import Path
-import argparse,gzip,hashlib,io,json,platform,sys,zipfile
+import argparse,gzip,hashlib,io,json,platform,sys,zipfile,shutil
 import numpy as np
 ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT))
-from ihm.assembly.details import physical_mesh,sample_hair,microvascular_unit,solve_network,shaft_mesh
+from ihm.assembly.details import physical_mesh,sample_hair,microvascular_unit,solve_network,shaft_mesh,validated_indices
 from ihm.assembly.hair import regional_density,display_indices,PRIORS,outward_surface_mask
 OUT=ROOT/'data/derived/canonical'
 
@@ -24,11 +24,40 @@ def geometry(sid,g):
     return dict(geometry_url='/api/geometry/'+sid,geometry_path=str(path.relative_to(ROOT)),geometry_sha256=digest(path))
 def serial(state):return {k:v.tolist() if isinstance(v,np.ndarray) else v for k,v in state.items()}
 
+def load_skin_geometry(skin):
+    """Validate immutable source identity and coordinate contract before parsing."""
+    ref=skin['reference_geometry']
+    if ref.get('frame')!='bodyparts3d-display-m' or ref.get('units')!='m':
+        raise ValueError('Skin geometry requires bodyparts3d-display-m frame and metre units')
+    path=ROOT/ref['path'];raw=path.read_bytes()
+    if hashlib.sha256(raw).hexdigest()!=ref.get('sha256'):
+        raise ValueError('Skin source bytes do not match canonical pinned geometry SHA256')
+    return path,json.loads(gzip.decompress(raw))
+
+
+def append_display(structures):
+    """Publish checked geometry bytes to the actual API directory before manifest."""
+    app=ROOT/'data/derived/app';manifest_path=app/'manifest.json'
+    manifest=json.loads(manifest_path.read_text())
+    sources=[ROOT/s['geometry_path'] for s in structures]
+    for s,source in zip(structures,sources):
+        if digest(source)!=s['geometry_sha256']:
+            raise ValueError('Display source geometry SHA256 mismatch: '+s['id'])
+    destination=app/'geometry';destination.mkdir(parents=True,exist_ok=True)
+    for s,source in zip(structures,sources):
+        target=destination/(s['id']+'.json.gz');shutil.copyfile(source,target)
+        if digest(target)!=s['geometry_sha256']:
+            raise ValueError('Published geometry SHA256 mismatch: '+s['id'])
+    ids={s['id'] for s in structures}
+    manifest['structures']=[s for s in manifest['structures'] if s['id'] not in ids]+structures
+    write_json(manifest_path,manifest)
+
+
 def build(display_count=30000,append=False):
     import scipy,trimesh
     anatomy=json.loads((OUT/'anatomy.json').read_text());skin=next(e for e in anatomy['entities'] if e['id']=='body-bp3d-FJ2810')
-    path=ROOT/skin['reference_geometry']['path'];g=json.loads(gzip.decompress(path.read_bytes()))
-    v=np.asarray(g['positions'],float).reshape(-1,3);f=np.asarray(g['indices'],int).reshape(-1,3)
+    path,g=load_skin_geometry(skin)
+    v=np.asarray(g['positions'],float).reshape(-1,3);f=validated_indices(np.asarray(g['indices']).reshape(-1,3),3,len(v),'skin faces')
     mesh=physical_mesh(v,f)
     centers=v[f].mean(axis=1);normal=np.cross(v[f[:,1]]-v[f[:,0]],v[f[:,2]]-v[f[:,0]]);normal/=np.maximum(np.linalg.norm(normal,axis=1)[:,None],1e-30)
     density,region=regional_density(v[f].mean(axis=1))
@@ -44,6 +73,7 @@ def build(display_count=30000,append=False):
     write_npz(display,{k:h[k][sample_ids] for k in ['ids','face_index','barycentric','radius_m','length_m']})
     sid='body-detail-hair';hair_g=shaft_mesh(h['roots_m'][sample_ids],h['normals'][sample_ids],h['length_m'][sample_ids],h['radius_m'][sample_ids])
     hair_g['attachment']={'kind':'MaterialPoint','skin_entity_id':skin['id'],'samples_path':str(display.relative_to(ROOT)),'source_geometry_sha256':digest(path),'vertices_per_shaft':8,'deformation_rule':'root=sum(barycentric_i * deformed_skin_vertex_i); rotate shaft local frame with deformed face tangent/normal; physical radius and length unchanged','rigid_follow_only':False}
+    hair_g['attachment'].update(sample_ids=h['ids'][sample_ids].tolist(),barycentric=h['barycentric'][sample_ids].tolist(),reference_triangles_m=v[f[h['face_index'][sample_ids]]].reshape(-1).tolist())
     structures=[dict(id=sid,name='Regional vellus hair — sampled prior',model_id='ihm-body',system='hair',kind='mesh',color='#65513e',default_visible=True,evidence_kind='regional_human_density_prior',canonical_entity_id=skin['id'],**geometry(sid,hair_g))]
     units=[];allp=[];alle=[];allr=[]
     centers=v[f].mean(axis=1);normal=np.cross(v[f[:,1]]-v[f[:,0]],v[f[:,2]]-v[f[:,0]]);normal/=np.maximum(np.linalg.norm(normal,axis=1)[:,None],1e-30)
@@ -74,9 +104,7 @@ def build(display_count=30000,append=False):
         'limitations':['Atlas-coordinate masks are inferred regions, not measured skin classification','Outward anatomical-axis face filter excludes inward skin shell; inferred and conservative, not measured segmentation','Hands/feet completely excluded to protect palms/soles; face except forehead, scalp, groin, axilla and mask boundaries unresolved/excluded','No invented canonical native artery connection; boundary-only transport','Material samples are attached; app must consume deformation metadata to move shafts nonrigidly']}
     report['microvascular']['capillary_count']=int(report['microvascular']['capillary_count'])
     write_json(OUT/'details.json',report)
-    if append:
-        manifest_path=ROOT/'data/derived/app/manifest.json';manifest=json.loads(manifest_path.read_text());ids={s['id'] for s in structures}
-        manifest['structures']=[s for s in manifest['structures'] if s['id'] not in ids]+structures;write_json(manifest_path,manifest)
+    if append:append_display(structures)
     print(json.dumps({'hair_samples':len(h['ids']),'display_hairs':len(sample_ids),'vascular_edges':len(e),'appended':append}))
 if __name__=='__main__':
     ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('--display-count',type=int,default=30000);ap.add_argument('--append',action='store_true');args=ap.parse_args();build(args.display_count,args.append)

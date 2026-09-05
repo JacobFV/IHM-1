@@ -15,6 +15,18 @@ class VascularTests(unittest.TestCase):
    with self.assertRaises(ValueError):solve_network([[0,0,0],[1,0,0]],e,r,{0:10.,1:0.})
  def test_unanchored_component_fails(self):
   with self.assertRaises(ValueError):solve_network([[0,0,0],[1,0,0],[2,0,0]],[[0,1]],[.01],{0:10.})
+ def test_fractional_graph_and_boundary_indices_are_rejected(self):
+  for edges,boundaries in [([[0.9,1.9]],{0:100,1:0}),([[0,1]],{0.5:100,1:0}),([[0,2]],{0:100,1:0})]:
+   with self.subTest(edges=edges,boundaries=boundaries),self.assertRaises(ValueError):
+    solve_network([[0,0,0],[1,0,0]],edges,[1e-5],boundaries)
+ def test_unrepresentable_resistance_and_state_are_rejected(self):
+  for radius,boundaries in [(1e-100,{0:100,1:0}),(1e100,{0:100,1:0}),(.01,{0:1e308,1:-1e308})]:
+   with self.subTest(radius=radius),self.assertRaises(ValueError):
+    solve_network([[0,0,0],[1,0,0]],[[0,1]],[radius],boundaries)
+ def test_nonfinite_sparse_solution_is_rejected(self):
+  from unittest.mock import patch
+  with patch('ihm.assembly.details.spsolve',return_value=np.array([float('nan')])):
+   with self.assertRaises(ValueError):solve_network([[0,0,0],[1,0,0],[2,0,0]],[[0,1],[1,2]],[1e-5]*2,{0:100,2:0})
  def test_single_tube_analytic(self):
   s=solve_network([[0,0,0],[.01,0,0]],[[0,1]],[5e-6],{0:100,1:0},.004)
   self.assertAlmostEqual(s['flow_m3_s'][0]/(100*np.pi*(5e-6)**4/(8*.004*.01)),1)

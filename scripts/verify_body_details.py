@@ -33,4 +33,42 @@ class DetailTests(unittest.TestCase):
   v=np.array([[0,0,0],[1,0,0],[0,1,0],[0,0,1]],float);f=np.array([[0,2,1],[0,1,3],[0,3,2],[1,2,3]])
   split=v[f].reshape(-1,3);m=physical_mesh(split,np.arange(12).reshape(-1,3))
   self.assertTrue(m.is_watertight);self.assertAlmostEqual(m.volume,1/6)
+class InputIntegrityTests(unittest.TestCase):
+ def test_fractional_and_invalid_mesh_indices_are_rejected(self):
+  from ihm.assembly.details import physical_mesh,sample_hair
+  v=np.eye(3)
+  for f in [[[0.5,1,2]],[[-1,1,2]],[[0,1,3]],[[0,float('nan'),2]],[[0,1]]]:
+   with self.subTest(faces=f):
+    with self.assertRaises(ValueError):physical_mesh(v,f)
+    with self.assertRaises(ValueError):sample_hair(v,f,[10])
+ def test_pinned_skin_hash_frame_and_units(self):
+  import tempfile,gzip,json,hashlib
+  from unittest.mock import patch
+  from scripts import build_body_details as builder
+  with tempfile.TemporaryDirectory() as d:
+   root=Path(d);path=root/'skin.json.gz';path.write_bytes(gzip.compress(json.dumps({'positions':[],'indices':[]}).encode()))
+   ref={'path':path.name,'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),'frame':'bodyparts3d-display-m','units':'m'}
+   with patch.object(builder,'ROOT',root):
+    self.assertEqual(builder.load_skin_geometry({'reference_geometry':ref})[0],path)
+    for key,value in [('sha256','0'*64),('frame','another-frame'),('units','mm')]:
+     with self.subTest(key=key),self.assertRaises(ValueError):builder.load_skin_geometry({'reference_geometry':{**ref,key:value}})
+    path.write_bytes(gzip.compress(b'{"positions":[1],"indices":[]}'))
+    with self.assertRaises(ValueError):builder.load_skin_geometry({'reference_geometry':ref})
+ def test_append_publishes_current_geometry_before_manifest(self):
+  import tempfile,json,hashlib
+  from unittest.mock import patch
+  from scripts import build_body_details as builder
+  with tempfile.TemporaryDirectory() as d:
+   root=Path(d);app=root/'data/derived/app';app.mkdir(parents=True)
+   manifest=app/'manifest.json';manifest.write_text(json.dumps({'structures':[{'id':'unrelated'}]}))
+   source=root/'fresh.json.gz';source.write_bytes(b'new geometry bytes')
+   s={'id':'detail','geometry_path':source.name,'geometry_sha256':hashlib.sha256(source.read_bytes()).hexdigest()}
+   with patch.object(builder,'ROOT',root):
+    builder.append_display([s]);published=app/'geometry/detail.json.gz'
+    self.assertEqual(published.read_bytes(),source.read_bytes())
+    published.write_bytes(b'stale');builder.append_display([s]);self.assertEqual(published.read_bytes(),source.read_bytes())
+    self.assertEqual([e['id'] for e in json.loads(manifest.read_text())['structures']],['unrelated','detail'])
+    before=manifest.read_bytes();source.write_bytes(b'corrupt')
+    with self.assertRaises(ValueError):builder.append_display([s])
+    self.assertEqual(manifest.read_bytes(),before)
 if __name__=='__main__':unittest.main()
