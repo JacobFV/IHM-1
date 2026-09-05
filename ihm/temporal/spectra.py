@@ -47,7 +47,10 @@ def cross_spectrum(x, y, fs, *, nperseg=None):
     denominator = pxx*pyy
     c = np.divide(abs(pxy)**2, denominator, out=np.full_like(pxx,np.nan), where=denominator>0)
     # One segment gives tautological coherence, not an estimate of coupling.
-    if len(x)//kw['nperseg'] < 2:
+    # Mean subtraction of a nonzero constant leaves roundoff-sized spectra.
+    # Relative-to-signal precision avoids suppressing genuinely tiny AC signals.
+    constant = lambda a: np.ptp(a) <= 8*np.finfo(float).eps*np.max(abs(a))
+    if len(x)//kw['nperseg'] < 2 or constant(x) or constant(y):
         c[:] = np.nan
     return dict(frequency_hz=f.tolist(), real=pxy.real.tolist(), imag=pxy.imag.tolist(),
                 coherence=[float(np.clip(v,0,1)) if np.isfinite(v) else None for v in c],

@@ -21,6 +21,7 @@ def main():
     c=cross_spectrum(x, 2*x, fs, nperseg=1000)
     np.testing.assert_allclose(c['coherence'][50],1,atol=1e-12)
     assert cross_spectrum(x,np.zeros_like(x),fs,nperseg=1000)['coherence'][50] is None
+    assert all(v is None for v in cross_spectrum(np.full(1000,.1),np.full(1000,.1),100,nperseg=100)['coherence'])
     np.testing.assert_allclose(resolvent([[-2]],[[3]],[[4]], [0,1j])[:,0,0],12/(2+np.array([0,1j])))
     theta=.13; a=.998*np.array([[np.cos(theta),-np.sin(theta)],[np.sin(theta),np.cos(theta)]])
     y=np.empty((500,2)); y[0]=[1,0]
