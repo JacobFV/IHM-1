@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from ihm.assembly.systemic import SystemicConfig, run_systemic, verify_contrasts
+from ihm.native import _sha
 
 p=argparse.ArgumentParser()
 p.add_argument('--protocols', nargs='+', default=['hydration','meal'])
@@ -29,6 +30,8 @@ with ThreadPoolExecutor(max_workers=args.workers) as pool:
         protocol,result=future.result()
         results[protocol]=result
 report=verify_contrasts(results)
+report['inputs']={protocol:dict(path=str((out/protocol/'systemic.json').relative_to(root)),
+    sha256=_sha(out/protocol/'systemic.json')) for protocol in results}
 (out/'contrasts.json').write_text(json.dumps(report,indent=2)+'\n')
 print(json.dumps(report,indent=2))
 raise SystemExit(0 if report['passed'] else 1)

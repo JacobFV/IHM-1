@@ -21,7 +21,7 @@ steady=[f['respiration']['diaphragm_descent_m'] for f in apnea['frames'] if 70<=
 recovered=[f['respiration']['diaphragm_descent_m'] for f in apnea['frames'] if 150<=f['time_s']<=180]
 assert np.ptp(steady)<1e-6 and np.ptp(recovered)>.001
 # A deliberately sparse *observational* reduction must never invent chest cycles.
-source=root/'data/derived/systemic/respiratory_v2/rest/systemic.json'
+source=next(root/p for p in rest['runtime_sources'] if p.endswith('/rest/systemic.json'))
 coarse=json.loads(source.read_text())
 coarse['frames']=coarse['frames'][::300]
 coarse['configuration']['sample_interval_s']=30

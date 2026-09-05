@@ -15,6 +15,31 @@ SELECTED=('heart_rate_per_min','arterial_pressure_mmhg','lung_volume_ml','respir
           'insulin_synthesis_pmol_per_min','liver_glycogen_g','metabolic_rate_w')
 
 
+def accepted_systemic_sources(root, path):
+    """Bind default-view acceptance to the exact matched native experiment set."""
+    from .systemic import verify_contrasts
+    root, path=Path(root).resolve(),Path(path).resolve()
+    report_path=path.parent.parent/'contrasts.json'
+    report=json.loads(report_path.read_text())
+    if report.get('passed') is not True or not report.get('inputs'):
+        raise ValueError('Default display requires a passed, source-bound contrast report')
+    results={}; sources={str(report_path.relative_to(root)):_sha(report_path)}
+    for protocol, receipt in report['inputs'].items():
+        file=(root/receipt['path']).resolve()
+        if not file.is_relative_to(root) or _sha(file)!=receipt['sha256']:
+            raise ValueError('Accepted systemic input changed')
+        result=json.loads(file.read_text())
+        if result['configuration']['protocol']!=protocol:
+            raise ValueError('Contrast protocol identity mismatch')
+        results[protocol]=result
+        sources[str(file.relative_to(root))]=receipt['sha256']
+    if str(path.relative_to(root)) not in sources:
+        raise ValueError('Display input was not part of the accepted contrast')
+    if not verify_contrasts(results)['passed']:
+        raise ValueError('Stored contrast acceptance cannot be reproduced')
+    return sources
+
+
 def project_systemic(root, path):
     root, path=Path(root).resolve(),Path(path).resolve()
     data=json.loads(path.read_text())

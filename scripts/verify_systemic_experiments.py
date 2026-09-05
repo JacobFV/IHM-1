@@ -1,6 +1,11 @@
 """Validate sampled systemic protocols and their causal contrasts."""
 from ihm.assembly.systemic import SystemicConfig, protocol_events, verify_contrasts
 from copy import deepcopy
+import json
+from pathlib import Path
+import tempfile
+from ihm.native import _sha
+from ihm.assembly.systemic_projection import accepted_systemic_sources
 
 
 def main():
@@ -34,6 +39,28 @@ def main():
     try:verify_contrasts({'apnea':bad,'rest':fixture})
     except ValueError:pass
     else:raise AssertionError('initial-only difference accepted')
+    # A published pass must bind the exact compared bytes, and its acceptance
+    # must be reproducible. A boolean in a neighboring JSON file is insufficient.
+    with tempfile.TemporaryDirectory() as directory:
+        root=Path(directory); inputs={}
+        for name,data in [('rest',fixture),('apnea',apnea)]:
+            data=deepcopy(data);data['configuration']={'protocol':name}
+            path=root/'experiment'/name/'systemic.json';path.parent.mkdir(parents=True)
+            path.write_text(json.dumps(data))
+            inputs[name]={'path':str(path.relative_to(root)),'sha256':_sha(path)}
+        report_path=root/'experiment/contrasts.json'
+        report_path.write_text(json.dumps({'passed':True,'inputs':inputs}))
+        source=root/inputs['apnea']['path']
+        assert len(accepted_systemic_sources(root,source))==3
+        source.write_text(source.read_text()+' ')
+        try:accepted_systemic_sources(root,source)
+        except ValueError:pass
+        else:raise AssertionError('changed accepted experiment published')
+        inputs['apnea']['sha256']=_sha(source)
+        report_path.write_text(json.dumps({'passed':False,'inputs':inputs}))
+        try:accepted_systemic_sources(root,source)
+        except ValueError:pass
+        else:raise AssertionError('failed acceptance published')
     print('PASS systemic protocol validation')
 
 
