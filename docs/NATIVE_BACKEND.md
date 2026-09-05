@@ -52,3 +52,32 @@ The corrected run exited zero after 41.27 wall seconds (including initialization
 Arterial pressure spans 74.3238–114.7222 mmHg; total lung volume spans 2595.8481–3132.6704 mL; arterial pH spans 7.416431–7.417852. A sampling check detected 71 arterial-pressure peaks (median period 0.84 s, 42 samples/cycle) and 16 lung-volume peaks (median period 3.62 s, 181 samples/cycle). These checks show the beat and breathing waveforms are resolved; they are not clinical validation. Exact extrema for every channel and units in the native column names are preserved in `summary.json`; peak method details are in `waveform_checks.json`.
 
 `native_build_manifest.json` records package versions, compiler/architecture, original release URL, source revision, and hashes of libraries, executable, adapter, original trajectory and engine state files (`states/native_stabilized.xml`, `states/native_final.xml`). The build script was re-executed successfully against the existing build, and all 8,850 acquired source-file hashes still pass verification.
+
+## Configurable predictor API
+
+`ihm.native.NativeConfig` validates an upstream patient identifier, optional existing XML state, duration (0.02–3600 seconds on the native 0.02-second grid), sample frequency (1, 2, 5, 10, 25 or 50 Hz), and up to 100 ordered interventions. `NativeConfig.from_dict` rejects unknown fields. `run_native(config, fresh_output_directory)` returns a checked summary, and `load_trajectory(directory_or_csv)` returns original columns, time and numeric channel arrays. State selection is intended for trusted local callers; the HTTP API must exclude arbitrary state paths. Existing execution directories are never overwritten.
+
+```python
+from ihm.native import NativeConfig, Intervention, run_native
+config = NativeConfig(seconds=180, interventions=(
+    Intervention(30, 'exercise', 0.3),
+    Intervention(90, 'exercise', 0.0),
+))
+summary = run_native(config, 'data/derived/physiology/my_exercise_run')
+```
+
+Exercise uses upstream `SEExercise::SEGeneric.Intensity` (0–0.5); zero stops exercise. Hemorrhage uses upstream `SEHemorrhage`, a fixed `RightLeg` compartment and initial rate (0–100 mL/min); zero stops the hemorrhage. This is an initial flow used to derive the upstream bleeding resistance, so subsequent actual flow is pressure dependent. Saline uses upstream `SESubstanceCompoundInfusion`, 0–100 mL/min and a fresh 500 mL bag at each action. Zero stops the infusion. These are simulator workload limits, not clinical safety recommendations. Source examples are `projects/howto/Exercise/src/HowTo-Exercise.cpp` and `projects/howto/common-source/HowTo-ThreadedBioGears.cpp`. No physiological equations were copied or modified.
+
+`--config path.json` on the runner accepts the same configuration fields with JSON intervention objects (`time_s`, `kind`, `value`). `--state path.xml`, `--patient`, and `--sample-hz` support direct command-line use. The engine stores complete initial and final states in `states/`. The summary records source SHA, executable/adapter/CSV/state SHA-256 hashes, explicit quantity/unit/system bindings, simulation evidence labels and unknown parameter uncertainty. Diagnostics have no asserted physiological binding. An ensemble confidence interval is not inferred from a deterministic run.
+
+The adapter can be rebuilt quickly against existing upstream libraries with `.venv/bin/python scripts/compile_native_adapter.py`. `.venv/bin/python scripts/verify_native.py` verifies contract validation and CSV rejection. `.venv/bin/python scripts/native_experiments.py` materializes exercise/recovery and hemorrhage/saline scenarios from the same native stabilized state as `native_baseline_v2`.
+
+An explicit case-insensitive source search for `supine|posture` in `projects/biogears/libBiogears/src` found no matches. The adapter therefore asserts no posture setting; any hydrostatic display adjunct must be described separately and cannot be treated as an upstream body-posture action.
+
+## Paired experiment results and failure evidence
+
+The new `native_baseline_v2`, `native_state_baseline`, `native_exercise_low` and `native_fluid_recovery` runs each produced 9,000 finite samples over 180 seconds at 50 Hz. A separate 2-second loaded-state run verified 10 Hz sampling (20 rows). `native_experiment_verification.json` preserves numerical assertions and all state-reload channel discrepancies. The baseline blood-volume range is 0.0764% of initial volume; this measures stability, not whole-body mass conservation.
+
+State reload is **not bitwise identical**: maximum blood-volume discrepancy is 0.072754 mL and arterial CO2 discrepancy 0.065009 mmHg, while instantaneous lung-volume discrepancy reaches 118.243 mL (waveform timing). Accordingly perturbations are compared to the reloaded control. A 0.05 intensity exercise from 30 to 60 seconds increased late-exercise mean heart rate by 1.827 bpm and metabolic power by 0.856 W; late recovery power excess is 0.088 W. CO2 remains elevated, so this is partial recovery. The 60 mL/min initial hemorrhage from 30–90 seconds caused a 44.831 mL mean volume deficit near its end; saline at 60 mL/min from 90–150 seconds increased the corresponding volume difference by 55.811 mL. Pressure-dependent bleeding and native fluid exchanges explain why the nominal hemorrhage-rate integral is not an exact lost-volume measurement.
+
+The first 0.3-intensity exercise trial, stopped at 90 seconds, entered irreversible hypercapnia at 130.32 seconds and returned exit 3. `native_exercise_recovery` retains that failed experiment; it is excluded from passing summaries. This is a material limitation of the source model/scenario, not repaired data. Bounds on accepted actions do not certify physiologically safe responses. Complete clinical validation, exact state restart equivalence and whole-body conservation remain unestablished.
