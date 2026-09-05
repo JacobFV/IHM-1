@@ -39,3 +39,8 @@ with tempfile.TemporaryDirectory() as root:
         except ValueError:pass
         else:raise AssertionError('cached acquisition bypassed new validation constraints')
 print('verified: real-asset catalog, literature target values, semantic parsing flags, decoded original flow, acquisition constraints')
+native=catalog.search('Skin1ToSkin2',source='biogears-native')
+assert native and all(x['basis']=='native_initialized_scalar_state_or_parameter' for x in native)
+assert catalog.search('V0_LH',source='schlosser-selgrade-2000')[0]['value']==1400
+fit=catalog.search('intercept',source='human-wound-phenotype-fit')
+assert fit[0]['basis']=='human_observation_phenotypic_fit'

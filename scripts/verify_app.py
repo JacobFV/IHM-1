@@ -1,0 +1,34 @@
+"""Exercise local API and its asset/run boundaries over real HTTP."""
+from pathlib import Path
+import json
+import threading
+from urllib.request import urlopen,Request
+from urllib.error import HTTPError
+from ihm.app import create_server
+
+server=create_server(Path(__file__).resolve().parents[1],port=0)
+thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start()
+base=f'http://127.0.0.1:{server.server_port}'
+def get(path):
+ with urlopen(base+path) as r:return json.load(r)
+def rejected(path,data=None,headers=None):
+ try:urlopen(Request(base+path,data=None if data is None else json.dumps(data).encode(),headers=headers or {'Content-Type':'application/json'}))
+ except HTTPError as e:return e.code
+ raise AssertionError('invalid request accepted')
+try:
+ try:create_server(Path(__file__).resolve().parents[1],port=server.server_port)
+ except OSError:pass
+ else:raise AssertionError('duplicate bind unexpectedly succeeded')
+ m=get('/api/manifest');assert len(m['structures'])>=2234
+ g=get(m['structures'][0]['geometry_url']);assert len(g['positions'])>10 and len(g['indices'])>3
+ p=get('/api/physiology');assert len(p['time_s'])==3000 and 'ArterialPressure(mmHg)' in p['values']
+ assert rejected('/api/geometry/../../pyproject.toml') in (400,404)
+ assert rejected('/%2e%2e/pyproject.toml') in (400,404)
+ assert rejected('/api/scenarios',{'seconds':float('nan')})==400
+ assert rejected('/api/scenarios',{'seconds':10000})==400
+ assert rejected('/api/scenarios',{'state_path':'/etc/passwd'})==400
+ assert rejected('/api/scenarios',{'patient':'../../secret'})==400
+ assert rejected('/api/scenarios',{'seconds':60},headers={'Content-Type':'application/json','Origin':'https://untrusted.example'})==403
+ assert get('/api/scenarios')['available'] is True
+ print('verified: local HTTP assets/physiology, traversal/input/origin rejection, backend discovery')
+finally:server.shutdown();server.server_close()

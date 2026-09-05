@@ -57,6 +57,33 @@ def main():
         inputs.append(p)
         for row in rows(p):
             add('human-wound-study-2011',row['name'],row['value'],row['units'],row['basis'],row['source_file'],row['reference'],row)
+    # Executed native scalar fields retain state/parameter status; not calibration.
+    p=ROOT/'native-circuits/graph.json'
+    if p.exists():
+        inputs.append(p);graph=read(p)
+        for category in ('nodes','paths','systems'):
+            for owner in graph[category]:
+                for name,value in owner.get('properties',{}).items():
+                    if not isinstance(value,dict):continue
+                    raw={'owner':owner.get('id',owner.get('type')),'quantity':name,**value,'equation_context':category,
+                         'source_sha256':graph['source']['sha256'],'independently_calibrated':False}
+                    add('biogears-native',str(raw['owner'])+'/'+name,value.get('value'),value.get('unit'),
+                        'native_initialized_scalar_state_or_parameter',graph['source']['path'],json.dumps(graph['source']),raw)
+    p=ROOT/'reproductive/trajectory.json'
+    if p.exists():
+        inputs.append(p);model=read(p)
+        for parameter in model['parameters']:
+            add('schlosser-selgrade-2000',parameter['component']+'/'+parameter['id'],parameter['value'],parameter['unit'],
+                'published_reproductive_model_parameter',str(p),json.dumps(model['source']),parameter)
+    p=ROOT/'calibration/skin-fit.json'
+    if p.exists():
+        inputs.append(p);model=read(p)
+        for i,name in enumerate(model['feature_names']):
+            raw={'calibration_context':model['model_equation'],'source_sha256':sha256(p),
+                 'parameter_se':model['uncertainty']['parameter_se'][i],'metrics':model['metrics'],
+                 'external_validation':False,'causal':False}
+            add('human-wound-phenotype-fit',name,model['fit']['parameters'][i],'V/m',
+                'human_observation_phenotypic_fit',str(p),json.dumps(model['provenance']['references']),raw)
     anatomy=read(ROOT/'anatomy/opensim_index.json');atlas=read(ROOT/'anatomy/bodyparts3d_index.json')
     vascular=read(ROOT/'vascular/vmr_index.json');population=read(ROOT/'population/nhanes-2017-2018/index.json')
     semantics=read(ROOT/'semantics/index.json');phys=read(ROOT/'physiology/collection.json')
@@ -69,7 +96,7 @@ def main():
       'population':{k:v for k,v in population.items() if k!='tables'},
       'semantics':{k:semantics[k] for k in ('asctb_rows','vessels','geometry_measurements','vessel_mesh_annotation_candidates','upstream_malformed_citation_rows')},
       'physiology':phys,'whole_body_calibrated':False,'whole_body_registered_3d':False,
-      'status':'acquired_indexed_with_population_state_prior_materialization; integrated dynamic calibration incomplete',
+      'status':'source-backed native, population, circuit, temporal and observation-level materializations; independent integrated calibration incomplete',
       'limits':['source models are not one subject or one jointly calibrated system',
                 'upstream fitted parameters are author-reported, not independently refitted',
                 'simulation fields are not raw in-vivo measurements',

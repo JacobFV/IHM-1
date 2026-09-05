@@ -48,6 +48,14 @@ def main(argv=None):
     data.add_argument('action',choices=('summary','search'))
     data.add_argument('--term');data.add_argument('--source');data.add_argument('--limit',type=int,default=20)
     data.add_argument('--catalog',default='data/derived/evidence-catalog.sqlite')
+    integrated=sub.add_parser('integrated',help='inspect or freeze the acquired evidence-backed human substrate')
+    integrated.add_argument('--root',default='.')
+    integrated.add_argument('--output')
+    integrated.add_argument('--fields',action='store_true')
+    native=sub.add_parser('native',help='execute original native multisystem physiology')
+    native.add_argument('--config',required=True);native.add_argument('--output',required=True)
+    serve=sub.add_parser('serve',help='open the local 3D scientific workbench')
+    serve.add_argument('--port',type=int,default=8765);serve.add_argument('--root',default='.')
     build = sub.add_parser('build')
     build.add_argument('model', choices=[*LIBRARY, 'whole-body', 'skin', 'fluids', 'cardiopulmonary'])
     build.add_argument('--subject', required=True); build.add_argument('--output', required=True)
@@ -63,7 +71,18 @@ def main(argv=None):
     demo = sub.add_parser('demo'); demo.add_argument('--output', default='artifacts')
     args = parser.parse_args(argv)
     try:
-        if args.command == 'data':
+        if args.command == 'integrated':
+            from ihm.human import ImplicitHuman
+            human=ImplicitHuman.open(args.root)
+            if args.output:human.save(args.output)
+            print(json.dumps(human.fields() if args.fields else human.describe(),indent=2,allow_nan=False))
+        elif args.command == 'native':
+            from ihm.native import NativeConfig,run_native
+            print(json.dumps(run_native(NativeConfig.from_dict(json.loads(Path(args.config).read_text())),args.output),indent=2,allow_nan=False))
+        elif args.command == 'serve':
+            from ihm.app import serve
+            serve(args.root,args.port)
+        elif args.command == 'data':
             from ihm.forge.catalog import EvidenceCatalog
             catalog=EvidenceCatalog(args.catalog)
             if args.action=='search' and not args.term: raise ValueError('--term is required for search')

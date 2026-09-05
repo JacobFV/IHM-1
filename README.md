@@ -3,14 +3,29 @@
 A body-wide probabilistic substrate, modeled after `../IBM-1`. Explicit predictors
 are dependency-traced views of shared physical state, evidence and processes.
 
-The project now contains an acquired, indexed corpus of real anatomy, physiology
-models and public measurements. **It is not yet one jointly registered, calibrated
-digital human.** The original illustrative predictors remain demonstrations;
-source acquisition and population-prior materialization are working, while
-cross-engine physiological integration and dynamic calibration remain unfinished.
+The acquired evidence now materializes into an executable native multisystem
+engine, measured population beliefs, human wound-field predictors, source-derived
+skin–lymph circuits and temporal predictors. A local 3D workbench displays the
+actual anatomy, wrapped muscle paths, vascular flow states and physiological
+trajectories. **Independent whole-human calibration is not established.**
 
-See the [data-driven design](docs/DIGITAL_HUMAN_DESIGN.md) for the revised
-architecture and the [actual anatomy/flow preview](artifacts/acquired-anatomy-and-flow.png).
+```bash
+# Dependencies and acquired data are already installed in this workspace.
+.venv/bin/python -m ihm integrated --output artifacts/integrated-human.json
+.venv/bin/python -m ihm serve --port 8765
+# Open http://127.0.0.1:8765
+```
+
+For a fresh checkout, see [workbench setup](docs/APP.md) and the source-specific
+collection/build scripts. Build the frontend with `npm ci && npm run build`
+inside `app/`. Raw data and native binaries are intentionally not in Git.
+
+The [implicit human API](docs/IMPLICIT_HUMAN.md) selects a predictor appropriate
+to each evidence family. [Temporal models](docs/TEMPORAL_MODELS.md) distinguish
+finite Laplace transforms of observations from causal circuit transfer functions;
+[the native circuit predictor](docs/CIRCUIT_PREDICTOR.md) exposes actual fast and
+slow vascular/interstitial/lymphatic modes. The original illustrative scaffold
+remains available separately.
 
 ## Acquired real data
 
@@ -24,9 +39,9 @@ architecture and the [actual anatomy/flow preview](artifacts/acquired-anatomy-an
 | Human Reference Atlas | 1,759,409 structure/cell/biomarker rows; 1,082 vessel records; 193 geometric summaries | [Semantics](docs/SEMANTIC_DATA.md) |
 | Human skin wound fields | 40-person experiment, 155 numeric table cells, 16 group means/SEMs | [Skin measurements](docs/INTEGUMENTARY_DATA.md) |
 
-The local raw corpus is approximately 5.34 GB including retained archives and
-extracted assets. The searchable catalog contains 31,604 parameter/constraint
-records, **not 31,604 experimentally calibrated coefficients**. All source models
+The local raw corpus is approximately 5.58 GB including retained archives and
+extracted assets. The searchable catalog contains 34,431 parameter/constraint
+records, **not 34,431 experimentally calibrated coefficients**. All source models
 and overlapping variants retain their identities. BETSE's actual full solver has
 also run locally on 212 cells; this was a generic-tissue execution check, not human
 wound validation.
@@ -37,8 +52,9 @@ physiological outputs. Its original cardiovascular, respiratory, renal, endocrin
 energy and blood-chemistry mechanisms remain together. See the
 [native backend and reproduction steps](docs/NATIVE_BACKEND.md) and
 [actual multisystem traces](artifacts/native-multisystem-physiology.png).
-This is a resting upstream patient; explicit supine posture, 3D coupling and
-independent calibration are not yet established.
+This is a resting upstream patient; native supine posture and independent calibration are not established. The
+3D viewer distinguishes a rigid display pose from the separate physical
+hydrostatic adjunct; it does not imply registered 3D whole-body dynamics.
 
 ```bash
 uv pip install --python .venv/bin/python -e '.[data,plot]'

@@ -2,4 +2,6 @@
 from ihm.body import body
 from ihm.materialize import Request, materialize
 
-__all__ = ['body', 'Request', 'materialize']
+from ihm.human import ImplicitHuman
+
+__all__ = ['body', 'Request', 'materialize', 'ImplicitHuman']
