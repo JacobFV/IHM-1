@@ -37,6 +37,8 @@ ASSETS={
  'canonical_body':'data/derived/canonical/body.json',
  'canonical_respiration':'data/derived/canonical/respiration.json',
  'canonical_peripheral':'data/derived/canonical/peripheral.json',
+ 'hair_strands':'data/derived/hair/elastic_v3/manifest_fragment.json',
+ 'hair_dynamics':'app/src/hair_dynamics.js',
  'canonical_details':'data/derived/canonical/details.json',
  'canonical_microvascular':'data/derived/canonical/microvascular.json',
  'ibm_source':'data/derived/canonical/ibm-backend/manifest.json',
@@ -213,6 +215,7 @@ class ImplicitHuman:
                 'Population covariance predicts concurrent measured states; it does not identify causal dynamics.',
                 'Canonical anatomy uses recorded inter-template fits and synthesis priors; source families retain distinct specimen identities.',
                 'Frozen circuit responses and fitted temporal spectra have different meanings and validity domains.'])
+        if all(k in self.assets for k in ('hair_strands','hair_dynamics')):result['materializations'].append('hair-strands')
         if 'systemic_backend' in self.assets:result['materializations'].append('body-systemic')
         if all(key in self.assets for key in ('penile_constitutive','penile_constitutive_source')):
             result['materializations'].append('penile-constitutive')
@@ -239,6 +242,13 @@ class ImplicitHuman:
                         evidence_kind='native_initialized_state_or_parameter',source=graph['source'],independently_calibrated=False))
         return fields
     def materialize(self,kind,**options):
+        if kind=='hair-strands':
+            if options:raise ValueError('Hair materialization returns its explicit retained guide/render resolution')
+            for key in ('hair_strands','hair_dynamics'):
+                if key not in self.assets or digest(self.root/self.assets[key]['path'])!=self.assets[key]['sha256']:
+                    raise ValueError('Hair evidence changed; reopen the implicit body')
+            from ihm.app.experiments import read_experiment
+            return read_experiment(self.root,'hair-strands')
         if kind=='penile-volume':
             if options:raise ValueError('The source-volume materialization uses its explicit retained CC/CS partition')
             for key in ('penile_volume','penile_volume_data','penile_constitutive','penile_constitutive_source'):

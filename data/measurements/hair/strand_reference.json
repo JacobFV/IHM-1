@@ -1,0 +1,65 @@
+{
+  "schema": "human_hair_reference_v1",
+  "tension": {
+    "value_pa": 7110000000.0,
+    "reported_dispersion_pa": 440000000.0,
+    "source": "10.3390/molecules25092143 Table2",
+    "sample": "commercially supplied human hair;30-fiber tensile bundle,10mm gauge,.01mm/s crosshead",
+    "use": "reference linear axial modulus, no body-vellus calibration"
+  },
+  "density": {
+    "value_kg_m3": 1312,
+    "reported_dispersion_kg_m3": 43,
+    "source": "10.3390/molecules25092143 section2.5/4.6",
+    "sample": "10human hairs,2groups of5fromdifferent persons;mass/volume regression"
+  },
+  "bending": {
+    "reference_value_pa": 5700000000.0,
+    "source": "10.3390/cosmetics6020024 Figure2c",
+    "estimate_kind": "representative middle-modulus example; not cohort mean or SD",
+    "cohort": "156 Japanese females10\u201370years;30fibers perbending measurement;20C65percentRH",
+    "other_examples_pa": [
+      4700000000.0,
+      6500000000.0
+    ]
+  },
+  "scalp_geometry": {
+    "source": "10.2147/CCID.S394045 Table2",
+    "cohort_n": 120,
+    "male_n": 60,
+    "female_n": 60,
+    "age_range_years": [
+      18,
+      60
+    ],
+    "population": "Arabian adults with normal scalp hair;Riyadh2021\u20132022",
+    "regions": {
+      "frontal": {
+        "density_per_cm2": 143.9,
+        "density_sd": 5.7,
+        "diameter_um": 83.5,
+        "diameter_sd_um": 2.5
+      },
+      "vertex": {
+        "density_per_cm2": 147.1,
+        "density_sd": 7.8,
+        "diameter_um": 87,
+        "diameter_sd_um": 4.9
+      },
+      "occipital": {
+        "density_per_cm2": 153.6,
+        "density_sd": 6.5,
+        "diameter_um": 90.7,
+        "diameter_sd_um": 5.8
+      }
+    },
+    "transfer": "regional means on atlas-coordinate scalp prior; SD not sampled as individual-fiber scatter"
+  },
+  "model_assumptions": [
+    "circular section;real hair may be elliptical",
+    "30mm straight scalp haircut scenario",
+    "body vellushair mechanical moduli transferred from scalp references",
+    "constant reference properties;humidity/temperature dependence not modeled",
+    "untwisted small-deflection beam;not a layered cuticle/cortex constitutive model"
+  ]
+}

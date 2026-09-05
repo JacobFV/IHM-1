@@ -9,6 +9,18 @@ EXPERIMENTS={'forearm-touch':'forearm-touch.json','skin-transport':'skin-transpo
 
 def read_experiment(root,kind):
     root=Path(root).resolve()
+    if kind=='hair-strands':
+        path=root/'data/derived/hair/elastic_v3/manifest_fragment.json'
+        data=json.loads(path.read_bytes())
+        for source,expected in data['source_hashes'].items():
+            file=(root/source).resolve()
+            if not file.is_relative_to(root) or hashlib.sha256(file.read_bytes()).hexdigest()!=expected:
+                raise ValueError('Hair source changed; rebuild materialization')
+        for structure in data['structures']:
+            file=(root/structure['geometry_path']).resolve()
+            if not file.is_relative_to(root) or hashlib.sha256(file.read_bytes()).hexdigest()!=structure['geometry_sha256']:
+                raise ValueError('Hair strand geometry changed')
+        return data
     if kind=='systemic':
         index=root/'data/derived/canonical/systemic-index.json'
         return json.loads(index.read_text()) if index.exists() else {'runs':[]}

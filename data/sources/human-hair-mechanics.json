@@ -1,0 +1,69 @@
+{
+  "id": "human-hair-mechanics",
+  "status": "primary_acquired_reference_properties_with_explicit_transfers",
+  "sources": [
+    {
+      "doi": "10.3390/molecules25092143",
+      "url": "https://www.mdpi.com/1420-3049/25/9/2143",
+      "local": "data/raw/hair/porosity_2020.pdf"
+    },
+    {
+      "doi": "10.3390/cosmetics6020024",
+      "url": "https://www.mdpi.com/2079-9284/6/2/24",
+      "local": "data/raw/hair/stiffness_2019.pdf"
+    },
+    {
+      "doi": "10.2147/CCID.S394045",
+      "url": "https://www.dovepress.com/article/download/80369",
+      "local": "data/raw/hair/scalp_arab_2022.pdf"
+    }
+  ],
+  "receipts": "data/raw/hair/receipts.json",
+  "measurements": "data/measurements/hair/strand_reference.json",
+  "empirical_validation_of_canonical_hair": false,
+  "limits": [
+    "circular section;real hair may be elliptical",
+    "30mm straight scalp haircut scenario",
+    "body vellushair mechanical moduli transferred from scalp references",
+    "constant reference properties;humidity/temperature dependence not modeled",
+    "untwisted small-deflection beam;not a layered cuticle/cortex constitutive model"
+  ],
+  "acquired_at_utc": "2026-09-05T23:15:06.009175+00:00",
+  "acquisition_receipts": {
+    "porosity_2020.pdf": {
+      "url": "https://mdpi-res.com/d_attachment/molecules/molecules-25-02143/article_deploy/molecules-25-02143.pdf",
+      "sha256": "8e977b7df10714a914c4e11c67323c7428790eeb051cedf8481953f64311c72b",
+      "bytes": 4412555,
+      "text_sha256": "1a8dd49973353e13190e1cbe4a877ffccccab881c55c415a6bc67ad321e84239",
+      "use": "primary study"
+    },
+    "stiffness_2019.pdf": {
+      "url": "https://mdpi-res.com/d_attachment/cosmetics/cosmetics-06-00024/article_deploy/cosmetics-06-00024.pdf",
+      "sha256": "4c218e01ab81eda5bf3cbbb0ad1ea5c3fa7c950470d44f117d51a62a85ee8a90",
+      "bytes": 2924813,
+      "text_sha256": "3f7dbeb601c71adc73b63ece4365f7177160bf0cdf518460ad3bc4ce8120b3fa",
+      "use": "primary study"
+    },
+    "structure_mechanics_2016.pdf": {
+      "url": "https://meyersgroup.ucsd.edu/papers/journals/Meyers%20434.pdf",
+      "sha256": "be6323bbcb0f967bff987a91de62fb896d5af5a3efc1d3fd63842bed93f5a680",
+      "bytes": 2845969,
+      "text_sha256": "ee2330b0778a8a7244a60b9e9610eb919dcd67f03666db3f23e7c14adee7448b",
+      "use": "primary study"
+    },
+    "scalp_arab_2022.pdf": {
+      "url": "https://www.dovepress.com/article/download/80369",
+      "sha256": "2597963da61db5e59c0295db8870802817bfb2cb375d46ec69d2a5ea10ce42ea",
+      "bytes": 516105,
+      "text_sha256": "d741880f4da589d3c37981d17ed7bb9a7c76688867c7a2982d03bd1026ae0f44",
+      "use": "primary study"
+    },
+    "xpbd_2016.pdf": {
+      "url": "https://matthias-research.github.io/pages/publications/XPBD.pdf",
+      "sha256": "cd96241fe2cce7816c3fa1cb2b9e862e5a610263fd38cc8560bb51b7f6ecd502",
+      "bytes": 2033540,
+      "text_sha256": "3ef5c72f9b34d4082a8df1b4113728e37366e7405d2a00120e4629c80b44a194",
+      "use": "investigated numerical alternative; not final integrator"
+    }
+  }
+}
