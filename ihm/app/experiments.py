@@ -2,6 +2,7 @@
 from pathlib import Path
 import hashlib
 import json
+import gzip
 
 EXPERIMENTS={'forearm-touch':'forearm-touch.json','skin-transport':'skin-transport.json','skin-electric':'skin-electric.json','spectra':'regional-spectra.json','details':'details.json'}
 
@@ -27,18 +28,35 @@ def read_experiment(root,kind):
             if not file.is_relative_to(root) or hashlib.sha256(file.read_bytes()).hexdigest()!=expected:
                 raise ValueError('Systemic source changed; rebuild '+protocol)
         return data
-    if kind not in EXPERIMENTS:raise ValueError('Unknown body experiment')
+    if kind not in EXPERIMENTS and kind!='garment-contact':raise ValueError('Unknown body experiment')
     if kind=='spectra':
         # An unchanged record may itself have stale model/anatomical inputs.
         for dependency in ('forearm-touch','skin-electric'):
             read_experiment(root,dependency)
-    data=json.loads((root/'data/derived/canonical'/EXPERIMENTS[kind]).read_bytes())
+    if kind=='garment-contact':
+        directory=root/'data/derived/garment-tissue-display-v2'
+        manifest=json.loads((directory/'manifest.json').read_bytes())
+        path=(directory/manifest['display_path']).resolve()
+        if not path.is_relative_to(directory.resolve()) or hashlib.sha256(path.read_bytes()).hexdigest()!=manifest['display_sha256']:
+            raise ValueError('Garment contact display changed; rebuild export')
+        data=json.loads(gzip.decompress(path.read_bytes()))
+        data['display_identity']={'path':str(path.relative_to(root)),'sha256':manifest['display_sha256'],
+                                  'position_quantization_max_error_m':manifest['position_quantization_max_error_m']}
+    else:
+        data=json.loads((root/'data/derived/canonical'/EXPERIMENTS[kind]).read_bytes())
     hashes={**data.get('runtime_sources',{}),**data.get('source_hashes',{})}
     hashes.update({r['path']:r['sha256'] for r in data.get('model',{}).get('provenance',[])})
     for path,expected in hashes.items():
         file=(root/path).resolve()
         if not file.is_relative_to(root) or hashlib.sha256(file.read_bytes()).hexdigest()!=expected:
             raise ValueError('Experiment source changed; rebuild '+kind)
+    if kind=='garment-contact' and data.get('configuration',{}).get('tissue_manifest_path'):
+        domain=Path(data['configuration']['tissue_manifest_path']).resolve()
+        if not domain.is_relative_to(root) or hashes.get(str(domain.relative_to(root)))!=data['configuration']['tissue_manifest_sha256']:
+            raise ValueError('Garment tissue resolution source is not bound')
+        metadata=json.loads(domain.read_bytes())
+        data['geometry_precision']={key:metadata[key] for key in ['geometry_basis','spacing_m','boundary_discretization_diagonal_m']}
+        data['geometry_precision']['source_manifest_sha256']=data['configuration']['tissue_manifest_sha256']
     anchor=data.get('anchor',{})
     for path,expected in anchor.get('source_hashes',{}).items():
         file=(root/path).resolve()

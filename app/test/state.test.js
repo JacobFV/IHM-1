@@ -159,6 +159,8 @@ test("environment overrides are optional, bounded and preserve explicit zero clo
 });
 
 test("engine variant is explicit and restricted to verified source implementations", () => {
+  for(const engine_variant of ['upstream','saturation_bounds','saturation_bounds_heatflux','saturation_bounds_heatflux_thermal_units','whole_body_integrity','whole_body_integrity_renal','whole_body_integrity_gi_water','whole_body_integrity_energy'])
+    assert.equal(scenarioInput('baseline',2,'StandardMale',{engine_variant}).engine_variant,engine_variant);
   assert.equal(
     scenarioInput("baseline", 2, "StandardFemale", {
       engine_variant: "saturation_bounds_heatflux",

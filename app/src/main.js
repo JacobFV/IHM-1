@@ -19,6 +19,7 @@ import "./style.css";
 import { attachedHairPositions } from "./hair_motion.js";
 import { RegionalView, ElectricRegionalView } from "./regional.js";
 import { ClothingView } from "./clothing.js";
+import { GarmentContactView } from "./garment-contact.js";
 import { prepareSystemic, systemicLabel, systemicSnapshot } from "./systemic.js";
 const $ = (id) => document.getElementById(id),
   esc = (s) =>
@@ -106,6 +107,11 @@ const regionalControls=document.createElement('div');
 regionalControls.id='regional-controls';
 regionalControls.innerHTML='<label class="field-label" for="regional-study">Active materialization</label><select id="regional-study"><option value="body">Whole-body replay</option><option value="forearm-touch">Forearm · contact & IBM receptors</option><option value="skin-electric">Skin · non-neural electricity</option></select><select id="regional-condition" aria-label="Regional electrical intervention" hidden><option value="wound_shunt">Barrier shunt</option><option value="baseline">Intact baseline</option><option value="electrode">Electrode pair</option><option value="membrane_perturbation">Membrane perturbation</option></select><p id="regional-note" class="muted">Detailed studies share this body’s material coordinates.</p>';
 $('anatomy-view').before(regionalControls);
+$('regional-study').add(new Option('Shorts panel · elastic tissue contact','garment-contact'));
+const garmentControls=document.createElement('div');garmentControls.id='garment-contact-controls';garmentControls.hidden=true;
+garmentControls.innerHTML='<button id="garment-contact-focus" class="text-button">Focus contact region</button><label class="field-label" for="garment-contact-speed">Recorded contact playback</label><select id="garment-contact-speed"><option value=".1">0.1× · inspect motion</option><option value=".02">0.02× · slow inspection</option><option value="1">1× · recorded time</option></select><p class="muted">Only the panel and three tissue owners move. Use anatomy layers, garment visibility and sectioning to inspect the interior; outer skin has no solved contact in this experiment.</p>';
+regionalControls.append(garmentControls);
+$('garment-contact-focus').onclick=()=>{if(regionalView instanceof GarmentContactView&&regionalView.active)regionalView.resetCamera();};
 const systemicControls=document.createElement('div');
 systemicControls.id='systemic-controls';
 systemicControls.innerHTML='<label class="field-label" for="systemic-study">Whole-body experiment</label><select id="systemic-study"><option value="">Resting body playback</option></select><p id="systemic-note" class="muted">Checking completed native experiments…</p><button id="systemic-refresh" class="text-button">Refresh experiments</button><label id="systemic-speed-label" class="field-label" for="systemic-speed" hidden>Recorded playback speed</label><select id="systemic-speed" hidden><option value="1">1× · recorded time</option><option value="10">10×</option><option value="60">60×</option><option value="300">300×</option></select>';
@@ -114,6 +120,9 @@ const systemicMonitor=document.createElement('div');
 systemicMonitor.id='systemic-monitor';systemicMonitor.hidden=true;
 systemicMonitor.innerHTML='<div class="eyebrow">SHARED NATIVE STATE</div><h2 id="systemic-title">Whole-body mechanisms</h2><p id="systemic-selected" class="muted"></p><dl id="systemic-readouts"></dl><details class="evidence-fold"><summary>Executing pathways & limits</summary><div id="systemic-mechanisms"></div></details>';
 $('details').after(systemicMonitor);
+const garmentMonitor=document.createElement('div');garmentMonitor.id='garment-contact-monitor';garmentMonitor.hidden=true;
+garmentMonitor.innerHTML='<div class="eyebrow">COMPUTED LOCAL MECHANICS</div><h2>Shorts panel & tissue</h2><p id="garment-contact-selected" class="muted"></p><dl id="garment-contact-readouts"></dl><details class="evidence-fold"><summary>Material priors, source identity & limits</summary><div id="garment-contact-evidence"></div></details>';
+systemicMonitor.after(garmentMonitor);
 let systemicSelection='',activeSystemic=null,systemicRequest=0,systemicCatalog=[],systemicIndexLast=0,systemicIndexRequest=0;
 const spatialTrajectory=()=>systemicSelection?activeSystemic?.trajectory:bodyTrajectory;
 function clearSystemic(){
@@ -187,15 +196,26 @@ function syncSystemicSelectors(){
       const old=select.dataset.beforeSystemic;delete select.dataset.beforeSystemic;
       select.value=[...select.options].some(o=>o.value===old)?old:select.options[0]?.value||'';
     }
+    if(regionalView instanceof GarmentContactView&&regionalView.active){
+      if(select.dataset.beforeContact===undefined)select.dataset.beforeContact=select.value;
+      select.querySelectorAll('option[data-contact]').forEach(o=>o.remove());
+      const option=new Option('Computed shorts panel & tissue contact','garment-contact');option.dataset.contact='true';select.add(option);select.value=option.value;
+    }else if(select.dataset.beforeContact!==undefined){
+      select.querySelectorAll('option[data-contact]').forEach(o=>o.remove());
+      const old=select.dataset.beforeContact;delete select.dataset.beforeContact;
+      select.value=[...select.options].some(o=>o.value===old)?old:select.options[0]?.value||'';
+    }
   }
 }
 const clothingControls=document.createElement('div');
 clothingControls.id='clothing-components';
 clothingControls.innerHTML='<div class="section-heading">CLOTHING</div><label class="system-row"><input id="garment-shirt" type="checkbox" checked><span>Sleeveless shirt</span></label><label class="system-row"><input id="garment-shorts" type="checkbox" checked><span>Shorts</span></label><p id="clothing-status" class="muted">Fitting garments to the assembled body…</p><details class="evidence-fold"><summary>Garment construction & mechanics</summary><p>Engineered patterns fitted to canonical skin sections with assumed ease. Shirt motion follows the computed thoracic field. This display has no solved fabric friction or deformable genital contact. Garment visibility is independent of the native thermal clothing input.</p></details>';
+clothingControls.querySelector('details p').textContent='Engineered patterns fitted to canonical skin sections with assumed ease. Default playback follows the computed thoracic field. The selectable shorts-panel experiment uses recorded elastic tissue and Coulomb contact, limited to its participating panel and tissue owners. Whole-garment containment is not validated. Garment visibility is independent of native thermal clothing input.';
 $('layer-note').after(clothingControls);
 let clothingView=null,clothingRequest=0;
 for(const id of ['shirt','shorts'])$('garment-'+id).onchange=()=>{
   clothingView?.setEnabled(id,$('garment-'+id).checked);updateClothingStatus();
+  if(regionalView instanceof GarmentContactView&&regionalView.active)regionalView.syncOwners();
 };
 function updateClothingStatus(){
   const count=[...clothingView?.meshes.values()||[]].filter(m=>m.visible).length;
@@ -295,13 +315,15 @@ try {
     controls.update();
     const frameIndex = Number($("time").value);
     const trajectory=spatialTrajectory();
-    const bodyInterval = regionalView?.active ? (regionalView instanceof ElectricRegionalView ? 1000*regionalView.data.clock.dt_s : 33) : modelId === "ihm-body" && trajectory
+    const garmentActive=regionalView instanceof GarmentContactView&&regionalView.active;
+    const bodyInterval = garmentActive ? 1000*((regionalView.data.frames[frameIndex+1]?.time_s??regionalView.data.frames[frameIndex].time_s+.005)-regionalView.data.frames[frameIndex].time_s)/Number($('garment-contact-speed').value) : regionalView?.active ? (regionalView instanceof ElectricRegionalView ? 1000*regionalView.data.clock.dt_s : 33) : modelId === "ihm-body" && trajectory
       ? 1000 * ((trajectory.frames[frameIndex+1]?.time_s ?? trajectory.frames[frameIndex]?.time_s + .1) - trajectory.frames[frameIndex]?.time_s)/(activeSystemic?Number($('systemic-speed').value):1)
       : 160;
     if (playing && flowFrames && now - lastTick >= bodyInterval) {
-      $("time").value = (Number($("time").value) + 1) % flowFrames;
+      const steps=garmentActive?Math.max(1,Math.floor((now-lastTick)/bodyInterval)):1;
+      $("time").value = (Number($("time").value) + steps) % flowFrames;
       updateFrame();
-      lastTick = now;
+      lastTick = garmentActive ? lastTick+steps*bodyInterval : now;
     }
     renderer.render(scene, camera);
   });
@@ -508,6 +530,7 @@ function receivePhysiology(value){
 }
 function closeRegional(){
   regionalView?.close();
+  garmentControls.hidden=true;garmentMonitor.hidden=true;
   if(regionalReturnPhys!==null){phys=regionalReturnPhys;regionalReturnPhys=null;}
   if(regionalReturnLabels){
     $('view-title').textContent=regionalReturnLabels.title;$('frame-label').textContent=regionalReturnLabels.frame;
@@ -517,6 +540,15 @@ function closeRegional(){
   $('scene-status').hidden=false;
   $('regional-condition').hidden=true;
   updateSigma();updateVariables();
+}
+function updateGarmentContactReadouts(){
+  if(!(regionalView instanceof GarmentContactView)||!regionalView.active)return;
+  const index=Number($('time').value),data=regionalView.prepared.physiology;
+  const selected=$('variable').value,value=data.values[selected]?.[index];
+  $('garment-contact-selected').textContent=`${selected||'Recorded mechanics'} · ${Number.isFinite(value)?value.toPrecision(5)+' '+(data.units[selected]||''):'unavailable'} · t = ${regionalView.data.frames[index].time_s.toFixed(3)} s`;
+  $('garment-contact-readouts').innerHTML=['Panel contact resultant','Maximum tissue displacement','Maximum panel displacement','Minimum tissue Jacobian','Unresolved edge samples'].map(name=>{
+    const value=data.values[name][index];return `<dt>${esc(name)}</dt><dd>${Number.isFinite(value)?value.toPrecision(5)+' '+esc(data.units[name]):'Unavailable at this snapshot'}</dd>`;
+  }).join('');
 }
 async function loadBodyTrajectory(run) {
   const request = ++bodyRequest;
@@ -532,7 +564,7 @@ async function loadBodyTrajectory(run) {
     bodyTrajectory = null;
     bodyError = error.message;
   }
-  if (modelId === "ihm-body"&&!systemicSelection&&!regionalView?.active) setupFrames();
+  if (modelId === "ihm-body"&&!systemicSelection&&!regionalView?.active&&$('regional-study').value==='body') setupFrames();
   $("body-status").textContent = bodySummary
     ? `${bodySummary.entity_count?.toLocaleString() || "Canonical"} anatomical entities · ${bodyTrajectory ? "computed body playback available" : "reference anatomy; body trajectory unavailable"}`
     : bodyTrajectory ? "Computed generic body state available" : "Reference anatomy available; body trajectory unavailable";
@@ -593,6 +625,7 @@ async function loadVisible(rows) {
   objects.forEach((o, id) => {
     o.visible = wanted.has(id);
   });
+  if(regionalView instanceof GarmentContactView&&regionalView.active)regionalView.syncOwners();
   let queue = rows
       .filter((x) => !objects.has(x.id))
       .sort(
@@ -634,6 +667,7 @@ async function loadVisible(rows) {
           if (object && group) {
             objects.set(s.id, object);
             group.add(object);
+            if(regionalView instanceof GarmentContactView&&regionalView.active)regionalView.syncOwners();
             if (!model()?.bounds) {
               modelBounds.expandByObject(object);
               if (done === 0) resetCamera();
@@ -810,13 +844,18 @@ function updateDisplay() {
     }),
   );
   clothingView?.setClipping(clip < 100 ? [plane] : []);
+  if(regionalView instanceof GarmentContactView)regionalView.setClipping(clip < 100 ? [plane] : []);
+  if(regionalView instanceof GarmentContactView&&regionalView.active)regionalView.tissueMeshes.forEach(mesh=>{
+    const structure=manifest.structures.find(s=>s.id===mesh.name),alpha=opacity*(layerOpacity.get(structure?.system)??1);
+    mesh.material.opacity=alpha;mesh.material.transparent=alpha<1;mesh.material.depthWrite=alpha>.5;
+  });
   $("opacity-value").textContent = `${Math.round(opacity * 100)}%`;
   $("clip-value").textContent = clip === 100 ? "Off" : `${clip}%`;
 }
 function setupFrames() {
   $('posture').disabled=!!regionalView?.active;
   if (modelId === "ihm-body") {
-    flowFrames = regionalView?.active ? regionalView.data.frames.length : spatialTrajectory()?.frames.length || 0;
+    flowFrames = regionalView?.active ? regionalView.data.frames.length : $('regional-study').value!=='body'?0:spatialTrajectory()?.frames.length || 0;
     $("flow-field").hidden = true;
     $("play").disabled = flowFrames < 2;
     $("time").disabled = !flowFrames;
@@ -855,6 +894,14 @@ function setupFrames() {
   updateFrame();
 }
 function updateFrame() {
+  if(regionalView instanceof GarmentContactView&&regionalView.active){
+    applyBodyFrame(null,null);
+    const frame=regionalView.draw(Number($('time').value));
+    $('time-value').textContent=`${frame.time_s.toFixed(3)} s`;
+    $('time-value').title='Recorded local mechanical snapshots; no interpolation. Other body geometry remains at reference. Playback speed affects viewing only.';
+    $('flow-legend').hidden=false;$('flow-legend').textContent='Computed panel ↔ elastic tissue contact · reference body context · whole-garment containment unvalidated';
+    updateGarmentContactReadouts();if(!spectral)drawChart();return;
+  }
   if (regionalView?.active) {
     const frame=regionalView.draw(Number($('time').value));
     $('flow-legend').hidden=false;
@@ -867,6 +914,20 @@ function updateFrame() {
   }
   if (modelId === "ihm-body") {
     const trajectory=spatialTrajectory(),frame = trajectory?.frames[Number($("time").value)];
+    const deformedSkins=applyBodyFrame(frame,trajectory);
+    $("flow-legend").hidden = !frame;
+    const p = frame?.physiology || {};
+    const values = [["HeartRate(1/min)", "HR", "/min"], ["MeanArterialPressure(mmHg)", "MAP", "mmHg"]]
+      .filter(([key]) => Number.isFinite(p[key])).map(([key,label,unit]) => `${label} ${Number(p[key]).toFixed(1)} ${unit}`);
+    $("flow-legend").textContent = frame ? activeSystemic&&!trajectory.has_body_projection?`Native systemic record · reference anatomy · no body projection · ${Number((trajectory.clock?.sample_interval_s??trajectory.configuration.sample_interval_s).toPrecision(6))} s samples`:`Computed body state · ${Object.keys(frame.entities).length} tissue transforms${deformedSkins ? ` · ${deformedSkins} thoracic skin field${deformedSkins === 1 ? "" : "s"}` : ""}${values.length ? " · " + values.join(" · ") : ""}` : "";
+    $("time-value").textContent = frame ? `${Number(frame.time_s).toFixed(3)} s` : "Body trajectory unavailable";
+    $("time-value").title = frame ? "Computed snapshots; omitted tissues retain reference geometry. No interpolation or extrapolation." : bodyError;
+    if(activeSystemic){updateSystemicReadouts();if(!spectral)drawChart();}
+    return;
+  }
+  updateSourceFrame();
+}
+function applyBodyFrame(frame,trajectory){
     const skinField = frame?.respiration?.skin_field;
     const skinIds = new Set(skinField?.entity_ids || []);
     let deformedSkins = 0;
@@ -889,22 +950,15 @@ function updateFrame() {
         if (skinIds.has(id)) deformedSkins++;
       }
       const motionId = hair?.skin_entity_id || id;
-      const transform = bodyTransform(frame?.entities?.[motionId], trajectory?.centroids_m[motionId]);
+      const transform = bodyTransform(frame?.entities?.[motionId], trajectory?.centroids_m?.[motionId]);
       object.matrixAutoUpdate = false;
       object.matrix.set(...transform);
       object.matrixWorldNeedsUpdate = true;
     });
     clothingView?.update(frame,trajectory?.centroids_m);
-    $("flow-legend").hidden = !frame;
-    const p = frame?.physiology || {};
-    const values = [["HeartRate(1/min)", "HR", "/min"], ["MeanArterialPressure(mmHg)", "MAP", "mmHg"]]
-      .filter(([key]) => Number.isFinite(p[key])).map(([key,label,unit]) => `${label} ${Number(p[key]).toFixed(1)} ${unit}`);
-    $("flow-legend").textContent = frame ? activeSystemic&&!trajectory.has_body_projection?`Native systemic record · reference anatomy · no body projection · ${Number((trajectory.clock?.sample_interval_s??trajectory.configuration.sample_interval_s).toPrecision(6))} s samples`:`Computed body state · ${Object.keys(frame.entities).length} tissue transforms${deformedSkins ? ` · ${deformedSkins} thoracic skin field${deformedSkins === 1 ? "" : "s"}` : ""}${values.length ? " · " + values.join(" · ") : ""}` : "";
-    $("time-value").textContent = frame ? `${Number(frame.time_s).toFixed(3)} s` : "Body trajectory unavailable";
-    $("time-value").title = frame ? "Computed snapshots; omitted tissues retain reference geometry. No interpolation or extrapolation." : bodyError;
-    if(activeSystemic){updateSystemicReadouts();if(!spectral)drawChart();}
-    return;
-  }
+    return deformedSkins;
+}
+function updateSourceFrame(){
   $("flow-legend").hidden = !flowFrames;
   const index = Number($("time").value);
   let label = "";
@@ -996,6 +1050,7 @@ function updateFrame() {
         : "Velocity direction and magnitude from archived solver states";
 }
 function spectralRun() {
+  if(regionalView instanceof GarmentContactView&&regionalView.active)return null;
   if(regionalView?.active){
     const id=regionalView instanceof ElectricRegionalView ? 'skin-electric:'+regionalView.condition : 'forearm-touch';
     return regionalSpectra.find(r=>r.id===id);
@@ -1035,6 +1090,7 @@ function updateVariables() {
 }
 function drawChart() {
   updateSystemicReadouts();
+  updateGarmentContactReadouts();
   const id = $("variable").value,
     v = spectralRun()?.variables.find((x) => x.id === id),
     series = spectralSeries(
@@ -1058,6 +1114,8 @@ function drawChart() {
           temporal.limitations?.[0] ||
           "Finite observation horizon. Power spectra do not establish causality."
     : activeSystemic ? `${activeSystemic.label} · native shared state · ${Number((activeSystemic.trajectory.clock?.sample_interval_s??activeSystemic.trajectory.configuration.sample_interval_s).toPrecision(6))} s recorded samples. Selected value follows the body clock. Generic source model; calibration remains incomplete.`
+    : regionalView instanceof GarmentContactView&&regionalView.active
+      ? 'Recorded 5 ms contact-force means; positions are computed boundary snapshots. Other body geometry is fixed. Material/friction priors; whole-garment containment and full trajectory convergence remain unvalidated.'
     : regionalView?.active
       ? 'Computed regional materialization at a pinned body site. Explicit parameter priors; inspect the regional evidence and charge/force audit.'
     : activeRun === "body"
@@ -1084,8 +1142,9 @@ function drawChart() {
   const valid = y.filter(Number.isFinite),
     min = Math.min(...valid),
     max = Math.max(...valid);
-  const currentValue=activeSystemic&&!spectral?y[Number($('time').value)]:y.at(-1);
-  const cursor=activeSystemic&&!spectral&&x.at(-1)>x[0]?600*(x[Number($('time').value)]-x[0])/(x.at(-1)-x[0]):null;
+  const followsClock=!!activeSystemic||(regionalView instanceof GarmentContactView&&regionalView.active);
+  const currentValue=followsClock&&!spectral?y[Number($('time').value)]:y.at(-1);
+  const cursor=followsClock&&!spectral&&x.at(-1)>x[0]?600*(x[Number($('time').value)]-x[0])/(x.at(-1)-x[0]):null;
   $("chart").innerHTML =
     `<div class="chart-values"><strong>${Number.isFinite(currentValue)?currentValue.toPrecision(5):'Unavailable'}</strong><span>${esc(spectral ? series.unit || "Source units" : phys.units?.[id] || id.match(/\(([^)]+)\)/)?.[1] || "Source units")}</span></div><svg viewBox="0 0 600 120" preserveAspectRatio="none" aria-label="${esc(id)} ${spectral ? "power spectrum" : "trajectory"}" role="img"><defs><linearGradient id="fade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8ec9bd" stop-opacity=".2"/><stop offset="1" stop-color="#8ec9bd" stop-opacity="0"/></linearGradient></defs><path d="M0 0H600 M0 40H600 M0 80H600 M0 120H600" stroke="#ffffff0b" fill="none"/><path d="${chartPath(x, y)}" fill="none" stroke="#8ec9bd" stroke-width="2" vector-effect="non-scaling-stroke"/>${Number.isFinite(cursor)?`<path d="M${cursor} 0V120" stroke="#e9c58c" stroke-width="1"/>`:''}</svg><div class="chart-axis"><span>${Number(x[0]).toPrecision(3)} ${spectral ? "Hz" : phys.time_unit || "s"}</span><span>range ${valid.length?min.toPrecision(4)+' — '+max.toPrecision(4):'unavailable'}</span><span>${Number(x.at(-1)).toPrecision(3)} ${spectral ? "Hz" : phys.time_unit || "s"}</span></div>`;
 }
@@ -1289,11 +1348,39 @@ $('regional-study').onchange=async()=>{
   }
   regionalReturnPhys=phys;
   regionalReturnLabels={title:$('view-title').textContent,frame:$('frame-label').textContent};
+  phys={};updateVariables();setupFrames();
   $('regional-note').textContent='Loading source-pinned regional experiment…';
   try {
     const data=await api('/api/body/experiments/'+encodeURIComponent(kind));
     if(request!==regionalRequest)return;
     if(!renderer)throw Error('Regional mesh needs WebGL');
+    if(kind==='garment-contact'){
+      if(!clothingView)await loadClothing();
+      if(request!==regionalRequest||modelId!=='ihm-body')return;
+      const bodyRows=manifest.structures.filter(s=>s.model_id==='ihm-body');
+      regionalView=new GarmentContactView({bodyGroup:group,objects,clothingView,camera,controls,
+        availableOwnerIds:new Set(bodyRows.map(s=>s.id)),
+        ownerVisible:id=>filterStructures(manifest.structures,modelId,systems,$('search').value).some(s=>s.id===id)});
+      regionalView.open(data);
+      for(const id of regionalView.prepared.owners){const s=bodyRows.find(s=>s.id===id);if(s)systems.add(s.system);}
+      syncLayers();refresh();
+      garmentControls.hidden=false;garmentMonitor.hidden=false;
+      $('scene-status').hidden=true;
+      $('view-title').textContent='One body · local garment contact';
+      $('frame-label').textContent='Canonical material coordinates · meters · other anatomy at reference';
+      $('regional-note').textContent=`${data.time_s.length} recorded snapshots · ${data.time_s.at(-1).toFixed(3)} s · local elastic/Coulomb contact; full containment unvalidated`;
+      $('render-count').textContent=`${data.tissue.positions_m[0].length} tissue boundary nodes · ${data.panel.positions_m[0].length} computed panel nodes · canonical body context`;
+      const cfg=data.configuration,identity=data.display_identity;
+      $('garment-contact-evidence').innerHTML=`<p>Only ${data.panel.triangles.length} shorts faces and ${data.tissue.material_regions.length} source tissue owners are replaced. Garment boundaries remain prescribed; this is not whole-body soft contact.</p><dl><dt>Native mechanical step</dt><dd>${esc(cfg.dt_s)} s</dd><dt>Friction</dt><dd>μs ${esc(cfg.friction_static)} · μk ${esc(cfg.friction_kinetic)} · ${esc(cfg.friction_basis)}</dd><dt>Panel prestrain</dt><dd>${esc(cfg.panel?.prestrain)} · engineering prior</dd><dt>Force observation</dt><dd>Preceding 5 ms mean contact force; initial frame has explicit zero force.</dd><dt>Paired impulse residual</dt><dd>${Number(data.report.maximum_pair_impulse_residual_ns).toExponential(3)} N s</dd></dl>`+
+        (data.geometry_precision?`<p><strong>Geometric materialization</strong><br>${esc(data.geometry_precision.geometry_basis)}<br>Cell spacing ${Number(data.geometry_precision.spacing_m*1000).toPrecision(3)} mm · cell diagonal ${Number(data.geometry_precision.boundary_discretization_diagonal_m*1000).toPrecision(3)} mm. This is a discretization scale, not a measured anatomical error bound. Every resulting boundary node is displayed.</p>`:'<p>Source-shaped tetrahedral approximation; geometric resolution metadata unavailable.</p>')+
+        data.tissue.material_regions.map(r=>`<p><strong>${esc(r.name)}</strong><br>${esc(r.source_id)} · ${esc(r.calibration_status)}<br>μ ${esc(r.mu_pa)} Pa · λ ${esc(r.lambda_pa)} Pa<br>${esc(r.density_basis)}</p>`).join('')+
+        (data.report.limitations||[]).map(s=>`<p class="muted">${esc(s)}</p>`).join('')+
+        '<p class="muted">Small mean glans differences under time refinement do not establish convergence of every cloth node or the full trajectory.</p>'+
+        (identity?`<p class="muted">Display ${esc(identity.path)}<br>SHA-256 ${esc(identity.sha256)}<br>Maximum position quantization error ${Number(identity.position_quantization_max_error_m).toExponential(3)} m</p>`:'');
+      phys=regionalView.prepared.physiology;spectral=false;$('tab-phys').classList.add('active');$('tab-spectral').classList.remove('active');
+      updateSigma();updateVariables();setupFrames();updateDisplay();
+      return;
+    }
     const View=kind==='skin-electric'?ElectricRegionalView:RegionalView;
     regionalView = new View({scene,camera,controls,bodyGroup:group});
     regionalView.open(data);

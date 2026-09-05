@@ -80,7 +80,10 @@ export function scenarioInput(
   const overrides = {};
   if (environment.engine_variant !== undefined) {
     if (
-      !["upstream", "saturation_bounds", "saturation_bounds_heatflux"].includes(
+      !["upstream", "saturation_bounds", "saturation_bounds_heatflux",
+        "saturation_bounds_heatflux_thermal_units", "whole_body_integrity",
+        "whole_body_integrity_renal", "whole_body_integrity_gi_water",
+        "whole_body_integrity_energy"].includes(
         environment.engine_variant,
       )
     )
