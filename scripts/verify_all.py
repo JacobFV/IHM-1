@@ -9,11 +9,14 @@ import os
 import threading
 
 root=Path(__file__).resolve().parents[1]
-p=argparse.ArgumentParser();p.add_argument('--native',action='store_true');p.add_argument('--app',action='store_true');args=p.parse_args()
+p=argparse.ArgumentParser();p.add_argument('--native',action='store_true');p.add_argument('--app',action='store_true');p.add_argument('--plan',action='store_true',help='Print checks without running them');args=p.parse_args()
 names=['verify.py','verify_evidence.py','verify_skin.py','verify_fluids.py','verify_cardiopulmonary.py','verify_population.py','verify_population_conditioning.py','verify_collected_data.py','verify_spatial.py','verify_anatomy_coverage.py','verify_anatomy_fidelity.py','verify_extended_anatomy.py','test_extended_source_integrity.py','verify_lymph_network.py','verify_coupling.py','verify_calibration.py','verify_native_targets.py','verify_temporal.py','verify_native.py','verify_biogears_saturation_variant.py','verify_native_thermal_units.py','verify_native_circuits.py','verify_native_budgets.py','verify_circuit_predictor.py','verify_opensim.py','verify_native_opensim.py','verify_reproductive.py','verify_csf.py','verify_thermal_model.py','verify_bioelectric.py','verify_vascular_flow.py','verify_human.py','verify_app.py']
 commands=[[sys.executable,'scripts/'+name]+(['--artifacts'] if name=='verify_thermal_model.py' else []) for name in names]
 if args.native:commands += [[sys.executable,'scripts/verify_native.py','--engine-clock'],[sys.executable,'scripts/verify_native_opensim.py','--corrected']]
 if args.app:commands += [['npm','--prefix','app','test'],['npm','--prefix','app','run','build'],['npm','--prefix','app','run','test:browser']]
+commands += [[sys.executable,'scripts/'+name] for name in ['verify_canonical_anatomy.py','verify_body_brain.py','verify_body_mechanics.py','verify_body_certainty.py','verify_canonical_body.py']]
+if args.plan:
+ print(json.dumps(commands,indent=2));raise SystemExit(0)
 results=[];out=root/'artifacts/verification';out.mkdir(parents=True,exist_ok=True)
 server=None
 env=os.environ.copy()

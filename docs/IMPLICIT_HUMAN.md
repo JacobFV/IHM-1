@@ -2,8 +2,10 @@
 
 `ImplicitHuman` binds acquired evidence by path and SHA-256. It exposes actual
 native scalar fields and materializes predictors according to the evidence that
-can support them. Source families remain separate when no measured registration,
-shared subject identity, or cross-family covariance exists.
+can support them. `materialize('body')` assembles one generic body using recorded
+registrations and synthesis assumptions. Original source families retain their
+identities; transfer to a common body does not imply a shared participant or
+measured cross-family covariance.
 
 ```python
 from ihm import ImplicitHuman
@@ -35,6 +37,7 @@ native = human.materialize('native', seconds=60, sample_hz=50)
 
 | Materialization | Evidence and resulting behavior | Scope |
 |---|---|---|
+| `body` | Registered canonical anatomy, reduced mechanics, preserved IBM neural equations and explicit physiological drivers | Generic assembled body; fit residuals and priors retained, empirical whole-body calibration unestablished |
 | `population` | 23 survey-weighted measured states, full covariance, Bayesian conditioning | Concurrent population prediction; no dynamics |
 | `skin-field` | Six fitted phenotypic coefficients, subject-held-out human observations and clustered uncertainty | Lateral wound field above epidermis; no membrane-voltage inference |
 | `skin-lymph` | Actual native R/C/source/gate snapshot, conservative descriptor integration and causal Laplace response | Frozen operating point with prescribed arterial/venous boundaries |
@@ -50,6 +53,56 @@ The original `body()` registry retains the IBM-style illustrative modeling
 scaffold and its dependency closure. `ImplicitHuman` is the entry point for
 source-backed materializations. In particular, the original `build whole-body`
 command has illustrative dynamics even when its initial belief is measured.
+
+## Canonical body materialization
+
+After building the canonical artifacts, the same evidence API returns the body
+runtime directly. The import is lazy: opening `ImplicitHuman`, inspecting other
+source materializations and loading a workspace before canonical generation do
+not import or require the canonical runtime.
+
+```python
+from ihm import ImplicitHuman
+
+human = ImplicitHuman.open('.')
+body = human.materialize('body')
+print(body.describe())
+# Explicitly replay a recorded native trajectory through the assembled body.
+# This does not rerun the native physiological engine.
+body.simulate(
+    'data/derived/canonical/native_baseline_v1',
+    'artifacts/my-canonical-body.json',
+    output_hz=10,
+)
+```
+
+The materialization requires `anatomy.json`, `profile.json`, `brain.json`,
+`mechanics.json` and `body.json` under `data/derived/canonical`. These five
+artifacts join `ImplicitHuman`'s ordinary path/hash manifest. A missing build
+fails with the missing canonical evidence key. A changed artifact requires
+reopening the human, even if its previous contents were cached. Options belong
+to `body.simulate(...)`; `materialize('body')` accepts no hidden simulation
+configuration.
+
+The body describes anatomical registration, shared identities, source parameters
+and calibration limits. Its explicit clock drives brain and mechanics from the
+provided native recording. Replaying recorded physiological state does not make
+returned neural commands live feedback into that engine. Brain source details,
+registration residuals and the reduced neural model are described in
+[BODY_BRAIN.md](BODY_BRAIN.md).
+
+`python scripts/build_workbench.py` appends canonical anatomy, generic profile,
+brain, mechanics and body generation after the source views, runs their
+verification scripts, then saves the integrated-human manifest. An optional
+`--native-adapter` recompiles only the thin adapter against the existing engine
+libraries before profile generation. It does not run a new native scenario.
+`--plan` prints the ordered commands without running them.
+
+`python scripts/verify_all.py` includes canonical anatomy, brain, mechanics,
+certainty and unified-body checks in its persistent verification report.
+`--plan` also prints that command list without executing checks. Certainty is
+embedded in canonical entity records and the body summary; there is no separate
+certainty evidence artifact.
 
 ## Integration contract
 

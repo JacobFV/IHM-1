@@ -1,7 +1,8 @@
 """Evidence-backed implicit body and explicit, source-qualified materializations.
 
-Distinct specimens and parameter families remain distinct. Missing cross-family
-covariance or anatomical registration is never inferred from a shared name.
+Source identities and parameter families remain traceable. The canonical body
+registers and assembles them with explicit fits and assumptions; shared names
+alone never imply measured covariance or anatomical registration.
 """
 from copy import deepcopy
 from dataclasses import dataclass
@@ -28,7 +29,14 @@ ASSETS={
  'bioelectric':'data/derived/bioelectric/tissue.json',
  'native_targets':'data/derived/calibration/native-target-audit.json',
  'thermal':'data/derived/thermal/index.json',
+ 'canonical_anatomy':'data/derived/canonical/anatomy.json',
+ 'canonical_profile':'data/derived/canonical/profile.json',
+ 'canonical_brain':'data/derived/canonical/brain.json',
+ 'canonical_mechanics':'data/derived/canonical/mechanics.json',
+ 'canonical_body':'data/derived/canonical/body.json',
 }
+CANONICAL_ASSETS = ('canonical_anatomy', 'canonical_profile', 'canonical_brain',
+                    'canonical_mechanics', 'canonical_body')
 
 def digest(path):
     with Path(path).open('rb') as f:return hashlib.file_digest(f,'sha256').hexdigest()
@@ -150,13 +158,13 @@ class ImplicitHuman:
         return deepcopy(self._cache[key])
     def describe(self):
         return dict(schema_version=1,kind='heterogeneous_implicit_human',coverage=self._read('coverage')['summary'] if 'coverage' in self.assets else {},
-            materializations=[name for name,key in [('population','population'),('skin-field','skin_field'),('skin-lymph','skin_lymph'),('temporal','temporal'),('native','native'),('opensim','opensim'),('reproductive','reproductive'),('csf','csf'),('thermal','thermal')] if key in self.assets],
+            materializations=[name for name,key in [('population','population'),('skin-field','skin_field'),('skin-lymph','skin_lymph'),('temporal','temporal'),('native','native'),('opensim','opensim'),('reproductive','reproductive'),('csf','csf'),('thermal','thermal'),('body','canonical_body')] if key in self.assets and (name!='body' or all(k in self.assets for k in CANONICAL_ASSETS))],
             temporal_runs=[r['id'] for r in self._read('temporal')['runs']] if 'temporal' in self.assets else [],
             assets=deepcopy(self.assets),independently_validated_whole_human=False,
-            coupling='Native systems are coupled inside their source engine. Cross-source anatomy, human measurements and reduced predictors retain explicit identities and bindings.',
+            coupling='Native systems are coupled inside their source engine. The canonical body assembles registered anatomy, mechanics and brain state with explicit physiological drivers and source assumptions.',
             limitations=['No universal coefficient calibration or complete patient digital twin.',
                 'Population covariance predicts concurrent measured states; it does not identify causal dynamics.',
-                'Geometric families are separate specimens; names alone do not register anatomy.',
+                'Canonical anatomy uses recorded inter-template fits and synthesis priors; source families retain distinct specimen identities.',
                 'Frozen circuit responses and fitted temporal spectra have different meanings and validity domains.'])
     def fields(self):
         """Concrete native scalar state/parameter fields with units and support IDs."""
@@ -169,6 +177,18 @@ class ImplicitHuman:
                         evidence_kind='native_initialized_state_or_parameter',source=graph['source'],independently_calibrated=False))
         return fields
     def materialize(self,kind,**options):
+        if kind=='body':
+            if options:raise ValueError('body options belong to simulate()')
+            # from_workspace reads current files; recheck even previously cached
+            # assets so this materialization cannot silently switch evidence.
+            for key in CANONICAL_ASSETS:
+                if key not in self.assets:raise ValueError('Required evidence unavailable: '+key)
+                asset=self.assets[key]
+                path=(self.root/asset['path']).resolve()
+                if not path.is_relative_to(self.root) or digest(path)!=asset['sha256']:
+                    raise ValueError('Evidence changed: '+key+'; reopen or rebuild the substrate')
+            from ihm.assembly.body import CanonicalBody
+            return CanonicalBody.from_workspace(self.root)
         if kind=='population':
             if options:raise ValueError('population materialization has no implicit dynamics options')
             d=self._read('population')

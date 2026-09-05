@@ -45,3 +45,45 @@ thermal=human.materialize("thermal",profile="supine_blanket",seconds=2,dt=1).run
 assert thermal["configuration"]["posture"]=="lying"
 assert len(thermal["node_temperature_C"])==3
 assert thermal["audit"]["maximum_heat_balance_residual_W"]<1e-6
+
+# Opening the evidence API works before canonical materialization has been built.
+# A request for absent canonical data fails before importing optional runtime code.
+with tempfile.TemporaryDirectory() as td:
+    empty = ImplicitHuman.open(td)
+    assert 'body' not in empty.describe()['materializations']
+    try:
+        empty.materialize('body')
+    except ValueError as error:
+        assert 'Required evidence unavailable: canonical_' in str(error), str(error)
+    else:
+        raise AssertionError('canonical body accepted an unbuilt workspace')
+
+# Cached evidence must not hide a changed file from the root-loading body API.
+with tempfile.TemporaryDirectory() as td:
+    base = Path(td)
+    canonical = base / 'data/derived/canonical'
+    canonical.mkdir(parents=True)
+    for name in ('anatomy', 'profile', 'brain', 'mechanics', 'body'):
+        (canonical / (name + '.json')).write_text('{}')
+    binding = ImplicitHuman.open(base)
+    binding.save(base / 'human.json')
+    cached = ImplicitHuman.load(base / 'human.json', base)
+    (canonical / 'brain.json').write_text('{"changed":true}')
+    try:
+        cached.materialize('body')
+    except ValueError as error:
+        assert 'Evidence changed: canonical_brain' in str(error), str(error)
+    else:
+        raise AssertionError('changed cached canonical source accepted')
+    try:
+        cached.materialize('body', output_hz=10)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError('implicit body simulation options accepted')
+
+if 'body' in human.describe()['materializations']:
+    canonical = human.materialize('body')
+    assert canonical.__class__.__name__ == 'CanonicalBody'
+    assert isinstance(canonical.describe(), dict)
+    print('verified lazy canonical body materialization and current evidence identity')
