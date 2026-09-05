@@ -188,6 +188,11 @@ async function loadClothing(){
 
 const monitorWorkspace=mountMonitors();
 mountWorkspace();
+const hairControls=document.createElement('details');hairControls.className='view-section';
+hairControls.innerHTML='<summary>Hair</summary><div class="view-section-body"><label class="system-row"><input id="hair-dynamics-toggle" type="checkbox"><span>Simulate elastic hair · experimental</span></label><p class="muted">CPU intensive. Generated strands remain visible with simulation off. Static strands follow the skin entity transform; local skin deformation and elastic bending are not simulated.</p></div>';
+$('scene-controls').after(hairControls);
+$('hair-dynamics-toggle').onchange=updateFrame;
+
 
 let manifest,
   modelId,
@@ -800,7 +805,7 @@ function selectStructure(s) {
   if(Number.isFinite(s.simulated_guides)){
     $('details').insertAdjacentHTML('beforeend',`<h3>Hair materialization</h3><dl><dt>Retained population prior</dt><dd>${Number(s.population_count).toLocaleString()} follicles</dd><dt>Simulation / display</dt><dd>${s.simulated_guides} elastic guides · ${Number(s.display_count).toLocaleString()} physical-radius fibers (${(100*s.display_density_fraction).toFixed(2)}% display density)</dd><dt>Material sources</dt><dd>${esc(s.material_source)}</dd><dt>Material scope</dt><dd>${esc(s.material_condition)}</dd><dt>Root geometry</dt><dd>${esc(s.geometry_certainty)}</dd><dt>Scalp cohort</dt><dd>${esc(s.scalp_geometry_cohort)}</dd></dl>`);
   }
-  if(objects.get(s.id)?.userData.elasticHair)updateHairReadout(objects.get(s.id));
+  if(objects.get(s.id)?.userData.elasticHairGeometry)updateHairReadout(objects.get(s.id));
   if (s.kind === "scalar_mesh") updateFrame();
 }
 function updateDisplay() {
@@ -919,7 +924,7 @@ function applyBodyFrame(frame,trajectory){
     let deformedSkins = 0;
     objects.forEach((object, id) => {
       if(updateElasticHair(object,{frame,referenceCentroids:trajectory?.centroids_m,
-          recordKey:liveSceneFrame?'live-scene':systemicSelection||activeRun,
+          recordKey:liveSceneFrame?'live-scene':systemicSelection||activeRun,enabled:$('hair-dynamics-toggle').checked,
           visible:object.visible&&!document.hidden,gravity_m_s2:frame?.environment?.gravity||[0,-9.81,0]})){
         if(selected?.id===id)updateHairReadout(object);
         return;
@@ -954,6 +959,7 @@ function updateHairReadout(object){
   const d=object.userData.hairDiagnostics;if(!d)return;
   let panel=$('hair-dynamics-readout');
   if(!panel){panel=document.createElement('div');panel.id='hair-dynamics-readout';$('details').append(panel);}
+  if(d.mode==='static'){panel.textContent='Static generated strands · elastic guide solver off. Physical diameter unchanged; whole skin-entity transform only. Local skin deformation, strand dynamics and strand/body collisions are not simulated. Enable experimental hair simulation in View → Hair to run the guide solver.';panel.className='muted';return;}
   panel.textContent=`Elastic hair: ${d.simulated_guides??'not advanced'} guides · ${d.rendered_fibers??'reference'} rendered fibers. ${d.maximum_update_hz??10} Hz maximum; actual mechanical clock ${Number(d.time_s??0).toFixed(3)} s. ${d.reset_reason?'State reset: '+d.reset_reason+'. ':''}${d.paused?'Paused. ':''}Physical diameter unchanged. ${d.within_small_deflection===false?'Outside small-deflection range; quantitative interpretation is unsupported. ':'Linear beam guide model. '}No strand/body collision or follicle reaction feedback. ${liveSceneFrame?'Gravity from scene environment.':'Upright gravity prior applied to recorded root motion; view rotation is not a changed mechanical posture.'}`;
   panel.className='muted';
 }

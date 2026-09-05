@@ -11,7 +11,7 @@ function fixture(){
 test('elastic hair receives skin motion once and retains an identity object matrix',()=>{
  const {g,object}=fixture();assert.equal(attachElasticHair(object,g),true);
  const frame={time_s:0,entities:{skin:{translation_m:[.1,.2,.3]}}};
- assert.equal(updateElasticHair(object,{frame,referenceCentroids:{skin:[0,0,0]},recordKey:'fixture',visible:true}),true);
+ assert.equal(updateElasticHair(object,{frame,referenceCentroids:{skin:[0,0,0]},recordKey:'fixture',visible:true,enabled:true}),true);
  const positions=object.geometry.attributes.position.array;
  const root=[0,1,2].map(k=>(positions[k]+positions[3+k]+positions[6+k]+positions[9+k])/4);
  assert.ok(root.every((v,i)=>Math.abs(v-[.1,.2,.3][i])<1e-7));
@@ -21,13 +21,31 @@ test('elastic hair receives skin motion once and retains an identity object matr
 });
 test('hidden hair does no GPU update or time advance; rewind remains explicit',()=>{
  const {g,object}=fixture();attachElasticHair(object,g);
- updateElasticHair(object,{frame:{time_s:0,entities:{}},recordKey:'a',visible:true});
+ updateElasticHair(object,{frame:{time_s:0,entities:{}},recordKey:'a',visible:true,enabled:true});
  const version=object.geometry.attributes.position.version;
- updateElasticHair(object,{frame:{time_s:.05,entities:{}},recordKey:'a',visible:false});
+ updateElasticHair(object,{frame:{time_s:.05,entities:{}},recordKey:'a',visible:false,enabled:true});
  assert.equal(object.geometry.attributes.position.version,version);
  assert.equal(object.userData.elasticHair.system.time,0);
- updateElasticHair(object,{frame:{time_s:.1,entities:{}},recordKey:'a',visible:true});
+ updateElasticHair(object,{frame:{time_s:.1,entities:{}},recordKey:'a',visible:true,enabled:true});
  assert.equal(object.userData.hairDiagnostics.reset_reason,'resume_without_catchup');
- updateElasticHair(object,{frame:{time_s:0,entities:{}},recordKey:'a',visible:true});
+ updateElasticHair(object,{frame:{time_s:0,entities:{}},recordKey:'a',visible:true,enabled:true});
  assert.equal(object.userData.hairDiagnostics.reset_reason,'rewind');
+});
+test('default static strands never construct or advance an elastic controller',()=>{
+ const {g,object}=fixture();const reference=object.geometry.attributes.position.array.slice();
+ attachElasticHair(object,g);
+ for(const time_s of [0,.1,1,1000])updateElasticHair(object,{frame:{time_s,entities:{}},visible:true});
+ assert.equal(object.userData.elasticHair,undefined);
+ assert.deepEqual(object.geometry.attributes.position.array,reference);
+ assert.equal(object.geometry.attributes.position.version,0);
+ assert.equal(object.userData.hairDiagnostics.mode,'static');
+ updateElasticHair(object,{frame:{time_s:1001,entities:{skin:{translation_m:[.1,.2,.3]}}},referenceCentroids:{skin:[0,0,0]}});
+ assert.deepEqual(object.matrix.elements.slice(12,15),[.1,.2,.3]);
+ assert.equal(object.visible,true);
+ assert.deepEqual(object.geometry.attributes.position.array,reference);
+ updateElasticHair(object,{frame:{time_s:0,entities:{}},visible:true,enabled:true});
+ assert.ok(object.userData.elasticHair);
+ updateElasticHair(object,{frame:{time_s:.1,entities:{}},visible:true,enabled:false});
+ assert.equal(object.userData.elasticHair,undefined);
+ assert.deepEqual(object.geometry.attributes.position.array,reference);
 });
