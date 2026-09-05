@@ -1,0 +1,48 @@
+{
+  "id": "hipct-kidney-arterial",
+  "schema_version": 1,
+  "source_tier": "measured_other_donor",
+  "organ": "right kidney",
+  "species": "Homo sapiens",
+  "donor": {"id": "LADAF-2021-17", "count": 1, "sex": "male", "age_years": 63, "cause_of_death": "pancreatic cancer"},
+  "publication": {"doi": "10.1038/s44303-025-00090-2", "url": "https://www.nature.com/articles/s44303-025-00090-2", "license": "CC-BY-4.0"},
+  "published_final_graph": {"doi": "10.5281/zenodo.15275990", "access_status": "HTTP 404 persistent identifier not registered on 2026-09-05", "acquired": false, "reported_nodes": 10193, "reported_points": 376603, "reported_edges": 10190, "components": ["cc1", "cc4", "cc9"]},
+  "acquired_graph": {
+    "repository": "https://github.com/HiPCTProject/Skeleton_analysis",
+    "commit": "e35024b33018e010a057a3e69147459e7cadcc4e",
+    "files": ["Initial_Ordering/Test.am", "Initial_Ordering/Test2.am"],
+    "sha256": {"Test.am": "349544f1070225529bfa4631231258baa896641f18afd4a62d5ddfcf3fbb0277", "Test2.am": "6073c2cce231a848f9da7add0151832002dc3b31d717f0f6d558c7ac7d0248ae"},
+    "scope": "reduced Artery1 example; not final corrected network",
+    "donor_attribution_basis": "Embedded original filename E:/LADAF-2021-17-right/Artery1_only.Spatial-Graph_Reduced.am",
+    "nodes": 148, "edges": 147, "points": 19924,
+    "coordinate_units": "micrometers explicitly declared in Test.am; converted to millimeters",
+    "coordinate_frame": "original local graph coordinates; source transformation retained separately, no body registration",
+    "thickness_semantics": "unverified radius versus diameter; retained in original numeric units",
+    "correction_status": "unknown for this example",
+    "license": "No repository-wide or graph-specific license found; publication license not transferred by assumption",
+    "usable_for_population_priors": false
+  },
+  "acquisition_receipts": "data/raw/microstructure/kidney/acquisition.json",
+  "derived_graph": "data/derived/microstructure/kidney/example_graph.npz",
+  "derived_statistics": "data/derived/microstructure/kidney/statistics.json",
+  "protocol": {
+    "modality": "ex vivo ESRF BM05 hierarchical phase-contrast tomography",
+    "preparation": "Formalin embalming, 4% neutral-buffered formaldehyde postfixation for one week, ethanol dehydration to 70% over nine days, agar-ethanol stabilization",
+    "acquired_voxel_edges_um": [25, 6.5, 2.6],
+    "analysis_voxel_edges_um": [50, 13, 5.2],
+    "published_detection_claim": "97% of vessels with lumen radius greater than 50 micrometers detected in validated 50 micrometer/voxel overview regions",
+    "claim_applies_to_acquired_example": false,
+    "published_collapse_correction": "Manual verification, cross-sectional perimeter-equivalent radius for collapsed vessels, local low-radius replacement and outlier review; not reapplied without source images",
+    "limitations": ["Not capillary-complete", "Not a microvenous graph", "No in vivo pressure state", "One donor cannot estimate population variability", "No glomerular graph acquired"]
+  },
+  "next_acquired_dataset": {
+    "doi": "10.5281/zenodo.19685382",
+    "publication_doi": "10.1038/s41467-026-74050-8",
+    "license": "CC-BY-4.0",
+    "type": "HiP-CT image TIFFs and matched dense vessel masks",
+    "scope": "32 consecutive middle slices from kidney_1_dense",
+    "receipt": "data/raw/microstructure/kidney/segmentation_19685382/slab_manifest.json",
+    "donor_relation_to_2025_graph": "not established; treat as separate dataset",
+    "radius_or_murray_calibration_available": false
+  }
+}
