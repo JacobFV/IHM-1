@@ -34,6 +34,15 @@ ASSETS={
  'canonical_brain':'data/derived/canonical/brain.json',
  'canonical_mechanics':'data/derived/canonical/mechanics.json',
  'canonical_body':'data/derived/canonical/body.json',
+ 'canonical_respiration':'data/derived/canonical/respiration.json',
+ 'canonical_peripheral':'data/derived/canonical/peripheral.json',
+ 'canonical_details':'data/derived/canonical/details.json',
+ 'canonical_microvascular':'data/derived/canonical/microvascular.json',
+ 'ibm_source':'data/derived/canonical/ibm-backend/manifest.json',
+ 'kidney_card':'data/sources/hipct-kidney-arterial.json',
+ 'kidney_graph':'data/derived/microstructure/kidney/example_graph.npz',
+ 'kidney_statistics':'data/derived/microstructure/kidney/statistics.json',
+ 'kidney_slab':'data/derived/microstructure/kidney/slab_validation.json',
 }
 CANONICAL_ASSETS = ('canonical_anatomy', 'canonical_profile', 'canonical_brain',
                     'canonical_mechanics', 'canonical_body')
@@ -143,6 +152,28 @@ class ThermalPredictor:
         from ihm.native.thermal import run_thermal
         return run_thermal(self.root,**self.options)
 
+@dataclass(frozen=True)
+class RegionalTouchPredictor:
+    root: Path
+    options: dict
+    sources: dict
+    def run(self):
+        for path,sha in self.sources.items():
+            if digest(self.root/path)!=sha:raise ValueError('Body evidence changed after materialization: '+path)
+        from ihm.assembly.regional_touch import run_touch
+        return run_touch(self.root,**self.options)
+
+@dataclass(frozen=True)
+class RegionalElectricPredictor:
+    root: Path
+    options: dict
+    sources: dict
+    def run(self):
+        for path,sha in self.sources.items():
+            if digest(self.root/path)!=sha:raise ValueError('Body evidence changed after materialization: '+path)
+        from ihm.assembly.skin_bioelectric import build_skin_electric
+        return build_skin_electric(self.root,**self.options)
+
 class ImplicitHuman:
     @classmethod
     def open(cls,root=None):
@@ -158,7 +189,7 @@ class ImplicitHuman:
         return deepcopy(self._cache[key])
     def describe(self):
         return dict(schema_version=1,kind='heterogeneous_implicit_human',coverage=self._read('coverage')['summary'] if 'coverage' in self.assets else {},
-            materializations=[name for name,key in [('population','population'),('skin-field','skin_field'),('skin-lymph','skin_lymph'),('temporal','temporal'),('native','native'),('opensim','opensim'),('reproductive','reproductive'),('csf','csf'),('thermal','thermal'),('body','canonical_body')] if key in self.assets and (name!='body' or all(k in self.assets for k in CANONICAL_ASSETS))],
+            materializations=[name for name,key in [('population','population'),('skin-field','skin_field'),('skin-lymph','skin_lymph'),('temporal','temporal'),('native','native'),('opensim','opensim'),('reproductive','reproductive'),('csf','csf'),('thermal','thermal'),('body','canonical_body'),('ibm-causal','ibm_source'),('body-touch','canonical_microvascular'),('body-skin-transport','canonical_microvascular'),('body-skin-electric','canonical_microvascular'),('kidney-arterial-geometry','kidney_graph')] if key in self.assets and all(k in self.assets for k in {'body':CANONICAL_ASSETS,'body-touch':('ibm_source','canonical_anatomy'),'body-skin-transport':('skin_lymph','canonical_anatomy'),'body-skin-electric':('skin_field','canonical_anatomy'),'kidney-arterial-geometry':('kidney_card','kidney_statistics')}.get(name,()))],
             temporal_runs=[r['id'] for r in self._read('temporal')['runs']] if 'temporal' in self.assets else [],
             assets=deepcopy(self.assets),independently_validated_whole_human=False,
             coupling='Native systems are coupled inside their source engine. The canonical body assembles registered anatomy, mechanics and brain state with explicit physiological drivers and source assumptions.',
@@ -166,6 +197,15 @@ class ImplicitHuman:
                 'Population covariance predicts concurrent measured states; it does not identify causal dynamics.',
                 'Canonical anatomy uses recorded inter-template fits and synthesis priors; source families retain distinct specimen identities.',
                 'Frozen circuit responses and fitted temporal spectra have different meanings and validity domains.'])
+    def microstructure_evidence(self):
+        """Acquired organ evidence; availability does not confer population validity."""
+        if 'kidney_card' not in self.assets:return {}
+        card=self._read('kidney_card')
+        return {'kidney':dict(tier=card['source_tier'],body_registered=False,
+            usable_for_population_priors=card['acquired_graph']['usable_for_population_priors'],
+            source_card=card,statistics=self._read('kidney_statistics') if 'kidney_statistics' in self.assets else None,
+            paired_slab=self._read('kidney_slab') if 'kidney_slab' in self.assets else None,
+            evidence_receipts={k:deepcopy(v) for k,v in self.assets.items() if k.startswith('kidney_')})}
     def fields(self):
         """Concrete native scalar state/parameter fields with units and support IDs."""
         graph=self._read('native');fields=[]
@@ -177,6 +217,40 @@ class ImplicitHuman:
                         evidence_kind='native_initialized_state_or_parameter',source=graph['source'],independently_calibrated=False))
         return fields
     def materialize(self,kind,**options):
+        if kind=='kidney-arterial-geometry':
+            if options:raise ValueError('Measured donor geometry accepts no synthesis or registration options')
+            for key in ('kidney_card','kidney_graph','kidney_statistics'):
+                if key not in self.assets:raise ValueError('Required evidence unavailable: '+key)
+                if digest(self.root/self.assets[key]['path'])!=self.assets[key]['sha256']:
+                    raise ValueError('Evidence changed: '+key+'; reopen the implicit body')
+            from ihm.anatomy.kidney_graph import validate_graph
+            with np.load(self.root/self.assets['kidney_graph']['path'],allow_pickle=False) as archive:
+                graph={k:archive[k] for k in archive.files}
+            validate_graph(graph)
+            return dict(kind=kind,coordinate_frame='original donor graph local coordinates',
+                nodes_m=graph['nodes_mm']*.001,points_m=graph['points_mm']*.001,
+                edges=graph['edges'],point_offsets=graph['point_offsets'],
+                thickness_native=graph['thickness_native'],radius_m=None,flow_solution=None,
+                source_transform=graph.get('source_transform'),source_transform_applied=False,
+                body_registered=False,evidence=self.microstructure_evidence()['kidney'])
+        if kind in ('ibm-causal','body-touch','body-skin-transport','body-skin-electric'):
+            required={'ibm-causal':('ibm_source',),'body-touch':('ibm_source','canonical_anatomy','canonical_microvascular'),
+                'body-skin-transport':('skin_lymph','canonical_anatomy','canonical_microvascular'),
+                'body-skin-electric':('skin_field','canonical_anatomy','canonical_microvascular')}[kind]
+            for key in required:
+                if key not in self.assets:raise ValueError('Required evidence unavailable: '+key)
+                if digest(self.root/self.assets[key]['path'])!=self.assets[key]['sha256']:
+                    raise ValueError('Evidence changed: '+key+'; reopen the implicit body')
+            if kind=='ibm-causal':
+                from ihm.brain.ibm_backend import IBMBackend
+                from ihm.brain.causal import CausalIBM
+                response_kind=options.pop('response_kind','rapid')
+                return CausalIBM(IBMBackend(self.root/'data/derived/canonical/ibm-backend'),kind=response_kind,**options)
+            sources={self.assets[key]['path']:self.assets[key]['sha256'] for key in required}
+            if kind=='body-touch':return RegionalTouchPredictor(self.root,deepcopy(options),sources)
+            if kind=='body-skin-electric':return RegionalElectricPredictor(self.root,deepcopy(options),sources)
+            from ihm.assembly.skin_transport import RegionalSkinTransport
+            return RegionalSkinTransport.from_sources(self.root,**options)
         if kind=='body':
             if options:raise ValueError('body options belong to simulate()')
             # from_workspace reads current files; recheck even previously cached
@@ -234,5 +308,9 @@ class ImplicitHuman:
         self=cls.open(root);self.assets=data['assets'];self._cache={}
         for key in self.assets:
             if key not in ASSETS or self.assets[key]['path']!=ASSETS[key]:raise ValueError('unsupported evidence location')
-            self._read(key)
+            if key=='kidney_graph':
+                asset=self.assets[key];path=(self.root/asset['path']).resolve()
+                if not path.is_relative_to(self.root) or digest(path)!=asset['sha256']:
+                    raise ValueError('Evidence changed: '+key+'; reopen or rebuild the substrate')
+            else:self._read(key)
         return self

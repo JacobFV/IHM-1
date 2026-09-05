@@ -56,14 +56,19 @@ class Jobs:
             patient=body.payload['profile']['native_patient']
             if data.get('patient',patient)!=patient:raise ValueError('Canonical scenarios require the shared generic body profile')
             data['patient']=patient
+            body_interventions=data.pop('body_interventions',[])
+        elif 'body_interventions' in data:raise ValueError('Body interventions require the canonical body')
         config=NativeConfig.from_dict(data)
+        if canonical:
+            from ihm.assembly.body_protocol import validate_interventions
+            body_interventions=validate_interventions(body_interventions,body.assets['peripheral'],config.seconds)
         if config.seconds>600:raise ValueError('Web scenarios are bounded to 600 seconds')
         if len(config.interventions)>20:raise ValueError('Web scenarios permit at most 20 actions')
         from dataclasses import asdict
         with self.lock:
             if sum(r['status'] in ('queued','running') for r in self.runs)>=4:raise ValueError('Scenario queue full; wait for a run to finish')
             job={'id':time.strftime('%Y%m%d-%H%M%S')+'-'+uuid.uuid4().hex[:8],'status':'queued','config':asdict(config),'created_unix':time.time(),'canonical_body':canonical}
-            if canonical:job['canonical_sources']=body.payload['sources'];job['canonical_runtime_sources']=body.payload['runtime_sources'];job['canonical_patient_sha256']=body.payload['profile']['native_patient_sha256']
+            if canonical:job['canonical_sources']=body.payload['sources'];job['canonical_runtime_sources']=body.payload['runtime_sources'];job['canonical_patient_sha256']=body.payload['profile']['native_patient_sha256'];job['body_interventions']=body_interventions
             self.runs.append(job);self._save(job)
         self.pool.submit(self._execute,job,config)
         return dict(job)
@@ -83,7 +88,7 @@ class Jobs:
                 from ihm.assembly.body import CanonicalBody
                 current=CanonicalBody.from_workspace(self.root)
                 if current.payload['sources']!=job['canonical_sources'] or current.payload['runtime_sources']!=job['canonical_runtime_sources']:raise ValueError('Canonical body changed during native execution; original native output retained')
-                trajectory=body.simulate(self.directory/job['id']/'output',self.directory/job['id']/'body-trajectory.json')
+                trajectory=body.simulate(self.directory/job['id']/'output',self.directory/job['id']/'body-trajectory.json',body_interventions=job.get('body_interventions',[]))
                 summary['canonical_body']={'frames':len(trajectory['frames']),'clock':trajectory['clock'],'audit':trajectory['audit']}
             with self.lock:job.update(status='completed',summary=summary);self._save(job)
         except Exception as e:
@@ -119,7 +124,7 @@ def create_server(root=None,port=8765,host='127.0.0.1'):
         def _send(self,data,status=200,content_type='application/json',encoding=None):
             if not isinstance(data,bytes):data=json.dumps(data,allow_nan=False,separators=(',',':')).encode()
             if not encoding and len(data)>2000 and 'gzip' in self.headers.get('Accept-Encoding',''):
-                data=gzip.compress(data,mtime=0);encoding='gzip'
+                data=gzip.compress(data,compresslevel=1,mtime=0);encoding='gzip'
             self.send_response(status);self.send_header('Content-Type',content_type)
             self.send_header('Content-Length',str(len(data)));self.send_header('X-Content-Type-Options','nosniff')
             self.send_header('Cache-Control','no-cache')
@@ -138,6 +143,14 @@ def create_server(root=None,port=8765,host='127.0.0.1'):
                 if path=='/api/body':
                     from ihm.assembly.body import CanonicalBody
                     return self._send(CanonicalBody.from_workspace(root).describe())
+                if path=='/api/body/coverage':
+                    return self._send(read_json(derived/'audits/execution-coverage.json'))
+                if path.startswith('/api/body/experiments/'):
+                    from ihm.app.experiments import read_experiment
+                    return self._send(read_experiment(root,path.removeprefix('/api/body/experiments/')))
+                if path=='/api/body/peripheral':
+                    from ihm.assembly.body import CanonicalBody
+                    return self._send(CanonicalBody.from_workspace(root).assets['peripheral'])
                 if path=='/api/body/certainty':
                     from ihm.assembly.body import CanonicalBody
                     return self._send(CanonicalBody.from_workspace(root).certainty(query.get('entity',[''])[0]))
@@ -156,13 +169,18 @@ def create_server(root=None,port=8765,host='127.0.0.1'):
                         if not found:return self._error('Completed canonical run not found',404)
                         file=derived/'scenarios'/run/'body-trajectory.json'
                     else:file=derived/'canonical/trajectory.json'
-                    trajectory=read_json(file)
+                    raw=file.read_bytes();trajectory=json.loads(raw)
                     from ihm.assembly.body import CanonicalBody
                     body=CanonicalBody.from_workspace(root)
                     if trajectory.get('runtime_sources')!=body.payload['runtime_sources'] or any(trajectory['sources'].get(key)!=value for key,value in body.payload['sources'].items()):return self._error('Canonical trajectory is stale; rematerialize the native run',409)
                     from ihm.assembly.body import read_native
                     native=read_native(trajectory['sources']['native_run']['directory'])
                     if native['input_hashes']!=trajectory['sources']['native_run']['files']:return self._error('Native trajectory inputs changed; rematerialize',409)
+                    view=query.get('view',['full'])[0]
+                    if view not in ('full','display'):raise ValueError('Unknown trajectory projection')
+                    if view=='display':
+                        from ihm.app.projection import display_trajectory
+                        trajectory=display_trajectory(trajectory,source_sha256=hashlib.sha256(raw).hexdigest())
                     return self._send(trajectory)
                 if path.startswith('/api/geometry/'):
                     id=path.removeprefix('/api/geometry/')

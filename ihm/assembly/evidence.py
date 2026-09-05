@@ -87,4 +87,4 @@ class EvidenceGraph:
         if set(card.evidence_ids + card.fit_data_ids + card.holdout_data_ids)-self.nodes.keys(): raise ValueError('Unknown parameter evidence')
         if card.uncertainty.status == 'quantified':
             if card.uncertainty.unit != card.unit: raise ValueError('Parameter uncertainty unit mismatch')
-            if any(self.uncertainty(k).status == 'unknown' for k in card.evidence_ids): raise ValueError('Quantified parameter depends on unknown uncertainty')
+            if any(self.uncertainty(k).status == 'unknown' for k in card.evidence_ids+card.fit_data_ids): raise ValueError('Quantified parameter depends on unknown uncertainty')

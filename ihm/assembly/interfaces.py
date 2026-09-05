@@ -70,6 +70,7 @@ class ContractRegistry:
         return (tuple(self.states.items()), tuple(self.interactions.items()), tuple(self.ports.items()))
 
     def validate_scenario(self, owners, law_ids, parameter_ids, evidence_ids):
+        self._validated_signature = None
         if not self.states or set(owners) != {s.owner for s in self.states.values()}: raise ValueError('Scenario must register exactly its state owners')
         for i in self.interactions.values():
             if i.unresolved_reason or i.law_id not in law_ids or i.parameters_id not in parameter_ids or not i.evidence_ids or set(i.evidence_ids)-set(evidence_ids):
@@ -77,7 +78,7 @@ class ContractRegistry:
             ports = [p for p in self.ports.values() if p.interface_id == i.id]
             if len({p.owner for p in ports}) < 2: raise ValueError('Interface needs ports for both owners')
             for p in ports:
-                if not any(q.owner != p.owner and q.quantity == p.quantity for q in ports): raise ValueError('Unpaired port dimension')
+                if not any(q.owner != p.owner and q.quantity == p.quantity and self.states[q.state_id].support != self.states[p.state_id].support for q in ports): raise ValueError('Unpaired port dimension or anatomical endpoint')
         self._validated_signature = self._signature()
 
     def require_ready(self, owners):
@@ -90,3 +91,7 @@ class ContractRegistry:
         for owner in (exchange.source_owner, exchange.target_owner):
             if not any(p.interface_id == exchange.interface_id and p.owner == owner and p.quantity == exchange.quantity for p in self.ports.values()):
                 raise ValueError('Exchange has unregistered owner/interface/dimension')
+        source_ports=[p for p in self.ports.values() if p.interface_id==exchange.interface_id and p.owner==exchange.source_owner and p.quantity==exchange.quantity]
+        target_ports=[p for p in self.ports.values() if p.interface_id==exchange.interface_id and p.owner==exchange.target_owner and p.quantity==exchange.quantity]
+        if not any(self.states[p.state_id].support!=self.states[q.state_id].support for p in source_ports for q in target_ports):
+            raise ValueError('Exchange must connect opposite anatomical endpoints')

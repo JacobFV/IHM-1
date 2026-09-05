@@ -57,6 +57,15 @@ def main():
     else:
         raise AssertionError('nonfinite checkpoint accepted')
     assert restart.checkpoint() == intact
+    corrupt = json.loads(json.dumps(intact))
+    corrupt['queue'] = [(intact['time_s'] + 100., [1.])]
+    try:
+        restart.restore(corrupt)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError('impossible future queue timestamp accepted')
+    assert restart.checkpoint() == intact
     coarse, fine = twitch(), twitch()
     a = coarse.advance([2.], .05)
     fine.advance([2.], .025)

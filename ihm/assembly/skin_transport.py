@@ -174,6 +174,17 @@ class RegionalSkinTransport:
         expected={'blood','interstitium','lymph','arterial_reservoir','venous_reservoir'}
         if any(set(z)!=expected for z in (self.volumes,self.mass,self.initial_volumes,self.initial_mass)):
             raise ValueError('checkpoint compartment mismatch')
+        if not all(math.isfinite(v) and v>0 for v in self.initial_volumes.values()) or not all(math.isfinite(v) and v>=0 for v in self.initial_mass.values()):
+            raise ValueError('invalid initial checkpoint storage')
+        def finite_tree(value):
+            if isinstance(value,dict):return all(finite_tree(v) for v in value.values())
+            return isinstance(value,(int,float)) and not isinstance(value,bool) and math.isfinite(value)
+        if not finite_tree(self.parameters):raise ValueError('nonfinite checkpoint parameter')
+        edges={'arterial_supply','venous_return','filtration','lymph_uptake','lymph_return'}
+        if any(set(z)!=edges or not finite_tree(z) for z in (self.integrated,self.integrated_mass)):
+            raise ValueError('invalid integrated checkpoint ledger')
+        if set(self.parameters['resistance_pa_s_m3'])!=edges or any(set(self.parameters[k])!={'blood','interstitium','lymph'} for k in ('pressure_reference_pa','compliance_m3_pa')):
+            raise ValueError('checkpoint constitutive topology differs')
         if not math.isfinite(self.time_s) or self.time_s<0: raise ValueError('invalid checkpoint time')
         for key in ('compliance_m3_pa','resistance_pa_s_m3'):
             if not all(math.isfinite(v) and v>0 for v in self.parameters[key].values()): raise ValueError('invalid hydraulic coefficient')

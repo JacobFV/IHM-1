@@ -15,6 +15,9 @@ commands=[[sys.executable,'scripts/'+name]+(['--artifacts'] if name=='verify_the
 if args.native:commands += [[sys.executable,'scripts/verify_native.py','--engine-clock'],[sys.executable,'scripts/verify_native_opensim.py','--corrected']]
 if args.app:commands += [['npm','--prefix','app','test'],['npm','--prefix','app','run','build'],['npm','--prefix','app','run','test:browser']]
 commands += [[sys.executable,'scripts/'+name] for name in ['verify_canonical_anatomy.py','verify_body_brain.py','verify_body_mechanics.py','verify_body_certainty.py','verify_canonical_body.py','verify_canonical_jobs.py']]
+commands += [[sys.executable,'scripts/'+name] for name in ['verify_body_contracts.py','verify_body_cosimulation.py','verify_body_respiration.py','verify_body_peripheral.py','verify_body_integration.py','verify_native_respiratory_port.py','verify_ibm_body_parity.py']]
+commands += [[sys.executable,'scripts/'+name] for name in ['verify_ibm_causal.py','verify_body_details.py','verify_body_hair.py','verify_body_vascular.py','verify_body_contact.py','verify_body_touch.py','verify_body_transport.py','verify_body_skin_electric.py','verify_body_projection.py','verify_reference_mechanics.py']]
+commands += [[sys.executable,'scripts/'+name] for name in ['verify_kidney_microstructure.py','verify_microstructure_binding.py','verify_experiment_binding.py','verify_reference_contact.py']]
 if args.plan:
  print(json.dumps(commands,indent=2));raise SystemExit(0)
 results=[];out=root/'artifacts/verification';out.mkdir(parents=True,exist_ok=True)

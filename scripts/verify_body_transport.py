@@ -46,6 +46,12 @@ def verify(root):
         try: RegionalSkinTransport.from_dict(bad)
         except ValueError: pass
         else: raise AssertionError('invalid restart accepted')
+    for field,key in [('initial_volumes_m3','blood'),('initial_albumin_kg','lymph'),
+            ('parameters','arterial_pa'),('integrated_flows_m3','filtration'),('integrated_albumin_kg','lymph_return')]:
+        bad=initial.to_dict();bad[field][key]=float('nan')
+        try:RegionalSkinTransport.from_dict(bad)
+        except ValueError:pass
+        else:raise AssertionError('nonfinite restart accepted: '+field+'/'+key)
     refinements = []
     for dt in (1., .5, .25):
         m = RegionalSkinTransport.from_sources(root)

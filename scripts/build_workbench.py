@@ -32,18 +32,30 @@ commands=[
  [sys.executable,'scripts/audit_native_targets.py'],
  ['npm','--prefix','app','run','build']]
 commands += [[sys.executable,'scripts/build_canonical_anatomy.py','--append']]
+commands += [[sys.executable,'scripts/build_body_details.py','--append']]
 if args.native_adapter:commands += [[sys.executable,'scripts/build_native_adapter.py']]
 commands += [
  [sys.executable,'scripts/build_body_profile.py'],
  [sys.executable,'scripts/build_body_brain.py'],
  [sys.executable,'scripts/build_body_mechanics.py'],
- [sys.executable,'scripts/build_canonical_body.py'],
+ [sys.executable,'scripts/build_body_respiration.py'],
+ [sys.executable,'scripts/build_body_peripheral.py'],
+ [sys.executable,'scripts/build_canonical_body.py']+(['--native-directory','data/derived/canonical/native_baseline_v1'] if (root/'data/derived/canonical/native_baseline_v1').exists() else []),
+ [sys.executable,'scripts/build_body_touch.py'],
+ [sys.executable,'scripts/build_body_transport.py'],
+ [sys.executable,'scripts/build_body_skin_electric.py'],
+ [sys.executable,'scripts/build_body_experiment_spectra.py'],
  [sys.executable,'scripts/verify_canonical_anatomy.py'],
  [sys.executable,'scripts/verify_body_brain.py'],
  [sys.executable,'scripts/verify_body_mechanics.py'],
+ [sys.executable,'scripts/verify_body_respiration.py'],
+ [sys.executable,'scripts/verify_body_peripheral.py'],
+ [sys.executable,'scripts/verify_body_contracts.py'],
+ [sys.executable,'scripts/verify_body_cosimulation.py'],
  [sys.executable,'scripts/verify_body_certainty.py'],
  [sys.executable,'scripts/verify_canonical_body.py'],
  [sys.executable,'scripts/verify_canonical_jobs.py'],
+ [sys.executable,'scripts/audit_body_coverage.py'],
  [sys.executable,'-m','ihm','integrated','--output','artifacts/integrated-human.json']]
 if args.plan:
  print(json.dumps(commands,indent=2));raise SystemExit(0)

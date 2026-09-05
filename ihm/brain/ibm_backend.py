@@ -31,18 +31,23 @@ class IBMBackend:
             raise FileNotFoundError('IBM artifact missing; run scripts/vendor_ibm_backend.py')
         self.identity = json.loads(manifest.read_text())
         source = self.artifact_dir / 'source'
+        actual={p.relative_to(source).as_posix() for p in source.rglob('*') if p.is_file() and '__pycache__' not in p.parts and p.suffix!='.pyc'}
+        if actual!=set(self.identity['files']):
+            raise ValueError('IBM source contains missing or unmanifested files')
+        snapshots={}
         for rel, digest in self.identity['files'].items():
-            if hashlib.sha256((source / rel).read_bytes()).hexdigest() != digest:
+            path=(source/rel).resolve()
+            if not path.is_relative_to(source):raise ValueError('IBM source path escapes artifact')
+            snapshots[rel]=path.read_bytes()
+            if hashlib.sha256(snapshots[rel]).hexdigest() != digest:
                 raise ValueError(f'IBM artifact hash mismatch: {rel}')
         expected = hashlib.sha256(json.dumps(self.identity['files'], sort_keys=True).encode()).hexdigest()
         if expected != self.identity['package_sha256']:
             raise ValueError('IBM package manifest identity mismatch')
         if expected != PINNED_PACKAGE_SHA256:
             raise ValueError('IBM artifact differs from the package pinned by this IHM adapter')
-        existing = sys.modules.get('ibm')
-        if existing and Path(existing.__file__).resolve() != source / 'ibm/__init__.py':
-            raise RuntimeError('another IBM source is already imported; use a fresh Python process')
-        sys.path.insert(0, str(source))
+        from .source_loader import install_snapshot
+        install_snapshot(source,snapshots,expected)
         import ibm
         ibm.load_all()
         self.registry = ibm.REGISTRY

@@ -54,7 +54,7 @@ class PeripheralVerification(unittest.TestCase):
         for _ in range(40):feedback=p.step(.01,mechanical_state=state)
         self.assertGreater(sum(feedback['proprioceptor_rates_hz'].values()),0)
 
-    def test_closed_sensor_brain_motor_loop_and_patch_specificity(self):
+    def test_touch_does_not_invent_a_motor_policy(self):
         from ihm.assembly.brain import BodyBrain
         brain=BodyBrain(json.loads((ROOT/'data/derived/canonical/brain.json').read_text()))
         p=self.make();neural={}
@@ -62,11 +62,19 @@ class PeripheralVerification(unittest.TestCase):
             out=p.step(.01,{self.patch['id']:{'pressure_pa':20000.}},brain_state=neural)
             neural=brain.step(.01,sensory_inputs_hz=out['brain_inputs_hz'])
         active={k:v for k,v in out['motor_activations'].items() if v>1e-6}
-        self.assertTrue(active)
-        names={m['muscle_id']:m['name'] for m in self.data['muscle_bindings']}
-        self.assertTrue(all('left' in names[k] and 'biceps brachii' in names[k] for k in active))
+        self.assertFalse(active, 'Sensory brain activity is not a descending motor command')
         self.assertEqual(out['motor_activations'].get('body-muscle-opensim-tibant_l',0),0)
         self.assertTrue(any(neural['regional_motor_drive_hz'].values()))
+
+    def test_nerve_block_selectively_stops_arrivals_and_motor_drive(self):
+        p=self.make()
+        binding=next(m for m in self.data['muscle_bindings'] if m['muscle_id']=='body-muscle-opensim-tibant_l')
+        other=next(m for m in self.data['muscle_bindings'] if m['muscle_id']=='body-muscle-opensim-tibant_r')
+        commands={'motor_commands':{binding['muscle_id']:.5,other['muscle_id']:.5}}
+        for _ in range(50):out=p.step(.01,brain_state=commands,blocked_nerves=[binding['nerve_id']])
+        self.assertEqual(out['motor_activations'].get(binding['muscle_id'],0),0)
+        self.assertGreater(out['motor_activations'][other['muscle_id']],.4)
+        with self.assertRaises(ValueError):p.step(.01,blocked_nerves=['unknown'])
 
     def test_thermal_channels_and_invalid_input_transaction(self):
         p=self.make();s={self.patch['id']:{'temperature_C':42.}}

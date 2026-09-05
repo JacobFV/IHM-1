@@ -7,6 +7,10 @@
 #include <biogears/cdm/engine/PhysiologyEngineTrack.h>
 #include <biogears/cdm/properties/SEProperties.h>
 #include <biogears/engine/BioGearsPhysiologyEngine.h>
+#include <biogears/engine/Controller/BioGearsEngine.h>
+#include <biogears/engine/Controller/BioGearsCircuits.h>
+#include <biogears/cdm/circuit/fluid/SEFluidCircuit.h>
+#include <biogears/cdm/circuit/fluid/SEFluidCircuitPath.h>
 #include <biogears/version.h>
 #include <fstream>
 #include <cmath>
@@ -44,6 +48,23 @@ int main(int argc, char** argv) {
   std::cout << "ENGINE_VERSION=" << full_version_string() << "\n";
   auto bg = CreateBioGearsEngine("native_engine.log");
   if (state == "-" ? !bg->InitializeEngine("patients/" + patient + ".xml") : !bg->LoadState(state)) return 2;
+  double chest_compliance = -1.;
+  if (argc > 8 && std::string(argv[8]) != "-") {
+    chest_compliance=std::stod(argv[8]);
+    if (!std::isfinite(chest_compliance) || chest_compliance < .05 || chest_compliance > 1.) return 4;
+  }
+  auto* concrete=dynamic_cast<BioGearsEngine*>(bg.get()); if (!concrete) return 6;
+  auto& respiratory=concrete->GetCircuits().GetActiveRespiratoryCircuit();
+  auto* left_chest=respiratory.GetPath("LeftPleuralCavityToRespiratoryMuscle");
+  auto* right_chest=respiratory.GetPath("RightPleuralCavityToRespiratoryMuscle");
+  auto* airway=respiratory.GetPath("MouthToTrachea");
+  auto* driver=respiratory.GetPath("EnvironmentToRespiratoryMuscle");
+  if (!left_chest || !right_chest || !airway || !driver) return 6;
+  const double reference_left=left_chest->GetCompliance(FlowComplianceUnit::L_Per_cmH2O);
+  const double reference_right=right_chest->GetCompliance(FlowComplianceUnit::L_Per_cmH2O);
+  const double left_fraction=reference_left/(reference_left+reference_right);
+  if (!std::isfinite(left_fraction) || left_fraction<=0 || left_fraction>=1) return 6;
+  std::cout << "CHEST_COMPLIANCE_REQUEST_L_PER_CMH2O=" << chest_compliance << " NATIVE_REFERENCE=" << reference_left+reference_right << "\n";
   auto current = bg->GetEnvironment()->GetConditions();
   std::cout << "ENVIRONMENT_SOURCE_AMBIENT_C=" << current->GetAmbientTemperature(TemperatureUnit::C) << " CLO=" << current->GetClothingResistance(HeatResistanceAreaUnit::clo) << " AIR_SPEED_M_S=" << current->GetAirVelocity(LengthPerTimeUnit::m_Per_s) << "\n";
   if ((argc > 6 && std::string(argv[6]) != "-") || (argc > 7 && std::string(argv[7]) != "-")) {
@@ -110,6 +131,8 @@ int main(int argc, char** argv) {
   const std::vector<std::string> gas_names={"LeftLungPulmonary","RightLungPulmonary"};
   const auto& compartments=bg->GetCompartments();
   std::ofstream body("body_compartments.csv");body<<std::setprecision(17)<<"Time(s)";
+  std::ofstream respiratory_port("respiratory_port.csv");
+  respiratory_port<<std::setprecision(17)<<"Time(s),LeftChestCompliance(L/cmH2O),RightChestCompliance(L/cmH2O),AirwayFlow(L/s),RespiratoryDriver(cmH2O)\n";
   for(const auto& name:liquid_names){if(!compartments.GetLiquidCompartment(name))return 6;body<<","<<name<<"Volume(mL),"<<name<<"Pressure(mmHg)";}
   for(const auto& name:gas_names){if(!compartments.GetGasCompartment(name))return 6;body<<","<<name<<"GasVolume(mL)";}
   body<<"\n";
@@ -118,11 +141,18 @@ int main(int argc, char** argv) {
     for(const auto& name:liquid_names){const auto* c=compartments.GetLiquidCompartment(name);body<<","<<c->GetVolume(VolumeUnit::mL)<<","<<c->GetPressure(PressureUnit::mmHg);}
     for(const auto& name:gas_names)body<<","<<compartments.GetGasCompartment(name)->GetVolume(VolumeUnit::mL);
     body<<"\n";
+    respiratory_port<<bg->GetSimulationTime(TimeUnit::s)<<","<<left_chest->GetCompliance(FlowComplianceUnit::L_Per_cmH2O)<<","<<right_chest->GetCompliance(FlowComplianceUnit::L_Per_cmH2O)<<","<<airway->GetFlow(VolumePerTimeUnit::L_Per_s)<<","<<driver->GetPressureSource(PressureUnit::cmH2O)<<"\n";
   };
   record_body();
   long elapsed_steps = 0;
   auto advance_to = [&](long target) {
     while (elapsed_steps < target) {
+      // Next values are mutable circuit inputs. Native pressure generation,
+      // circuit solve, gas transport and blood-gas feedback retain ownership.
+      if (chest_compliance > 0) {
+        left_chest->GetNextCompliance().SetValue(chest_compliance*left_fraction,FlowComplianceUnit::L_Per_cmH2O);
+        right_chest->GetNextCompliance().SetValue(chest_compliance*(1-left_fraction),FlowComplianceUnit::L_Per_cmH2O);
+      }
       if (!bg->AdvanceModelTime(false)) return false;
       ++elapsed_steps;
       if (elapsed_steps % sample_stride == 0) {

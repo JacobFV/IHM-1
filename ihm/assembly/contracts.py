@@ -58,7 +58,7 @@ class StateSpec:
     def __post_init__(self):
         identity(self.id, self.owner, self.support, self.spatial_discretization, self.temporal_representation, self.validity_domain)
         dim = dimension(self.unit)
-        if self.conserved_quantity_or_none is not None and dim != self.conserved_quantity_or_none:
+        if self.conserved_quantity_or_none is not None and (self.conserved_quantity_or_none not in QUANTITIES or dim != self.conserved_quantity_or_none):
             raise ValueError('Conserved state dimension mismatch')
 
 

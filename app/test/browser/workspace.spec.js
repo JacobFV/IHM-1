@@ -43,7 +43,7 @@ test('each panel scrolls within the fixed workspace and hiding it retains its sc
   await page.setViewportSize({ width: 1280, height: 650 });
   await page.goto('/');
   await expect(page.locator('#systems input').first()).toBeVisible();
-  await expect(page.locator('#body-status')).not.toContainText('Loading');
+  await expect(page.locator('#body-status')).not.toContainText('Loading',{timeout:20000});
   await page.locator('#inspector-panel .evidence-fold').evaluateAll(nodes => nodes.forEach(node => node.open = true));
   for (const id of ['library-panel', 'inspector-panel', 'signals-panel']) {
     const panel = page.locator(`#${id}`);

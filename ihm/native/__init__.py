@@ -32,11 +32,13 @@ class NativeConfig:
     engine_variant: str="upstream"
     ambient_temperature_c: float|None=None
     clothing_clo: float|None=None
+    chest_compliance_l_cmH2O: float|None=None
     def __post_init__(self):
         number(self.seconds,.02,3600,'seconds')
         if self.engine_variant not in ('upstream','saturation_bounds','saturation_bounds_heatflux','saturation_bounds_heatflux_thermal_units'):raise ValueError('Unknown engine variant')
         if self.ambient_temperature_c is not None:number(self.ambient_temperature_c,10,35,'ambient_temperature_c')
         if self.clothing_clo is not None:number(self.clothing_clo,0,3,'clothing_clo')
+        if self.chest_compliance_l_cmH2O is not None:number(self.chest_compliance_l_cmH2O,.05,1.,'chest_compliance_l_cmH2O')
         if abs(self.seconds*50-round(self.seconds*50))>1e-7:raise ValueError('Duration must align to solver step')
         if isinstance(self.sample_hz,bool) or self.sample_hz not in (1,2,5,10,25,50):raise ValueError('sample_hz must divide 50')
         if self.seconds*self.sample_hz<1-1e-9:raise ValueError('Duration must include at least one sample')
@@ -52,7 +54,7 @@ class NativeConfig:
         object.__setattr__(self,'interventions',tuple(self.interventions))
     @classmethod
     def from_dict(cls,data):
-        if not isinstance(data,dict) or set(data)-{'seconds','patient','state_path','interventions','sample_hz','ambient_temperature_c','clothing_clo','engine_variant'}:raise ValueError('Unknown native configuration fields')
+        if not isinstance(data,dict) or set(data)-{'seconds','patient','state_path','interventions','sample_hz','ambient_temperature_c','clothing_clo','engine_variant','chest_compliance_l_cmH2O'}:raise ValueError('Unknown native configuration fields')
         try:
             data=dict(data)
             if 'interventions' in data:data['interventions']=tuple(Intervention(**e) for e in data['interventions'])
@@ -123,6 +125,17 @@ def summarize(output_dir,config=None):
     if variant=='saturation_bounds_heatflux_thermal_units':
         summary['limitations']=[text for text in summary['limitations'] if not text.startswith('Original upstream equations;')]
         summary['limitations'].append('Experimental thermal dimensions correction changes source heat-transfer equations; empirical clothing factors retained, no clinical calibration.')
+    port_path=out/'respiratory_port.csv'
+    if port_path.exists():
+        port=load_trajectory(port_path)
+        start_record=re.search(r'STABILIZED_TIME_S=(.*)',log)
+        if not start_record:raise ValueError('Missing native initial clock for respiratory port')
+        port_start=float(start_record[1])
+        if not math.isfinite(port_start) or len(port['time_s'])!=len(times)+1 or abs(port['time_s'][0]-port_start)>1e-8 or any(abs(a-b)>1e-8 for a,b in zip(port['time_s'][1:],times)):
+            raise ValueError('Respiratory port clock differs from native execution')
+        summary['respiratory_port']={'csv_sha256':_sha(port_path),'rows':len(port['time_s']),'owner':'BioGears respiratory circuit','coupling_kind':'externally specified chest constitutive compliance' if config and config.chest_compliance_l_cmH2O is not None else 'observational native respiratory circuit','whole_body_mechanical_feedback':False}
+    elif config and config.chest_compliance_l_cmH2O is not None:
+        raise ValueError('Requested respiratory port missing; rebuild native adapter')
     if summary['source_revision'] != SOURCE_REVISION:raise ValueError('Unexpected upstream source revision')
     (out/'summary.json').write_text(json.dumps(summary,indent=2,default=str)+'\n');return summary
 
@@ -142,6 +155,7 @@ def run_native(config,output_dir):
     (out/'timeline.tsv').write_text(''.join(f'{e.time_s} {e.kind} {e.value}\n' for e in config.interventions))
     state=str(Path(config.state_path).resolve()) if config.state_path else '-'
     command=[str(exe),str(config.seconds),config.patient,state,str(config.sample_hz),'timeline.tsv',str(config.ambient_temperature_c) if config.ambient_temperature_c is not None else '-',str(config.clothing_clo) if config.clothing_clo is not None else '-']
+    command.append(str(config.chest_compliance_l_cmH2O) if config.chest_compliance_l_cmH2O is not None else '-')
     environment=os.environ.copy()
     if config.engine_variant!='upstream':
         variant=RUNTIME/'variants'/config.engine_variant

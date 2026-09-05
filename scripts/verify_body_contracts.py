@@ -48,6 +48,38 @@ class Contracts(unittest.TestCase):
         r.validate_scenario({'engine-a', 'engine-b'}, {'law'}, {'params'}, {'source'})
         with self.assertRaises(ValueError): r.validate_scenario({'engine-a'}, {'law'}, {'params'}, {'source'})
         with self.assertRaises(ValueError): r.validate_scenario({'engine-a', 'engine-b'}, set(), {'params'}, {'source'})
+        with self.assertRaises(ValueError): r.require_ready({'engine-a','engine-b'})
+        with self.assertRaises(ValueError): StateSpec('temperature','engine-a','a','K','temperature','lumped','time','reference')
+
+    def test_both_interface_endpoints_need_ports(self):
+        from ihm.assembly.contracts import StateSpec,Interaction
+        from ihm.assembly.interfaces import ContractRegistry,Port
+        r=ContractRegistry('v1',{'a','b'})
+        for owner in ['x','y']:
+            r.register_state(StateSpec(owner,owner,'a','kg','mass','lumped','time','fixture'))
+        r.register_interaction(Interaction('flow','a','b','flow','a_to_b','law','p','fixture',('e',)))
+        for owner in ['x','y']:r.register_port(Port(owner,'flow',owner,owner,'mass','kg'))
+        with self.assertRaises(ValueError):r.validate_scenario({'x','y'},{'law'},{'p'},{'e'})
+
+    def test_unknown_fit_data_is_parameter_ancestry(self):
+        from ihm.assembly.evidence import EvidenceGraph,EvidenceNode,Uncertainty,ParameterCard
+        g=EvidenceGraph()
+        g.add(EvidenceNode('source','source',(),Uncertainty('quantified',1.,'kg')))
+        g.add(EvidenceNode('fitdata','source',(),Uncertainty('unknown',reason='unmeasured error')))
+        card=ParameterCard('p',1.,'kg','fixture',('source',),'unknown',('fitdata',),(),Uncertainty('quantified',0.,'kg'))
+        with self.assertRaises(ValueError):g.validate_parameter(card)
+
+    def test_exchange_uses_opposite_endpoints(self):
+        from ihm.assembly.contracts import StateSpec,Interaction,Exchange
+        from ihm.assembly.interfaces import ContractRegistry,Port
+        r=ContractRegistry('v1',{'a','b'})
+        r.register_interaction(Interaction('f','a','b','flow','a_to_b','law','p','fixture',('e',)))
+        for owner,support in [('x','a'),('y','a'),('z','b')]:
+            r.register_state(StateSpec(owner,owner,support,'kg','mass','lumped','time','fixture'))
+            r.register_port(Port(owner,'f',owner,owner,'mass','kg'))
+        r.validate_scenario({'x','y','z'},{'law'},{'p'},{'e'})
+        with self.assertRaises(ValueError):r.validate_exchange(Exchange('f',0.,1.,'mass',1.,'x','y'))
+        r.validate_exchange(Exchange('f',0.,1.,'mass',1.,'x','z'))
 
     def test_unknown_ancestry_and_cycle(self):
         from ihm.assembly.evidence import EvidenceGraph, EvidenceNode, Uncertainty, ParameterCard

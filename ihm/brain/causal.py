@@ -140,7 +140,7 @@ class CausalIBM:
         if (state.shape != self._x.shape or held.shape != self._held.shape
                 or not np.isfinite(state).all() or not np.isfinite(held).all()
                 or not np.isfinite(time) or time < 0
-                or any(not np.isfinite(t) or t < time or v.shape != held.shape
+                or any(not np.isfinite(t) or t < time or t > time + self._delay or v.shape != held.shape
                        or not np.isfinite(v).all() for t, v in queue)
                 or any(a[0] > b[0] for a, b in zip(queue, queue[1:]))):
             raise ValueError('invalid causal checkpoint state')

@@ -16,6 +16,8 @@ import {
   deformSkinVertices,
 } from "./state.js";
 import "./style.css";
+import { attachedHairPositions } from "./hair_motion.js";
+import { RegionalView, ElectricRegionalView } from "./regional.js";
 const $ = (id) => document.getElementById(id),
   esc = (s) =>
     String(s ?? "").replace(
@@ -92,6 +94,16 @@ document.addEventListener("keydown", event => {
 });
 compactWorkspace.addEventListener("change", renderWorkspace);
 renderWorkspace();
+import { mountPanelResizers } from './workspace.js';
+mountPanelResizers();
+const bodyControls=document.createElement('div');
+bodyControls.id='body-controls';
+bodyControls.innerHTML=`<label class="field-label" for="chest-compliance">Chest compliance · L/cmH₂O · optional</label><input id="chest-compliance" type="number" min=".05" max="1" step=".01" placeholder="Native constitutive value"><p class="muted">Changes the physiological pressure–flow solve. Tissue parameters remain uncertain.</p><label class="field-label" for="body-protocol">Body perturbation</label><select id="body-protocol"><option value="none">No somatic stimulus</option value="touch">Left palm pressure pulse</option value="motor">Left tibialis anterior command</option value="block">Same command with nerve block</option></select><p class="muted">Explicit test inputs; no inferred voluntary motor policy.</p>`;
+$('run').before(bodyControls);
+const regionalControls=document.createElement('div');
+regionalControls.id='regional-controls';
+regionalControls.innerHTML='<label class="field-label" for="regional-study">Active materialization</label><select id="regional-study"><option value="body">Whole-body replay</option><option value="forearm-touch">Forearm · contact & IBM receptors</option><option value="skin-electric">Skin · non-neural electricity</option></select><select id="regional-condition" aria-label="Regional electrical intervention" hidden><option value="wound_shunt">Barrier shunt</option><option value="baseline">Intact baseline</option><option value="electrode">Electrode pair</option><option value="membrane_perturbation">Membrane perturbation</option></select><p id="regional-note" class="muted">Detailed studies share this body’s material coordinates.</p>';
+$('anatomy-view').before(regionalControls);
 
 let manifest,
   modelId,
@@ -134,6 +146,7 @@ const colors = {
 };
 const viewport = $("viewport");
 let renderer, scene, camera, controls, group, webglError;
+let regionalView, regionalRequest=0, regionalSpectra=[], regionalReturnPhys=null,regionalReturnLabels=null;
 try {
   renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
@@ -164,7 +177,7 @@ try {
   renderer.setAnimationLoop((now) => {
     controls.update();
     const frameIndex = Number($("time").value);
-    const bodyInterval = modelId === "ihm-body" && bodyTrajectory
+    const bodyInterval = regionalView?.active ? (regionalView instanceof ElectricRegionalView ? 1000*regionalView.data.clock.dt_s : 33) : modelId === "ihm-body" && bodyTrajectory
       ? 1000 * ((bodyTrajectory.frames[frameIndex+1]?.time_s ?? bodyTrajectory.frames[frameIndex].time_s + .1) - bodyTrajectory.frames[frameIndex].time_s)
       : 160;
     if (playing && flowFrames && now - lastTick >= bodyInterval) {
@@ -180,6 +193,7 @@ try {
     pointer = [e.clientX, e.clientY];
   });
   renderer.domElement.addEventListener("pointerup", (e) => {
+    if (regionalView?.active) return;
     if (
       !pointer ||
       Math.hypot(e.clientX - pointer[0], e.clientY - pointer[1]) > 5
@@ -229,6 +243,7 @@ function model() {
   return manifest?.models.find((x) => x.id === modelId);
 }
 function resetCamera(direction = "front") {
+  if(regionalView?.active){regionalView.resetCamera(direction);return;}
   if (!camera || modelBounds.isEmpty()) return;
   const center = modelBounds.getCenter(new THREE.Vector3()),
     size = modelBounds.getSize(new THREE.Vector3()),
@@ -292,10 +307,16 @@ function rebuildSystems() {
   syncLayers();
 }
 function chooseModel() {
+  regionalRequest++;
+  closeRegional();
+  $('regional-study').value='body';
+  $('regional-condition').hidden=true;
   modelId = $("model").value;
   $("total").textContent = manifest.structures.filter(s => s.model_id === modelId).length.toLocaleString();
   playing = false;
   $("patient").disabled = modelId === "ihm-body";
+  $("body-controls").hidden = modelId !== "ihm-body";
+  $('regional-controls').hidden = modelId !== 'ihm-body';
   $("scenario-description").textContent = modelId === "ihm-body"
     ? "Run this generic body's physiology, mechanics and brain model. Playback uses computed states."
     : "Run a native source profile and inspect its recorded response.";
@@ -349,13 +370,29 @@ function useBodyPhysiology() {
   if (!bodyTrajectory) return;
   const frames = bodyTrajectory.frames;
   const channels = [...new Set(frames.flatMap(f => Object.keys(f.physiology || {})))].filter(key => frames.some(f => Number.isFinite(f.physiology?.[key])));
-  phys = {time_s: frames.map(f => f.time_s), values: Object.fromEntries(channels.map(key => [key, frames.map(f => Number.isFinite(f.physiology?.[key]) ? f.physiology[key] : null)])), metadata: {source_kind: "Computed generic body physiology"}};
+  receivePhysiology({time_s: frames.map(f => f.time_s), values: Object.fromEntries(channels.map(key => [key, frames.map(f => Number.isFinite(f.physiology?.[key]) ? f.physiology[key] : null)])), metadata: {source_kind: "Computed generic body physiology"}});
   updateVariables();
+}
+function receivePhysiology(value){
+  if(regionalReturnPhys!==null)regionalReturnPhys=value;
+  else phys=value;
+}
+function closeRegional(){
+  regionalView?.close();
+  if(regionalReturnPhys!==null){phys=regionalReturnPhys;regionalReturnPhys=null;}
+  if(regionalReturnLabels){
+    $('view-title').textContent=regionalReturnLabels.title;$('frame-label').textContent=regionalReturnLabels.frame;
+    $('render-count').textContent=`${[...objects.values()].filter(o=>o.visible).length} structures visible`;
+    regionalReturnLabels=null;
+  }
+  $('scene-status').hidden=false;
+  $('regional-condition').hidden=true;
+  updateSigma();updateVariables();
 }
 async function loadBodyTrajectory(run) {
   const request = ++bodyRequest;
   try {
-    const data = await api("/api/body/trajectory" + (run ? `?run=${encodeURIComponent(run)}` : ""));
+    const data = await api("/api/body/trajectory?view=display" + (run ? `&run=${encodeURIComponent(run)}` : ""));
     if (request !== bodyRequest) return;
     if (!validBodyTrajectory(data)) throw Error("No valid computed body frames available");
     bodyTrajectory = data;
@@ -445,7 +482,7 @@ async function loadVisible(rows) {
     done = rows.length - queue.length,
     failures = 0;
   function status() {
-    if (current !== generation) return;
+    if (current !== generation || regionalView?.active) return;
     $("render-count").textContent =
       `${done} / ${rows.length} structures visible`;
     $("scene-status").textContent =
@@ -553,6 +590,10 @@ function createGeometry(s, g) {
     );
   }
   object.userData.structure = s;
+  if (g.attachment?.kind === "MaterialPoint" && g.attachment.reference_triangles_m) {
+    object.userData.hairAttachment = g.attachment;
+    object.userData.hairReference = positions.slice();
+  }
   object.userData.frames = g.frames || [];
   object.userData.times = g.times || [];
   object.userData.pressure = g.pressure || [];
@@ -604,6 +645,15 @@ function selectStructure(s) {
         : ""
     }${s.classification ? `<dt>Anatomical grouping</dt><dd>${esc(s.classification.classification_basis || s.classification.status)} · ${esc((s.classification.systems || []).join(", "))}${s.classification.ambiguous_primary ? " · multiple supported primary groups" : ""}</dd>` : ""}${s.source_collections ? `<dt>Source collections</dt><dd>${esc(s.source_collections.join(", "))}</dd>` : ""}${s.evaluation_warnings?.length ? `<dt>Source evaluation caveat</dt><dd>${esc(s.evaluation_warnings.join("; "))}</dd>` : ""}${source.geometry_stage ? `<dt>Geometry stage</dt><dd>${esc(source.geometry_stage)}</dd>` : ""}${s.display_geometry ? `<dt>Surface geometry</dt><dd>${esc(s.display_geometry.source_faces)} original triangles · display budget ${esc(s.display_geometry.target_faces ?? s.display_geometry.source_faces)}. Original mesh retained.</dd>` : ""}${source.license ? `<dt>Asset license</dt><dd>${esc(source.license)}</dd>` : ""}${source.sha256 ? `<dt>SHA-256</dt><dd class="hash">${esc(source.sha256)}</dd>` : ""}</dl>${/^https?:\/\//.test(source.url || "") ? `<a class="source-link" href="${esc(source.url)}" target="_blank" rel="noopener noreferrer">Open original source ↗</a>` : ""}`;
   $("details").querySelector(":scope > dl")?.insertAdjacentHTML("beforebegin", canonicalEvidence(s));
+  if(s.id==='body-detail-hair'||s.id==='body-detail-microvascular') {
+    api('/api/body/experiments/details').then(data=>{
+      if(selected?.id!==s.id)return;
+      const content=s.id==='body-detail-hair'
+        ? `<h3>Follicle population and display</h3><p>${data.hair.full_count.toLocaleString()} material-attached follicles in the retained regional sample; ${data.hair.display_count.toLocaleString()} displayed. Physical radii are not enlarged.</p><p>${esc(data.hair.morphology_prior)}</p><p>Regional densities derive from a 15-person human subset; their SD describes that sample, not this generic body's posterior certainty. Glabrous and unresolved masks remain excluded.</p>`
+        : `<h3>Perfused reference graphs</h3><p>${data.microvascular.unit_count} bilateral forearm units · ${data.microvascular.capillary_count} capillary links · ${data.microvascular.edge_count} total edges.</p><p>Paired supply/return graphs solve pressure and flow with prescribed boundaries. Native blood storage is not connected; radii, topology and apparent viscosity remain priors.</p><p>Maximum internal flow residual: ${data.microvascular.maximum_internal_residual_m3_s.toExponential(2)} m³/s.</p>`;
+      $('details').querySelector('.canonical-evidence').innerHTML=content;
+    }).catch(error=>{if(selected?.id===s.id)$('details').insertAdjacentHTML('beforeend',`<p class="muted">${esc(error.message)}</p>`);});
+  }
   $("structures")
     .querySelectorAll("button")
     .forEach((b) => b.classList.toggle("selected", b.dataset.id === s.id));
@@ -632,8 +682,9 @@ function updateDisplay() {
   $("clip-value").textContent = clip === 100 ? "Off" : `${clip}%`;
 }
 function setupFrames() {
+  $('posture').disabled=!!regionalView?.active;
   if (modelId === "ihm-body") {
-    flowFrames = bodyTrajectory?.frames.length || 0;
+    flowFrames = regionalView?.active ? regionalView.data.frames.length : bodyTrajectory?.frames.length || 0;
     $("flow-field").hidden = true;
     $("play").disabled = flowFrames < 2;
     $("time").disabled = !flowFrames;
@@ -672,6 +723,16 @@ function setupFrames() {
   updateFrame();
 }
 function updateFrame() {
+  if (regionalView?.active) {
+    const frame=regionalView.draw(Number($('time').value));
+    $('flow-legend').hidden=false;
+    $('flow-legend').textContent=regionalView instanceof ElectricRegionalView
+      ? `Non-neural electrical state · Vm ${(frame.membrane_voltage_V[4]*1000).toFixed(2)} mV · apical ${(frame.apical_voltage_V[4]*1000).toFixed(2)} mV · peak |E| ${Math.max(...frame.edge_field_V_m.map(Math.abs)).toFixed(2)} V/m`
+      : `Computed contact · ${(frame.indentation_m*1e6).toFixed(1)} µm · ${(frame.reaction_n*1e3).toFixed(3)} mN · signed IBM response; slow playback`;
+    $('time-value').textContent=`${frame.time_s.toFixed(3)} s`;
+    $('time-value').title=regionalView instanceof ElectricRegionalView ? 'Recorded electrical clock; fixed ion reservoirs. Vm colors −80 to20 mV; apical colors −40 to10 mV.' : 'Recorded quasistatic mechanical endpoints and causal receptor state; playback slowed to inspect adaptation.';
+    return;
+  }
   if (modelId === "ihm-body") {
     const frame = bodyTrajectory?.frames[Number($("time").value)];
     const skinField = frame?.respiration?.skin_field;
@@ -679,6 +740,14 @@ function updateFrame() {
     let deformedSkins = 0;
     objects.forEach((object, id) => {
       const positions = object.geometry?.getAttribute("position");
+      const hair = object.userData.hairAttachment;
+      if (positions && hair) {
+        attachedHairPositions(object.userData.hairReference, hair,
+          skinIds.has(hair.skin_entity_id) ? skinField : null, positions.array);
+        positions.needsUpdate = true;
+        object.geometry.computeVertexNormals();
+        object.geometry.computeBoundingSphere();
+      }
       if (positions && (skinIds.has(id) || object.userData.skinReference)) {
         object.userData.skinReference ||= positions.array.slice();
         deformSkinVertices(object.userData.skinReference, skinIds.has(id) ? skinField : null, positions.array);
@@ -687,7 +756,8 @@ function updateFrame() {
         object.geometry.computeBoundingSphere();
         if (skinIds.has(id)) deformedSkins++;
       }
-      const transform = bodyTransform(frame?.entities?.[id], bodyTrajectory?.centroids_m[id]);
+      const motionId = hair?.skin_entity_id || id;
+      const transform = bodyTransform(frame?.entities?.[motionId], bodyTrajectory?.centroids_m[motionId]);
       object.matrixAutoUpdate = false;
       object.matrix.set(...transform);
       object.matrixWorldNeedsUpdate = true;
@@ -792,12 +862,18 @@ function updateFrame() {
         : "Velocity direction and magnitude from archived solver states";
 }
 function spectralRun() {
+  if(regionalView?.active){
+    const id=regionalView instanceof ElectricRegionalView ? 'skin-electric:'+regionalView.condition : 'forearm-touch';
+    return regionalSpectra.find(r=>r.id===id);
+  }
   return (
     temporal.runs?.find((r) => r.id === $("spectral-run").value) ||
     temporal.runs?.[0]
   );
 }
 function updateVariables() {
+  $('spectral-run').disabled=!!regionalView?.active;
+  $('trajectory-run').disabled=!!regionalView?.active;
   $("spectral-controls").hidden = !spectral;
   $("trajectory-controls").hidden = spectral;
   const vars = spectral
@@ -843,6 +919,8 @@ function drawChart() {
         : spectralRun()?.limitations?.[0] ||
           temporal.limitations?.[0] ||
           "Finite observation horizon. Power spectra do not establish causality."
+    : regionalView?.active
+      ? 'Computed regional materialization at a pinned body site. Explicit parameter priors; inspect the regional evidence and charge/force audit.'
     : activeRun === "body"
       ? "Computed physiology for IHMGenericMale on the body playback clock. Recorded model states; empirical calibration remains incomplete."
       : activeRun === "reproductive"
@@ -931,10 +1009,10 @@ async function pollRuns() {
     if (
       chosen &&
       ["completed", "complete", "succeeded"].includes(chosen.status) &&
-      phys._run !== chosen.id
+      (regionalReturnPhys || phys)._run !== chosen.id
     ) {
-      phys = await api(`/api/physiology?run=${encodeURIComponent(chosen.id)}`);
-      phys._run = chosen.id;
+      const received = await api(`/api/physiology?run=${encodeURIComponent(chosen.id)}`);
+      received._run = chosen.id;receivePhysiology(received);
       if (chosen.canonical_body) await loadBodyTrajectory(chosen.id);
       updateVariables();
     }
@@ -944,33 +1022,35 @@ async function pollRuns() {
 }
 $("trajectory-run").onchange = async () => {
   activeRun = $("trajectory-run").value;
+  const requestedRun=activeRun;
   try {
     if (activeRun === "body") { useBodyPhysiology(); return; }
-    phys =
-      activeRun === "reproductive"
+    const received =
+      requestedRun === "reproductive"
         ? trajectoryFromChannels(reproductive)
-        : activeRun.startsWith("thermal:")
+        : requestedRun.startsWith("thermal:")
           ? trajectoryFromChannels(
               await api(
-                `/api/thermal?run=${encodeURIComponent(activeRun.slice(8))}`,
+                `/api/thermal?run=${encodeURIComponent(requestedRun.slice(8))}`,
               ),
             )
-          : activeRun.startsWith("csf:")
+          : requestedRun.startsWith("csf:")
             ? trajectoryFromChannels(
                 await api(
-                  `/api/csf?run=${encodeURIComponent(activeRun.slice(4))}`,
+                  `/api/csf?run=${encodeURIComponent(requestedRun.slice(4))}`,
                 ),
               )
             : await api(
-                activeRun === "baseline"
+                requestedRun === "baseline"
                   ? "/api/physiology"
-                  : `/api/physiology?run=${encodeURIComponent(activeRun)}`,
+                  : `/api/physiology?run=${encodeURIComponent(requestedRun)}`,
               );
-    phys._run = activeRun;
-    if (canonicalRuns.has(activeRun)) await loadBodyTrajectory(activeRun);
+    if(requestedRun!==activeRun)return;
+    received._run = requestedRun;receivePhysiology(received);
+    if (canonicalRuns.has(requestedRun)) await loadBodyTrajectory(requestedRun);
     updateVariables();
   } catch (e) {
-    $("chart").innerHTML = `<p class="empty">${esc(e.message)}</p>`;
+    if(requestedRun===activeRun && !regionalView?.active)$("chart").innerHTML = `<p class="empty">${esc(e.message)}</p>`;
   }
 };
 $("engine-variant").onchange = () => {
@@ -1008,6 +1088,24 @@ $("scenario-form").onsubmit = async (e) => {
         engine_variant: $("engine-variant").value,
       },
     );
+    if(modelId==='ihm-body') {
+      if($('chest-compliance').value!=='')config.chest_compliance_l_cmH2O=Number($('chest-compliance').value);
+      const protocol=$('body-protocol').value;
+      if(protocol!=='none') {
+        const event={start_s:config.seconds*.2,end_s:config.seconds*.5};
+        if(protocol==='touch')event.stimuli={'peripheral-skin-left-palm':{pressure_pa:20000}};
+        else {
+          event.motor_commands={'body-muscle-opensim-tibant_l':.5};
+          if(protocol==='block') {
+            const data=await api('/api/body/peripheral');
+            const binding=data.muscle_bindings.find(b=>b.muscle_id==='body-muscle-opensim-tibant_l');
+            if(!binding)throw Error('Requested motor pathway is unavailable');
+            event.blocked_nerves=[binding.nerve_id];
+          }
+        }
+        config.body_interventions=[event];
+      }
+    }
     const run = await api(modelId === "ihm-body" ? "/api/body/scenarios" : "/api/scenarios", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -1023,7 +1121,7 @@ $("scenario-form").onsubmit = async (e) => {
   }
 };
 $("posture").onclick = () => {
-  if (!group) return;
+  if (!group || regionalView?.active) return;
   group.rotation.x = group.rotation.x === 0 ? -Math.PI / 2 : 0;
   $("posture").textContent = group.rotation.x ? "Upright view" : "Supine view";
   modelBounds.setFromObject(group);
@@ -1033,6 +1131,56 @@ $("posture").onclick = () => {
   updateDisplay();
 };
 $("model").onchange = chooseModel;
+$('regional-study').onchange=async()=>{
+  const request=++regionalRequest,kind=$('regional-study').value;
+  playing=false;
+  closeRegional();
+  if(kind==='body'){
+    updateSigma();
+    $('regional-note').textContent='Detailed studies share this body’s material coordinates.';
+    setupFrames();return;
+  }
+  regionalReturnPhys=phys;
+  regionalReturnLabels={title:$('view-title').textContent,frame:$('frame-label').textContent};
+  $('regional-note').textContent='Loading source-pinned regional experiment…';
+  try {
+    const data=await api('/api/body/experiments/'+encodeURIComponent(kind));
+    if(request!==regionalRequest)return;
+    if(!renderer)throw Error('Regional mesh needs WebGL');
+    const View=kind==='skin-electric'?ElectricRegionalView:RegionalView;
+    regionalView = new View({scene,camera,controls,bodyGroup:group});
+    regionalView.open(data);
+    $('scene-status').hidden=true;
+    $('view-title').textContent=kind==='skin-electric'?'Skin · non-neural electricity':'Forearm · contact & sensation';
+    $('frame-label').textContent='Pinned left forearm coordinates · meters · regional reference model';
+    $('render-count').textContent=kind==='skin-electric'?'9 membrane sites · 9 apical sites':`${data.geometry.tetrahedra.length.toLocaleString()} volume tetrahedra · boundary surface shown`;
+    try {regionalSpectra=(await api('/api/body/experiments/spectra')).runs;updateSigma();}
+    catch {regionalSpectra=[];}
+    if(request!==regionalRequest)return;
+    if(kind==='skin-electric') {
+      $('regional-condition').hidden=false;$('regional-condition').value='wound_shunt';
+      $('regional-note').textContent='Separate membrane and apical networks · fixed basal bath. Physical site spacing; marker radii illustrate sites.';
+      spectral=false;$('tab-phys').click();useElectricalSignals();setupFrames();
+      $('details').innerHTML=`<h2>Non-neural skin electricity</h2><p>${esc(data.voltage_reference)}</p><dl><dt>Body attachment</dt><dd>${esc(data.anchor.entity_id)} · face ${data.anchor.face_index}</dd><dt>Parameter evidence</dt><dd>${esc(data.parameter_status)}</dd><dt>Charge balance</dt><dd>${data.experiments.wound_shunt.charge_audit.max_node_residual_c.toExponential(2)} C maximum node residual</dd><dt>Color scales</dt><dd>Membrane −80 to20 mV; apical −40 to10 mV. Blue → red within each separate scale.</dd></dl><p class="muted">${esc(data.limitations.join(' '))}</p>`;
+      return;
+    }
+    $('regional-note').textContent='Left forearm · synthesized reference volume. Measured stiffness transfer prior; no whole-body force feedback.';
+    spectral=false;$('tab-phys').click();
+    phys={time_s:data.frames.map(f=>f.time_s),values:Object.fromEntries(['indentation_m','reaction_n','elastic_energy_j','rapid_response','slow_response'].map(k=>[k,data.frames.map(f=>f[k])])),units:{indentation_m:'m',reaction_n:'N',elastic_energy_j:'J',rapid_response:'donor response',slow_response:'donor response'},metadata:{source_kind:'Computed contact → pinned IBM causal transfer'}};
+    updateVariables();setupFrames();
+    $('details').innerHTML=`<h2>Forearm contact & sensation</h2><p>Body entity ${esc(data.anchor.entity_id)} · material face ${esc(data.anchor.face_index)}</p><dl><dt>Volume mesh</dt><dd>${data.geometry.tetrahedra.length} tetrahedra · physical meters</dd><dt>Stiffness</dt><dd>Apparent human shear modulus 2.8 ± 0.8 kPa; transferred from 20 adults aged55–70. Bulk response and local thickness remain priors.</dd><dt>Neural dynamics</dt><dd>Exact causal IBM rapid/slow transfer; signed response, no calibrated firing-rate conversion.</dd><dt>Numerical force residual</dt><dd>${data.states.loaded.force_balance_residual_n.toExponential(2)} N</dd></dl><p class="muted">${esc(data.limitations.join(' '))}</p>`;
+  }catch(error){if(request===regionalRequest){closeRegional();$('regional-note').textContent=error.message;$('regional-study').value='body';setupFrames();}}
+};
+function useElectricalSignals(){
+  if(!(regionalView instanceof ElectricRegionalView)||!regionalView.active)return;
+  const frames=regionalView.data.frames;
+  phys={time_s:frames.map(f=>f.time_s),values:{'Central membrane voltage':frames.map(f=>f.membrane_voltage_V[4]),'Central apical voltage':frames.map(f=>f.apical_voltage_V[4]),'Maximum absolute lateral field':frames.map(f=>Math.max(...f.edge_field_V_m.map(Math.abs)))},units:{'Central membrane voltage':'V','Central apical voltage':'V','Maximum absolute lateral field':'V/m'},metadata:{source_kind:'Computed non-neural RC network · '+regionalView.condition}};
+  updateVariables();
+}
+$('regional-condition').onchange=()=>{
+  if(!(regionalView instanceof ElectricRegionalView)||!regionalView.active)return;
+  regionalView.selectCondition($('regional-condition').value);updateSigma();useElectricalSignals();setupFrames();
+};
 $("canonical-body").onclick = () => {
   if (!manifest?.models.some(m => m.id === "ihm-body")) return;
   $("model").value = "ihm-body";
@@ -1178,7 +1326,7 @@ async function start() {
     api("/api/csf/index"),
     api("/api/thermal/index"),
   ]);
-  if (results[0].status === "fulfilled") phys = results[0].value;
+  if (results[0].status === "fulfilled") receivePhysiology(results[0].value);
   if (activeRun === "body" && bodyTrajectory) useBodyPhysiology();
   if (results[1].status === "fulfilled") {
     temporal = results[1].value;

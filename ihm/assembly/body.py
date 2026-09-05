@@ -71,14 +71,16 @@ def build(root):
     root=Path(root);directory=root/'data/derived/canonical'
     anatomy=json.loads((directory/'anatomy.json').read_text());profile=json.loads((directory/'profile.json').read_text())
     sources={}
-    for name in ['anatomy','profile','mechanics','brain']:
+    for name in ['anatomy','profile','mechanics','brain','respiration','peripheral']:
         path=directory/(name+'.json');sources[name]={'path':str(path.relative_to(root)),'sha256':digest(path)}
-    runtime_sources={name:{'path':'ihm/assembly/'+name+'.py','sha256':digest(root/'ihm/assembly'/f'{name}.py')} for name in ['body','mechanics','brain','certainty','temporal']}
+    runtime_sources={name:{'path':'ihm/assembly/'+name+'.py','sha256':digest(root/'ihm/assembly'/f'{name}.py')} for name in ['body','body_protocol','body_runtime','body_states','contracts','interfaces','cosimulation','evidence','mechanics','brain','respiration','peripheral','certainty','temporal']}
     payload=dict(runtime_sources=runtime_sources,schema_version=1,model_id='ihm-body',name='IHM · one generic human',status='executable generic research assembly',validated_digital_twin=False,
         entity_count=len(anatomy['entities']),profile=profile,frame=anatomy['frame'],sources=sources,certainty=summarize(anatomy),volume_bindings=build_bindings(anatomy),
         coupling_contract=[
             {'owner':'BioGears','state':'cardiorespiratory, blood, renal, endocrine, tissue fluid, lymph aggregate and thermal balances','direction':'native integrated physiology','spatial_resolution':'lumped compartments; vascular surfaces are not solved 3D flow lumens'},
             {'owner':'canonical mechanics','state':'rigid translation, affine tissue deformation and muscle attachment forces','direction':'native volumes → explicit synthesized shape transfer','feedback_applied':False},
+            {'owner':'thoracic mechanics','state':'three chest/diaphragm modes and regional skin displacement','direction':'native gas volume → constrained thorax → prescribed mechanics boundaries','feedback_applied':False,'mode':'native_replay'},
+            {'owner':'somatic peripheral','state':'receptor adaptation, conduction queues and motor activation','direction':'stimuli/mechanics → delayed sensory inputs; explicit motor commands → delayed muscle activation','autonomic_control':False,'motor_policy':'explicit commands only; cortical activity is not an inferred recruitment policy'},
             {'owner':'IBM-derived brain','state':'80 neural populations','direction':'native perfusion/oxygen/temperature → neural rates','feedback_applied':False,'reason':'Native nervous system already owns autonomic control; applying a second uncalibrated controller would double count it.'},
             {'owner':'BETSE / human wound evidence','state':'local membrane and ion field; wound parameters','direction':'retained regional evidence and separately executable materialization','whole_body_voltage_field_calibrated':False},
             {'owner':'published lymphatic graph','state':'registered topology and estimated source lengths','direction':'anatomical prior','flow_solution_available':False},
@@ -117,39 +119,49 @@ class CanonicalBody:
     def certainty(self,entity_id):
         if entity_id not in self.entities:raise ValueError('Unknown canonical entity')
         return entity_certainty(self.entities[entity_id])
-    def simulate(self,native_directory,output,output_hz=10):
-        from .mechanics import BodyMechanics
-        from .brain import BodyBrain
+    def simulate(self,native_directory,output,output_hz=10,body_interventions=()):
+        from .body_runtime import BodyRuntime
+        from .body_protocol import validate_interventions,inputs_at
         if isinstance(output_hz,bool) or not isinstance(output_hz,(int,float)) or not math.isfinite(output_hz) or not 1<=output_hz<=50:raise ValueError('Output frequency must be 1..50 Hz')
         native_directory=Path(native_directory);series=read_native(native_directory)
         summary=series['summary'];profile=self.assets['profile']
         if summary['configuration']['patient']!=profile['native_patient'] or summary.get('patient_sha256')!=profile['native_patient_sha256']:raise ValueError('Native run does not match canonical patient identity')
         if summary.get('input_state_sha256') is not None:raise ValueError('Canonical profile matching requires fresh patient initialization, not an unverified saved state')
-        mechanics=BodyMechanics.from_dict(self.assets['mechanics']);brain=BodyBrain.from_dict(self.assets['brain'],root=self.root)
+        protocol=validate_interventions(body_interventions,self.assets['peripheral'],series['time_s'][-1])
+        runtime=BodyRuntime(self.root,self.assets,self.payload['volume_bindings'],series['initial_compartments'])
         frames=[];previous=0.;next_output=0.;max_force_residual=0.;max_torque_residual=0.
         # Sparse export drops only transforms indistinguishable at this explicit
         # numerical threshold; source geometry and full final state are retained.
         tolerance=1e-9;identity=np.eye(3)
         for time,row,comp in zip(series['time_s'],series['physiology'],series['compartments']):
-            dt=time-previous;previous=time
-            drivers={'volume_ratios':project_volumes(self.payload['volume_bindings'],comp,series['initial_compartments'])}
-            mechanical=mechanics.step(dt,drivers)
-            neural=brain.step(dt,{'mean_arterial_pressure_mmHg':row['MeanArterialPressure(mmHg)'],'oxygen_saturation':row['OxygenSaturation'],'core_temperature_C':row['CoreTemperature(degC)']})
+            # Split at intervention boundaries; interpolate retained native
+            # samples only for these subintervals and record that approximation.
+            boundaries=sorted({event[key] for event in protocol for key in ['start_s','end_s'] if previous<event[key]<time})+[time]
+            native_start=series['initial_compartments'] if previous==0 else prior_comp
+            interval_start=previous
+            for boundary in boundaries:
+                alpha=(boundary-interval_start)/(time-interval_start)
+                boundary_comp={key:native_start[key]+alpha*(comp[key]-native_start[key]) for key in comp}
+                state=runtime.step(boundary-previous,row,boundary_comp,inputs_at(protocol,previous))
+                previous=boundary
+            prior_comp=comp
+            mechanical,neural=state['mechanics'],state['brain']
+            drivers={'volume_ratios':state['volume_ratios']}
             if abs(mechanical['time_s']-time)>1e-7 or abs(neural['time_s']-time)>1e-7:raise RuntimeError('Canonical component clocks diverged')
             max_force_residual=max(max_force_residual,mechanical['audit']['internal_force_residual_n']);max_torque_residual=max(max_torque_residual,mechanical['audit']['internal_torque_residual_nm'])
             if time+1e-9>=next_output or time==series['time_s'][-1]:
                 explicit={}
-                for id,state in mechanical['entities'].items():
-                    if max(np.max(np.abs(state['translation_m'])),np.max(np.abs(np.array(state['rotation_matrix'])-identity)),np.max(np.abs(np.array(state['deformation_gradient'])-identity)))>tolerance:
-                        explicit[id]={k:state[k] for k in ['translation_m','rotation_matrix','deformation_gradient']}
-                frames.append(dict(time_s=time,entities=explicit,physiology=row,compartments=comp,brain=neural,mechanical_audit=mechanical['audit'],volume_ratios=drivers['volume_ratios']))
+                for id,entity_state in mechanical['entities'].items():
+                    if max(np.max(np.abs(entity_state['translation_m'])),np.max(np.abs(np.array(entity_state['rotation_matrix'])-identity)),np.max(np.abs(np.array(entity_state['deformation_gradient'])-identity)))>tolerance:
+                        explicit[id]={k:entity_state[k] for k in ['translation_m','rotation_matrix','deformation_gradient']}
+                frames.append(dict(time_s=time,entities=explicit,physiology=row,compartments=comp,brain=neural,respiration=state['respiration'],peripheral=state['peripheral'],muscle_forces_n=mechanical['muscle_forces_n'],mechanical_audit=mechanical['audit'],volume_ratios=drivers['volume_ratios']))
                 next_output=(math.floor(time*output_hz+1e-9)+1)/output_hz
                 if len(frames)%50==0:print(f'Canonical integration {time:.2f}/{series["time_s"][-1]:.2f}s',flush=True)
-        result=dict(runtime_sources=self.payload['runtime_sources'],schema_version=1,model_id='ihm-body',frames=frames,centroids_m={id:e['centroid_m'] for id,e in self.entities.items()},
-            clock={'start_s':series['time_s'][0],'end_s':series['time_s'][-1],'native_samples':len(series['time_s']),'requested_output_hz':output_hz,'integration':'native sample intervals; independent mechanics/brain substeps','interpolation':'none; snapshot at first native sample on/after requested output interval','playback':'recorded finite trajectory; no extrapolation'},
+        result=dict(runtime_sources=self.payload['runtime_sources'],schema_version=2,model_id='ihm-body',body_interventions=protocol,frames=frames,centroids_m={id:e['centroid_m'] for id,e in self.entities.items()},
+            clock={'start_s':series['time_s'][0],'end_s':series['time_s'][-1],'native_samples':len(series['time_s']),'requested_output_hz':output_hz,'integration':'transactional reduced body intervals; motor/sensory outputs applied on subsequent interval','coupling_mode':'native_replay','interpolation':'native compartments linear only at intervention boundaries; physiology held from native interval endpoint; output on first native sample at/after display interval','playback':'recorded finite trajectory; no extrapolation'},
             sources={**self.payload['sources'],'native_run':{'directory':str(native_directory.resolve()),'files':series['input_hashes']}},
             volume_bindings=self.payload['volume_bindings'],coupling_contract=self.payload['coupling_contract'],
             display_numerics={'sparse_transform_component_tolerance':tolerance,'missing_entity_transform':'identity at reference centroid, never hold last value','geometry_reduction_applied':False,'biological_accuracy':None},
             audit={'maximum_internal_force_residual_n':max_force_residual,'maximum_internal_torque_residual_nm':max_torque_residual,'validated_digital_twin':False},limitations=self.payload['limitations'])
-        output=Path(output);write_json(output,result);write_json(output.with_name(output.stem+'-final-state.json'),{'time_s':previous,'mechanics':mechanical,'brain':neural,'physiology':series['physiology'][-1],'compartments':series['compartments'][-1]})
+        output=Path(output);write_json(output,result);write_json(output.with_name(output.stem+'-final-state.json'),{'time_s':previous,**state,'physiology':series['physiology'][-1],'compartments':series['compartments'][-1]})
         return result

@@ -120,11 +120,11 @@
       },
       {
         "path": "ihm/assembly/skin_transport.py",
-        "sha256": "02fadd31dd4e0a6237c3d98ec1b367a66d8fc73fdce9a331777213838515ac14"
+        "sha256": "51d0bdaf99c70efd583df066ea545a916ef5d9ef8b89f304f1adb94e3aaaa3a0"
       },
       {
         "path": "scripts/verify_body_transport.py",
-        "sha256": "5af0812dbb0ef32c4fac267c5eeb483f09712bd5a1c84c9e162ec7c172236f08"
+        "sha256": "77e0323b28ba6982f3e5bf0fa4d9673c5f8d16d477aae5551a712765e7358435"
       },
       {
         "path": "scripts/build_body_transport.py",
@@ -288,11 +288,11 @@
           },
           {
             "path": "ihm/assembly/skin_transport.py",
-            "sha256": "02fadd31dd4e0a6237c3d98ec1b367a66d8fc73fdce9a331777213838515ac14"
+            "sha256": "51d0bdaf99c70efd583df066ea545a916ef5d9ef8b89f304f1adb94e3aaaa3a0"
           },
           {
             "path": "scripts/verify_body_transport.py",
-            "sha256": "5af0812dbb0ef32c4fac267c5eeb483f09712bd5a1c84c9e162ec7c172236f08"
+            "sha256": "77e0323b28ba6982f3e5bf0fa4d9673c5f8d16d477aae5551a712765e7358435"
           },
           {
             "path": "scripts/build_body_transport.py",
@@ -454,11 +454,11 @@
           },
           {
             "path": "ihm/assembly/skin_transport.py",
-            "sha256": "02fadd31dd4e0a6237c3d98ec1b367a66d8fc73fdce9a331777213838515ac14"
+            "sha256": "51d0bdaf99c70efd583df066ea545a916ef5d9ef8b89f304f1adb94e3aaaa3a0"
           },
           {
             "path": "scripts/verify_body_transport.py",
-            "sha256": "5af0812dbb0ef32c4fac267c5eeb483f09712bd5a1c84c9e162ec7c172236f08"
+            "sha256": "77e0323b28ba6982f3e5bf0fa4d9673c5f8d16d477aae5551a712765e7358435"
           },
           {
             "path": "scripts/build_body_transport.py",
@@ -620,11 +620,11 @@
           },
           {
             "path": "ihm/assembly/skin_transport.py",
-            "sha256": "02fadd31dd4e0a6237c3d98ec1b367a66d8fc73fdce9a331777213838515ac14"
+            "sha256": "51d0bdaf99c70efd583df066ea545a916ef5d9ef8b89f304f1adb94e3aaaa3a0"
           },
           {
             "path": "scripts/verify_body_transport.py",
-            "sha256": "5af0812dbb0ef32c4fac267c5eeb483f09712bd5a1c84c9e162ec7c172236f08"
+            "sha256": "77e0323b28ba6982f3e5bf0fa4d9673c5f8d16d477aae5551a712765e7358435"
           },
           {
             "path": "scripts/build_body_transport.py",
@@ -786,11 +786,11 @@
           },
           {
             "path": "ihm/assembly/skin_transport.py",
-            "sha256": "02fadd31dd4e0a6237c3d98ec1b367a66d8fc73fdce9a331777213838515ac14"
+            "sha256": "51d0bdaf99c70efd583df066ea545a916ef5d9ef8b89f304f1adb94e3aaaa3a0"
           },
           {
             "path": "scripts/verify_body_transport.py",
-            "sha256": "5af0812dbb0ef32c4fac267c5eeb483f09712bd5a1c84c9e162ec7c172236f08"
+            "sha256": "77e0323b28ba6982f3e5bf0fa4d9673c5f8d16d477aae5551a712765e7358435"
           },
           {
             "path": "scripts/build_body_transport.py",

@@ -71,6 +71,15 @@ def main():
             assert 'hash mismatch' in str(error)
         else:
             raise AssertionError('changed package source accepted')
+    with tempfile.TemporaryDirectory() as directory:
+        artifact=Path(directory)
+        shutil.copytree(backend.artifact_dir,artifact,dirs_exist_ok=True)
+        shadow=artifact/'source/ibm/frames/__init__.py'
+        shadow.parent.mkdir(exist_ok=True)
+        shadow.write_text('raise RuntimeError("unmanifested package executed")\n')
+        try:IBMBackend(artifact)
+        except ValueError as error:assert 'unmanifested' in str(error)
+        else:raise AssertionError('unmanifested shadow package accepted')
     print({'status': 'pass', 'artifact': backend.identity['package_sha256'], 'errors': errors,
            'semantics': 'periodic single-window drift; no causal streaming claim'})
 

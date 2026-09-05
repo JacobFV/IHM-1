@@ -41,10 +41,16 @@ class BodyPeripheral:
             target=self.motor_targets.get(key,0.)
             self.activations[key]=target+(self.activations.get(key,0.)-target)*decay
 
-    def step(self,dt_s,stimuli=None,mechanical_state=None,brain_state=None):
-        dt=scalar(dt_s,.0001,1.,'dt_s');stimuli={} if stimuli is None else stimuli
+    def step(self,dt_s,stimuli=None,mechanical_state=None,brain_state=None,blocked_nerves=()):
+        dt=scalar(dt_s,0.,1.,'dt_s')
+        if dt<=0 or self.time_s+dt<=self.time_s:raise ValueError('dt_s must advance the peripheral clock')
+        stimuli={} if stimuli is None else stimuli
         mechanical_state={} if mechanical_state is None else mechanical_state
         brain_state={} if brain_state is None else brain_state
+        known_nerves={p['nerve_id'] for p in self.patches.values()}|{b['nerve_id'] for b in self.bindings.values()}
+        if not isinstance(blocked_nerves,(list,tuple,set)) or any(not isinstance(n,str) for n in blocked_nerves) or set(blocked_nerves)-known_nerves:
+            raise ValueError('Unknown blocked nerve')
+        blocked=set(blocked_nerves)
         if not all(isinstance(x,dict) for x in [stimuli,mechanical_state,brain_state]):raise ValueError('Inputs must be objects')
         if set(stimuli)-self.patches.keys():raise ValueError('Unknown receptor patch')
         validated={}
@@ -90,16 +96,27 @@ class BodyPeripheral:
                 speed=p.get(f'{modality}_velocity_m_s',p['tactile_velocity_m_s'])
                 delay=patch['path_length_m']/speed+p['central_afferent_delay_s']
                 self._send('afferent',channel,rate,end+delay,patch)
-        cutaneous_gates={(meta['side'],meta.get('sensorimotor_region'))
-                         for channel,(value,meta) in self.arrived.items()
-                         if not channel.startswith('proprio:') and value>1e-8}
         for key,b in self.bindings.items():
             rate=feedback[key]+(self.proprioceptors.get(key,0.)-feedback[key])*decay
             self.proprioceptors[key]=rate
             self._send('afferent','proprio:'+key,rate,end+b['afferent_delay_s'],b)
-            gated=(b['side'],b.get('sensorimotor_region')) in cutaneous_gates
-            command=commands.get(key,min(1.,regional.get(b['brain_motor_id'],0.)*b['somatic_readout_gain']) if gated else 0.)
+            # A regional cortical rate has no identified muscle recruitment law.
+            # Only explicit descending commands may recruit this effector.
+            command=commands.get(key,0.) if b['nerve_id'] not in blocked else 0.
             self._send('motor',key,command,self.time_s+b['motor_delay_s'],b)
+        # Block both in-flight and arrived signals; existing muscle activation
+        # relaxes with its own time constant. Unblocking resends current signals.
+        self.events=[event for event in self.events if event[5]['nerve_id'] not in blocked]
+        heapq.heapify(self.events)
+        self.arrived={key:value for key,value in self.arrived.items() if value[1]['nerve_id'] not in blocked}
+        for key,b in self.bindings.items():
+            if b['nerve_id'] in blocked:
+                self.motor_targets[key]=0.
+                self.sent.pop(('motor',key),None)
+                self.sent.pop(('afferent','proprio:'+key),None)
+        for key,p in self.patches.items():
+            if p['nerve_id'] in blocked:
+                for modality in ['pressure','stretch','warm','cold']:self.sent.pop(('afferent',key+':'+modality),None)
         cursor=self.time_s
         while self.events and self.events[0][0]<=end+1e-12:
             arrival,_,kind,key,value,meta=heapq.heappop(self.events)
@@ -117,6 +134,6 @@ class BodyPeripheral:
                 'brain_inputs_hz':{k:min(1000.,v) for k,v in brain.items()},
                 'motor_activations':dict(self.activations),'receptor_rates_hz':dict(self.receptors),
                 'proprioceptor_rates_hz':dict(self.proprioceptors),'relay_activity_hz':relay,'nerve_activity_hz':nerve,
-                'pending_events':len(self.events),'stimuli':validated,
+                'pending_events':len(self.events),'stimuli':validated,'blocked_nerves':sorted(blocked),
                 'scope':'Excess evoked-rate reduction; delayed somatic motor and sensory priors; no autonomic controller',
                 'biological_validation':False,'coupling_application':'Caller feeds brain_inputs_hz and motor_activations to subsequent brain/mechanics intervals'}

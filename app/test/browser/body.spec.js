@@ -6,7 +6,7 @@ const trajectory = {centroids_m:{'body-bp3d-FJ3259':[.1,-.3,0]},frames:[
 test('one canonical body opens by default with explicit evidence and computed playback',async({page})=>{
   const errors=[];page.on('pageerror',error=>errors.push(error.message));
   await page.route('**/api/body',route=>route.fulfill({json:{name:'IHM',entity_count:2408,status:'assembled'}}));
-  await page.route('**/api/body/trajectory',route=>route.fulfill({json:trajectory}));
+  await page.route('**/api/body/trajectory*',route=>route.fulfill({json:trajectory}));
   await page.goto('/');
   await expect(page.locator('#model')).toHaveValue('ihm-body');
   await expect(page.locator('#source-inspection')).not.toHaveAttribute('open');
@@ -32,7 +32,7 @@ test('one canonical body opens by default with explicit evidence and computed pl
   expect(errors).toEqual([]);
 });
 test('unavailable body trajectory never substitutes animated anatomy',async({page})=>{
-  await page.route('**/api/body/trajectory',route=>route.fulfill({status:404,json:{error:'Body trajectory not computed'}}));
+  await page.route('**/api/body/trajectory*',route=>route.fulfill({status:404,json:{error:'Body trajectory not computed'}}));
   await page.goto('/');
   await expect(page.locator('#model')).toHaveValue('ihm-body');
   await expect(page.locator('#time-value')).toHaveText('Body trajectory unavailable');
@@ -71,7 +71,7 @@ test('computed thoracic skin field changes the rendered reference mesh and scrub
   await page.route('**/api/manifest',route=>route.fulfill({json:{models:[{id:'ihm-body',name:'Test skin',bounds:{min:[-2,-2,-2],max:[2,2,2]}}],structures:[{id:'skin',name:'Thoracic skin',model_id:'ihm-body',system:'integumentary',kind:'mesh'}]}}));
   await page.route('**/api/geometry/skin',route=>route.fulfill({json:{positions:[-1,-1,1,1,-1,1,1,1,1,-1,1,1],indices:[0,1,2,0,2,3]}}));
   await page.route('**/api/body',route=>route.fulfill({json:{name:'IHM',entity_count:1}}));
-  await page.route('**/api/body/trajectory',route=>route.fulfill({json:{centroids_m:{skin:[0,0,1]},frames:[{time_s:0,entities:{}},{time_s:1,entities:{},respiration:{skin_field:field}}]}}));
+  await page.route('**/api/body/trajectory*',route=>route.fulfill({json:{centroids_m:{skin:[0,0,1]},frames:[{time_s:0,entities:{}},{time_s:1,entities:{},respiration:{skin_field:field}}]}}));
   await page.goto('/');
   await page.getByLabel('Anatomy view',{exact:true}).selectOption('skin');
   await expect(page.locator('#play')).toBeEnabled();
