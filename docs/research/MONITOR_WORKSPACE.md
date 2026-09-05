@@ -1,0 +1,9 @@
+# Monitor workspace
+
+The window is a fixed-height 3D workspace with a left View sidebar and a right monitor stack. There is no application header or bottom signal pane. Camera/rendering, clothing and anatomical visibility controls are grouped in the View sidebar; advanced source inspection remains a disclosure. Narrow screens use mutually exclusive drawers without document scrolling.
+
+`app/src/monitors.js` mounts the existing working selection, signal, experiment, playback, systemic, contact and evidence widgets as rounded cards. The catalog searches title, description and overlapping category tags. Cards can be added, removed, collapsed, reordered and switched to compact spacing. Card layout persists locally. Removing a card parks its DOM in hidden storage: existing subscriptions, input values and element identities survive. Each widget has one owning card; adding a duplicate instance is disabled because the existing graph and protocol controllers do not yet have independent per-instance state.
+
+Selecting an actual systemic or local-contact experiment reveals its corresponding state card. The `scene-controls` and `scene-monitor` mounts are reserved for the separately implemented mechanics adapter. Catalog presence does not imply an unavailable model has been computed. Signal graphs retain their recorded time, units, missing values and Fourier/finite-Laplace semantics.
+
+Browser tests cover full-height viewport, absence of page overflow, independent scrolling, drawers, focus restoration, catalog search/Escape, removal/re-addition without loss of form values, compact/collapse persistence and existing causal-record workflows. Old tests expecting a bottom signal pane now assert the intentional right-card layout. Physics, accepted native records and source geometry are unchanged by this layout work.

@@ -23,6 +23,7 @@ test('one canonical body opens by default with explicit evidence and computed pl
   await page.locator('#time').fill('1');await page.locator('#time').dispatchEvent('input');
   await expect(page.locator('#time-value')).toHaveText('1.000 s');
   await expect(page.locator('#flow-legend')).toContainText('MAP 90.0 mmHg');
+  await page.locator('.view-section').filter({hasText:'Sources & body status'}).evaluate(el=>el.open=true);
   await page.locator('#source-inspection summary').click();
   await page.locator('#model').selectOption('bodyparts3d');
   await expect(page.locator('#patient')).toBeEnabled();

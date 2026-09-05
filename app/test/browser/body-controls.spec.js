@@ -4,7 +4,7 @@ test('body interventions and resizable independent panels', async ({ page }) => 
   await page.goto('/');
   await expect(page.locator('#body-protocol')).toBeVisible();
   await expect(page.locator('#chest-compliance')).toBeVisible();
-  const handle=page.getByRole('separator',{name:'Resize anatomy panel'});
+  const handle=page.getByRole('separator',{name:'Resize view panel'});
   await expect(handle).toBeVisible();
   const before=await page.locator('#library-panel').boundingBox();
   await handle.focus();

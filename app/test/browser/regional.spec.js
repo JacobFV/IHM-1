@@ -32,6 +32,7 @@ test('body-attached contact and non-neural voltage materializations use computed
   await expect(page.locator('#chart svg')).toBeVisible();
   await page.getByLabel('Active materialization',{exact:true}).selectOption('skin-electric');
   await expect(page.locator('#details h2')).toHaveText('Non-neural skin electricity');
+  await page.locator('.view-section').filter({hasText:'Sources & body status'}).evaluate(el=>el.open=true);
   await page.locator('#source-inspection summary').click();
   const source=await page.locator('#model option').evaluateAll(options=>options.find(o=>o.value!=='ihm-body').value);
   await page.locator('#model').selectOption(source);

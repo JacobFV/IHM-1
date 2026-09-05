@@ -24,7 +24,7 @@ test('the scene expands when panels close and focus restores panel choices and i
   await expect(page.locator('#signals-panel')).toBeHidden();
   const focused = await page.locator('#viewport').boundingBox();
   expect(focused.width).toBeGreaterThan(before.width);
-  expect(focused.height).toBeGreaterThan(before.height);
+  expect(focused.height).toBe(before.height);
   await page.getByRole('button', { name: 'Focus mode', exact: true }).click();
   await expect(page.locator('#library-panel')).toBeHidden();
   await expect(page.locator('#inspector-panel')).toBeVisible();
@@ -32,7 +32,7 @@ test('the scene expands when panels close and focus restores panel choices and i
   await expect(page.locator('#duration')).toHaveValue('17');
   await page.getByRole('button', { name: 'Anatomy panel', exact: true }).click();
   await expect(page.locator('#search')).toHaveValue('lung');
-  await page.getByRole('button', { name: 'Signals panel', exact: true }).click();
+  await page.getByRole('button', { name: 'Remove Signal graph', exact: true }).click();
   await page.reload();
   await expect(page.locator('#signals-panel')).toBeHidden();
   await expect(page.locator('#library-panel')).toBeVisible();
@@ -45,7 +45,7 @@ test('each panel scrolls within the fixed workspace and hiding it retains its sc
   await expect(page.locator('#systems input').first()).toBeVisible();
   await expect(page.locator('#body-status')).not.toContainText('Loading',{timeout:20000});
   await page.locator('#inspector-panel .evidence-fold').evaluateAll(nodes => nodes.forEach(node => node.open = true));
-  for (const id of ['library-panel', 'inspector-panel', 'signals-panel']) {
+  for (const id of ['library-panel', 'inspector-panel']) {
     const panel = page.locator(`#${id}`);
     const original = await panel.evaluate(el => { el.scrollTop = el.scrollHeight; return el.scrollTop; });
     expect(original).toBeGreaterThan(0);

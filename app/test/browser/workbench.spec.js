@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 async function selectSource(page, id) {
+  await page.locator('.view-section').filter({hasText:'Sources & body status'}).evaluate(el=>el.open=true);
   if (!await page.locator("#source-inspection").evaluate(el => el.open))
     await page.locator("#source-inspection summary").click();
   await page.locator("#model").selectOption(id);

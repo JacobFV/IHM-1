@@ -22,6 +22,7 @@ test('real contact trajectories replace local material owners in the dressed can
   await page.locator('#garment-contact-focus').click();
   await page.screenshot({path:'test-results/garment-contact-dressed.png',fullPage:true});
   await page.locator('#systems input[type="checkbox"][value="integumentary"]').uncheck();
+  await page.locator('.view-section').filter({has:page.locator('#clothing-components')}).evaluate(el=>el.open=true);
   await page.locator('#garment-shorts').uncheck();
   await page.locator('#time').fill('48');await page.locator('#time').dispatchEvent('input');
   await expect(page.locator('#time-value')).toHaveText('0.240 s');

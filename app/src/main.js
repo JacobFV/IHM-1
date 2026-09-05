@@ -16,6 +16,7 @@ import {
   deformSkinVertices,
 } from "./state.js";
 import "./style.css";
+import "./monitors.css";
 import { attachedHairPositions } from "./hair_motion.js";
 import { RegionalView, ElectricRegionalView } from "./regional.js";
 import { ClothingView } from "./clothing.js";
@@ -36,69 +37,8 @@ const $ = (id) => document.getElementById(id),
     );
 document.querySelector("#app").innerHTML =
   `<header><div class="brand"><span class="brandmark">ih<span>•</span></span><div>INTEGRATED HUMAN<small>Computational physiology workbench</small></div></div><nav class="workspace-tools" aria-label="Workspace panels"><button id="toggle-library" aria-label="Anatomy panel" aria-controls="library-panel" aria-expanded="true"><span aria-hidden="true">◧</span> Anatomy</button><button id="toggle-inspector" aria-label="Inspector panel" aria-controls="inspector-panel" aria-expanded="true"><span aria-hidden="true">◨</span> Inspector</button><button id="toggle-signals" aria-label="Signals panel" aria-controls="signals-panel" aria-expanded="true"><span aria-hidden="true">▤</span> Signals</button><button id="toggle-focus" aria-label="Focus mode" aria-pressed="false" title="Hide panels; click again to restore your workspace"><span aria-hidden="true">⛶</span> Focus</button></nav></header><main id="workspace"><aside class="library" id="library-panel" aria-label="Anatomy library" tabindex="0"><div class="section-heading"><span>GENERIC HUMAN</span><span id="total">—</span></div><button id="canonical-body" class="text-button">Explore the assembled body</button><p id="body-status" class="muted">Loading the canonical body state.</p><details id="source-inspection" class="evidence-fold"><summary>Advanced · source evidence inspection</summary><label class="field-label" for="model">Body or source model</label><select id="model"><option>Loading source families…</option></select></details><p class="muted" id="model-note">Reading the anatomical assembly.</p><label class="field-label" for="anatomy-view">Explore anatomy</label><select id="anatomy-view" aria-label="Anatomy view"></select><p id="layer-note" class="muted"></p><div class="search"><span>⌕</span><input id="search" placeholder="Find a structure…" aria-label="Search anatomy"></div><div class="section-heading layer-title">SYSTEM LAYERS <button id="all" class="text-button">Show all</button></div><div id="systems"></div><div class="section-heading results-heading">STRUCTURES <span id="count">0</span></div><div id="structures" class="structures"></div><div class="library-footer"><span class="live-dot"></span> One body · traceable sources and assumptions</div></aside><section class="center"><div class="viewport" id="viewport"><div class="view-heading"><div class="eyebrow">SPATIAL EXPLORER</div><h1 id="view-title">Human anatomy</h1><p id="frame-label">Source-defined coordinates</p></div><div class="view-tools"><button id="reset" title="Reset camera">↺ <span>Reset view</span></button><button id="posture" title="Rigid display rotation only; native posture is not established">Supine view</button><button id="front">Anterior</button><button id="side">Lateral</button></div><div id="scene-status" role="status">Loading anatomical assets…</div><div id="flow-legend" class="flow-legend" hidden></div><div class="orientation">Y <span>↑</span><br><small>X →</small></div><div class="view-footer"><span id="render-count">0 structures visible</span><span>Drag to orbit · Scroll to zoom · Click to inspect</span></div></div><div class="display-controls"><label>Opacity <input id="opacity" type="range" min=".05" max="1" step=".05" value="1"><output id="opacity-value">100%</output></label><label>Section <input id="clip" type="range" min="0" max="100" value="100"><output id="clip-value">Off</output></label><select id="flow-field" aria-label="Vascular field"><option value="velocity">Velocity</option><option value="pressure">Pressure</option></select><button id="play" disabled aria-label="Play spatial time series">▶</button><input id="time" type="range" min="0" max="0" value="0" aria-label="Spatial time frame" disabled><output id="time-value">No flow frames</output></div><section class="signals" id="signals-panel" aria-label="Physiology signals" tabindex="0"><div class="signal-header"><div><div class="eyebrow">TEMPORAL OBSERVATORY</div><h2>Physiology & dynamics</h2></div><div class="tabs"><button id="tab-phys" class="active">Trajectory</button><button id="tab-spectral">Spectrum</button></div></div><div id="spectral-controls" class="spectral-controls" hidden><select id="spectral-run" aria-label="Spectral evidence source"></select><select id="spectral-mode" aria-label="Spectral representation"><option value="psd">Fourier power density</option><option value="laplace">Finite Laplace magnitude</option></select><select id="sigma" aria-label="Laplace damping" hidden></select></div><div id="trajectory-controls" class="spectral-controls"><select id="trajectory-run" aria-label="Recorded physiology run"><option value="baseline">Recorded resting baseline</option></select></div><div class="signal-select"><select id="variable" aria-label="Physiology variable"></select><span id="signal-source">Awaiting simulation data</span></div><div id="chart" class="chart"><p class="empty">Loading physiological trajectories…</p></div><p id="chart-note" class="muted">Native simulation evidence is distinct from human measurements.</p></section></section><aside class="inspector" id="inspector-panel" aria-label="Structure inspector and scenarios" tabindex="0"><div class="section-heading">STRUCTURE INSPECTOR <span>↗</span></div><div id="details"><div class="inspector-symbol">◎</div><h2>Explore the body</h2><p class="muted">Select a structure in the viewport or library to inspect its source, coordinate frame, and evidence status.</p></div><div class="scenario"><div class="eyebrow">NATIVE PHYSIOLOGY</div><h2>Run a scenario</h2><p id="scenario-description" class="muted">Execute the body model and inspect its recorded response.</p><form id="scenario-form"><label class="field-label" for="engine-variant">Native implementation</label><select id="engine-variant"><option value="">Loading implementations…</option></select><p id="variant-note" class="muted">Source corrections do not establish clinical calibration.</p><label class="field-label" for="patient">Model profile</label><select id="patient"><option value="StandardMale">StandardMale</option></select><label class="field-label" for="scenario">Protocol</label><select id="scenario"><option value="baseline">Resting baseline</option><option value="exercise">Exercise & recovery</option><option value="hemorrhage_saline">Hemorrhage, saline & recovery</option></select><p id="protocol-note" class="muted">Record the upstream resting state.</p><label class="field-label" for="duration">Duration · seconds</label><input id="duration" type="number" min="1" max="600" value="60" required><label class="field-label" for="ambient">Ambient temperature · °C · optional</label><input id="ambient" type="number" min="10" max="35" step="any" placeholder="Upstream conditions"><label class="field-label" for="clothing">Clothing · clo · optional</label><input id="clothing" type="number" min="0" max="3" step="any" placeholder="Upstream conditions"><p class="muted">Blank values preserve upstream environment and clothing.</p><button class="primary" id="run" type="submit">Run native simulation <span>↗</span></button></form><div id="run-status" class="run-status" role="status">Checking native backend…</div></div><div class="evidence"><div class="section-heading">EVIDENCE BOUNDARY</div><p>Geometry describes anatomy. Simulation describes model behavior. Neither alone establishes patient-specific calibration.</p><div id="evidence-status" class="tag">Uncertainty remains explicit</div><details class="evidence-fold"><summary>Human measurement fit</summary><div id="calibration-details"><p>Loading calibration evidence…</p></div></details><details class="evidence-fold"><summary>System coverage</summary><div id="coverage-details"><p>Coverage data unavailable.</p></div></details><details class="evidence-fold"><summary>Conservative exchange</summary><div id="coupling-details"><p>Exchange data unavailable.</p></div></details><details class="evidence-fold"><summary>Vascular CFD audit</summary><div id="vascular-audit"><p>Audit unavailable.</p></div></details></div></aside></main>`;
-// Keep panels mounted so filters, forms and disclosure state survive.
-const compactWorkspace = matchMedia("(max-width: 1000px)");
-const workspaceStates = new Map();
-const panelScroll = new Map();
-function workspaceState() {
-  const mode = compactWorkspace.matches ? "compact" : "desktop";
-  if (!workspaceStates.has(mode)) {
-    let saved;
-    try { saved = JSON.parse(localStorage.getItem(`ihm.workspace.${mode}`)); } catch {}
-    const state = { library: !compactWorkspace.matches, inspector: !compactWorkspace.matches, signals: !compactWorkspace.matches, focus: false };
-    for (const key of Object.keys(state))
-      if (typeof saved?.[key] === "boolean") state[key] = saved[key];
-    if (compactWorkspace.matches && state.library && state.inspector) state.inspector = false;
-    workspaceStates.set(mode, state);
-  }
-  return workspaceStates.get(mode);
-}
-function renderWorkspace() {
-  const state = workspaceState();
-  for (const name of ["library", "inspector", "signals"]) {
-    const panel = $(`${name}-panel`);
-    const visible = state[name] && !state.focus;
-    if (!panel.hidden && !visible) panelScroll.set(name, panel.scrollTop);
-    const wasHidden = panel.hidden;
-    $("workspace").dataset[name] = String(visible);
-    panel.hidden = !visible;
-    if (visible && wasHidden) panel.scrollTop = panelScroll.get(name) || 0;
-    $(`toggle-${name}`).setAttribute("aria-expanded", String(visible));
-  }
-  $("toggle-focus").setAttribute("aria-pressed", String(state.focus));
-}
-function saveWorkspace() {
-  try {
-    localStorage.setItem(`ihm.workspace.${compactWorkspace.matches ? "compact" : "desktop"}`, JSON.stringify(workspaceState()));
-  } catch { /* Storage may be unavailable; current-session controls still work. */ }
-  renderWorkspace();
-}
-for (const name of ["library", "inspector", "signals"]) {
-  $(`toggle-${name}`).onclick = () => {
-    const state = workspaceState();
-    state[name] = state.focus || !state[name];
-    state.focus = false;
-    if (compactWorkspace.matches && state[name] && name !== "signals")
-      state[name === "library" ? "inspector" : "library"] = false;
-    saveWorkspace();
-  };
-}
-$("toggle-focus").onclick = () => {
-  workspaceState().focus = !workspaceState().focus;
-  saveWorkspace();
-};
-document.addEventListener("keydown", event => {
-  if (event.key !== "Escape" || !compactWorkspace.matches) return;
-  const name = ["library", "inspector"].find(name => !$(`${name}-panel`).hidden);
-  if (!name) return;
-  workspaceState()[name] = false;
-  saveWorkspace();
-  $(`toggle-${name}`).focus();
-});
-compactWorkspace.addEventListener("change", renderWorkspace);
-renderWorkspace();
-import { mountPanelResizers } from './workspace.js';
-mountPanelResizers();
+import { mountWorkspace } from './workspace.js';
+import { mountMonitors } from './monitors.js';
 const bodyControls=document.createElement('div');
 bodyControls.id='body-controls';
 bodyControls.innerHTML=`<label class="field-label" for="chest-compliance">Chest compliance · L/cmH₂O · optional</label><input id="chest-compliance" type="number" min=".05" max="1" step=".01" placeholder="Native constitutive value"><p class="muted">Changes the physiological pressure–flow solve. Tissue parameters remain uncertain.</p><label class="field-label" for="body-protocol">Body perturbation</label><select id="body-protocol"><option value="none">No somatic stimulus</option value="touch">Left palm pressure pulse</option value="motor">Left tibialis anterior command</option value="block">Same command with nerve block</option></select><p class="muted">Explicit test inputs; no inferred voluntary motor policy.</p>`;
@@ -161,7 +101,7 @@ $('systemic-study').onchange=async()=>{
     const cadence=Number((data.clock?.sample_interval_s??data.configuration.sample_interval_s).toPrecision(6));
     $('systemic-note').textContent=`${label} · ${cadence} s recorded samples · ${data.has_body_projection?'computed respiratory body projection':'reference body; no body projection at this cadence'}`;
     $('systemic-speed').value=cadence>1?'300':'1';$('systemic-speed').hidden=false;$('systemic-speed-label').hidden=false;
-    $('systemic-title').textContent=label;systemicMonitor.hidden=false;
+    $('systemic-title').textContent=label;systemicMonitor.hidden=false;monitorWorkspace.show('systemic');
     $('systemic-mechanisms').innerHTML=(data.mechanism_edges||[]).map(e=>`<p><strong>${esc(e.source)} → ${esc(e.target)}</strong><br>${esc(e.status)}<br><small>${esc(e.implementation)}</small></p>`).join('')+(data.limitations||[]).map(s=>`<p class="muted">${esc(s)}</p>`).join('');
     spectral=false;$('tab-phys').classList.add('active');$('tab-spectral').classList.remove('active');
     updateSigma();updateVariables();
@@ -241,6 +181,9 @@ async function loadClothing(){
     $('clothing-status').textContent=`Garment fit unavailable: ${error.message}`;
   }
 }
+
+const monitorWorkspace=mountMonitors();
+mountWorkspace();
 
 let manifest,
   modelId,
@@ -1364,7 +1307,7 @@ $('regional-study').onchange=async()=>{
       regionalView.open(data);
       for(const id of regionalView.prepared.owners){const s=bodyRows.find(s=>s.id===id);if(s)systems.add(s.system);}
       syncLayers();refresh();
-      garmentControls.hidden=false;garmentMonitor.hidden=false;
+      garmentControls.hidden=false;garmentMonitor.hidden=false;monitorWorkspace.show('contact');
       $('scene-status').hidden=true;
       $('view-title').textContent='One body · local garment contact';
       $('frame-label').textContent='Canonical material coordinates · meters · other anatomy at reference';

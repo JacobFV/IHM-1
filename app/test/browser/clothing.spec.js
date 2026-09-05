@@ -9,7 +9,9 @@ test('canonical human wears independent opaque clothing by default and supports 
   await expect(page.locator('#scene-status')).toHaveText('',{timeout:120000});
   await page.screenshot({path:'test-results/clothed-human.png',fullPage:true});
   const dressed=await page.locator('#viewport canvas').screenshot();
+  await page.locator('.view-section').filter({has:page.locator('#clothing-components')}).evaluate(el=>el.open=true);
   await page.locator('#garment-shirt').uncheck();
+  await page.locator('.view-section').filter({has:page.locator('#clothing-components')}).evaluate(el=>el.open=true);
   await page.locator('#garment-shorts').uncheck();
   await expect(page.locator('#clothing-status')).toContainText('0 garments shown');
   const anatomy=await page.locator('#viewport canvas').screenshot();
@@ -18,6 +20,7 @@ test('canonical human wears independent opaque clothing by default and supports 
   await expect(page.locator('#garment-shirt')).not.toBeChecked();
   await page.locator('#garment-shorts').check();
   await expect(page.locator('#clothing-status')).toContainText('1 garment shown');
+  await page.locator('.view-section').filter({hasText:'Sources & body status'}).evaluate(el=>el.open=true);
   await page.locator('#source-inspection summary').click();
   await page.locator('#model').selectOption('bodyparts3d');
   await expect(page.locator('#clothing-components')).toBeHidden();
