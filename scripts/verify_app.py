@@ -21,6 +21,10 @@ try:
  else:raise AssertionError('duplicate bind unexpectedly succeeded')
  m=get('/api/manifest');assert len(m['structures'])>=2234
  g=get(m['structures'][0]['geometry_url']);assert len(g['positions'])>10 and len(g['indices'])>3
+ thermal=get('/api/thermal/index');assert len(thermal['runs'])==4
+ assert get('/api/thermal?run=lying_default')['configuration']['posture']=='lying'
+ assert rejected('/api/thermal?run=../../secret')==404
+ assert get('/api/native-targets')['runs']
  p=get('/api/physiology');assert len(p['time_s'])==3000 and 'ArterialPressure(mmHg)' in p['values']
  assert rejected('/api/geometry/../../pyproject.toml') in (400,404)
  assert rejected('/%2e%2e/pyproject.toml') in (400,404)

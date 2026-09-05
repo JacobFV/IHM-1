@@ -16,50 +16,68 @@
 
 ## Task 1: Native physiology materialization
 Files: ihm/native/, scripts/native_biogears_rest.cpp, scripts/run_native_biogears.py, scripts/build_native_biogears.py, scripts/verify_native.py, docs/NATIVE_BACKEND.md.
-- [ ] Test parameter bounds, scenario validation, request rejection and trajectory roundtrip.
-- [ ] Add configurable upstream-native scenarios and patient/state selection; expose a Python native predictor API without copied equations.
-- [ ] Bind native variables to physical quantities with explicit units; run baseline and perturbation/recovery scenarios; persist hashes and complete state.
-- [ ] Verify finite outputs, temporal sampling, changes under perturbation and baseline conservation; inspect posture support from source.
+- [x] Test parameter bounds, scenario validation, request rejection and trajectory roundtrip.
+- [x] Add configurable upstream-native scenarios and patient/state selection; expose a Python native predictor API without copied equations.
+- [x] Bind native variables to physical quantities with explicit units; run baseline and perturbation/recovery scenarios; persist hashes and complete state.
+- [x] Verify finite outputs, temporal sampling, changes under perturbation and baseline conservation; inspect posture support from source.
 Interface: native module exposes validated run configuration, run execution, trajectory loader; coordinate with root before shared API adoption.
 
 ## Task 2: Temporal evidence and explicit predictors
 Files: ihm/temporal/, scripts/build_temporal_atlas.py, scripts/verify_temporal.py, docs/TEMPORAL_MODELS.md.
-- [ ] Inspect IBM spectral basis and priors; test analytic exponential Laplace transform and known oscillatory frequency before implementation.
-- [ ] Implement finite-time Laplace, normalized PSD/cross spectra, coherence and transfer resolvent with validation.
-- [ ] Fit stable temporal predictors with chronological holdout, reconstruct/forecast artifacts and rank/conditioning diagnostics.
-- [ ] Generate actual native-variable spectral atlas and clearly distinguish short-run simulated evidence from observed human recordings.
+- [x] Inspect IBM spectral basis and priors; test analytic exponential Laplace transform and known oscillatory frequency before implementation.
+- [x] Implement finite-time Laplace, normalized PSD/cross spectra, coherence and transfer resolvent with validation.
+- [x] Fit stable temporal predictors with chronological holdout, reconstruct/forecast artifacts and rank/conditioning diagnostics.
+- [x] Generate actual native-variable spectral atlas and clearly distinguish short-run simulated evidence from observed human recordings.
 Interface: data/derived/temporal/index.json and per-run JSON outputs; share output schema with root/app.
 
 ## Task 3: Local 3D application
 Files: app/ only (including package manifest and browser tests), docs/APP.md.
-- [ ] Build local WebGL app from real geometry/API contract supplied by root; no invented anatomy.
-- [ ] Add model-family/system filters, search/picking, opacity/clipping, source detail, real flow/vector playback and chart/spectral panels.
-- [ ] Add bounded scenario submission and run status with explicit backend availability.
-- [ ] Verify production build, keyboard/control behavior and browser rendering; document startup.
+- [x] Build local WebGL app from real geometry/API contract supplied by root; no invented anatomy.
+- [x] Add model-family/system filters, search/picking, opacity/clipping, source detail, real flow/vector playback and chart/spectral panels.
+- [x] Add bounded scenario submission and run status with explicit backend availability.
+- [x] Verify production build, keyboard/control behavior and browser rendering; document startup.
 Interface: /api/manifest, /api/geometry/{id}, /api/physiology, /api/temporal, /api/evidence, /api/scenarios. Root owns API and generated assets; frontend must handle error/empty/loading states.
 
 ## Task 4: Spatial supports and conservative integration
 Files: ihm/spatial/, ihm/coupling/, scripts/build_spatial_atlas.py, scripts/verify_spatial.py, scripts/verify_coupling.py.
-- [ ] Test known-frame transforms, invalid registrations, constant-field mapping and conserved exchange cancellation.
-- [ ] Implement frames, weighted landmark registration, residual/uncertainty metadata, conservative overlap maps and dimensional flux contracts.
-- [ ] Build real atlas display meshes, OpenSim muscle path geometry in valid source frames and vascular flow frames with metadata.
-- [ ] Implement executable vascular/interstitial/lymph and bioelectric exchange adapters; validate conservation and avoid double counting native circulation.
+- [x] Test known-frame transforms, invalid registrations, constant-field mapping and conserved exchange cancellation.
+- [x] Implement frames, weighted landmark registration, residual/uncertainty metadata, conservative overlap maps and dimensional flux contracts.
+- [x] Build real atlas display meshes, OpenSim muscle path geometry in valid source frames and vascular flow frames with metadata.
+- [x] Implement executable vascular/interstitial/lymph and bioelectric exchange adapters; validate conservation and avoid double counting native circulation.
 
 ## Task 5: Calibration and system coverage
 Files: ihm/calibration/, scripts/calibrate_skin.py, scripts/build_system_coverage.py, scripts/verify_calibration.py, docs/CALIBRATION.md.
-- [ ] Test recovery of identifiable synthetic parameters and detection of rank-deficient parameter combinations.
-- [ ] Implement bounded weighted fitting, Jacobian rank, covariance/uncertainty, source binding and separated holdout reports.
-- [ ] Fit appropriate observation-level skin quantities to real clinical data, preserve excluded/missing groups, test holdout calibration.
-- [ ] Link all major/minor system inventory to actual source mechanisms and measurement coverage; expose unresolved unknowns quantitatively.
+- [x] Test recovery of identifiable synthetic parameters and detection of rank-deficient parameter combinations.
+- [x] Implement bounded weighted fitting, Jacobian rank, covariance/uncertainty, source binding and separated holdout reports.
+- [x] Fit appropriate observation-level skin quantities to real clinical data, preserve excluded/missing groups, test holdout calibration.
+- [x] Link all major/minor system inventory to actual source mechanisms and measurement coverage; expose unresolved unknowns quantitatively.
 
 ## Task 6: API, integration and verification
 Files: ihm/app/, ihm/cli.py, pyproject.toml, scripts/verify_app.py, README.md.
-- [ ] Test HTTP traversal rejection, strict run arguments, asset manifest consistency and useful missing-backend errors.
-- [ ] Implement local API, safe asset serving and bounded scenario worker; integrate CLI materializations and app launch.
-- [ ] Run existing and new checks, native perturbation experiment, asset roundtrips, app production build and real browser flows.
-- [ ] Review independent domains, fix findings, preserve reproducible commands and update actual remaining scientific constraints.
+- [x] Test HTTP traversal rejection, strict run arguments, asset manifest consistency and useful missing-backend errors.
+- [x] Implement local API, safe asset serving and bounded scenario worker; integrate CLI materializations and app launch.
+- [x] Run existing and new checks, native perturbation experiment, asset roundtrips, app production build and real browser flows.
+- [x] Review independent domains, fix findings, preserve reproducible commands and update actual remaining scientific constraints.
 
 ## Execution ledger
 Ruling: Work in the existing project directory on a new feature branch after preserving a baseline commit; original project was not a Git repository. This avoids moving or duplicating gigabytes of source assets and compiled absolute paths.
 Ruling: Independent domains use parallel agents per dispatching-parallel-agents; shared CLI/dependencies/API remain root-owned.
 Ruling: 'All concerns' requires implementing mechanisms for uncertainty and unavailable evidence, not claiming impossible universal calibration. Unknown experimental quantities remain explicit and testable.
+
+
+2026-09-05 execution record:
+- Delivered nine source-backed materializations through `ImplicitHuman`, an immutable evidence manifest, explicit source frames, and the production 3D workbench. Acquired corpus: 5.60 GB, 16,848 raw files, 35,539 searchable parameter/constraint records. These counts are not counts of independently calibrated coefficients.
+- Executed the integrated BioGears engine, patient/action protocols and one-hour thermal experiments. Verified all six sample rates against its integer solver clock. Corrected the isolated female-initialization bounds defect and evaporation telemetry defect; preserved original sources and failed runs. Experimental thermal-resistance dimensional correction remains separately selectable and is not treated as a calibrated improvement.
+- Audited native fluid storage including the initial stomach reservoir: the hour-long combined residual is approximately 0.000361 mL. Native compartment views share node identities instead of duplicating physical storage.
+- Executed native OpenSim with actual wrapped paths. Fixed stale wrap-point ground caches in an isolated variant. All 80 knee moment-arm finite-difference discrepancies are below 0.052 mm; activation/pose perturbations and force equilibrium are checked.
+- Exported actual BETSE cell polygons and 34 saved voltage/ion states for 212 cells. Fitted six human wound-field phenotypic coefficients with subject-separated holdout and clustered uncertainty; these do not identify human transmembrane conductances.
+- Implemented explicit conservative exchanges, positive ion transport, frozen native skin/interstitial/lymph prediction and causal Laplace grids. Atomic circuit updates reject overflow without changing state. Rebuild ordering now generates the circuit before its temporal response atlas.
+- Audited all 201 cerebral CFD states over 738,037 tetrahedra. Surface/cap conservation is verified; unresolved physical units, upstream failed-job status and nonperiodic endpoint behavior remain exposed.
+- Compared IBM's cyclic Fourier/Laplacian prior with finite causal Laplace transforms. Built eight observed/simulated temporal atlases, chronological forecast holdouts and separately identified hydraulic transfer functions. Hour-scale outputs disclose sampling/alias limitations.
+- Added source-faithful reproductive endocrine and CSF solvers. CSF accepts unit-checked native MAP as an explicitly one-way input. Neither prescribed ovarian inputs nor source-model execution establishes matched-subject closed-loop calibration.
+- Added the authors' 85-node/17-region JOS-3 lying model and measured bedding total-resistance boundaries. Four one-hour cases were run at seven timesteps. Finest endpoint differences are below 0.0006 C and discrete heat residuals below 3.3e-9 W. Initial neutral standing conditions and uniform whole-body insulation approximation are retained explicitly.
+- Independent reviews corrected covariance numerical null-space handling, circuit overflow rollback, source cache isolation, build dependency order, thermal input bounds and heat-ledger overflow. The suite hosts its own app server to avoid the unrelated IBM application on port 5173.
+
+Scientific completion boundary: the implementation exposes all declared system domains and missing calibration rather than inventing their coefficients. It is not an independently validated whole-human digital twin. Cross-source subject registration, human channel/pump kinetics, detailed lymphatic anatomy, integrated pregnancy/immune-cell dynamics, whole-body movement/contact mechanics and jointly calibrated cross-engine feedback remain unestablished. The coverage atlas, source-target audit and per-model limitations record these constraints as data. Closing them requires additional suitable measurements and model validation, not silently assigning numbers.
+
+Final verification: `RUN_NATIVE_BROWSER=1 OPENBLAS_NUM_THREADS=1 .venv/bin/python scripts/verify_all.py --native --app` passed all 33 commands, including 10 browser tests with the real female hemorrhage/saline protocol enabled. `uv build` produced the wheel and source distribution. Full outputs are in `artifacts/verification/report.json`. Independent thermal review reran all four one-hour cases and obtained exact equality of saved temperatures, channels and audits after runtime hardening.

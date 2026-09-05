@@ -111,7 +111,7 @@ class FluidCircuit:
         self.descriptor_K[:nf,:nf]=self.K[np.ix_(f,f)]*self.pressure_scale/self.flow_scale
         self.descriptor_K[:nf,nf:]=self.A[f];self.descriptor_K[nf:,:nf]=self.A[f].T
         self.ideal_flows=np.zeros(ni)
-        # A nonsingular backward-Euler pencil establishes an index-1 solvable network.
+        # A nonsingular backward-Euler pencil establishes this discrete solve, not the DAE index.
         if np.linalg.matrix_rank(self.descriptor_K+self.descriptor_M)<nf+ni:raise ValueError('native selection has redundant constraints or unconstrained pressure modes')
 
     def _rhs(self,boundaries,boundary_rates=None):
@@ -132,7 +132,7 @@ class FluidCircuit:
         rhs=self._rhs(updated[self.fixed],(updated[self.fixed]-previous[self.fixed])/dt)+self.descriptor_M@oldstate/dt
         z=np.linalg.solve(matrix,rhs)
         updated[self.free]=z[:len(self.free)]*self.pressure_scale
-        self.ideal_flows=z[len(self.free):]*self.flow_scale
+        ideal_flows=z[len(self.free):]*self.flow_scale
         rates=(updated-previous)/dt;flows={};net_out=np.zeros(len(self.names));storage=np.zeros(len(self.names));violations=[]
         for branch in self.branches:
             inc=branch['incidence'];kind=branch['kind']
@@ -140,22 +140,24 @@ class FluidCircuit:
             elif kind=='resistance':q=(inc@updated+branch['pressure_source'])/branch['resistance']
             elif kind=='compliance':q=branch['compliance']*(inc@rates);storage+=inc*q
             elif kind=='flow_source':q=branch['flow_source']
-            else:q=self.ideal_flows[branch['ideal_index']]
+            else:q=ideal_flows[branch['ideal_index']]
             flows[branch['name']]=float(q);net_out+=inc*q
             gates=branch['native'].get('gate_states',{})
             if gates.get('Valve')=='Closed' and q < -1e-15:violations.append(dict(path=branch['name'],flow_m3_s=float(q),reason='reverse flow through frozen conducting valve'))
         residual=net_out-self.external
         deltas={name:float(storage[self.names.index(name)]*dt) for name in self.volumes}
-        for name,dv in deltas.items():self.volumes[name]+=dv
-        if not np.isfinite(updated).all() or not all(np.isfinite(v) for v in flows.values()):raise FloatingPointError('nonfinite circuit state')
-        self.pressures=updated;self.time_s+=dt
+        volumes={name:self.volumes[name]+dv for name,dv in deltas.items()}
+        time_s=self.time_s+dt
+        if not all(np.isfinite(a).all() for a in (updated,ideal_flows,residual,storage)) or not all(np.isfinite(v) for v in [*flows.values(),*volumes.values(),*deltas.values(),time_s]):raise FloatingPointError('nonfinite circuit state')
+        condition=float(np.linalg.cond(matrix))
+        self.pressures=updated;self.ideal_flows=ideal_flows;self.volumes=volumes;self.time_s=time_s
         return dict(time_s=self.time_s,pressures_pa=dict(zip(self.names,updated.tolist())),flows_m3_s=flows,volume_deltas_m3=deltas,
             volumes_m3=dict(self.volumes),balance=dict(max_abs_free_node_residual_m3_s=float(max(abs(residual[self.free]))),
                 free_node_residual_m3_s={self.names[i]:float(residual[i]) for i in self.free},
                 required_pressure_boundary_inflow_m3_s={self.names[i]:float(residual[i]) for i in self.fixed},
                 storage_rate_m3_s={self.names[i]:float(storage[i]) for i in self.free}),
             gate_violations=violations,negative_volume_nodes=[name for name,v in self.volumes.items() if v<0],
-            scaled_linear_condition=float(np.linalg.cond(matrix)))
+            scaled_linear_condition=condition)
 
     def response(self,s,boundary_name):
         if boundary_name not in self.fixed_names:raise ValueError('unknown pressure boundary')

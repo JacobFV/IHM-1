@@ -4,6 +4,7 @@ from http.server import BaseHTTPRequestHandler,ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse,parse_qs,unquote
 import gzip
+import hashlib
 import json
 import mimetypes
 import re
@@ -19,7 +20,7 @@ def read_json(path):return json.loads(Path(path).read_text())
 class Jobs:
     def __init__(self,root):
         self.root=root;self.pool=ThreadPoolExecutor(max_workers=1,thread_name_prefix='ihm-native')
-        self.lock=threading.Lock();self.runs=[]
+        self.lock=threading.Lock();self.runs=[];self.variant_cache={}
         self.directory=root/'data/derived/scenarios';self.directory.mkdir(parents=True,exist_ok=True)
         for file in sorted(self.directory.glob('*/job.json')):
             try:
@@ -30,7 +31,20 @@ class Jobs:
     def list(self):
         from ihm.native import RUNTIME,available_patients
         with self.lock:runs=[dict(r) for r in self.runs]
-        return {'available':(RUNTIME/'native_biogears_rest').is_file(),'patients':available_patients(),'runs':runs,
+        variants=[{'id':'upstream','label':'Original upstream source','available':True,'status':'source reference; known female initialization bounds defect'}]
+        for name,label in [('saturation_bounds','Saturation bounds correction'),('saturation_bounds_heatflux','Bounds and evaporation telemetry corrections')]:
+            directory=RUNTIME/'variants'/name;manifest=directory/'manifest.json';library=directory/'libbiogears.so.8.0.0'
+            if manifest.is_file() and library.is_file():
+                metadata=read_json(manifest)
+                stamp=(library.stat().st_mtime_ns,library.stat().st_size,metadata['library_sha256'])
+                cached=self.variant_cache.get(name)
+                if cached is None or cached[0]!=stamp:
+                    with library.open('rb') as f:matches=hashlib.file_digest(f,'sha256').hexdigest()==metadata['library_sha256']
+                    self.variant_cache[name]=(stamp,matches)
+                else:matches=cached[1]
+                variants.append(dict(id=name,label=label,available=matches,status='local source patch; execution regression checked, not independent clinical validation',scope=metadata['scope'],library_sha256=metadata['library_sha256']))
+        preferred='saturation_bounds_heatflux' if any(v['id']=='saturation_bounds_heatflux' and v['available'] for v in variants) else 'upstream'
+        return {'available':(RUNTIME/'native_biogears_rest').is_file(),'patients':available_patients(),'runs':runs,'engine_variants':variants,'default_engine_variant':preferred,
                 'limits':{'max_seconds':600,'max_pending':4,'parallel_runs':1}}
     def submit(self,data):
         from ihm.native import NativeConfig
@@ -92,7 +106,9 @@ def create_server(root=None,port=8765,host='127.0.0.1'):
             self.send_header('Content-Length',str(len(data)));self.send_header('X-Content-Type-Options','nosniff')
             self.send_header('Cache-Control','no-cache')
             if encoding:self.send_header('Content-Encoding',encoding)
-            self.end_headers();self.wfile.write(data)
+            self.end_headers()
+            try:self.wfile.write(data)
+            except (BrokenPipeError,ConnectionResetError):pass
         def _error(self,message,status=400):self._send({'error':message},status)
         def do_GET(self):
             if not self._authorized():return self._error('Only local workbench requests are accepted',403)
@@ -128,6 +144,21 @@ def create_server(root=None,port=8765,host='127.0.0.1'):
                 if path=='/api/human':
                     from ihm.human import ImplicitHuman
                     return self._send(ImplicitHuman.open(root).describe())
+                if path=='/api/native-targets':return self._send(read_json(derived/'calibration/native-target-audit.json'))
+                if path=='/api/thermal/index':return self._send(read_json(derived/'thermal/index.json'))
+                if path=='/api/thermal':
+                    index=read_json(derived/'thermal/index.json');run=query.get('run',[None])[0]
+                    selected=next((m for m in index['models'] if m['id']==run),None) if run else index['models'][0]
+                    if selected is None:return self._error('Unknown thermal run',404)
+                    file=(root/selected['trajectory_path']).resolve()
+                    if not file.is_relative_to((derived/'thermal').resolve()):return self._error('Invalid thermal asset',400)
+                    return self._send(read_json(file))
+                if path=='/api/csf/index':return self._send(read_json(derived/'csf/index.json'))
+                if path=='/api/csf':
+                    run=query.get('run',['baseline'])[0]
+                    if run not in ('baseline','native_map_driven','hypotension'):return self._error('Unknown CSF run',404)
+                    return self._send(read_json(derived/'csf'/f'{run}.json'))
+                if path=='/api/bioelectric':return self._send(read_json(derived/'bioelectric/tissue.json'))
                 if path=='/api/reproductive':return self._send(read_json(derived/'reproductive/trajectory.json'))
                 if path=='/api/vascular/audit':return self._send(read_json(derived/'vascular/audit.json'))
                 if path=='/api/vascular/cap-flow':return self._send(read_json(derived/'vascular/cap-flow.json'))

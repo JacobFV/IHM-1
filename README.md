@@ -24,8 +24,8 @@ The [implicit human API](docs/IMPLICIT_HUMAN.md) selects a predictor appropriate
 to each evidence family. [Temporal models](docs/TEMPORAL_MODELS.md) distinguish
 finite Laplace transforms of observations from causal circuit transfer functions;
 [the native circuit predictor](docs/CIRCUIT_PREDICTOR.md) exposes actual fast and
-slow vascular/interstitial/lymphatic modes. The original illustrative scaffold
-remains available separately.
+slow vascular/interstitial/lymphatic modes. Published CSF, reproductive endocrine, and supine thermal models also execute
+through the same API. The original illustrative scaffold remains available separately.
 
 ## Acquired real data
 
@@ -37,11 +37,12 @@ remains available separately.
 | Integrated physiology | HumMod, Physiomodel, Physiolibrary, BioGears and BETSE sources; 14,672 parameter/equation candidates and 475 literature targets | [Physiology](docs/PHYSIOLOGY_DATA.md) |
 | NHANES 2017–2018 | 129 data tables + 129 codebooks, 9,254 participants, 4,292 variable definitions | [Population](docs/POPULATION_DATA.md) |
 | Human Reference Atlas | 1,759,409 structure/cell/biomarker rows; 1,082 vessel records; 193 geometric summaries | [Semantics](docs/SEMANTIC_DATA.md) |
+| Supine thermoregulation | Pinned JOS-3, 85 thermal nodes, 17 regions, four one-hour cases and measured bedding resistance | [Thermal model](docs/THERMAL_MODEL.md) |
 | Human skin wound fields | 40-person experiment, 155 numeric table cells, 16 group means/SEMs | [Skin measurements](docs/INTEGUMENTARY_DATA.md) |
 
-The local raw corpus is approximately 5.58 GB including retained archives and
-extracted assets. The searchable catalog contains 34,431 parameter/constraint
-records, **not 34,431 experimentally calibrated coefficients**. All source models
+The local raw corpus is approximately 5.60 GB including retained archives and
+extracted assets. The searchable catalog contains 35,539 parameter/constraint
+records, **not 35,539 experimentally calibrated coefficients**. All source models
 and overlapping variants retain their identities. BETSE's actual full solver has
 also run locally on 212 cells; this was a generic-tissue execution check, not human
 wound validation.
@@ -55,6 +56,24 @@ energy and blood-chemistry mechanisms remain together. See the
 This is a resting upstream patient; native supine posture and independent calibration are not established. The
 3D viewer distinguishes a rigid display pose from the separate physical
 hydrostatic adjunct; it does not imply registered 3D whole-body dynamics.
+
+The [supine thermal model](docs/THERMAL_MODEL.md) uses the authors' JOS-3
+implementation and separately identified bedding boundaries. It retains 85 node
+temperatures, explicit heat balances and timestep refinement. This is a separate
+source subject. BioGears hour-long rest runs expose upstream cooling; the
+[native audit](docs/NATIVE_BACKEND.md) preserves that behavior and the reviewed
+bounds, evaporation telemetry and experimental dimensional corrections.
+
+To rebuild the views from the acquired corpus and verify the numerical models,
+API, production frontend and an actual native scenario through the browser:
+
+```bash
+.venv/bin/python scripts/build_workbench.py
+RUN_NATIVE_BROWSER=1 .venv/bin/python scripts/verify_all.py --native --app
+```
+
+The verification suite starts its own local server. Its command outputs, timings
+and return codes are retained in `artifacts/verification/report.json`.
 
 ```bash
 uv pip install --python .venv/bin/python -e '.[data,plot]'

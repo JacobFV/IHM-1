@@ -68,3 +68,36 @@ The posture hydrostatic artifact samples a hypothetical static arterial column
 on physical atlas coordinates using source-native blood density and arterial
 reference pressure. It distinguishes supine and upright gravity. It does not
 predict organ perfusion, venous pooling, baroreflexes or a native posture change.
+
+## Additional source models
+
+`materialize('opensim')` returns a native mechanics runner with the independently
+checked wrap-cache correction. Its explicit activation, joint perturbation,
+engine variant and output hashes are recorded. `materialize('reproductive')`
+runs the source gonadotropin model; prescribed ovarian inputs do not constitute
+an autonomous menstrual cycle. `materialize('csf')` runs the published
+intracranial model with source parameters. A `PressureInput.from_native_map(path)`
+can drive it from a unit-checked native MAP recording; there is no ICP feedback.
+The cellular recording is an acquired `bioelectric` asset, not an invented
+whole-skin predictor. See [its native field view](BIOELECTRIC_VIEW.md).
+
+Population conditioning uses correlation-scaled covariance factors and
+noise-whitened SVD. Correlation eigenvalues within the covariance validator's
+floating-point tolerance are treated as numerical null directions. This retains
+small positive assay noise even for exactly aliased variables, and keeps unit
+scaling from deciding the effective rank.
+
+
+`materialize('thermal', profile='supine_blanket', seconds=3600, dt=30).run()`
+executes the pinned JOS-3 solver with the measured total-insulation boundary.
+The other source profiles are `lying_default`, `supine_mattress`, and
+`supine_duvet`. The returned 85-node trajectory carries coefficients, heat
+balance audits and source identity. See [thermal source and refinement](THERMAL_MODEL.md).
+The workbench's saved cases use 0.9375-second steps; the default Python step
+is an explicit computational choice, not a claim of timestep-independent accuracy.
+
+The source-target audit retains all 475 upstream literature records per run,
+including unmapped or ambiguous entries. Exact-quantity comparisons expose
+point deviations without inventing a clinical pass tolerance. See
+[native target audit](NATIVE_TARGET_AUDIT.md). The searchable catalog also
+retains thermal capacities, conductances and boundary values with their units.

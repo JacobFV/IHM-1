@@ -60,3 +60,12 @@ def main():
     print('circuit predictor: analytic RC pole/step/Laplace, KCL/storage, SI validation and native frozen one-step PASS')
 
 if __name__=='__main__':main()
+# A failed numerical step must leave every serialized state field intact.
+graph=json.loads((Path(__file__).resolve().parents[1]/"data/derived/native-circuits/graph.json").read_text())
+m=FluidCircuit.from_native(graph,SKIN_NODES,SKIN_BOUNDARIES)
+before=m.to_dict()
+with np.errstate(over='ignore',invalid='ignore',divide='ignore'):
+    try:m.step(1e-300,{'Aorta1':1e308})
+    except (FloatingPointError,np.linalg.LinAlgError):pass
+    else:raise AssertionError('overflow step accepted')
+assert m.to_dict()==before, 'failed step changed the circuit state'

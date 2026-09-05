@@ -47,8 +47,12 @@ def build(root=Path('.')):
         if id=='lymphatic':limitations.append('Native lumped lymph drainage is executed; subject-matched whole-body lymphatic geometry/flow is unavailable.')
         if id=='reproductive':limitations.append('Standalone published gonadotropin dynamics use prescribed ovarian inputs; no autonomous menstrual cycle, pregnancy dynamics or matching to male reference anatomy.')
         if id=='bioelectric':limitations.append('BETSE generic-tissue solver and human wound-field fit exist; human channel/pump kinetics are not identified.')
-        if id=='csf':limitations.append('Declared coarse CSF states currently lack an executed source-family mechanism.')
+        if id=='csf':limitations.append('Published CSF model executes with optional native MAP one-way input; no matched ICP calibration, feedback to native physiology, glymphatic transport or posture-specific venous dynamics.')
         status='native_model_partial' if systems or comps else 'declared_not_executed'
+        if id=='csf' and (out/'csf/index.json').is_file():status='published_csf_model_with_native_pressure_input'
+        if id=='thermal' and (out/'thermal/index.json').is_file():
+            status='native_energy_and_published_supine_thermoregulation'
+            limitations.append('JOS-3 executes 85 thermal nodes and measured whole-body bedding boundaries separately from BioGears; no matched cross-engine heat/perfusion calibration.')
         if id=='bioelectric':status='tissue_solver_and_human_field_fit'
         if id=='reproductive' and (out/'reproductive/trajectory.json').is_file():status='published_standalone_reproductive_endocrine_model'
         if id=='musculoskeletal':status='native_tissue_and_opensim_mechanics'

@@ -3,6 +3,7 @@
 Distinct specimens and parameter families remain distinct. Missing cross-family
 covariance or anatomical registration is never inferred from a shared name.
 """
+from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
 import hashlib
@@ -20,6 +21,10 @@ ASSETS={
  'temporal':'data/derived/temporal/index.json',
  'opensim':'data/derived/opensim/native_corrected/baseline/summary.json',
  'reproductive':'data/derived/reproductive/index.json',
+ 'csf':'data/derived/csf/index.json',
+ 'bioelectric':'data/derived/bioelectric/tissue.json',
+ 'native_targets':'data/derived/calibration/native-target-audit.json',
+ 'thermal':'data/derived/thermal/index.json',
 }
 
 def digest(path):
@@ -52,12 +57,31 @@ class PopulationBelief:
             value,var,unit=item;i=self.components.index(name)
             if not np.isfinite(value) or not np.isfinite(var) or var<=0 or unit!=self.units[i]:raise ValueError('finite observation, positive variance and exact declared unit required')
             ids.append(i);values.append(value);variances.append(var)
-        h=np.eye(len(self.mean))[ids];noise=np.diag(variances)
-        innovation=h@self.cov@h.T+noise
-        gain=np.linalg.solve(innovation,(self.cov@h.T).T).T
-        mean=self.mean+gain@(np.array(values)-h@self.mean)
-        residual=np.eye(len(self.mean))-gain@h
-        cov=residual@self.cov@residual.T+gain@noise@gain.T
+        # Factor on correlation scale so heterogeneous physical units do not
+        # determine numerical rank. Whiten observations rather than adding tiny
+        # noise to a singular C_obs, where floating point can erase it entirely.
+        scale=np.sqrt(np.diag(self.cov));safe=np.where(scale>0,scale,1.)
+        correlation=self.cov/safe[:,None]/safe[None,:]
+        eigenvalues,eigenvectors=np.linalg.eigh(correlation)
+        # Discard correlation-scale roundoff modes, consistent with covariance
+        # validation; otherwise tiny assay noise falsely resolves exact aliases.
+        rank_tolerance=64*np.finfo(float).eps*len(scale)*max(1.,float(eigenvalues.max()))
+        active=eigenvalues>rank_tolerance
+        factor=safe[:,None]*eigenvectors[:,active]*np.sqrt(eigenvalues[active])
+        if factor.shape[1]:
+            noise_sd=np.sqrt(variances)
+            design=factor[ids]/noise_sd[:,None]
+            residual=(np.array(values)-self.mean[ids])/noise_sd
+            if not np.isfinite(design).all() or not np.isfinite(residual).all():raise ValueError('observation scaling overflow')
+            u,s,vt=np.linalg.svd(design,full_matrices=True)
+            root=np.hypot(1.,s);gain=(s/root)/root
+            latent=vt[:len(s)].T@(gain*(u[:,:len(s)].T@residual))
+            inverse_root=np.ones(factor.shape[1]);inverse_root[:len(s)]=1/root
+            posterior_factor=(factor@vt.T)*inverse_root
+            mean=self.mean+factor@latent
+            cov=posterior_factor@posterior_factor.T
+        else:
+            mean=self.mean.copy();cov=self.cov.copy()
         provenance={**self.provenance,'conditioning':[*self.provenance.get('conditioning',[]),dict(observations)]}
         return PopulationBelief(self.components,self.units,mean,(cov+cov.T)/2,provenance)
     def to_dict(self):
@@ -92,6 +116,22 @@ class ReproductivePredictor:
         from ihm.native.reproductive import run_reproductive
         return run_reproductive(self.root,**self.options)
 
+@dataclass(frozen=True)
+class CSFPredictor:
+    root: Path
+    options: dict
+    def run(self):
+        from ihm.native.csf import run_csf
+        return run_csf(self.root,**self.options)
+
+@dataclass(frozen=True)
+class ThermalPredictor:
+    root: Path
+    options: dict
+    def run(self):
+        from ihm.native.thermal import run_thermal
+        return run_thermal(self.root,**self.options)
+
 class ImplicitHuman:
     @classmethod
     def open(cls,root=None):
@@ -104,12 +144,12 @@ class ImplicitHuman:
             asset=self.assets[key];path=(self.root/asset['path']).resolve()
             if not path.is_relative_to(self.root) or digest(path)!=asset['sha256']:raise ValueError('Evidence changed: '+key+'; reopen or rebuild the substrate')
             self._cache[key]=json.loads(path.read_text())
-        return self._cache[key]
+        return deepcopy(self._cache[key])
     def describe(self):
         return dict(schema_version=1,kind='heterogeneous_implicit_human',coverage=self._read('coverage')['summary'] if 'coverage' in self.assets else {},
-            materializations=[name for name,key in [('population','population'),('skin-field','skin_field'),('skin-lymph','skin_lymph'),('temporal','temporal'),('native','native'),('opensim','opensim'),('reproductive','reproductive')] if key in self.assets],
+            materializations=[name for name,key in [('population','population'),('skin-field','skin_field'),('skin-lymph','skin_lymph'),('temporal','temporal'),('native','native'),('opensim','opensim'),('reproductive','reproductive'),('csf','csf'),('thermal','thermal')] if key in self.assets],
             temporal_runs=[r['id'] for r in self._read('temporal')['runs']] if 'temporal' in self.assets else [],
-            assets=self.assets,independently_validated_whole_human=False,
+            assets=deepcopy(self.assets),independently_validated_whole_human=False,
             coupling='Native systems are coupled inside their source engine. Cross-source anatomy, human measurements and reduced predictors retain explicit identities and bindings.',
             limitations=['No universal coefficient calibration or complete patient digital twin.',
                 'Population covariance predicts concurrent measured states; it does not identify causal dynamics.',
@@ -148,6 +188,10 @@ class ImplicitHuman:
             from ihm.native.opensim_backend import OpenSimConfig
             options.setdefault('engine_variant','wrap_8_0.0005_cache')
             return OpenSimPredictor(OpenSimConfig(**options))
+        if kind=='thermal':
+            return ThermalPredictor(self.root,dict(options))
+        if kind=='csf':
+            return CSFPredictor(self.root,dict(options))
         if kind=='reproductive':
             return ReproductivePredictor(self.root,dict(options))
         if kind=='native':

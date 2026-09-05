@@ -40,6 +40,9 @@ def mesh_payload(vertices,faces,max_faces=700):
 
 def build():
     GEOM.mkdir(parents=True,exist_ok=True);structures=[];models=[]
+    old=json.loads((OUT/'manifest.json').read_text()) if (OUT/'manifest.json').exists() else {}
+    old_structures={s['id']:s for s in old.get('structures',[])}
+    old_models={m['id']:m for m in old.get('models',[])}
     atlas=json.loads(Path('data/derived/anatomy/bodyparts3d_index.json').read_text())
     counts=Counter(c['concept_id'] for m in atlas['meshes'] for c in m['concepts'])
     rotation=np.array([[1,0,0],[0,0,1],[0,-1,0.]])
@@ -56,7 +59,11 @@ def build():
         name=min(entry['concepts'],key=lambda c:(counts[c['concept_id']],-len(c['name'])))['name'] if entry['concepts'] else entry['element_id']
         system=classify([c['name'] for c in entry['concepts']]);id='bp3d-'+entry['element_id']
         p=GEOM/(id+'.json.gz')
-        if not p.exists():
+        cached=old_structures.get(id,{})
+        cache_valid=(p.exists() and cached.get('source',{}).get('sha256')==entry['sha256']
+                     and cached.get('geometry_sha256')==sha256(p)
+                     and old_models.get(model['id'],{}).get('display_transform')==model['display_transform'])
+        if not cache_valid:
             m=trimesh.load(entry['source_path'],force='mesh',process=False)
             dump(p,mesh_payload(np.asarray(m.vertices)@rotation.T*.001-center,np.asarray(m.faces)))
         structures.append({'id':id,'name':name,'system':system,'model_id':model['id'],'kind':'mesh','geometry_url':'/api/geometry/'+id,

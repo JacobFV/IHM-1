@@ -75,6 +75,28 @@ def main():
         for parameter in model['parameters']:
             add('schlosser-selgrade-2000',parameter['component']+'/'+parameter['id'],parameter['value'],parameter['unit'],
                 'published_reproductive_model_parameter',str(p),json.dumps(model['source']),parameter)
+    p=ROOT/'csf/baseline.json'
+    if p.exists():
+        inputs.append(p);model=read(p)
+        for parameter in model['parameters']:
+            add('ursino-lodi-1997',parameter['id'],parameter['value'],parameter['unit'],
+                'published_csf_model_parameter',str(p),json.dumps(model['source']),parameter)
+    p=ROOT/'thermal/index.json'
+    if p.exists():
+        inputs.append(p);index=read(p)
+        for run in index['runs']:
+            cp=Path(run['coefficient_path']);inputs.append(cp);model=read(cp)
+            source={'revision':index['source']['revision'],'coefficient_sha256':sha256(cp),'profile':run['id'],'independently_calibrated':False}
+            for name,unit in [('capacity_J_K','J/K'),('body_surface_area_m2','m2')]:
+                for i,value in enumerate(model[name]):
+                    add('jos3',run['id']+'/'+name+'/'+str(i),value,unit,'published_thermal_model_parameter',str(cp),index['source']['url'],source)
+            for i,row in enumerate(model['conductance_W_K']):
+                for j,value in enumerate(row):
+                    if value:
+                        add('jos3',run['id']+f'/conductance/{i}/{j}',value,'W/K','published_thermal_model_parameter',str(cp),index['source']['url'],source)
+            for name,unit in [('dry_resistance_m2K_W','m2 K/W'),('evaporative_resistance_m2kPa_W','m2 kPa/W')]:
+                for i,value in enumerate(model['last_step'][name]):
+                    add('jos3',run['id']+'/'+name+'/'+str(i),value,unit,'source_model_boundary_state',str(cp),index['source']['url'],source)
     p=ROOT/'calibration/skin-fit.json'
     if p.exists():
         inputs.append(p);model=read(p)

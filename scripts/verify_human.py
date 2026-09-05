@@ -30,3 +30,18 @@ with tempfile.TemporaryDirectory() as td:
     except ValueError:pass
     else:raise AssertionError('changed evidence accepted')
 print('verified integrated materialization, real evidence availability, Gaussian conditioning, immutable input, source hash rejection')
+first=human.materialize('skin-field');expected=first.evidence['fit']['parameters'][0]
+first.evidence['fit']['parameters'][0]+=100
+assert human.materialize('skin-field').evidence['fit']['parameters'][0]==expected
+view=human.describe();view['assets']['coverage']['sha256']='tampered'
+assert human.describe()['assets']['coverage']['sha256']!='tampered'
+rank_one=PopulationBelief(['a','b'],['m','m'],[0,0],[[1,1],[1,1]],{})
+tiny=rank_one.condition({'a':(1,1e-20,'m'),'b':(1,1e-20,'m')})
+assert np.allclose(tiny.mean,[1,1],atol=1e-14)
+assert np.allclose(tiny.cov,5e-21*np.ones((2,2)),rtol=1e-10,atol=1e-35)
+
+assert "thermal" in human.describe()["materializations"]
+thermal=human.materialize("thermal",profile="supine_blanket",seconds=2,dt=1).run()
+assert thermal["configuration"]["posture"]=="lying"
+assert len(thermal["node_temperature_C"])==3
+assert thermal["audit"]["maximum_heat_balance_residual_W"]<1e-6
