@@ -34,7 +34,7 @@ class NativeConfig:
     clothing_clo: float|None=None
     def __post_init__(self):
         number(self.seconds,.02,3600,'seconds')
-        if self.engine_variant not in ('upstream','saturation_bounds','saturation_bounds_heatflux'):raise ValueError('Unknown engine variant')
+        if self.engine_variant not in ('upstream','saturation_bounds','saturation_bounds_heatflux','saturation_bounds_heatflux_thermal_units'):raise ValueError('Unknown engine variant')
         if self.ambient_temperature_c is not None:number(self.ambient_temperature_c,10,35,'ambient_temperature_c')
         if self.clothing_clo is not None:number(self.clothing_clo,0,3,'clothing_clo')
         if abs(self.seconds*50-round(self.seconds*50))>1e-7:raise ValueError('Duration must align to solver step')
@@ -106,13 +106,16 @@ def summarize(output_dir,config=None):
     summary['input_state_sha256']=_sha(config.state_path) if config and config.state_path else None
     summary['patient_sha256']=_sha(RUNTIME/'biogears-build/runtime/patients'/f'{config.patient}.xml') if config else None
     summary['variable_bindings']=variable_bindings(trajectory['columns'][1:],summary['source_revision'])
-    if variant=='saturation_bounds_heatflux':
+    if variant in ('saturation_bounds_heatflux','saturation_bounds_heatflux_thermal_units'):
         summary['limitations']=[text for text in summary['limitations'] if not text.startswith('EvaporativeHeatLoss repeats')]
         summary['limitations'].append('Evaporation telemetry corrected in explicit source variant; skin heat loss is an aggregate, not an additional independent heat pathway.')
         binding=summary['variable_bindings'].get('EvaporativeHeatLoss(W)')
         if binding:
             binding['usable_for_energy_accounting']=True
             binding['source_diagnostic_defect']='Corrected by isolated evaporation_telemetry.patch; original physiological equations retained.'
+    if variant=='saturation_bounds_heatflux_thermal_units':
+        summary['limitations']=[text for text in summary['limitations'] if not text.startswith('Original upstream equations;')]
+        summary['limitations'].append('Experimental thermal dimensions correction changes source heat-transfer equations; empirical clothing factors retained, no clinical calibration.')
     if summary['source_revision'] != SOURCE_REVISION:raise ValueError('Unexpected upstream source revision')
     (out/'summary.json').write_text(json.dumps(summary,indent=2,default=str)+'\n');return summary
 

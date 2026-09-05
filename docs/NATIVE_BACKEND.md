@@ -148,3 +148,33 @@ heat loss. Each variant directory under `data/runtime/physiology/variants` conta
 exact unified patches, original/patched source hashes, and the selected library hash.
 The runner checks library integrity and stores the variant manifest in each summary.
 Run `scripts/verify_biogears_saturation_variant.py` to verify the preserved regressions.
+
+### Experimental thermal dimensional correction
+
+The source labels convection and radiation coefficients in W/(m² K), but converts
+them to a whole-body resistance with `A/h`. This has units m⁴ K/W. The heat-transfer
+relation `Q = h A ΔT` instead requires `R = 1/(A h)`. This is consistent with the
+coefficient definitions in the [official Environment methodology](https://www.biogearsengine.com/documentation/_environment_methodology.html).
+`build_biogears_saturation_variant.py --thermal-units` builds the explicit
+`saturation_bounds_heatflux_thermal_units` variant, layering a separate two-line
+`thermal_units.patch` over the bounds and diagnostic corrections. Unlike the bounds
+and telemetry fixes, this changes physical model behavior and is experimental.
+The original `5*clo` radiation and `0.1*clo` convection multipliers remain intact;
+no coefficients are fitted to make body temperature look normal.
+
+`scripts/verify_native_thermal_units.py` creates controlled copies of one serialized
+state, changing only skin area to 1 and 2 m². These are synthetic numerical inputs,
+not claimed patient models. Native outputs reproduce the original direct-area
+resistance error and verify inverse-area scaling in the corrected variant; both
+radiative and convective path resistances equal the independently evaluated
+`factor*clo/(A*h)` expression. All source copies, patches and input hashes are retained.
+
+The `--hour` verification option runs/rechecks matched 3600 s source-state experiments
+at 22°C/0.5 clo. Both complete with 3600 finite samples. Corrected telemetry alone
+is bitwise identical to the original hour trajectory in every other channel. The
+thermal-unit variant ends at 31.412°C core and 25.344°C skin, versus 33.817°C core
+for the control. Thus fixing dimensions increases cooling with the retained source
+clothing factors; it does **not** establish a healthy thermal baseline. This negative
+physiological result is preserved and explicitly prevents treating dimensional
+correctness as clinical validation. `SkinHeatLoss` sums skin-to-clothing paths;
+direct skin-to-ground evaporation is a separate flux.
