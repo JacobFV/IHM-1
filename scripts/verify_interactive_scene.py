@@ -80,6 +80,7 @@ def light_verification():
                 else:raise AssertionError('Faulted close accepted')
             assert ident in manager.sessions and not manager.current(ident)['closed']
             assert manager.command(ident,'close',{})['closed'] and ident not in manager.sessions
+            assert manager.command(ident,'close',{})['closed']  # Retry after a lost close response.
             previous=None
             for index,p in enumerate(sorted((scene.output/'events').glob('*.json.gz'))):
                 value=json.loads(gzip.decompress(p.read_bytes()));assert value['event_index']==index and value['previous_event_sha256']==previous

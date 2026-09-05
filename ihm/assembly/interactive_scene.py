@@ -285,7 +285,9 @@ class SceneSessions:
             self.sessions[ident]=scene
         return dict(id=ident,**scene.snapshot())
     def command(self,ident,action,data):
+        if action=='close' and (not isinstance(data,dict) or data):raise ValueError('Close accepts an empty object')
         with self.lock:scene=self.sessions.get(ident)
+        if scene is None and action=='close':return dict(id=ident,closed=True,already_absent=True)
         if scene is None:raise ValueError('Unknown scene session')
         if action=='step':return dict(id=ident,**scene.step(data))
         if action=='close':

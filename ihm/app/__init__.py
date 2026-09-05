@@ -146,6 +146,9 @@ def create_server(root=None,port=8765,host='127.0.0.1'):
             if '..' in path.split('/') or '\\' in path or '\x00' in path:return self._error('Invalid path',400)
             try:
                 derived=root/'data/derived'
+                if path=='/api/scene/catalog':return self._send(self.server.scenes.catalog())
+                if re.fullmatch(r'/api/scene/sessions/[a-f0-9]{32}',path):
+                    return self._send(self.server.scenes.current(path.rsplit('/',1)[1]))
                 if path=='/api/manifest':return self._send(self.server.manifest()[0])
                 if path=='/api/body':
                     from ihm.assembly.body import CanonicalBody
@@ -258,18 +261,24 @@ def create_server(root=None,port=8765,host='127.0.0.1'):
             except (ValueError,KeyError,TypeError) as e:return self._error(str(e),400)
         def do_POST(self):
             if not self._authorized(post=True):return self._error('Only local workbench requests are accepted',403)
-            if self.path not in ('/api/scenarios','/api/body/scenarios'):return self._error('Endpoint not found',404)
+            scene_request=self.path=='/api/scene/sessions' or re.fullmatch(r'/api/scene/sessions/[a-f0-9]{32}/(step|close)',self.path)
+            if self.path not in ('/api/scenarios','/api/body/scenarios') and not scene_request:return self._error('Endpoint not found',404)
             if self.headers.get('Content-Type','').split(';')[0]!='application/json':return self._error('Expected application/json',415)
             try:
                 length=int(self.headers.get('Content-Length','0'))
                 if not 0<length<=32768:raise ValueError('JSON request must be 1–32768 bytes')
                 data=json.loads(self.rfile.read(length),parse_constant=lambda v:(_ for _ in ()).throw(ValueError('Nonfinite JSON number')))
+                if scene_request:
+                    if self.path=='/api/scene/sessions':return self._send(self.server.scenes.create(data),201)
+                    parts=self.path.split('/')
+                    return self._send(self.server.scenes.command(parts[-2],parts[-1],data))
                 if not self.server.jobs.list()['available']:return self._error('Native backend unavailable; build it locally',503)
                 return self._send(self.server.jobs.submit(data,canonical=self.path=='/api/body/scenarios'),202)
             except FileNotFoundError:return self._error('Required canonical/native artifact unavailable; build the body first',503)
             except (ValueError,TypeError,KeyError) as e:return self._error(str(e),400)
     server_class=type('IPv6Server',(Server,),{'address_family':socket.AF_INET6}) if host=='::1' else Server
-    server=server_class((host,port),Handler);server.root=root;server.jobs=Jobs(root);server.manifest_lock=threading.Lock();return server
+    from ihm.assembly.interactive_scene import SceneSessions
+    server=server_class((host,port),Handler);server.root=root;server.jobs=Jobs(root);server.scenes=SceneSessions(root);server.manifest_lock=threading.Lock();return server
 
 def serve(root=None,port=8765):
     server=create_server(root,port)
