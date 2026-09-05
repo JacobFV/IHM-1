@@ -64,10 +64,28 @@ int main(int argc, char** argv) {
   dm.CreatePhysiologyDataRequest().Set("SweatRate", MassPerTimeUnit::g_Per_s);
   dm.SetResultsFilename("native_multisystem.csv");
   bg->SaveStateToFile("native_stabilized.xml");
-  double elapsed = 0;
+  const double dt = bg->GetTimeStep(TimeUnit::s);
+  if (std::abs(dt - .02) > 1e-12) return 4;
+  const long total_steps = std::lround(seconds / dt);
+  if (std::abs(total_steps * dt - seconds) > 1e-8) return 4;
+  const long sample_stride = std::lround(1.0 / hz / dt);
+  // Schedule both actions and tracking with integer native steps. The upstream
+  // duration overload floors floating quotients, and its tracker clock can drift.
+  bg->SetAutoTrackFlag(false);
+  long elapsed_steps = 0;
+  auto advance_to = [&](long target) {
+    while (elapsed_steps < target) {
+      if (!bg->AdvanceModelTime(false)) return false;
+      ++elapsed_steps;
+      if (elapsed_steps % sample_stride == 0)
+        bg->GetEngineTrack()->TrackData(bg->GetSimulationTime(TimeUnit::s), true);
+    }
+    return true;
+  };
   for (auto& e : events) {
-    if (e.time > elapsed && !bg->AdvanceModelTime(e.time - elapsed, TimeUnit::s, true)) return 3;
-    elapsed = e.time;
+    const long event_step = std::lround(e.time / dt);
+    if (std::abs(event_step * dt - e.time) > 1e-8) return 4;
+    if (!advance_to(event_step)) return 3;
     bool ok = false;
     if (e.kind == "exercise") {
       SEExercise::SEGeneric generic; generic.Intensity.SetValue(e.value);
@@ -84,9 +102,9 @@ int main(int argc, char** argv) {
       ok = bg->ProcessAction(action);
     }
     if (!ok) return 5;
-    std::cout << "ACTION_TIME_S=" << elapsed << " KIND=" << e.kind << " VALUE=" << e.value << "\n";
+    std::cout << "ACTION_TIME_S=" << elapsed_steps * dt << " KIND=" << e.kind << " VALUE=" << e.value << "\n";
   }
-  if (!bg->AdvanceModelTime(seconds - elapsed, TimeUnit::s, true)) return 3;
+  if (!advance_to(total_steps)) return 3;
   bg->SaveStateToFile("native_final.xml");
   std::cout << "FINAL_TIME_S=" << bg->GetSimulationTime(TimeUnit::s) << "\n";
   return 0;

@@ -24,4 +24,20 @@ class Contracts(unittest.TestCase):
             with self.assertRaises(ValueError):load_trajectory(p)
             p.write_text('Time(s),X\n0.04,1\n0.02,2\n')
             with self.assertRaises(ValueError):load_trajectory(p)
-if __name__=='__main__': unittest.main()
+def verify_engine_clock():
+    from ihm.native import BASE
+    state=BASE/'data/derived/physiology/native_baseline_v2/states/native_stabilized.xml'
+    with tempfile.TemporaryDirectory(prefix='native-clock-') as directory:
+        for hz in (1,2,5,10,25,50):
+            config=NativeConfig(seconds=2.04,state_path=str(state),sample_hz=hz,
+                interventions=(Intervention(.4,'exercise',.1),Intervention(1.4,'exercise',0)))
+            out=Path(directory)/str(hz);summary=run_native(config,out)
+            assert summary['rows']==102//(50//hz)
+            log=(out/'runner_stdout.log').read_text()
+            assert 'FINAL_TIME_S=2.04' in log
+            assert 'ACTION_TIME_S=0.4' in log and 'ACTION_TIME_S=1.4' in log
+    print('Native integer scheduling and all sample cadences PASS')
+if __name__=='__main__':
+    if '--engine-clock' in sys.argv:
+        sys.argv.remove('--engine-clock');verify_engine_clock()
+    unittest.main()

@@ -32,6 +32,7 @@ class NativeConfig:
         number(self.seconds,.02,3600,'seconds')
         if abs(self.seconds*50-round(self.seconds*50))>1e-7:raise ValueError('Duration must align to solver step')
         if isinstance(self.sample_hz,bool) or self.sample_hz not in (1,2,5,10,25,50):raise ValueError('sample_hz must divide 50')
+        if self.seconds*self.sample_hz<1-1e-9:raise ValueError('Duration must include at least one sample')
         if not isinstance(self.patient,str) or not re.fullmatch(r'[A-Za-z0-9_]+',self.patient) or self.patient not in available_patients():raise ValueError('Unknown upstream patient')
         if self.state_path is not None and (not isinstance(self.state_path,(str,Path)) or not Path(self.state_path).is_file()):raise ValueError('State file unavailable')
         if not isinstance(self.interventions,(list,tuple)) or len(self.interventions)>100:raise ValueError('Invalid intervention list')
@@ -75,7 +76,10 @@ def summarize(output_dir,config=None):
         expected=1/config.sample_hz
         if steps and max(abs(s-expected) for s in steps)>1e-5:raise ValueError('Unexpected temporal sampling')
         start=float(re.search(r'STABILIZED_TIME_S=(.*)',log)[1])
-        if abs(times[-1]-start-config.seconds)>1e-4:raise ValueError('Truncated native trajectory')
+        final=float(re.search(r'FINAL_TIME_S=(.*)',log)[1])
+        if abs(final-start-config.seconds)>1e-4:raise ValueError('Truncated native execution')
+        count=round(config.seconds*50)//round(50/config.sample_hz)
+        if len(times)!=count or abs(times[0]-start-expected)>1e-4 or abs(times[-1]-start-count*expected)>1e-4:raise ValueError('Truncated or misaligned native trajectory')
     stats={h:{'initial':v[0],'final':v[-1],'minimum':min(v),'maximum':max(v)} for h,v in trajectory['values'].items()}
     summary={'engine':'BioGears','source_revision':subprocess.check_output(['git','-C',str(SOURCE),'rev-parse','HEAD'],text=True).strip(),'compiled_engine_version':version[1],'rows':len(times),'columns':len(trajectory['columns']),'output_columns':trajectory['columns'],'time_start_s':times[0],'time_end_s':times[-1],'sample_interval_min_s':min(steps) if steps else None,'sample_interval_max_s':max(steps) if steps else None,'all_finite':True,'summary':stats,'csv_sha256':_sha(out/'native_multisystem.csv'),'executable_sha256':_sha(RUNTIME/'native_biogears_rest'),'adapter_sha256':_sha(BASE/'scripts/native_biogears_rest.cpp'),'experimental_validation':False,'uncertainty':{'parameter_covariance':None,'status':'unquantified; deterministic source simulation, not calibrated human evidence'},'limitations':['No explicit posture action found in upstream source.','Original upstream equations; no independent clinical validation.','A stopped intervention initiates recovery but does not guarantee return to baseline.'],'configuration':asdict(config) if config else None,'states':{p.name:_sha(p) for p in (out/'states').glob('*.xml')}}
     summary['input_state_sha256']=_sha(config.state_path) if config and config.state_path else None
