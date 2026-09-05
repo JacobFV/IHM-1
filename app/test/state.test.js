@@ -134,3 +134,26 @@ test("scalar cells preserve values and use a finite midpoint for constant fields
   assert.deepEqual(scalarCoordinates([0], [135], [135, 135]), [0.5]);
   assert.throws(() => scalarCoordinates([2], [10], [0, 20]));
 });
+
+test("environment overrides are optional, bounded and preserve explicit zero clothing", () => {
+  assert.equal(
+    scenarioInput("baseline", 2, "StandardMale", {
+      ambient_temperature_c: "",
+      clothing_clo: "",
+    }).ambient_temperature_c,
+    undefined,
+  );
+  assert.equal(
+    scenarioInput("baseline", 2, "StandardMale", {
+      ambient_temperature_c: "22",
+      clothing_clo: "0",
+    }).clothing_clo,
+    0,
+  );
+  assert.throws(() =>
+    scenarioInput("baseline", 2, "StandardMale", { ambient_temperature_c: 36 }),
+  );
+  assert.throws(() =>
+    scenarioInput("baseline", 2, "StandardMale", { clothing_clo: -1 }),
+  );
+});

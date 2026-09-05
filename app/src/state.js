@@ -48,7 +48,12 @@ export function chartPath(times, values, w = 600, h = 120) {
     .filter(Boolean)
     .join(" ");
 }
-export function scenarioInput(scenario, seconds, patient = "StandardMale") {
+export function scenarioInput(
+  scenario,
+  seconds,
+  patient = "StandardMale",
+  environment = {},
+) {
   seconds = Number(seconds);
   if (!Number.isFinite(seconds) || seconds < 1 || seconds > 600)
     throw Error("Duration must be between 1 and 600 seconds");
@@ -72,7 +77,19 @@ export function scenarioInput(scenario, seconds, patient = "StandardMale") {
             { time_s: at(0.7), kind: "saline", value: 0 },
           ]
         : [];
-  return { seconds, patient, sample_hz: 10, interventions };
+  const overrides = {};
+  for (const [key, low, high] of [
+    ["ambient_temperature_c", 10, 35],
+    ["clothing_clo", 0, 3],
+  ]) {
+    const raw = environment[key];
+    if (raw === undefined || raw === null || raw === "") continue;
+    const value = Number(raw);
+    if (!Number.isFinite(value) || value < low || value > high)
+      throw Error(`${key} must be between ${low} and ${high}`);
+    overrides[key] = value;
+  }
+  return { seconds, patient, sample_hz: 10, interventions, ...overrides };
 }
 export function trajectoryFromChannels(data) {
   return {

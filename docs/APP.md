@@ -40,3 +40,7 @@ Additional evidence views use the local coverage, conservative coupling, CFD aud
 The BETSE source model renders 212 actual planar solver cells with 34 recorded frames. Select membrane voltage (V), junction gating (dimensionless), or native ion concentrations (mol/m³); fixed archive ranges preserve comparisons across time. Click a cell to inspect its values. These are generic computational tissue cells, not registered human skin. Transmembrane voltage differs from the extracellular wound field (V/m).
 
 The scenario form supports upstream patient selection and a bounded hemorrhage–saline protocol with explicit stop actions. StandardMale completed the 2-second browser integration check. StandardFemale currently fails during native initialization, including without interventions; failed runs remain visible. This source-engine limitation is labeled in the selector. Short protocol checks validate transport and execution, not physiological recovery.
+
+CSF trajectory choices expose the literature-model baseline, hypotension ramp, and native MAP-driven run. The MAP coupling is one-way, with unmatched source subjects and published rounded initial ICP/compliance; no ICP feedback enters BioGears. The chart retains the trajectory's declared pressure, volume, compliance, and flow units.
+
+Optional ambient temperature (10–35 °C) and clothing (0–3 clo) inputs are omitted from requests when blank. Explicit zero clothing is preserved. These are environment overrides; they do not establish thermal comfort or posture-specific physiology.

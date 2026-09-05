@@ -231,3 +231,50 @@ test("native BETSE cells expose voltage, ions, constant protein field and source
   await page.screenshot({ path: "test-results/betse-tissue.png" });
   expect(errors).toEqual([]);
 });
+
+test("CSF source trajectories retain coupling boundaries and environment overrides reach transport", async ({
+  page,
+}) => {
+  await page.goto("/");
+  for (const run of ["baseline", "native_map_driven", "hypotension"]) {
+    await page.locator("#trajectory-run").selectOption(`csf:${run}`);
+    await page.locator("#variable").selectOption("Pic_mmHg");
+    await expect(page.locator("#chart svg")).toBeVisible();
+    await expect(page.locator("#chart")).toContainText("mmHg");
+    await expect(page.locator("#chart-note")).toContainText(
+      run === "native_map_driven"
+        ? "no ICP feedback"
+        : "Separate literature model",
+    );
+  }
+  await expect(page.locator("#ambient")).toHaveValue("");
+  await expect(page.locator("#clothing")).toHaveValue("");
+  let payload;
+  await page.route("**/api/scenarios", async (route) => {
+    if (route.request().method() !== "POST") return route.continue();
+    payload = route.request().postDataJSON();
+    await route.fulfill({
+      status: 400,
+      contentType: "application/json",
+      body: JSON.stringify({ error: "Transport test: no native job executed" }),
+    });
+  });
+  await page.locator("#ambient").fill("22");
+  await page.locator("#clothing").fill("0");
+  await page.locator("#run").click();
+  await expect(page.locator("#run-status")).toContainText("Transport test");
+  expect(payload.ambient_temperature_c).toBe(22);
+  expect(payload.clothing_clo).toBe(0);
+});
+
+test("hour-scale spectra disclose sampling limits and exclude aliased pulse channels", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.locator("#tab-spectral").click();
+  await page.locator("#spectral-run").selectOption("native_hour_rest");
+  await expect(page.locator("#chart-note")).toContainText("Nyquist 0.5 Hz");
+  const names = await page.locator("#variable option").allTextContents();
+  expect(names.some((n) => n === "ArterialPressure")).toBe(false);
+  await expect(page.locator("#chart svg")).toBeVisible();
+});
