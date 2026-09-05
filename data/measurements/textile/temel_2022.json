@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "source_id": "human-skin-textile-friction",
+  "doi": "10.1007/s11249-021-01560-5",
+  "fabric_id": "temel_2022_cotton_single_jersey",
+  "fabric": {
+    "composition": "100% cotton",
+    "construction": "pre-shrunk knitted single jersey",
+    "thickness_m": 0.00062,
+    "areal_density_kg_m2": 0.14,
+    "surface_roughness_m": 3.7e-06
+  },
+  "conditions": {
+    "temperature_c": 25,
+    "relative_humidity_percent": 50,
+    "normal_force_n": 2,
+    "normal_force_tolerance_n": 0.5,
+    "sliding_speed_m_s": 0.04,
+    "stroke_m": 0.04,
+    "direction": "superior",
+    "skin_preparation": "no_special_cleaning_or_treatment",
+    "exposure": "ambient_no_added_water",
+    "posture": "supine",
+    "acclimation_min": 10
+  },
+  "cohort": {
+    "participants_n": 10,
+    "male_n": 3,
+    "female_n": 7,
+    "age_years_mean": 22.3,
+    "age_years_sd": 2.9,
+    "population": "Western European university students",
+    "weight_kg_mean": 65.31,
+    "weight_kg_sd": 7.62,
+    "height_cm_mean": 171.3,
+    "height_cm_sd": 9.1
+  },
+  "protocol": {
+    "repeats_per_site": 3,
+    "application_duration_s": 10,
+    "virgin_fabric_every_applications": 3,
+    "reported_direction": "superior",
+    "static_definition": "mean positive-direction peaks",
+    "dynamic_definition": "mean positive-direction stable sliding values"
+  },
+  "regions": {
+    "chest": {
+      "static_mean": 0.9,
+      "static_sd": 0.19,
+      "dynamic_mean": 0.79,
+      "dynamic_sd": 0.2,
+      "skin_temperature_c_mean": 33.9,
+      "skin_temperature_c_sd": 0.7,
+      "stratum_corneum_hydration_au_mean": 24.4,
+      "stratum_corneum_hydration_au_sd": 5.9,
+      "epidermal_hydration_percent_mean": 41.5,
+      "epidermal_hydration_percent_sd": 4.4,
+      "static_icc": 0.89,
+      "dynamic_icc": 0.89,
+      "coefficient_locator": "section 3.2, printed pages 5\u20136; abstract",
+      "skin_conditions_locator": "Table 1",
+      "repeatability_locator": "Table 2",
+      "extraction": "manual numeric transcription; no figure digitization"
+    },
+    "dorsal_forearm": {
+      "static_mean": 0.31,
+      "static_sd": 0.07,
+      "dynamic_mean": 0.25,
+      "dynamic_sd": 0.05,
+      "skin_temperature_c_mean": 33.4,
+      "skin_temperature_c_sd": 0.7,
+      "stratum_corneum_hydration_au_mean": 18.2,
+      "stratum_corneum_hydration_au_sd": 2.6,
+      "epidermal_hydration_percent_mean": 39.1,
+      "epidermal_hydration_percent_sd": 5.5,
+      "static_icc": 0.98,
+      "dynamic_icc": 0.95,
+      "coefficient_locator": "section 3.2, printed pages 5\u20136; abstract",
+      "skin_conditions_locator": "Table 1",
+      "repeatability_locator": "Table 2",
+      "extraction": "manual numeric transcription; no figure digitization"
+    }
+  },
+  "limitations": [
+    "Cohort means and reported SD, not individual predictions or Bayesian posteriors.",
+    "No raw participant observations, coefficient covariance, wet-condition law or speed/load response surface.",
+    "Other four friction regions appear graphically only and are not digitized here.",
+    "PlaneContact uses these means as explicit Coulomb inputs; transfer to cloth contact remains an assumption."
+  ]
+}

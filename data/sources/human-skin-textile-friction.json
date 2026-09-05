@@ -1,0 +1,44 @@
+{
+  "id": "human-skin-textile-friction",
+  "title": "Evaluating the Repeatability of Friction Coefficient Measurements and Tactile Perceptions in Skin\u2013Textile Interactions Across Body Regions",
+  "authors": [
+    "Mevra Temel",
+    "Andrew A. Johnson",
+    "Alex B. Lloyd"
+  ],
+  "year": 2022,
+  "doi": "10.1007/s11249-021-01560-5",
+  "reference": "https://link.springer.com/article/10.1007/s11249-021-01560-5",
+  "acquired_url": "https://d-nb.info/1258440741/34",
+  "acquired_at_utc": "2026-09-05T20:50:04.084194+00:00",
+  "license": "CC BY 4.0 (article Open Access statement)",
+  "status": "ingested_primary_publication",
+  "ingested": true,
+  "artifacts": [
+    {
+      "path": "data/raw/textile/temel_2022/paper.pdf",
+      "sha256": "1cece2eaee84ad21c5b5b195fc71e34eb6e1d9f4d9b23a045b636798ce05ef79",
+      "bytes": 1946231
+    },
+    {
+      "path": "data/raw/textile/temel_2022/paper.txt",
+      "sha256": "10570eb255566c46d2f9de68697134db04d1b40332b36205eaf4b51e2131a35e",
+      "bytes": 70884
+    },
+    {
+      "path": "data/measurements/textile/temel_2022.json",
+      "sha256": "991a54cf78ba086889981616c5b47fc9bdd7d61cbd777cc07c0b73a10983c951",
+      "bytes": 3161
+    }
+  ],
+  "acquisition_command": "curl -L --fail https://d-nb.info/1258440741/34 -o data/raw/textile/temel_2022/paper.pdf",
+  "extraction_command": "pdftotext -layout data/raw/textile/temel_2022/paper.pdf data/raw/textile/temel_2022/paper.txt",
+  "extraction_note": "Numeric facts manually transcribed from abstract/section 3.2 and Tables 1\u20132; no individual data or graph digitization.",
+  "role": "Conditioned skin-cotton cohort friction estimates; explicit contact solver input",
+  "limitations": [
+    "Cohort means and reported SD, not individual predictions or Bayesian posteriors.",
+    "No raw participant observations, coefficient covariance, wet-condition law or speed/load response surface.",
+    "Other four friction regions appear graphically only and are not digitized here.",
+    "PlaneContact uses these means as explicit Coulomb inputs; transfer to cloth contact remains an assumption."
+  ]
+}
