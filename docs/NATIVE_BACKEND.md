@@ -89,3 +89,62 @@ A browser scenario requested 2 seconds at 10 Hz, with exercise actions at 0.4 an
 The adapter now converts validated durations/action times to integer 0.02-second steps and calls the official single-step API exactly that many times. Automatic tracker scheduling is disabled, and original `TrackData` is called at integer sampling strides, avoiding floating tracker-clock offsets. Engine equations and tracker values remain unchanged. Final engine time is checked independently of the sampled horizon: a 2.04-second run at 10 Hz legitimately has 20 samples ending at 2 seconds, while its engine state must reach 2.04 seconds.
 
 `.venv/bin/python scripts/verify_native.py --engine-clock` exercises fractional action intervals at all six allowed sample rates using the preserved stabilized state. All rates pass exact count/action/final-time checks. The original browser configuration also passes from fresh patient initialization in `native_fractional_clock_original` (20 rows, final engine time 2 seconds).
+
+### Explicit thermal context and hourly drift
+
+`NativeConfig(ambient_temperature_c=22, clothing_clo=1.5)` applies the original
+`SEEnvironmentChange` action after initialization/state loading and before the first
+recorded step. Omitted fields preserve the source environment. Ambient override sets
+ambient, mean radiant, and respiration ambient temperatures together; humidity,
+air velocity, pressure, gas fractions and emissivity remain source-defined. Allowed
+ranges (10–35°C, 0–3 clo) are adapter experiment bounds, not clinical safety limits.
+Original source and requested conditions are recorded in the runner log and summary.
+
+The original StandardEnvironment is 22°C, 0.5 clo, 0.1 m/s air velocity. Its dynamic
+stabilization tests core temperature over only a 15 s convergence window. This does
+not establish an hour-long steady state. A matched stabilized-state 3600 s control
+cooled from 36.561 to 33.817°C; increasing insulation to 1.5 clo at the same room
+temperature ended at 35.638°C. A declared 26°C/1 clo comparison ended at 35.706°C. All three runs contained
+3600 finite samples and reached exactly 3600 s; none establishes thermal equilibrium.
+Blood volume rose approximately 229 mL in both 22°C runs.
+The source stomach initially contains 500 mL water plus electrolytes; its absorption
+and redistribution explain why resting blood volume is not fixed. The source-model
+thermal drift remains independent of this input and is not a validated bed-rest prediction.
+The preserved original independently initialized hour run is `native_hour_rest`;
+matched experiments are `native_hour_thermal_*`. Run the declared comparisons with
+`scripts/native_thermal_experiments.py --case control|insulated|warm` into fresh outputs.
+No parameter was fitted to a desired physiological trajectory.
+
+Source `Environment.cpp` uses a standing effective radiation area factor (0.73).
+There is no native posture action; an external supine hydrostatic adjunct does not
+modify that thermal assumption. Five original heat-loss channels are now exported.
+A confirmed upstream telemetry defect assigns the convective accumulator to
+`EvaporativeHeatLoss`, instead of the computed evaporation accumulator. Raw values
+are retained with `usable_for_energy_accounting=false` in that channel's binding.
+Do not sum these channels as an independent energy balance. The original thermal
+equations and telemetry source are unmodified.
+
+### Reproducible bounds and heat telemetry source variants
+
+The original StandardFemale initialization abort is preserved in
+`data/derived/scenarios/20260904-235212-40e8d665` and the no-action reproduction
+`native_female_init_repro`. A debug/AddressSanitizer build identifies
+`Saturation.cpp:536`: the negative-result correction reads/writes `x(3)` although
+`Eigen::VectorXd x(3)` has only indices 0–2. The preceding blocks already handle all
+three valid entries. `scripts/build_biogears_saturation_variant.py` removes only
+that redundant invalid block in a separate source copy and shared library.
+Original source and library are untouched. Explicit
+`NativeConfig(engine_variant='saturation_bounds')` selects this variant; the default
+remains `upstream`. Corrected Female rest and the previously failing 2 s fluid
+protocol pass; matched Male original/corrected output values are bitwise identical.
+These checks establish the regression correction, not clinical patient validation.
+
+`--heatflux` builds `saturation_bounds_heatflux`, additionally assigning the computed
+`eHeatLoss_W` to the evaporation telemetry scalar. The source scalar has no
+physiological equation consumer. Matched 10 s original-telemetry/corrected-telemetry
+runs have identical time and every other output column. Only this explicit variant
+marks evaporation suitable for heat accounting; do not double-count aggregate skin
+heat loss. Each variant directory under `data/runtime/physiology/variants` contains
+exact unified patches, original/patched source hashes, and the selected library hash.
+The runner checks library integrity and stores the variant manifest in each summary.
+Run `scripts/verify_biogears_saturation_variant.py` to verify the preserved regressions.

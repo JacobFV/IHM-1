@@ -6,7 +6,7 @@ sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from ihm.native import NativeConfig, Intervention, load_trajectory, run_native, summarize
 class Contracts(unittest.TestCase):
     def test_bounds(self):
-        for kw in ({'seconds':0},{'seconds':float('nan')},{'seconds':True},{'sample_hz':13},{'patient':'../StandardMale'},{'seconds':0.03}):
+        for kw in ({'seconds':0},{'seconds':float('nan')},{'seconds':True},{'sample_hz':13},{'patient':'../StandardMale'},{'seconds':0.03},{'engine_variant':'../../x'}):
             with self.assertRaises(ValueError): NativeConfig(**kw)
         for kw in ({'unknown':2},{'interventions':[{'time_s':0,'kind':'unknown','value':1}]},{'interventions':[{'time_s':61,'kind':'exercise','value':.2}]}):
             with self.assertRaises(ValueError): NativeConfig.from_dict(kw)
@@ -16,6 +16,14 @@ class Contracts(unittest.TestCase):
             p=Path(d);(p/'native_multisystem.csv').write_text('#Time(s),X\n0.02,0\n')
             (p/'runner_stdout.log').write_text('ENGINE_VERSION=test\nFATAL Unknown Data Request : X\n')
             with self.assertRaisesRegex(ValueError,'Engine logged'):summarize(p)
+    def test_environment_bounds(self):
+        NativeConfig(ambient_temperature_c=22,clothing_clo=1.5)
+        for kw in ({'ambient_temperature_c':float('nan')},{'ambient_temperature_c':40},{'clothing_clo':-1}):
+            with self.assertRaises(ValueError):NativeConfig(**kw)
+    def test_heat_flux_evidence(self):
+        from ihm.native.bindings import variable_bindings
+        b=variable_bindings(['EvaporativeHeatLoss(W)'],'test')
+        self.assertFalse(b['EvaporativeHeatLoss(W)']['usable_for_energy_accounting'])
     def test_roundtrip(self):
         with tempfile.TemporaryDirectory() as d:
             p=Path(d)/'x.csv';p.write_text('Time(s),X(mmHg)\n0.02,3\n0.04,4\n')

@@ -7,6 +7,9 @@
 #include <fstream>
 #include <cmath>
 #include <vector>
+#include <biogears/cdm/system/environment/actions/SEEnvironmentChange.h>
+#include <biogears/cdm/system/environment/SEEnvironment.h>
+#include <biogears/cdm/system/environment/SEEnvironmentalConditions.h>
 #include <biogears/cdm/patient/actions/SEExercise.h>
 #include <biogears/cdm/patient/actions/SEHemorrhage.h>
 #include <biogears/cdm/patient/actions/SESubstanceCompoundInfusion.h>
@@ -37,6 +40,26 @@ int main(int argc, char** argv) {
   std::cout << "ENGINE_VERSION=" << full_version_string() << "\n";
   auto bg = CreateBioGearsEngine("native_engine.log");
   if (state == "-" ? !bg->InitializeEngine("patients/" + patient + ".xml") : !bg->LoadState(state)) return 2;
+  auto current = bg->GetEnvironment()->GetConditions();
+  std::cout << "ENVIRONMENT_SOURCE_AMBIENT_C=" << current->GetAmbientTemperature(TemperatureUnit::C) << " CLO=" << current->GetClothingResistance(HeatResistanceAreaUnit::clo) << " AIR_SPEED_M_S=" << current->GetAirVelocity(LengthPerTimeUnit::m_Per_s) << "\n";
+  if ((argc > 6 && std::string(argv[6]) != "-") || (argc > 7 && std::string(argv[7]) != "-")) {
+    SEEnvironmentChange change(bg->GetSubstanceManager());
+    change.GetConditions().SetSurroundingType(current->GetSurroundingType());
+    change.GetConditions().GetAmbientTemperature().SetValue(current->GetAmbientTemperature(TemperatureUnit::C), TemperatureUnit::C);
+    change.GetConditions().GetClothingResistance().SetValue(current->GetClothingResistance(HeatResistanceAreaUnit::clo), HeatResistanceAreaUnit::clo);
+    if (argc > 6 && std::string(argv[6]) != "-") {
+      const double ambient = std::stod(argv[6]); if (!std::isfinite(ambient) || ambient < 10 || ambient > 35) return 4;
+      change.GetConditions().GetAmbientTemperature().SetValue(ambient, TemperatureUnit::C);
+      change.GetConditions().GetMeanRadiantTemperature().SetValue(ambient, TemperatureUnit::C);
+      change.GetConditions().GetRespirationAmbientTemperature().SetValue(ambient, TemperatureUnit::C);
+    }
+    if (argc > 7 && std::string(argv[7]) != "-") {
+      const double clo = std::stod(argv[7]); if (!std::isfinite(clo) || clo < 0 || clo > 3) return 4;
+      change.GetConditions().GetClothingResistance().SetValue(clo, HeatResistanceAreaUnit::clo);
+    }
+    std::cout << "ENVIRONMENT_REQUEST_AMBIENT_C=" << change.GetConditions().GetAmbientTemperature(TemperatureUnit::C) << " CLO=" << change.GetConditions().GetClothingResistance(HeatResistanceAreaUnit::clo) << "\n";
+    if (!bg->ProcessAction(change)) return 5;
+  }
   std::cout << "STABILIZED_TIME_S=" << bg->GetSimulationTime(TimeUnit::s) << "\n";
   auto& dm = bg->GetEngineTrack()->GetDataRequestManager();
   dm.SetSamplesPerSecond(hz);
@@ -62,6 +85,11 @@ int main(int argc, char** argv) {
   dm.CreatePhysiologyDataRequest().Set("SkinTemperature", TemperatureUnit::C);
   dm.CreatePhysiologyDataRequest().Set("TotalMetabolicRate", PowerUnit::W);
   dm.CreatePhysiologyDataRequest().Set("SweatRate", MassPerTimeUnit::g_Per_s);
+  dm.CreateEnvironmentDataRequest().Set("ConvectiveHeatLoss", PowerUnit::W);
+  dm.CreateEnvironmentDataRequest().Set("EvaporativeHeatLoss", PowerUnit::W);
+  dm.CreateEnvironmentDataRequest().Set("RadiativeHeatLoss", PowerUnit::W);
+  dm.CreateEnvironmentDataRequest().Set("RespirationHeatLoss", PowerUnit::W);
+  dm.CreateEnvironmentDataRequest().Set("SkinHeatLoss", PowerUnit::W);
   dm.SetResultsFilename("native_multisystem.csv");
   bg->SaveStateToFile("native_stabilized.xml");
   const double dt = bg->GetTimeStep(TimeUnit::s);
