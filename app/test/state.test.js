@@ -82,3 +82,55 @@ test("Laplace magnitude uses the selected damping row and preserves physical uni
   });
   assert.deepEqual(spectralSeries(run, "p", "psd", 0).y, [2, 3]);
 });
+test("hemorrhage and saline protocol retains patient, native units, ordered stops and solver clock", () => {
+  const result = scenarioInput("hemorrhage_saline", 2, "StandardFemale");
+  assert.equal(result.patient, "StandardFemale");
+  assert.deepEqual(
+    result.interventions.map((x) => [x.kind, x.value]),
+    [
+      ["hemorrhage", 10],
+      ["hemorrhage", 0],
+      ["saline", 20],
+      ["saline", 0],
+    ],
+  );
+  assert.ok(
+    result.interventions.every(
+      (x, i, a) =>
+        Math.abs(x.time_s * 50 - Math.round(x.time_s * 50)) < 1e-9 &&
+        (!i || x.time_s > a[i - 1].time_s),
+    ),
+  );
+  assert.throws(() => scenarioInput("unknown", 2));
+  assert.throws(() => scenarioInput("baseline", 1.01));
+  assert.throws(() => scenarioInput("baseline", 2, "../evil"));
+});
+test("source reproductive trajectory preserves days, channel units and prescribed-input provenance", async () => {
+  const { trajectoryFromChannels } = await import("../src/state.js");
+  const data = trajectoryFromChannels({
+    time_days: [0, 10],
+    time_s: [0, 864000],
+    source_kind: "source_model_simulation",
+    channels: [
+      {
+        id: "E2",
+        unit: "microg_l",
+        kind: "prescribed_time_input",
+        values: [1, 2],
+      },
+    ],
+    limitations: ["Inputs prescribed"],
+  });
+  assert.deepEqual(data.time_axis, [0, 10]);
+  assert.equal(data.time_unit, "day");
+  assert.equal(data.units.E2, "microg_l");
+  assert.equal(data.channel_types.E2, "prescribed_time_input");
+  assert.equal(data.metadata.source_kind, "source_model_simulation");
+});
+
+test("scalar cells preserve values and use a finite midpoint for constant fields", async () => {
+  const { scalarCoordinates } = await import("../src/state.js");
+  assert.deepEqual(scalarCoordinates([0, 1, 0], [10, 20], [10, 20]), [0, 1, 0]);
+  assert.deepEqual(scalarCoordinates([0], [135], [135, 135]), [0.5]);
+  assert.throws(() => scalarCoordinates([2], [10], [0, 20]));
+});

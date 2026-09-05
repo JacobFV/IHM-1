@@ -6,6 +6,8 @@ import {
   chartPath,
   scenarioInput,
   spectralSeries,
+  trajectoryFromChannels,
+  scalarCoordinates,
 } from "./state.js";
 import "./style.css";
 const $ = (id) => document.getElementById(id),
@@ -22,7 +24,7 @@ const $ = (id) => document.getElementById(id),
         })[c],
     );
 document.querySelector("#app").innerHTML =
-  `<header><div class="brand"><span class="brandmark">ih<span>•</span></span><div>INTEGRATED HUMAN<small>Computational physiology workbench</small></div></div><div class="header-right"><span class="live-dot"></span> LOCAL RESEARCH ENVIRONMENT <span class="version">v0.1</span></div></header><main><aside class="library"><div class="section-heading"><span>ANATOMY LIBRARY</span><span id="total">—</span></div><label class="field-label" for="model">Source model</label><select id="model"><option>Loading source families…</option></select><p class="muted" id="model-note">Reading the source manifest.</p><div class="search"><span>⌕</span><input id="search" placeholder="Find a structure…" aria-label="Search anatomy"></div><div class="section-heading layer-title">SYSTEM LAYERS <button id="all" class="text-button">Show all</button></div><div id="systems"></div><div class="section-heading results-heading">STRUCTURES <span id="count">0</span></div><div id="structures" class="structures"></div><div class="library-footer"><span class="live-dot"></span> Source geometry · independent frames</div></aside><section class="center"><div class="viewport" id="viewport"><div class="view-heading"><div class="eyebrow">SPATIAL EXPLORER</div><h1 id="view-title">Human anatomy</h1><p id="frame-label">Source-defined coordinates</p></div><div class="view-tools"><button id="reset" title="Reset camera">↺ <span>Reset view</span></button><button id="posture" title="Rigid display rotation only; native posture is not established">Supine view</button><button id="front">Anterior</button><button id="side">Lateral</button></div><div id="scene-status" role="status">Loading anatomical assets…</div><div id="flow-legend" class="flow-legend" hidden></div><div class="orientation">Y <span>↑</span><br><small>X →</small></div><div class="view-footer"><span id="render-count">0 structures visible</span><span>Drag to orbit · Scroll to zoom · Click to inspect</span></div></div><div class="display-controls"><label>Opacity <input id="opacity" type="range" min=".05" max="1" step=".05" value="1"><output id="opacity-value">100%</output></label><label>Section <input id="clip" type="range" min="0" max="100" value="100"><output id="clip-value">Off</output></label><select id="flow-field" aria-label="Vascular field"><option value="velocity">Velocity</option><option value="pressure">Pressure</option></select><button id="play" disabled aria-label="Play vascular time series">▶</button><input id="time" type="range" min="0" max="0" value="0" aria-label="Vascular time frame" disabled><output id="time-value">No flow frames</output></div><section class="signals"><div class="signal-header"><div><div class="eyebrow">TEMPORAL OBSERVATORY</div><h2>Physiology & dynamics</h2></div><div class="tabs"><button id="tab-phys" class="active">Trajectory</button><button id="tab-spectral">Spectrum</button></div></div><div id="spectral-controls" class="spectral-controls" hidden><select id="spectral-run" aria-label="Spectral evidence source"></select><select id="spectral-mode" aria-label="Spectral representation"><option value="psd">Fourier power density</option><option value="laplace">Finite Laplace magnitude</option></select><select id="sigma" aria-label="Laplace damping" hidden></select></div><div id="trajectory-controls" class="spectral-controls"><select id="trajectory-run" aria-label="Recorded physiology run"><option value="baseline">Recorded resting baseline</option></select></div><div class="signal-select"><select id="variable" aria-label="Physiology variable"></select><span id="signal-source">Awaiting simulation data</span></div><div id="chart" class="chart"><p class="empty">Loading physiological trajectories…</p></div><p id="chart-note" class="muted">Native simulation evidence is distinct from human measurements.</p></section></section><aside class="inspector"><div class="section-heading">STRUCTURE INSPECTOR <span>↗</span></div><div id="details"><div class="inspector-symbol">◎</div><h2>Explore the body</h2><p class="muted">Select a structure in the viewport or library to inspect its source, coordinate frame, and evidence status.</p></div><div class="scenario"><div class="eyebrow">NATIVE PHYSIOLOGY</div><h2>Run a scenario</h2><p class="muted">Execute the upstream BioGears engine and inspect its recorded response.</p><form id="scenario-form"><label class="field-label" for="scenario">Protocol</label><select id="scenario"><option value="baseline">Resting baseline</option><option value="exercise">Exercise & recovery</option></select><label class="field-label" for="duration">Duration · seconds</label><input id="duration" type="number" min="1" max="600" value="60" required><button class="primary" id="run" type="submit">Run native simulation <span>↗</span></button></form><div id="run-status" class="run-status" role="status">Checking native backend…</div></div><div class="evidence"><div class="section-heading">EVIDENCE BOUNDARY</div><p>Geometry describes anatomy. Simulation describes model behavior. Neither alone establishes patient-specific calibration.</p><div id="evidence-status" class="tag">Uncertainty remains explicit</div><details class="evidence-fold"><summary>Human measurement fit</summary><div id="calibration-details"><p>Loading calibration evidence…</p></div></details><details class="evidence-fold"><summary>System coverage</summary><div id="coverage-details"><p>Coverage data unavailable.</p></div></details><details class="evidence-fold"><summary>Conservative exchange</summary><div id="coupling-details"><p>Exchange data unavailable.</p></div></details></div></aside></main>`;
+  `<header><div class="brand"><span class="brandmark">ih<span>•</span></span><div>INTEGRATED HUMAN<small>Computational physiology workbench</small></div></div><div class="header-right"><span class="live-dot"></span> LOCAL RESEARCH ENVIRONMENT <span class="version">v0.1</span></div></header><main><aside class="library"><div class="section-heading"><span>ANATOMY LIBRARY</span><span id="total">—</span></div><label class="field-label" for="model">Source model</label><select id="model"><option>Loading source families…</option></select><p class="muted" id="model-note">Reading the source manifest.</p><div class="search"><span>⌕</span><input id="search" placeholder="Find a structure…" aria-label="Search anatomy"></div><div class="section-heading layer-title">SYSTEM LAYERS <button id="all" class="text-button">Show all</button></div><div id="systems"></div><div class="section-heading results-heading">STRUCTURES <span id="count">0</span></div><div id="structures" class="structures"></div><div class="library-footer"><span class="live-dot"></span> Source geometry · independent frames</div></aside><section class="center"><div class="viewport" id="viewport"><div class="view-heading"><div class="eyebrow">SPATIAL EXPLORER</div><h1 id="view-title">Human anatomy</h1><p id="frame-label">Source-defined coordinates</p></div><div class="view-tools"><button id="reset" title="Reset camera">↺ <span>Reset view</span></button><button id="posture" title="Rigid display rotation only; native posture is not established">Supine view</button><button id="front">Anterior</button><button id="side">Lateral</button></div><div id="scene-status" role="status">Loading anatomical assets…</div><div id="flow-legend" class="flow-legend" hidden></div><div class="orientation">Y <span>↑</span><br><small>X →</small></div><div class="view-footer"><span id="render-count">0 structures visible</span><span>Drag to orbit · Scroll to zoom · Click to inspect</span></div></div><div class="display-controls"><label>Opacity <input id="opacity" type="range" min=".05" max="1" step=".05" value="1"><output id="opacity-value">100%</output></label><label>Section <input id="clip" type="range" min="0" max="100" value="100"><output id="clip-value">Off</output></label><select id="flow-field" aria-label="Vascular field"><option value="velocity">Velocity</option><option value="pressure">Pressure</option></select><button id="play" disabled aria-label="Play spatial time series">▶</button><input id="time" type="range" min="0" max="0" value="0" aria-label="Spatial time frame" disabled><output id="time-value">No flow frames</output></div><section class="signals"><div class="signal-header"><div><div class="eyebrow">TEMPORAL OBSERVATORY</div><h2>Physiology & dynamics</h2></div><div class="tabs"><button id="tab-phys" class="active">Trajectory</button><button id="tab-spectral">Spectrum</button></div></div><div id="spectral-controls" class="spectral-controls" hidden><select id="spectral-run" aria-label="Spectral evidence source"></select><select id="spectral-mode" aria-label="Spectral representation"><option value="psd">Fourier power density</option><option value="laplace">Finite Laplace magnitude</option></select><select id="sigma" aria-label="Laplace damping" hidden></select></div><div id="trajectory-controls" class="spectral-controls"><select id="trajectory-run" aria-label="Recorded physiology run"><option value="baseline">Recorded resting baseline</option></select></div><div class="signal-select"><select id="variable" aria-label="Physiology variable"></select><span id="signal-source">Awaiting simulation data</span></div><div id="chart" class="chart"><p class="empty">Loading physiological trajectories…</p></div><p id="chart-note" class="muted">Native simulation evidence is distinct from human measurements.</p></section></section><aside class="inspector"><div class="section-heading">STRUCTURE INSPECTOR <span>↗</span></div><div id="details"><div class="inspector-symbol">◎</div><h2>Explore the body</h2><p class="muted">Select a structure in the viewport or library to inspect its source, coordinate frame, and evidence status.</p></div><div class="scenario"><div class="eyebrow">NATIVE PHYSIOLOGY</div><h2>Run a scenario</h2><p class="muted">Execute the upstream BioGears engine and inspect its recorded response.</p><form id="scenario-form"><label class="field-label" for="patient">Upstream patient</label><select id="patient"><option value="StandardMale">StandardMale</option></select><label class="field-label" for="scenario">Protocol</label><select id="scenario"><option value="baseline">Resting baseline</option><option value="exercise">Exercise & recovery</option><option value="hemorrhage_saline">Hemorrhage, saline & recovery</option></select><p id="protocol-note" class="muted">Record the upstream resting state.</p><label class="field-label" for="duration">Duration · seconds</label><input id="duration" type="number" min="1" max="600" value="60" required><button class="primary" id="run" type="submit">Run native simulation <span>↗</span></button></form><div id="run-status" class="run-status" role="status">Checking native backend…</div></div><div class="evidence"><div class="section-heading">EVIDENCE BOUNDARY</div><p>Geometry describes anatomy. Simulation describes model behavior. Neither alone establishes patient-specific calibration.</p><div id="evidence-status" class="tag">Uncertainty remains explicit</div><details class="evidence-fold"><summary>Human measurement fit</summary><div id="calibration-details"><p>Loading calibration evidence…</p></div></details><details class="evidence-fold"><summary>System coverage</summary><div id="coverage-details"><p>Coverage data unavailable.</p></div></details><details class="evidence-fold"><summary>Conservative exchange</summary><div id="coupling-details"><p>Exchange data unavailable.</p></div></details><details class="evidence-fold"><summary>Vascular CFD audit</summary><div id="vascular-audit"><p>Audit unavailable.</p></div></details></div></aside></main>`;
 let manifest,
   modelId,
   systems = new Set(),
@@ -34,12 +36,14 @@ let manifest,
   activeRun = "baseline",
   phys = {},
   temporal = {},
+  reproductive = null,
   spectral = false,
   flowFrames = 0,
   playing = false,
   lastTick = 0;
 const colors = {
   skeletal: "#d4c7ac",
+  cardiac: "#ba6870",
   muscular: "#b66f67",
   nervous: "#d2ae57",
   circulatory: "#bf716c",
@@ -116,6 +120,10 @@ try {
       let obj = hit.object;
       while (!obj.userData.structure && obj.parent) obj = obj.parent;
       selectStructure(obj.userData.structure);
+      if (obj.userData.cellIds && hit.face) {
+        obj.userData.selectedCell = obj.userData.cellIds[hit.face.a];
+        updateFrame();
+      }
     }
   });
 } catch (e) {
@@ -159,7 +167,7 @@ function rebuildSystems() {
   const rows = manifest.structures.filter((x) => x.model_id === modelId);
   const names = [...new Set(rows.map((x) => x.system))];
   systems = new Set(
-    names.filter((x) => /skelet|respirat|cardio|circul|digest|urinar/.test(x)),
+    names.filter((x) => /skelet|respirat|cardi|circul|digest|urinar/.test(x)),
   );
   if (!systems.size || modelId.startsWith("opensim")) systems = new Set(names);
   $("systems").innerHTML = names
@@ -364,6 +372,20 @@ function createGeometry(s, g) {
       geometry,
       new THREE.LineBasicMaterial({ color, transparent: true }),
     );
+  } else if (s.kind === "scalar_mesh") {
+    geometry.setAttribute(
+      "color",
+      new THREE.Float32BufferAttribute(new Float32Array(positions.length), 3),
+    );
+    object = new THREE.Mesh(
+      geometry,
+      new THREE.MeshBasicMaterial({
+        vertexColors: true,
+        side: THREE.DoubleSide,
+      }),
+    );
+    object.userData.cellIds = g.cell_ids;
+    object.userData.scalarFields = g.scalar_fields;
   } else {
     geometry.computeVertexNormals();
     object = new THREE.Mesh(
@@ -405,10 +427,21 @@ function selectStructure(s) {
   );
   const source = s.source || {};
   $("details").innerHTML =
-    `<div class="eyebrow">${esc(s.system)} / ${esc(s.kind || "mesh")}</div><h2>${esc(s.name)}</h2><span class="tag">${esc(s.calibration_status || "Not independently calibrated")}</span><dl><dt>Source</dt><dd>${esc(source.label || model()?.name)}</dd><dt>Coordinate frame</dt><dd>${esc(source.frame || model()?.frame || "Source-defined")}</dd><dt>Specimen</dt><dd>${esc(source.specimen || "See source metadata")}</dd><dt>Units</dt><dd>${esc(source.units || model()?.source_units || "Source units")}</dd><dt>Evidence status</dt><dd>${esc(source.status || s.status || "Source geometry; physiological registration unverified")}</dd>${s.path_interpretation ? `<dt>Muscle path interpretation</dt><dd>${esc(s.path_interpretation)}</dd><dt>Wrapping solution</dt><dd>${s.wrap_solved ? "Solved by source" : "Unsolved; attachment chords only"}</dd>` : ""}${source.sha256 ? `<dt>SHA-256</dt><dd class="hash">${esc(source.sha256)}</dd>` : ""}</dl>${/^https?:\/\//.test(source.url || "") ? `<a class="source-link" href="${esc(source.url)}" target="_blank" rel="noopener noreferrer">Open original source ↗</a>` : ""}`;
+    `<div class="eyebrow">${esc(s.system)} / ${esc(s.kind || "mesh")}</div><h2>${esc(s.name)}</h2><span class="tag">${esc(s.calibration_status || "Not independently calibrated")}</span><dl><dt>Source</dt><dd>${esc(source.label || model()?.name)}</dd><dt>Coordinate frame</dt><dd>${esc(source.frame || model()?.frame || "Source-defined")}</dd><dt>Specimen</dt><dd>${esc(source.specimen || "See source metadata")}</dd><dt>Units</dt><dd>${esc(source.units || model()?.source_units || "Source units")}</dd><dt>Evidence status</dt><dd>${esc(source.status || s.status || "Source geometry; physiological registration unverified")}</dd>${s.path_interpretation ? `<dt>Muscle path interpretation</dt><dd>${esc(s.path_interpretation)}</dd><dt>Wrapping solution</dt><dd>${s.wrap_solved ? "Solved by source" : "Unsolved; attachment chords only"}</dd>` : ""}${
+      s.native_mechanics
+        ? `<dt>Native mechanics · source simulation</dt><dd>Activation ${esc(s.native_mechanics.activation)} · path length ${Number(s.native_mechanics.length_m).toFixed(4)} m<br>Tendon force ${Number(s.native_mechanics.tendon_force_N).toFixed(3)} N<br>Active / passive fiber force ${Number(s.native_mechanics.active_fiber_force_N).toFixed(3)} / ${Number(s.native_mechanics.passive_fiber_force_N).toFixed(3)} N</dd><dt>Joint moment arms</dt><dd>${Object.entries(
+            s.native_mechanics.moment_arms_m || {},
+          )
+            .map(([k, v]) => `${esc(k)}: ${Number(v).toFixed(5)} m`)
+            .join(
+              "<br>",
+            )}</dd><dt>Mechanical validity</dt><dd>Source default pose; external force balance ${s.native_mechanics.external_force_balance_solved ? "solved" : "not solved"}. No subject calibration.</dd>`
+        : ""
+    }${source.sha256 ? `<dt>SHA-256</dt><dd class="hash">${esc(source.sha256)}</dd>` : ""}</dl>${/^https?:\/\//.test(source.url || "") ? `<a class="source-link" href="${esc(source.url)}" target="_blank" rel="noopener noreferrer">Open original source ↗</a>` : ""}`;
   $("structures")
     .querySelectorAll("button")
     .forEach((b) => b.classList.toggle("selected", b.dataset.id === s.id));
+  if (s.kind === "scalar_mesh") updateFrame();
 }
 function updateDisplay() {
   const opacity = Number($("opacity").value),
@@ -433,6 +466,18 @@ function updateDisplay() {
   $("clip-value").textContent = clip === 100 ? "Off" : `${clip}%`;
 }
 function setupFrames() {
+  const scalar = [...objects.values()].find(
+    (o) => o.visible && o.userData.scalarFields,
+  );
+  $("flow-field").innerHTML = scalar
+    ? scalar.userData.scalarFields
+        .map(
+          (f) =>
+            `<option value="${esc(f.id)}">${esc(f.label)} · ${esc(f.unit)}</option>`,
+        )
+        .join("")
+    : '<option value="velocity">Velocity</option><option value="pressure">Pressure</option>';
+  $("flow-field").setAttribute("aria-label", "Spatial field");
   flowFrames = Math.max(
     0,
     ...[...objects.values()]
@@ -465,6 +510,42 @@ function updateFrame() {
       );
       o.geometry.computeBoundingSphere();
     }
+    if (o.userData.scalarFields) {
+      const field = o.userData.scalarFields.find(
+        (x) => x.id === $("flow-field").value,
+      );
+      if (!field) return;
+      const values = f.values[field.id];
+      const normalized = scalarCoordinates(
+        o.userData.cellIds,
+        values,
+        field.range,
+      );
+      const colors = o.geometry.getAttribute("color"),
+        color = new THREE.Color();
+      normalized.forEach((v, i) => {
+        color.setHSL(0.66 * (1 - v), 0.75, 0.55);
+        colors.setXYZ(i, color.r, color.g, color.b);
+      });
+      colors.needsUpdate = true;
+      $("flow-legend").textContent =
+        `${field.label} · blue ${field.range[0].toPrecision(4)} → red ${field.range[1].toPrecision(4)} ${field.unit} · fixed source range`;
+      if (selected?.id === o.userData.structure.id) {
+        let panel = $("cell-values");
+        if (!panel) {
+          panel = document.createElement("div");
+          panel.id = "cell-values";
+          $("details").append(panel);
+        }
+        const cell = o.userData.selectedCell;
+        panel.innerHTML =
+          `<h3>Native tissue fields</h3><p>212 planar solver cells · ${esc(label)}. Transmembrane voltage (V) differs from extracellular wound field (V/m).</p>` +
+          (cell === undefined
+            ? "<p>Click a cell to inspect its native values.</p>"
+            : `<strong>Cell ${cell}</strong><dl>${o.userData.scalarFields.map((x) => `<dt>${esc(x.label)}</dt><dd>${Number(f.values[x.id][cell]).toPrecision(6)} ${esc(x.unit)}</dd>`).join("")}</dl>`) +
+          '<p class="muted">Generic computational tissue; no human skin registration or wound-healing validation.</p>';
+      }
+    }
     const v = f.velocities || f.vectors;
     if (v && o.userData.vectorData) {
       const data = o.userData.vectorData,
@@ -496,9 +577,11 @@ function updateFrame() {
   });
   $("time-value").textContent = label || "No flow frames";
   $("time-value").title =
-    $("flow-field").value === "pressure"
-      ? "Pressure: blue = archive minimum, red = archive maximum; fixed scale across frames; source units unconfirmed"
-      : "Velocity direction and magnitude from archived solver states";
+    modelId === "betse-tissue"
+      ? "Native solver time; fixed field ranges across recorded frames"
+      : $("flow-field").value === "pressure"
+        ? "Pressure: blue = archive minimum, red = archive maximum; fixed scale across frames; source units unconfirmed"
+        : "Velocity direction and magnitude from archived solver states";
 }
 function spectralRun() {
   return (
@@ -539,7 +622,7 @@ function drawChart() {
       $("spectral-mode").value,
       Number($("sigma").value) || 0,
     );
-  const x = spectral ? series.x : phys.time_s,
+  const x = spectral ? series.x : phys.time_axis || phys.time_s,
     y = spectral ? series.y : phys.values?.[id];
   $("signal-source").textContent = spectral
     ? spectralRun()?.source_kind || "No spectral evidence"
@@ -550,7 +633,9 @@ function drawChart() {
       : spectralRun()?.limitations?.[0] ||
         temporal.limitations?.[0] ||
         "Finite observation horizon. Power spectra do not establish causality."
-    : "Upstream native simulation · model output, not a human recording.";
+    : activeRun === "reproductive"
+      ? `Schlosser–Selgrade source model · ${phys.channel_types?.[id]?.replaceAll("_", " ") || "source channel"} · 0–10 day example; E2/P4/inhibin are prescribed, not a generated full cycle.`
+      : "Upstream native simulation · model output, not a human recording.";
   if (!x?.length || !y?.length) {
     $("chart").innerHTML =
       '<p class="empty">No recorded data available for this view.</p>';
@@ -560,15 +645,29 @@ function drawChart() {
     min = Math.min(...valid),
     max = Math.max(...valid);
   $("chart").innerHTML =
-    `<div class="chart-values"><strong>${Number(y.at(-1)).toPrecision(5)}</strong><span>${esc(spectral ? series.unit || "Source units" : id.match(/\(([^)]+)\)/)?.[1] || "Source units")}</span></div><svg viewBox="0 0 600 120" preserveAspectRatio="none" aria-label="${esc(id)} ${spectral ? "power spectrum" : "trajectory"}" role="img"><defs><linearGradient id="fade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8ec9bd" stop-opacity=".2"/><stop offset="1" stop-color="#8ec9bd" stop-opacity="0"/></linearGradient></defs><path d="M0 0H600 M0 40H600 M0 80H600 M0 120H600" stroke="#ffffff0b" fill="none"/><path d="${chartPath(x, y)}" fill="none" stroke="#8ec9bd" stroke-width="2" vector-effect="non-scaling-stroke"/></svg><div class="chart-axis"><span>${Number(x[0]).toPrecision(3)} ${spectral ? "Hz" : "s"}</span><span>range ${min.toPrecision(4)} — ${max.toPrecision(4)}</span><span>${Number(x.at(-1)).toPrecision(3)} ${spectral ? "Hz" : "s"}</span></div>`;
+    `<div class="chart-values"><strong>${Number(y.at(-1)).toPrecision(5)}</strong><span>${esc(spectral ? series.unit || "Source units" : phys.units?.[id] || id.match(/\(([^)]+)\)/)?.[1] || "Source units")}</span></div><svg viewBox="0 0 600 120" preserveAspectRatio="none" aria-label="${esc(id)} ${spectral ? "power spectrum" : "trajectory"}" role="img"><defs><linearGradient id="fade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8ec9bd" stop-opacity=".2"/><stop offset="1" stop-color="#8ec9bd" stop-opacity="0"/></linearGradient></defs><path d="M0 0H600 M0 40H600 M0 80H600 M0 120H600" stroke="#ffffff0b" fill="none"/><path d="${chartPath(x, y)}" fill="none" stroke="#8ec9bd" stroke-width="2" vector-effect="non-scaling-stroke"/></svg><div class="chart-axis"><span>${Number(x[0]).toPrecision(3)} ${spectral ? "Hz" : phys.time_unit || "s"}</span><span>range ${min.toPrecision(4)} — ${max.toPrecision(4)}</span><span>${Number(x.at(-1)).toPrecision(3)} ${spectral ? "Hz" : phys.time_unit || "s"}</span></div>`;
 }
 async function pollRuns() {
   try {
     const data = await api("/api/scenarios");
     const runs = data.runs || [];
+    const selectedPatient = $("patient").value;
+    $("patient").innerHTML = (data.patients || ["StandardMale"])
+      .map(
+        (p) =>
+          `<option value="${esc(p)}">${esc(p)}${p === "StandardFemale" ? " · initialization currently fails" : ""}</option>`,
+      )
+      .join("");
+    if ((data.patients || []).includes(selectedPatient))
+      $("patient").value = selectedPatient;
+    else if ((data.patients || []).includes("StandardMale"))
+      $("patient").value = "StandardMale";
     const latest = runs.at(-1);
     $("trajectory-run").innerHTML =
       '<option value="baseline">Recorded resting baseline</option>' +
+      (reproductive
+        ? '<option value="reproductive">Gonadotropin regulation · source model · 0–10 days</option>'
+        : "") +
       runs
         .map(
           (r) =>
@@ -598,22 +697,37 @@ async function pollRuns() {
 $("trajectory-run").onchange = async () => {
   activeRun = $("trajectory-run").value;
   try {
-    phys = await api(
-      activeRun === "baseline"
-        ? "/api/physiology"
-        : `/api/physiology?run=${encodeURIComponent(activeRun)}`,
-    );
+    phys =
+      activeRun === "reproductive"
+        ? trajectoryFromChannels(reproductive)
+        : await api(
+            activeRun === "baseline"
+              ? "/api/physiology"
+              : `/api/physiology?run=${encodeURIComponent(activeRun)}`,
+          );
     phys._run = activeRun;
     updateVariables();
   } catch (e) {
     $("chart").innerHTML = `<p class="empty">${esc(e.message)}</p>`;
   }
 };
+$("scenario").onchange = () => {
+  $("protocol-note").textContent =
+    $("scenario").value === "exercise"
+      ? "Native exercise intensity 0.1, then stop and observe recovery."
+      : $("scenario").value === "hemorrhage_saline"
+        ? "Right-leg hemorrhage 10 mL/min, then stop; saline 20 mL/min, then stop and observe. This does not guarantee return to baseline."
+        : "Record the upstream resting state.";
+};
 $("scenario-form").onsubmit = async (e) => {
   e.preventDefault();
   $("run").disabled = true;
   try {
-    const config = scenarioInput($("scenario").value, $("duration").value);
+    const config = scenarioInput(
+      $("scenario").value,
+      $("duration").value,
+      $("patient").value,
+    );
     const run = await api("/api/scenarios", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -701,6 +815,53 @@ async function loadEvidencePanels() {
     $("calibration-details").innerHTML =
       "<p>Calibration evidence unavailable.</p>";
   }
+
+  const panels = await Promise.allSettled([
+    api("/api/coverage"),
+    api("/api/coupling"),
+    api("/api/coupling/skin-lymph"),
+    api("/api/vascular/audit"),
+  ]);
+  if (panels[0].status === "fulfilled") {
+    const data = panels[0].value,
+      summary = data.summary || {};
+    $("coverage-details").innerHTML =
+      `<p>${esc(summary.system_domains)} system domains · ${esc(summary.declared_components)} declared components · ${esc(summary.population_measured_components)} population measurement targets.</p><ul class="coverage-list">${(data.systems || []).map((s) => `<li><span>${esc(s.name)}</span><small>${s.measured_components?.length || 0} measured / ${s.components_count} components</small></li>`).join("")}</ul><p>Coverage and anatomical naming do not establish calibrated interactions or cross-specimen registration.</p>`;
+  }
+  if (panels[1].status === "fulfilled") {
+    const data = panels[1].value,
+      summary = data.summary || {},
+      model = data.models?.find((m) => m.id === "native_skin_lymph_circuit");
+    const duration = (t) =>
+      t >= 3600 ? `${(t / 3600).toFixed(2)} h` : `${t.toFixed(2)} s`;
+    $("coupling-details").innerHTML =
+      `<p>${esc(summary.nodes)} native circuit nodes · ${esc(summary.paths)} paths · ${esc(summary.compartments)} compartments.</p>${
+        model
+          ? `<dl><dt>Frozen skin–lymph response times</dt><dd>${[
+              ...(model.time_constants_s || []),
+            ]
+              .sort((a, b) => a - b)
+              .map(duration)
+              .join(
+                " · ",
+              )}</dd><dt>Zero modes</dt><dd>${esc(model.zero_modes)} · long-horizon stability not established</dd></dl><p>${esc(model.limitations?.[0])}</p>`
+          : ""
+      }<p>${esc(summary.cross_source_coupling)}</p>`;
+    if (panels[2].status === "fulfilled") {
+      const step = panels[2].value.baseline_step;
+      const residual = step?.balance?.max_abs_free_node_residual_m3_s;
+      if (Number.isFinite(residual))
+        $("coupling-details").innerHTML +=
+          `<dl><dt>Maximum free-node flow residual</dt><dd>${residual.toExponential(2)} m³/s</dd><dt>Frozen-step checks</dt><dd>${step.gate_violations?.length || 0} gate violations · ${step.negative_volume_nodes?.length || 0} negative volume nodes</dd></dl><p>Numerical balance at the saved operating point is not independent physiological calibration.</p>`;
+    }
+  }
+  if (panels[3].status === "fulfilled") {
+    const data = panels[3].value,
+      conservation = data.conservation || {},
+      periodic = data.periodic_endpoint_check;
+    $("vascular-audit").innerHTML =
+      `<p>${data.clock?.audited_frames} archived states · ${esc(data.archived_job_status)}</p><dl><dt>Maximum global mass imbalance</dt><dd>${(100 * conservation.maximum_relative_global_mass_imbalance).toPrecision(3)}%</dd><dt>Same-phase velocity difference</dt><dd>${(100 * (periodic?.velocity_nodal_difference?.relative_rmse_to_expected_rms || 0)).toFixed(1)}%</dd><dt>Wall velocity</dt><dd>${esc(conservation.maximum_wall_nodal_speed)} source units</dd></dl><p>Good global balance does not establish periodic convergence. Units and archived pressure gauge remain unconfirmed.</p><a class="source-link" href="/api/vascular/audit" target="_blank" rel="noopener">Open complete numerical audit ↗</a>`;
+  }
 }
 async function start() {
   try {
@@ -720,6 +881,7 @@ async function start() {
     api("/api/physiology"),
     api("/api/temporal"),
     api("/api/evidence"),
+    api("/api/reproductive"),
   ]);
   if (results[0].status === "fulfilled") phys = results[0].value;
   if (results[1].status === "fulfilled") {
@@ -736,6 +898,7 @@ async function start() {
     $("evidence-status").textContent = results[2].value.whole_body_calibrated
       ? "See domain calibration evidence"
       : "Whole-body calibration incomplete";
+  if (results[3].status === "fulfilled") reproductive = results[3].value;
   updateVariables();
   await pollRuns();
   setInterval(pollRuns, 5000);

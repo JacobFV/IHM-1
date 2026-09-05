@@ -34,3 +34,9 @@ npm run test:browser
 ```
 
 The browser test requires live API assets and the development server. It uses installed Google Chrome at `/usr/bin/google-chrome`; set `CHROME_PATH` or `APP_URL` to override. It exercises source loading, structure selection, empty search, opacity, clipping, posture and chart tabs, captures `app/test-results/workbench.png`, and rejects browser runtime errors. By default no native scenario is launched. Set `RUN_NATIVE_BROWSER=1` to additionally execute a real two-second exercise/recovery scenario through the form; this checks submission and completion against the live backend.
+
+Additional evidence views use the local coverage, conservative coupling, CFD audit, and reproductive APIs. The source reproductive example retains its 0–10 day clock and labels prescribed endocrine inputs. Native OpenSim inspection exposes engine-evaluated wrapped paths and forces; external force balance is not solved.
+
+The BETSE source model renders 212 actual planar solver cells with 34 recorded frames. Select membrane voltage (V), junction gating (dimensionless), or native ion concentrations (mol/m³); fixed archive ranges preserve comparisons across time. Click a cell to inspect its values. These are generic computational tissue cells, not registered human skin. Transmembrane voltage differs from the extracellular wound field (V/m).
+
+The scenario form supports upstream patient selection and a bounded hemorrhage–saline protocol with explicit stop actions. StandardMale completed the 2-second browser integration check. StandardFemale currently fails during native initialization, including without interventions; failed runs remain visible. This source-engine limitation is labeled in the selector. Short protocol checks validate transport and execution, not physiological recovery.

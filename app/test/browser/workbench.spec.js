@@ -96,7 +96,7 @@ test("measured Laplace evidence and archived vascular playback use actual data",
   ).toBeTruthy();
   expect(errors).toEqual([]);
 });
-test("native scenario form submits bounded exercise and exposes the server run", async ({
+test("native scenario form submits selected-preset hemorrhage and saline with stop actions", async ({
   page,
 }) => {
   test.skip(
@@ -105,7 +105,10 @@ test("native scenario form submits bounded exercise and exposes the server run",
   );
   await page.goto("/");
   await expect(page.locator("#run-status")).not.toContainText("Checking");
-  await page.locator("#scenario").selectOption("exercise");
+  await page.locator("#patient").selectOption("StandardFemale");
+  await expect(page.locator("#patient")).toHaveValue("StandardFemale");
+  await page.locator("#patient").selectOption("StandardMale");
+  await page.locator("#scenario").selectOption("hemorrhage_saline");
   await page.locator("#duration").fill("2");
   const responsePromise = page.waitForResponse(
     (r) =>
@@ -115,6 +118,13 @@ test("native scenario form submits bounded exercise and exposes the server run",
   const response = await responsePromise;
   expect(response.ok()).toBeTruthy();
   const run = await response.json();
+  expect(response.request().postDataJSON().patient).toBe("StandardMale");
+  expect(
+    response
+      .request()
+      .postDataJSON()
+      .interventions.map((a) => a.kind),
+  ).toEqual(["hemorrhage", "hemorrhage", "saline", "saline"]);
   console.log("Native browser run:", run.id);
   await expect(page.locator("#run-status")).toContainText(run.id);
   await expect(page.locator("#run-status")).toContainText(
@@ -123,7 +133,7 @@ test("native scenario form submits bounded exercise and exposes the server run",
   );
   await expect(page.locator("#chart svg")).toBeVisible();
 });
-test("OpenSim source family exposes attachment paths and unresolved wrapping", async ({
+test("OpenSim source family exposes native wrapped paths and force provenance", async ({
   page,
 }) => {
   await page.goto("/");
@@ -134,8 +144,11 @@ test("OpenSim source family exposes attachment paths and unresolved wrapping", a
   await expect(page.locator("#frame-label")).toContainText("m display");
   await page.locator("#search").fill("addbrev_r");
   await page.locator("#structures button").first().click();
-  await expect(page.locator("#details")).toContainText("attachment");
-  await expect(page.locator("#details")).toContainText("Unsolved");
+  await expect(page.locator("#details")).toContainText("Native mechanics");
+  await expect(page.locator("#details")).toContainText("Solved by source");
+  await expect(page.locator("#details")).toContainText(
+    "external force balance not solved",
+  );
   await page.locator("#search").fill("");
   await page.screenshot({ path: "test-results/opensim.png", fullPage: true });
 });
@@ -154,4 +167,67 @@ test("anatomy inspection remains available without a WebGL context", async ({
   );
   await page.locator("#structures button").first().click();
   await expect(page.locator("#details dl")).toBeVisible();
+});
+test("coverage, circuit balance and CFD uncertainty are exposed with measured and source-model context", async ({
+  page,
+}) => {
+  const errors = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await page.goto("/");
+  await expect(page.locator('#systems input[value="cardiac"]')).toBeChecked();
+  await page.locator("summary").filter({ hasText: "System coverage" }).click();
+  await expect(page.locator("#coverage-details")).toContainText(
+    "21 system domains",
+  );
+  await page
+    .locator("summary")
+    .filter({ hasText: "Conservative exchange" })
+    .click();
+  await expect(page.locator("#coupling-details")).toContainText(
+    "Maximum free-node flow residual",
+  );
+  await page
+    .locator("summary")
+    .filter({ hasText: "Vascular CFD audit" })
+    .click();
+  await expect(page.locator("#vascular-audit")).toContainText(
+    "Simulation failed",
+  );
+  await expect(page.locator("#vascular-audit")).toContainText("24.9%");
+  await page.locator("#trajectory-run").selectOption("reproductive");
+  await page.locator("#variable").selectOption("E2");
+  await expect(page.locator("#chart-note")).toContainText(
+    "prescribed time input",
+  );
+  await expect(page.locator("#chart")).toContainText("day");
+  await expect(page.locator("#chart svg")).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+test("native BETSE cells expose voltage, ions, constant protein field and source-clock playback", async ({
+  page,
+}) => {
+  const errors = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await page.goto("/");
+  await page.locator("#model").selectOption("betse-tissue");
+  await expect(page.locator("#play")).toBeEnabled();
+  await expect(page.locator("#flow-legend")).toContainText("Vmem");
+  await page.locator("#structures button").first().click();
+  await expect(page.locator("#cell-values")).toContainText(
+    "212 planar solver cells",
+  );
+  const canvas = page.locator("#viewport canvas"),
+    box = await canvas.boundingBox();
+  await canvas.click({ position: { x: box.width / 2, y: box.height / 2 } });
+  await expect(page.locator("#cell-values strong")).toContainText("Cell");
+  await page.locator("#flow-field").selectOption("proteins");
+  await expect(page.locator("#flow-legend")).toContainText("135.0");
+  await page.locator("#flow-field").selectOption("sodium");
+  await expect(page.locator("#flow-legend")).toContainText("mol/m^3");
+  await page.locator("#time").fill("33");
+  await expect(page.locator("#time-value")).toContainText("0.034 s");
+  await page.locator("#flow-field").selectOption("Vmem");
+  await page.screenshot({ path: "test-results/betse-tissue.png" });
+  expect(errors).toEqual([]);
 });

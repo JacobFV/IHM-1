@@ -853,3 +853,27 @@ dd {
 .evidence-fold p {
   font-size: 10px;
 }
+.coverage-list {
+  padding: 0;
+  list-style: none;
+  max-height: 220px;
+  overflow: auto;
+}
+.coverage-list li {
+  padding: 8px 0;
+  border-bottom: 1px solid #293935;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.coverage-list span {
+  font-size: 10px;
+  color: #a6bfb6;
+}
+.coverage-list small {
+  font-size: 9px;
+  color: #729188;
+}
+#protocol-note {
+  font-size: 10px;
+}
