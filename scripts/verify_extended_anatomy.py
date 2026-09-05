@@ -5,19 +5,20 @@ import json
 from pathlib import Path
 import tempfile
 import numpy as np
-from build_extended_anatomy import ROOT, RAW, OUT, MODEL_ID, sha256, append_manifest
+from build_extended_anatomy import ROOT, RAW, OUT, MODEL_ID, sha256, append_manifest, validate_provenance, validate_cached_sources, validate_fragment
 from collect_extended_anatomy import REVISION, EXPECTED_SHA256
 
 def verify():
-    provenance=json.loads((RAW/'provenance.json').read_text())
+    provenance=validate_provenance()
     assert provenance['revision']==REVISION
     for record in provenance['files']:
         assert sha256(ROOT/record['path'])==record['sha256']==EXPECTED_SHA256[Path(record['path']).name]
         assert (ROOT/record['path']).stat().st_size==record['bytes']
     assert sha256(ROOT/provenance['blend_path'])==provenance['blend_sha256']
-    index=json.loads((OUT/'source_index.json').read_text())
+    index=validate_cached_sources(provenance)
     fragment=json.loads((OUT/'manifest_fragment.json').read_text())
     coverage=json.loads((OUT/'coverage.json').read_text())
+    validate_fragment(fragment,provenance,index)
     assert index['source_blend_sha256']==provenance['blend_sha256']
     assert len(index['meshes'])==len(fragment['structures'])==coverage['structure_count']
     assert len({s['id'] for s in fragment['structures']})==len(fragment['structures'])
@@ -28,6 +29,7 @@ def verify():
     node_objects=[];curve_count=0
     for entry,structure in zip(index['meshes'],fragment['structures']):
         assert entry['id']==structure['id'] and structure['source']['object_name']==entry['name']
+        assert '7: Nervous system & Sense organs' not in entry['source_collections']
         assert not entry['name'].endswith(('.j','.g','.t','.i')) and 'kidney' not in entry['name'].lower()
         assert sha256(ROOT/entry['source_geometry_path'])==entry['source_geometry_sha256']
         with np.load(ROOT/entry['source_geometry_path'],allow_pickle=False) as d:
@@ -38,6 +40,9 @@ def verify():
         assert sha256(ROOT/entry['base_geometry_path'])==entry['base_geometry_sha256']
         with np.load(ROOT/entry['base_geometry_path'],allow_pickle=False) as base:
             assert len(base['faces'])==entry['base_triangles'] and len(base['vertices'])==entry['base_vertices']
+            original_matrix=np.array(entry['original_matrix_world'])
+            np.testing.assert_allclose(base['vertices'],base['local_vertices']@original_matrix[:3,:3].T+original_matrix[:3,3],atol=1e-12)
+            np.testing.assert_array_equal(base['faces'],base['local_faces'][:,::-1] if np.linalg.det(original_matrix[:3,:3])<0 else base['local_faces'])
         assert v.shape==(entry['source_vertices'],3) and f.shape==(entry['source_triangles'],3)
         assert np.isfinite(v).all() and f.min()>=0 and f.max()<len(v)
         np.testing.assert_allclose([v.min(0),v.max(0)],entry['bounds'])

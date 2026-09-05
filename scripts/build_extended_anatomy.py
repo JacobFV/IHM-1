@@ -16,9 +16,14 @@ import shutil
 import subprocess
 import sys
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / 'scripts'))
 if '--extract' in sys.argv:
     sys.path.insert(0, str(ROOT / '.cache/blender-python'))
 import numpy as np
+from collect_extended_anatomy import REVISION as PINNED_REVISION, EXPECTED_SHA256 as PINNED_FILES
+PINNED_BLEND_SHA256 = "9f08a17ea0115fed80b2a73ecdf0a1bc2ab2f6956f37c593ce23d513ea35afcd"
+EXTRACTOR_SEMANTIC_VERSION = 1
+EXTRACTION_DESCRIPTION = "Original datablocks and source-authored evaluated surfaces retained separately. Original viewport modifiers, levels and curve bevels evaluated unchanged. Triangulated without decimation. Object matrix_world applied; reflected face winding reversed only for negative determinant."
 RAW = ROOT / 'data/raw/anatomy/extended'
 OUT = ROOT / 'data/derived/anatomy/extended'
 MODEL_ID = 'z-anatomy'
@@ -31,6 +36,67 @@ def sha256(path):
     with Path(path).open('rb') as f:
         for block in iter(lambda:f.read(1024*1024),b''):h.update(block)
     return h.hexdigest()
+
+def require_digest(path, expected, label):
+    path = Path(path)
+    if not path.is_file() or sha256(path) != expected:
+        raise ValueError(f'{label} checksum mismatch or missing file: {path}')
+
+
+def validate_provenance():
+    """Check actual pinned raw bytes before extraction, cached builds or integration."""
+    provenance=json.loads((RAW/'provenance.json').read_text())
+    if provenance.get('revision') != PINNED_REVISION:
+        raise ValueError('Raw source revision differs from pinned revision')
+    records=provenance.get('files',[])
+    if len(records)!=len(PINNED_FILES) or {Path(r['path']).name for r in records}!=set(PINNED_FILES):
+        raise ValueError('Incomplete or duplicate raw source provenance records')
+    for record in records:
+        path=ROOT/record['path'];expected=PINNED_FILES[path.name]
+        if record.get('sha256')!=expected:
+            raise ValueError(f'Pinned raw source digest mismatch: {path}')
+        require_digest(path,expected,'raw source')
+        if path.stat().st_size != record.get('bytes'):
+            raise ValueError(f'Raw source size mismatch: {path}')
+    if provenance.get('blend_sha256')!=PINNED_BLEND_SHA256:
+        raise ValueError('Pinned blend digest mismatch')
+    require_digest(ROOT/provenance['blend_path'],PINNED_BLEND_SHA256,'blend')
+    return provenance
+
+
+def validate_cached_sources(provenance):
+    """Fail closed on stale, incompatible or altered intermediate geometry.
+
+    Existing schema-2 exports predate the explicit semantic version. Their exact
+    recorded extraction description identifies the same v1 algorithm; runtime
+    validation/display-only edits do not invalidate these historical exports.
+    """
+    index=json.loads((OUT/'source_index.json').read_text())
+    version=index.get('extractor_semantic_version')
+    if index.get('schema_version')!=2 or (version is None and index.get('extraction')!=EXTRACTION_DESCRIPTION) or (version is not None and version!=EXTRACTOR_SEMANTIC_VERSION):
+        raise ValueError('Unsupported cached extractor semantics; run --force-extract')
+    if index.get('source_blend_sha256')!=provenance['blend_sha256']:
+        raise ValueError('Source index differs from pinned blend')
+    entries=index.get('meshes',[])
+    if not entries or len({e['id'] for e in entries})!=len(entries):
+        raise ValueError('Empty or duplicate cached source identities')
+    for entry in entries:
+        for stage in ('source','base'):
+            require_digest(ROOT/entry[f'{stage}_geometry_path'],entry[f'{stage}_geometry_sha256'],f'{stage} geometry')
+    return index
+
+
+def validate_fragment(fragment, provenance, index):
+    entries={e['id']:e for e in index['meshes']}
+    structures=fragment.get('structures',[])
+    if len(structures)!=len(entries) or {s['id'] for s in structures}!=set(entries):
+        raise ValueError('Fragment identities differ from validated source index')
+    for structure in structures:
+        entry=entries[structure['id']];source=structure['source']
+        if source.get('sha256')!=provenance['blend_sha256'] or source.get('geometry_sha256')!=entry['source_geometry_sha256'] or source.get('base_geometry_sha256')!=entry['base_geometry_sha256']:
+            raise ValueError(f'Fragment source provenance differs: {structure["id"]}')
+        require_digest(ROOT/structure['geometry_path'],structure['geometry_sha256'],'display geometry')
+
 
 def write(path, data):
     path.parent.mkdir(parents=True,exist_ok=True)
@@ -83,6 +149,9 @@ def modifier_metadata(obj):
 
 def extract():
     import bpy
+    provenance=validate_provenance()
+    if Path(bpy.data.filepath).resolve() != (ROOT/provenance['blend_path']).resolve():
+        raise ValueError('Loaded Blender document is not the validated pinned source')
     destination=OUT/'source_geometry';destination.mkdir(parents=True,exist_ok=True)
     base_destination=OUT/'base_geometry';base_destination.mkdir(parents=True,exist_ok=True)
     entries=[];excluded=[]
@@ -133,27 +202,26 @@ def extract():
         'mesh_polygons':len(o.data.polygons) if o.type=='MESH' else None,
         'modifiers':modifier_metadata(o), 'export_exclusion':rejection(o)} for o in bpy.data.objects]
     write(OUT/'raw_object_inventory.json',{'objects':inventory})
-    write(OUT/'source_index.json',{'schema_version':2,'blender_version':bpy.app.version_string,
+    write(OUT/'source_index.json',{'schema_version':2,'extractor_semantic_version':EXTRACTOR_SEMANTIC_VERSION,'blender_version':bpy.app.version_string,
         'source_blend_version':list(bpy.data.version),'dependency_graph_mode':dg.mode,
         'evaluation_log':'data/derived/anatomy/extended/blender_evaluation.log',
-        'source_blend_sha256':sha256(RAW/'extracted/Z-Anatomy/Startup.blend'),
+        'source_blend_sha256':sha256(bpy.data.filepath),
         'unit_settings':{'system':bpy.context.scene.unit_settings.system,'scale_length':bpy.context.scene.unit_settings.scale_length},
-        'extraction':'Original datablocks and source-authored evaluated surfaces retained separately. Original viewport modifiers, levels and curve bevels evaluated unchanged. Triangulated without decimation. Object matrix_world applied; reflected face winding reversed only for negative determinant.',
+        'extraction':EXTRACTION_DESCRIPTION,
         'meshes':entries,'excluded':excluded})
     print('source complete',len(entries),flush=True)
 
 def build(force_extract=False):
     import trimesh
     OUT.mkdir(parents=True,exist_ok=True)
-    provenance=json.loads((RAW/'provenance.json').read_text())
+    provenance=validate_provenance()
     if force_extract or not (OUT/'source_index.json').exists():
         with (OUT/'blender_evaluation.log').open('w') as evaluation_log:
             subprocess.run(['blender','--background','--disable-autoexec',str(ROOT/provenance['blend_path']),
             '--python-exit-code','1','--python',str(Path(__file__).resolve()),'--','--extract'],check=True,
             env={**os.environ,'PYTHONHOME':os.environ.get('EXTENDED_BLENDER_PYTHONHOME','/usr')},
             stdout=evaluation_log,stderr=subprocess.STDOUT)
-    index=json.loads((OUT/'source_index.json').read_text())
-    if index['source_blend_sha256']!=provenance['blend_sha256']:raise ValueError('Source index differs from pinned blend')
+    index=validate_cached_sources(provenance)
     entries=index['meshes'];rotation=np.array([[1,0,0],[0,0,1],[0,-1,0.]])
     bounds=np.array([e['bounds'] for e in entries]).reshape(-1,3)@rotation.T
     center=(bounds.min(0)+bounds.max(0))/2
@@ -178,6 +246,7 @@ def build(force_extract=False):
         is_region=e['system']=='integumentary'
         structures.append({'id':e['id'],'name':e['name'],'model_id':MODEL_ID,'system':e['system'],'kind':'mesh',
             'geometry_url':'/api/geometry/'+e['id'],'geometry_path':str(path.relative_to(ROOT)),'geometry_sha256':sha256(path),
+            'display_geometry':{'resolution':'full-source-evaluated','source_faces':e['source_triangles'],'base_faces':e['base_triangles'],'target_faces':e['source_triangles']},
             'color':COLORS[e['system']],'default_visible':e['system']=='lymphatic',
             'calibration_status':'authored body surface region; no skin thickness or layers' if is_region else 'authored reference anatomical surface',
             'concepts':[],'source_collections':e['source_collections'],
@@ -210,6 +279,9 @@ def build(force_extract=False):
 def append_manifest(path):
     """Explicit integration: copy geometry and idempotently replace only this family."""
     manifest=json.loads(path.read_text());fragment=json.loads((OUT/'manifest_fragment.json').read_text())
+    provenance=validate_provenance()
+    index=validate_cached_sources(provenance)
+    validate_fragment(fragment,provenance,index)
     geometry=path.parent/'geometry';geometry.mkdir(parents=True,exist_ok=True)
     for s in fragment['structures']:shutil.copy2(ROOT/s['geometry_path'],geometry/(s['id']+'.json.gz'))
     manifest['models']=[m for m in manifest['models'] if m['id']!=MODEL_ID]+fragment['models']
