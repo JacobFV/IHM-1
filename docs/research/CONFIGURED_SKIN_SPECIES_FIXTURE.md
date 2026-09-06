@@ -12,7 +12,7 @@ snapshot, using each observed aggregate mass divided by aggregate volume. These
 concentrations seed the fixture's 100 mL extracellular inventory; no new measured
 concentrations are asserted. Originally zero species remain zero. Species names,
 source snapshot SHA and generated seed bytes are retained in
-`data/research/configured_skin_species/prepared_v1/`.
+`data/research/configured_skin_species/prepared_v2/` (v1 is retained unchanged).
 
 Two separate operator phases prevent duplicate transfers:
 
@@ -68,5 +68,42 @@ Commands:
   nice 10 under the root's explicit shared-slot grant. Every failure and resource
   log is retained in a new audit directory.
 
-At source preparation, native execution is **pending**. Full-patient acceptance and
+The native gate has now passed as recorded below. Full-patient acceptance and
 any production composition with sleep/GI/cardiovascular changes remain separate.
+
+
+## Retained native execution
+
+The first compile (`configured-skin-species-1jx0ne21`) failed before native execution:
+`SESubstanceTransport.h` already includes its unguarded `.inl`, and the fixture's
+second direct include redefined the methods. Its stderr/resources and prepared_v1
+remain retained. The narrow correction uses the guarded header while preserving
+explicit instantiation of the exact native algorithm; prepared_v2 is separate.
+
+The granted retry `data/derived/audits/configured-skin-species-95ayva36/` passed:
+
+| Check | Actual result |
+| --- | --- |
+| Complete seeded species inventory | 28 native quantities |
+| Zero-pressure steps | 10 for each independently initialized operator phase |
+| Maximum owning mass-ledger residual | 6.984919309616089e-10 µg |
+| Maximum aggregate zero-load transported-mass difference | 6.984919309616089e-10 µg |
+| Local specific Albumin transfer difference | 3.870587801216324 µg |
+| Native Albumin donor after capped request | 0 µg |
+| Repeated exhausted-donor request | Conserved, finite and nonnegative |
+| Pressure release | Passed |
+| Compiler | 3.19 s, peak RSS 640,680 KiB |
+| Native operator fixture | 0.16 s, peak RSS 50,228 KiB |
+
+`data/research/configured_skin_species/native_acceptance.json` records the actual
+results, all 28 species names, configuration/parent/native-source bindings, executable
+hash and byte receipts for successful logs and the first failure. The nested source
+preparation's `native_executed:false` describes the frozen pre-run state; the outer
+acceptance records actual execution. The all-species ledger checks ran after each
+step; the output reports their maximum residual, not per-species endpoint snapshots.
+
+The process ran with nice 10 and one thread within the granted 1 GiB/60 s CPU/75 s
+compile and 10 s fixture limits, then was reaped and the slot released. These results
+validate this bounded operator fixture; they do not establish physiological regional
+protein laws, full-patient composition, lymph-node transport or mechanical work
+closure. No existing native variant or shared adapter was changed.

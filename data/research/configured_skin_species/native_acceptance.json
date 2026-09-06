@@ -1,0 +1,163 @@
+{
+  "passed": true,
+  "species_count": 28,
+  "zero_load_steps_per_operator": 10,
+  "maximum_mass_ledger_residual_ug": 6.984919309616089e-10,
+  "maximum_zero_load_aggregate_mass_error_ug": 6.984919309616089e-10,
+  "local_specific_albumin_transfer_difference_ug": 3.870587801216324,
+  "albumin_donor_after_cap_ug": 0,
+  "native_liquid_transporter_executed": true,
+  "native_passive_albumin_executed": true,
+  "pressure_release_passed": true,
+  "patient_initialized": false,
+  "preparation": {
+    "schema": "configured_skin_species_preparation_v1",
+    "parent_variant": "whole_body_integrity_regional_skin_graph_v2",
+    "parent_manifest_sha256": "52de403e3dab2682f774755b7bf1370711bc5ab218244c581460b84a82aad130",
+    "parent_library_sha256": "bc91cbab829c04bfa2df7490433af5bee752e7514332ac715e9f0bd11a17650a",
+    "configuration_sha256": "ad93aa3dcc4e9bcfeb54f076c7bbe76d316f0b2e6d52ec4865536a20e511aefb",
+    "species_seed_snapshot_sha256": "cb37d4e4f5460d48e2938a374ab5a92148890559f7070482926732b2903e0b4d",
+    "species_count": 28,
+    "species_names": [
+      "Albumin",
+      "AminoAcids",
+      "Antigen_A",
+      "Antigen_B",
+      "Bicarbonate",
+      "Calcium",
+      "Carbaminohemoglobin",
+      "CarbonDioxide",
+      "Chloride",
+      "Creatinine",
+      "Epinephrine",
+      "Glucagon",
+      "Glucose",
+      "Hemoglobin",
+      "Insulin",
+      "Ketones",
+      "Lactate",
+      "Nitrogen",
+      "OxyCarbaminohemoglobin",
+      "Oxygen",
+      "Oxyhemoglobin",
+      "Platelet",
+      "Potassium",
+      "RedBloodCell",
+      "Sodium",
+      "Triacylglycerol",
+      "Urea",
+      "WhiteBloodCell"
+    ],
+    "source_receipts": {
+      "data/research/configured_regional_skin/prepared_v1/native_configured_regional_skin.h": "7401a91d4d1c705334db6a65a4bd9f7ff1bc3bb8d0b0ecebe8b0a99096e50413",
+      "data/research/configured_regional_skin/prepared_v1/native_configured_regional_skin_fixture.cpp": "26ccb5ca147108babf99ab2c6b86182930819d641a695908720ace97704f24ec",
+      "scripts/native_configured_skin_species_fixture.cpp": "91ce5f8e5a9e3b59f04f80db261c39041a340448c9a2fd4af75d290d3524045f",
+      "data/raw/physiology/biogears/projects/biogears/libBiogears/include/biogears/cdm/substance/SESubstanceTransport.inl": "1880a14e9385b27bad905762840452691b8d059a1472e97b2b873bf96a56dff2",
+      "data/runtime/physiology/variants/whole_body_integrity_regional_skin_gi_v1/Diffusion.cpp": "a4f08a86770f8d5e6cd58814530b550d05ef52d69a2078aac5c1cdf762bc9200"
+    },
+    "prepared_sha256": {
+      "native_configured_regional_skin.h": "7401a91d4d1c705334db6a65a4bd9f7ff1bc3bb8d0b0ecebe8b0a99096e50413",
+      "native_configured_regional_skin_fixture.cpp": "26ccb5ca147108babf99ab2c6b86182930819d641a695908720ace97704f24ec",
+      "native_configured_skin_species_fixture.cpp": "91ce5f8e5a9e3b59f04f80db261c39041a340448c9a2fd4af75d290d3524045f",
+      "configured_species_seed.inc": "0d81bc5465e1c8e0868a0fcbb82e81b5fded4203263a21491fa736062f205d6e"
+    },
+    "operator_scope": "Separate SELiquidTransporter and native passive Albumin phases; no duplicate operator application, sweat or filtration links",
+    "native_executed": false,
+    "production_activation_allowed": false
+  },
+  "compile_command": [
+    "c++",
+    "-std=c++20",
+    "-O0",
+    "-g1",
+    "-DBIOGEARS_THROW_READONLY_EXCEPTIONS",
+    "/home/brandonin/Documents/IHM-1/data/derived/audits/configured-skin-species-95ayva36/native_configured_skin_species_fixture.cpp",
+    "-I",
+    "/home/brandonin/Documents/IHM-1/data/raw/physiology/biogears/projects/biogears/libBiogears/include",
+    "-I",
+    "/home/brandonin/Documents/IHM-1/data/raw/physiology/biogears/projects/biogears-common/include",
+    "-I",
+    "/home/brandonin/Documents/IHM-1/data/runtime/physiology/sysroot/usr/include",
+    "-I",
+    "/home/brandonin/Documents/IHM-1/data/runtime/physiology/sysroot/usr/include/eigen3",
+    "-I",
+    "/home/brandonin/Documents/IHM-1/data/runtime/physiology/biogears-build/projects/biogears/generated/Release",
+    "-L",
+    "/home/brandonin/Documents/IHM-1/data/runtime/physiology/biogears-build/outputs/Release/lib",
+    "-lbiogears",
+    "-lbiogears_cdm",
+    "-o",
+    "/home/brandonin/Documents/IHM-1/data/derived/audits/configured-skin-species-95ayva36/fixture"
+  ],
+  "fixture_sha256": "63d17509bfe2770886116f218976b2356734daa70f003e66f078417877e33be2",
+  "scope": "Native species operator/circuit fixture only; no full-patient composition or physiological validation of regional chemical independence",
+  "audit_path": "data/derived/audits/configured-skin-species-95ayva36",
+  "native_executed": true,
+  "evidence_files": [
+    {
+      "path": "data/derived/audits/configured-skin-species-95ayva36/verification.json",
+      "sha256": "cf57db3d5dea683f9f69cd2dfdd91038c859822795be8900d4041b1f55ccb041",
+      "bytes": 4486
+    },
+    {
+      "path": "data/derived/audits/configured-skin-species-95ayva36/compile.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "data/derived/audits/configured-skin-species-95ayva36/compile.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "data/derived/audits/configured-skin-species-95ayva36/compile.resources",
+      "sha256": "7474df1c75c12bfda8d32a78afc372b3582dc41c1d686e279986e9e725851018",
+      "bytes": 1602
+    },
+    {
+      "path": "data/derived/audits/configured-skin-species-95ayva36/fixture.stdout",
+      "sha256": "bf45ef55f70fe79554a22bb8fe951c1b039462ae346af9c4f1434af767a184e2",
+      "bytes": 1445
+    },
+    {
+      "path": "data/derived/audits/configured-skin-species-95ayva36/fixture.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "data/derived/audits/configured-skin-species-95ayva36/fixture.resources",
+      "sha256": "62cc2634f9f18d6b2d8cb63a30bf2d69a5b1e4071fbeec02e20765f5824e80dd",
+      "bytes": 808
+    },
+    {
+      "path": "data/derived/audits/configured-skin-species-95ayva36/ldd.txt",
+      "sha256": "4c1ef8ce98ce9d35c31c86ef91bd3fc62cb92c71b5c216c6b9cf70d2ccec85c0",
+      "bytes": 3308
+    },
+    {
+      "path": "data/derived/audits/configured-skin-species-1jx0ne21/compile.stderr",
+      "sha256": "75d48c48e4a55da64f0f7d00a008cce2daece8bafb1cf17afea3c5956f8ef7a7",
+      "bytes": 3919
+    },
+    {
+      "path": "data/derived/audits/configured-skin-species-1jx0ne21/compile.resources",
+      "sha256": "7af0de3ec984337243adae88e7ca07aabc4c8eeb3480e777e6d0c2c4c5226c15",
+      "bytes": 1636
+    }
+  ],
+  "first_failure": {
+    "audit_path": "data/derived/audits/configured-skin-species-1jx0ne21",
+    "native_executed": false,
+    "cause": "SESubstanceTransport.h transitively includes unguarded .inl; second direct include caused redefinition",
+    "correction": "Use guarded .h while retaining explicit native template instantiation",
+    "failed_preparation_preserved": "data/research/configured_skin_species/prepared_v1"
+  },
+  "resources": {
+    "compile_wall_s": 3.19,
+    "compile_peak_rss_kib": 640680,
+    "fixture_wall_s": 0.16,
+    "fixture_peak_rss_kib": 50228,
+    "nice": 10,
+    "threads": 1
+  }
+}

@@ -16,7 +16,7 @@ RUNTIME=ROOT/'data/runtime/physiology'
 PREPARED=ROOT/'data/research/configured_regional_skin/prepared_v1'
 SNAPSHOT=ROOT/'data/derived/audits/regional-python-vvdedt24/initial.json'
 SNAPSHOT_SHA='cb37d4e4f5460d48e2938a374ab5a92148890559f7070482926732b2903e0b4d'
-STAGE=ROOT/'data/research/configured_skin_species/prepared_v1'
+STAGE=ROOT/'data/research/configured_skin_species/prepared_v2'
 
 
 def prepare():
