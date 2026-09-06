@@ -448,7 +448,7 @@ class EmbodiedRuntime:
             geometry=self.respiratory_load.geometry(native['values']['lung_volume_ml'],mechanical['entities'],end)
             self.next_excitation=deepcopy(neural['motor_excitations'])
             self.native_state=native;self.mechanical_state=mechanical;self.time_s=end;self.sequence+=1
-            self.frame={'schema':'ihm.embodied-frame.v1','time_s':end,'sequence':self.sequence,
+            self.frame={'schema':'ihm.embodied-frame.v1','time_s':end,'sequence':self.sequence,'input_capabilities':self._input_capabilities(),
                 'entities':geometry['entities'],'skin_field':geometry['skin_field'],'respiration':geometry,'mechanics':mechanical,'neural':neural,'physiology':native,
                 'cutaneous':cutaneous,'intake_mass':self._intake_mass_audit(),'tissue_exchange':tissue,'respiratory_load':load,'intake_schedule':self.intakes.snapshot(),
                 'coupling':{'exchange_interval_s':dt,'motor_exchange_latency_s':dt,
@@ -479,13 +479,22 @@ class EmbodiedRuntime:
         if self.intake_mass_bridge is None:return {'enabled':False}
         return {'enabled':True,'binding':deepcopy(self.intake_mass_binding),'bridge':self.intake_mass_bridge.snapshot()}
 
+    def _input_capabilities(self):
+        regional=getattr(self.native,'regions',())
+        regional=list(regional) if (callable(getattr(self.native,'regional_skin_pressure',None))
+            and isinstance(regional,(tuple,list)) and all(isinstance(k,str) and k for k in regional)
+            and len(set(regional))==len(regional)) else []
+        whole=(callable(getattr(self.native,'skin_compression',None))
+            and getattr(self.native,'supports_whole_skin_compression',True) is True and not regional)
+        return {'skin_pressure':{'whole_skin':whole,'regional_ids':regional}}
+
     def snapshot(self):
         if self.frame:
-            frame=deepcopy(self.frame);frame.update(sequence=self.sequence,intake_schedule=self.intakes.snapshot(),intake_mass=self._intake_mass_audit())
+            frame=deepcopy(self.frame);frame.update(sequence=self.sequence,intake_schedule=self.intakes.snapshot(),intake_mass=self._intake_mass_audit(),input_capabilities=self._input_capabilities())
             return frame
         native=deepcopy(self.native_state);native['signal_metadata']=native_field_metadata(native['values'])
         geometry=self.respiratory_load.geometry(native['values']['lung_volume_ml'],self.mechanical_state['entities'],0.)
-        return {'schema':'ihm.embodied-frame.v1','time_s':0.,'sequence':self.sequence,
+        return {'schema':'ihm.embodied-frame.v1','time_s':0.,'sequence':self.sequence,'input_capabilities':self._input_capabilities(),
             'entities':geometry['entities'],'skin_field':geometry['skin_field'],'respiration':geometry,
             'mechanics':deepcopy(self.mechanical_state),'physiology':native,
             'tissue_exchange':self.exchange.observe(self.native_state),'intake_schedule':self.intakes.snapshot(),'intake_mass':self._intake_mass_audit()}

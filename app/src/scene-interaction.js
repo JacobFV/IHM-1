@@ -260,7 +260,7 @@ export function mountSceneInteraction({scene,camera,renderer,controls,group,getO
     if(!running||now-lastStep<20)return;
     pending=true;lastStep=now;
     try {
-      const result=await advanceScene(request,endpoint()+'/'+session,bodyCommand(kind,state.sequence,forceCommand(),panels.inputs));
+      const result=await advanceScene(request,endpoint()+'/'+session,bodyCommand(kind,state.sequence,forceCommand(),panels.inputs,state));
       if(!disposed)accept(result.frame);
       if(result.recovered)throw Error(`${result.error.message}. Recorded state restored; resume when ready.`);
     }

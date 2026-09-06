@@ -7,7 +7,7 @@ test('default live owner never silently selects reduced scene',()=>{
  assert.equal(bodyEnvironment('bed','embodied'),'supine');
  assert.equal(bodyEnvironment('floor','embodied'),'upright');
  assert.throws(()=>bodyEndpoint('fake'));assert.throws(()=>bodyEnvironment('fake','embodied'));
- assert.deepEqual(bodyCommand('embodied',3,[],{descending:{bra_r:.3},sensory_blocks:['bra_r'],motor_blocks:[],skin_compression_pa:100}),{seconds:.02,sequence:3,forces:[],descending:{bra_r:.3},sensory_blocks:['bra_r'],motor_blocks:[],skin_compression_pa:100});
+ assert.deepEqual(bodyCommand('embodied',3,[],{descending:{bra_r:.3},sensory_blocks:['bra_r'],motor_blocks:[],skin_compression_pa:100},{input_capabilities:{skin_pressure:{whole_skin:true,regional_ids:[]}}}),{seconds:.02,sequence:3,forces:[],descending:{bra_r:.3},sensory_blocks:['bra_r'],motor_blocks:[],skin_compression_pa:100});
  assert.throws(()=>bodyCommand('embodied',1,[],{skin_compression_pa:NaN}));
 });
 test('live histories are bounded, preserve real time and never blend session owners',()=>{

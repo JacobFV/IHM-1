@@ -10,14 +10,29 @@ export function bodyEnvironment(view,kind='embodied') {
  if(!mapped[view])throw Error('Unknown body environment');
  return kind==='embodied'?mapped[view]:kind==='reduced'?view:bodyEndpoint(kind);
 }
-export function bodyCommand(kind,sequence,forces,inputs={}) {
+export function skinPressureCapability(frame) {
+ const value=frame?.input_capabilities?.skin_pressure;
+ const unavailable={topology:'unavailable',regional_ids:[],message:'Skin pressure capability is unavailable. Reconnect to an owner that reports supported pressure inputs.'};
+ if(!value||typeof value.whole_skin!=='boolean'||!Array.isArray(value.regional_ids)||value.regional_ids.some(id=>typeof id!=='string'||!id)||new Set(value.regional_ids).size!==value.regional_ids.length||value.whole_skin&&value.regional_ids.length)return unavailable;
+ if(value.whole_skin)return {topology:'whole',regional_ids:[],message:'Whole-skin pressure boundary is available.'};
+ if(value.regional_ids.length)return {topology:'regional',regional_ids:[...value.regional_ids],message:'Whole-skin pressure is unavailable for this regional owner. Reset whole-skin pressure to 0; use named regional boundaries through the regional input interface.'};
+ return unavailable;
+}
+export function bodyCommand(kind,sequence,forces,inputs={},frame=null) {
  bodyEndpoint(kind);
  if(!Number.isInteger(sequence)||sequence<0)throw Error('Missing current body sequence');
  const command={seconds:.02,sequence,forces};
  if(kind==='embodied') {
   const descending={...inputs.descending},pressure=inputs.skin_compression_pa??0;
   if(!Number.isFinite(pressure)||pressure<0||pressure>5000||Object.values(descending).some(v=>!Number.isFinite(v)||v<0||v>1))throw Error('Invalid body input');
-  Object.assign(command,{descending,sensory_blocks:[...(inputs.sensory_blocks||[])],motor_blocks:[...(inputs.motor_blocks||[])],skin_compression_pa:pressure});
+  Object.assign(command,{descending,sensory_blocks:[...(inputs.sensory_blocks||[])],motor_blocks:[...(inputs.motor_blocks||[])]});
+  const capability=skinPressureCapability(frame),regional=inputs.regional_skin_pressures;
+  if(pressure!==0&&capability.topology!=='whole')throw Error('Whole-skin pressure is unavailable. '+capability.message);
+  if(regional!==undefined) {
+   if(capability.topology!=='regional')throw Error('Regional skin pressure is unavailable for this owner.');
+   if(!regional||typeof regional!=='object'||Array.isArray(regional)||Object.entries(regional).some(([id,v])=>!capability.regional_ids.includes(id)||!Number.isFinite(v)||v<0||v>5000))throw Error('Invalid regional skin pressure boundary');
+   command.regional_skin_pressures={...regional};
+  } else if(capability.topology==='whole')command.skin_compression_pa=pressure;
  }
  return command;
 }
