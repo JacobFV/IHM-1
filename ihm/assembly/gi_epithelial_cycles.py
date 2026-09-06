@@ -75,11 +75,27 @@ class GIPreparation:
         _,phi=self.electrical_state(n)
         return float(chemical+.5*phi@self.capacitance@phi)
 
+    def marginal_cost(self, n, nu):
+        """Directional derivative of convex ideal-mixture plus capacitor energy.
+
+        At a zero pool, creation has -infinite and withdrawal +infinite
+        chemical marginal cost. Zero-inventory donors are removed by the
+        extent budget before this derivative is evaluated.
+        """
+        used=nu!=0
+        if (n[used]<=0).any():
+            if ((n<=0)&(nu<0)).any():return float('inf')
+            return -float('inf')
+        _,phi=self.electrical_state(n)
+        mu=R*self.temperature*np.log(n[used]/np.broadcast_to(self.volumes[:,None],n.shape)[used])
+        electrical=np.broadcast_to(phi[:,None],n.shape)[used]*np.broadcast_to(Z,n.shape)[used]*F
+        return float(np.sum(nu[used]*(mu+electrical)))
+
     def apply(self,pathway,requested_extent_mol):
         """Transactional donor-limited extent. Uphill unpowered requests fail.
 
-        Finite downhill admission avoids silently treating an imposed passive
-        extent as a fitted rate. Reverse passive/cotransport extents are allowed;
+        Convex marginal-affinity stopping prevents passage beyond equilibrium.
+        An imposed extent is still not a fitted rate. Reverse passive/cotransport extents are allowed;
         reverse ATP synthesis requires a separate explicit model and is rejected.
         """
         if pathway not in CYCLES or not np.isfinite(requested_extent_mol):raise ValueError('Unknown pathway or invalid extent')
@@ -93,6 +109,22 @@ class GIPreparation:
         trial=self.moles+extent*nu
         while (trial<0).any():
             extent=np.nextafter(extent,0.);trial=self.moles+extent*nu
+        supplied=self.atp_free_energy_j_mol if pump else 0.
+        if extent>0:
+            initial_cost=self.marginal_cost(self.moles,nu)
+            if initial_cost>supplied:
+                raise ValueError('Initial marginal cost exceeds supplied driving work')
+            if self.marginal_cost(trial,nu)>supplied:
+                # Along a fixed stoichiometric column, ideal chemical energy
+                # and positive capacitor energy are convex. Thus the marginal
+                # cost is monotone and its first crossing is the only stop.
+                lower,upper=0.,extent
+                for _ in range(100):
+                    mid=lower+(upper-lower)/2
+                    if mid==lower or mid==upper:break
+                    if self.marginal_cost(self.moles+mid*nu,nu)<=supplied:lower=mid
+                    else:upper=mid
+                extent=lower;trial=self.moles+extent*nu
         dg=self.free_energy(trial)-self.free_energy(self.moles)
         work=extent*self.atp_free_energy_j_mol if pump else 0.
         if dg>work:raise ValueError('Requested finite extent is uphill beyond available work; reduce extent or supply an explicit driver')
@@ -100,7 +132,8 @@ class GIPreparation:
         if pump:self.atp_cycles_mol-=extent
         row=dict(pathway=pathway,extent_mol=sign*extent,free_energy_change_j=dg,
                  external_work_j=work,dissipation_j=work-dg,atp_cycles_mol=extent if pump else 0.,
-                 pump_net_outward_charge_c=F*extent if pump else 0.)
+                 pump_net_outward_charge_c=F*extent if pump else 0.,
+                 final_marginal_cost_j_mol=self.marginal_cost(trial,nu) if extent else None)
         self.history.append(row)
         return row
 

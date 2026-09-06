@@ -21,29 +21,36 @@ def main():
     assert r['extent_mol']==1e-8
     np.testing.assert_allclose(p.moles-start,[[-2e-8,0,0,-1e-8,0],[2e-8,0,0,1e-8,0],[0,0,0,0,0]],atol=1e-22)
     # A cotransporter cannot proceed uphill without a declared work source.
-    p=preparation();before=p.moles.copy()
+    p=preparation([(1,0,2e-6),(1,3,2e-6)]);before=p.moles.copy()
     try:p.apply('sglt1',1e-8)
     except ValueError:pass
     else:raise AssertionError('uphill cotransport accepted')
     np.testing.assert_array_equal(before,p.moles)
     p=preparation([(0,3,1e-10),(1,3,1e-14),(1,0,1e-14)])
-    r=p.apply('sglt1',1);assert r['extent_mol']==1e-10
-    assert p.moles[0,3]==0
+    r=p.apply('sglt1',1);assert 0<r['extent_mol']<1e-10
+    assert p.moles[0,3]>0  # Chemical affinity stops before exact depletion.
+    p=preparation([(0,3,0)])
     assert p.apply('sglt1',1)['extent_mol']==0
     p=preparation([(1,0,1e-10),(2,1,1e-8)],work=200000)
     r=p.apply('nak_pump',1);assert r['extent_mol']<=1e-10/3
     assert p.moles.min()>=0
     assert r['atp_cycles_mol']==r['extent_mol']
     assert abs(r['pump_net_outward_charge_c']-r['extent_mol']*96485.33212)<1e-16
+    # Pump with an initially unaffordable electrochemical cost rejects atomically.
+    p=preparation([(1,0,1e-20)],work=1)
+    before=p.moles.copy()
+    try:p.apply('nak_pump',1e-22)
+    except ValueError:pass
+    else:raise AssertionError('initially unfunded pump accepted')
+    np.testing.assert_array_equal(before,p.moles)
     # Finite reservoir budget and pump work are both enforced transactionally.
     p=preparation(atp=0)
     assert p.apply('nak_pump',1)['extent_mol']==0
     p=preparation(work=1e-12)
     before=p.moles.copy()
-    try:p.apply('nak_pump',1e-8)
-    except ValueError:pass
-    else:raise AssertionError('unfunded pump accepted')
-    np.testing.assert_array_equal(before,p.moles)
+    r=p.apply('nak_pump',1e-8)
+    assert r['extent_mol']<1e-15
+    assert r['final_marginal_cost_j_mol']<=1e-12
     p=preparation([(0,0,2e-6)])
     r=p.apply('paracellular_na',1e-9)
     assert r['free_energy_change_j']<0
@@ -57,6 +64,19 @@ def main():
     a=p.audit();assert abs(a['energy_residual_j'])<1e-15
     assert abs(a['global_charge_change_c'])<1e-15
     assert a['maximum_species_residual_mol']<1e-20
+    # Reviewer counterexamples: endpoint ΔG alone admitted an uphill final path.
+    n=np.full((3,5),1e-12);n[1,3]=2e-12
+    q=GIPreparation(n,[1e-12]*3,[1e-11]*2,[0]*3,310,
+        {'preparation':'overshoot regression','parameters':'synthetic'},
+        atp_cycles_mol=1e-12,atp_free_energy_j_mol=50000)
+    r=q.apply('glucose_efflux',.75e-12)
+    assert abs(r['extent_mol']-.5e-12)<1e-25
+    q=GIPreparation(np.full((3,5),1e-12),[1e-12]*3,[1e-11]*2,[0]*3,310,
+        {'preparation':'pump overshoot regression','parameters':'synthetic'},
+        atp_cycles_mol=1e-12,atp_free_energy_j_mol=50000)
+    r=q.apply('nak_pump',8e-17)
+    assert r['extent_mol']<8e-17
+    assert r['final_marginal_cost_j_mol']<=50000*(1+1e-12)
     print('PASS: stoichiometry, tail/zero donors, pump ATP/work bounds, reversible passive flux, conservation and energy ledger')
 
 if __name__=='__main__':main()
