@@ -9,6 +9,7 @@ import signal
 import sys
 import tempfile
 import time
+import traceback
 
 import numpy as np
 
@@ -193,7 +194,14 @@ def run_native(args):
                 break
         report.update(result, passed=result['status']=='converged', final_time_s=rows[-1]['time_s'])
     except Exception as error:
-        report.update(status='stopped', error=f'{type(error).__name__}: {error}')
+        report.update(status='stopped', error=f'{type(error).__name__}: {error}',
+                      last_successful_time_s=rows[-1]['time_s'] if rows else None,
+                      failed_stage_target_s=receipts[-1]['stage_target_s'] if receipts else None)
+        if receipts:
+            receipts[-1].update(outcome={'status':'stopped', 'error':report['error']},
+                                last_successful_time_s=report['last_successful_time_s'])
+            write('checkpoint_receipts.json', receipts)
+        write('failure.json', {**report, 'traceback':traceback.format_exc()})
     finally:
         signal.setitimer(signal.ITIMER_REAL, 0)
         signal.signal(signal.SIGALRM, old_handler)
