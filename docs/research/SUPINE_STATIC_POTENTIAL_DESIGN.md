@@ -224,3 +224,25 @@ nonlinear verification) and connect residual weighting to inertial acceleration
 error rather than inverse stiffness alone. Any mass/inverse-mass observation
 must be source-verified before use; no guessed inertia, artificial balancing
 reaction or relaxed physical limit is justified by this failed chunk.
+
+### Native physical-metric prerequisite (prepared, not yet compiled)
+
+The retained Simbody `SimbodyMatterSubsystem.h` documents `calcMInv` as the
+inverse free-mobility mass operator. It does not by itself enforce ideal
+constraint reactions. The isolated `native_physical_metric_probe.h` therefore
+emits native `calcM` and `calcMInv`, both tree and constrained force residuals,
+and actual udot. The two-pose prerequisite must verify the sign relation
+`-MInv * constrained_residual = udot` rather than assume it. It also reports
+`-MInv * tree_residual - udot` to expose omission of constraint reactions,
+checks inverse symmetry, positive mass eigenvalues and `M * MInv = I`.
+Failure requires a properly constrained projection; it never licenses using
+the unconstrained tree residual as acceleration.
+
+The prepared isolated build is `effective-potential-build-_jnt2x88/manifest.json`.
+Only a copied diagnostic header changes; forces, model, library, activations,
+contact and prior frozen probes remain unchanged. The planned bounded identity
+probe uses two copied states (the initial supported q seed and the explicitly
+failed force-root q), 2 calls/15 s, with no optimization or trajectory. Numerical
+identity tolerance is 1e-8 per native acceleration component, separately in
+m/s² and rad/s². Physical acceptance remains 1e-4 in those same respective
+units. No mass operator will be used by the solver before this gate passes.
