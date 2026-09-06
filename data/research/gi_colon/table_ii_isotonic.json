@@ -1,0 +1,88 @@
+{
+  "source": "JCI106100.pdf",
+  "page": 1339,
+  "table": "II rows1\u20136 visually checked",
+  "protocol": "intact_human_colon_isotonic_NaCl_mannitol",
+  "flow_ml_hr": [
+    820,
+    880
+  ],
+  "temperature_k": null,
+  "temperature_note": "Not reported in inspected methods; no37C assertion",
+  "sample_note": "n counts hourly study periods, not independent people",
+  "positive_sign": "absorption from lumen",
+  "rows": [
+    {
+      "infused_na_meq_l": 0,
+      "hourly_periods": 8,
+      "water_ml_min": -0.9,
+      "water_sd": 0.5,
+      "na_meq_hr": -4.4,
+      "na_sd": 2.1,
+      "cl_meq_hr": -1.6,
+      "cl_sd": 1.6,
+      "k_meq_hr": -1.6,
+      "k_sd": 0.05
+    },
+    {
+      "infused_na_meq_l": 7.5,
+      "hourly_periods": 6,
+      "water_ml_min": -0.2,
+      "water_sd": 0.4,
+      "na_meq_hr": -1.4,
+      "na_sd": 0.9,
+      "cl_meq_hr": 2.9,
+      "cl_sd": 1.6,
+      "k_meq_hr": -1.6,
+      "k_sd": 0.26
+    },
+    {
+      "infused_na_meq_l": 23,
+      "hourly_periods": 16,
+      "water_ml_min": 0.07,
+      "water_sd": 0.6,
+      "na_meq_hr": 2.7,
+      "na_sd": 1.2,
+      "cl_meq_hr": 8.1,
+      "cl_sd": 5.4,
+      "k_meq_hr": -1.7,
+      "k_sd": 0.4
+    },
+    {
+      "infused_na_meq_l": 50,
+      "hourly_periods": 2,
+      "water_ml_min": 0.8,
+      "water_sd": 0,
+      "na_meq_hr": 13,
+      "na_sd": 5,
+      "cl_meq_hr": 19,
+      "cl_sd": 2.8,
+      "k_meq_hr": -1.9,
+      "k_sd": 0.8
+    },
+    {
+      "infused_na_meq_l": 100,
+      "hourly_periods": 9,
+      "water_ml_min": 1.7,
+      "water_sd": 0.9,
+      "na_meq_hr": 23,
+      "na_sd": 10,
+      "cl_meq_hr": 31,
+      "cl_sd": 9,
+      "k_meq_hr": -1.5,
+      "k_sd": 0.4
+    },
+    {
+      "infused_na_meq_l": 150,
+      "hourly_periods": 44,
+      "water_ml_min": 2.8,
+      "water_sd": 1,
+      "na_meq_hr": 32,
+      "na_sd": 10,
+      "cl_meq_hr": 48,
+      "cl_sd": 13,
+      "k_meq_hr": -1.7,
+      "k_sd": 0.5
+    }
+  ]
+}

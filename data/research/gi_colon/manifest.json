@@ -20,6 +20,13 @@
       "doi": "10.1172/jci106100",
       "license": "No reuse license asserted; publisher copyright applies",
       "isOpenAccess": "N"
+    },
+    {
+      "file": "JCI106100.pdf",
+      "url": "https://www.jci.org/articles/view/106100/version/1/pdf/render.pdf",
+      "bytes": 1732591,
+      "sha256": "aa3f8d91223e3d7b265788c8da2d7a939964521a306295e2df8124d1968e3eb7",
+      "license": "Copyright1969ASCI; free access, no open reuse license asserted"
     }
   ]
 }
