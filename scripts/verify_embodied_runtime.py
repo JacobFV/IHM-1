@@ -22,12 +22,16 @@ class Neural:
         return {'time_s':self.t,'motor_excitations':{'muscle':.5}}
 
 class Native:
-    def __init__(self):self.t=0;self.loads=[];self.demands=[];self.closed=False;self.fail=False
+    def __init__(self):self.t=0;self.loads=[];self.demands=[];self.closed=False;self.fail=False;self.meals=[];self.meal_fail=False
     def snapshot(self):return {'elapsed_s':self.t,'time_s':100+self.t,'values':{
         'mean_arterial_pressure_mmhg':90,'oxygen_saturation':.98,'core_temperature_c':37,
         'maximum_work_rate_w':100,'lung_volume_ml':3000}}
     def respiratory_load(self,p):self.loads.append(p)
     def exercise(self,f):self.demands.append(f)
+    def meal(self,meal):
+        self.meals.append(meal)
+        if self.meal_fail:raise RuntimeError('lost meal acknowledgment')
+        return {'status':'ok','sequence':len(self.meals),'elapsed_s':self.t,'pending_meal':True}
     def step(self,dt):
         self.t+=dt
         if self.fail:raise RuntimeError('Native interrupted after advance')
@@ -51,6 +55,22 @@ class Tests(unittest.TestCase):
         self.assertAlmostEqual(body.native.demands[0],.05);self.assertEqual(first['time_s'],.02)
         body.step({});self.assertEqual(body.plant.commands[-1],{'muscle':.5})
         self.assertEqual(body.native.loads[-1],0)
+    def test_scheduled_intake_changes_sequence_without_advancing_then_delivers_once(self):
+        body=self.body()
+        frame=body.schedule_intakes({'events':[{'event_id':'water_1','time_s':.02,'meal':{'water_ml':50}}]})
+        self.assertEqual(frame['sequence'],1);self.assertEqual(frame['time_s'],0)
+        self.assertEqual(frame['intake_schedule']['events'][0]['state'],'queued')
+        body.step({});self.assertEqual(body.native.meals,[])
+        frame=body.step({});self.assertEqual(len(body.native.meals),1)
+        self.assertEqual(frame['intake_schedule']['events'][0]['state'],'accepted')
+        body.step({});self.assertEqual(len(body.native.meals),1)
+        with self.assertRaises(ValueError):body.schedule_intakes({'events':[{'event_id':'water_1','time_s':.06,'meal':{'water_ml':50}}]})
+    def test_lost_meal_ack_is_retained_uncertain_and_aborts(self):
+        body=self.body();body.native.meal_fail=True
+        body.schedule_intakes({'events':[{'event_id':'meal','time_s':0,'meal':{'carbohydrate_g':10}}]})
+        with self.assertRaisesRegex(RuntimeError,'lost meal'):body.step({})
+        self.assertTrue(body.failed);self.assertEqual(len(body.native.meals),1)
+        self.assertEqual(body.intakes.snapshot()['events'][0]['state'],'uncertain')
     def test_negative_metabolic_increment_rolls_back_before_native(self):
         body=self.body();body.reference_metabolic_w=110
         with self.assertRaisesRegex(ValueError,'signed decrement'):body.step({})

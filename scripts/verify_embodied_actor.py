@@ -10,9 +10,22 @@ class FakeBody:
     def snapshot(self):return {'sequence':self.sequence,'time_s':self.sequence*.02,'entities':{}}
     def step(self,data):
         assert threading.get_ident()==self.owner;self.sequence+=1;return self.snapshot()
+    def schedule_intakes(self,data):
+        assert threading.get_ident()==self.owner;self.sequence+=1;return self.snapshot()
     def close(self):assert threading.get_ident()==self.owner
 
 class Tests(unittest.TestCase):
+    def test_intake_schedule_uses_owner_sequence_and_distinct_journal_event(self):
+        import gzip,json
+        with tempfile.TemporaryDirectory() as p:
+            actor=BodyActor(FakeBody,Path(p))
+            try:
+                result=actor.call('intakes',{'sequence':0,'events':[]})
+                self.assertEqual(result['sequence'],1)
+                with self.assertRaises(ValueError):actor.call('intakes',{'sequence':0,'events':[]})
+                kinds=[json.loads(gzip.decompress(f.read_bytes()))['kind'] for f in sorted(actor.events.glob('*.gz'))]
+                self.assertIn('intake_schedule',kinds)
+            finally:actor.request_close()
     def test_shutdown_tracks_creation_before_actor_registration(self):
         with tempfile.TemporaryDirectory() as p:
             entered=threading.Event();release=threading.Event();result=Future()

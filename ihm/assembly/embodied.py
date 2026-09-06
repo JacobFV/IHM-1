@@ -6,6 +6,8 @@ instead of claiming a whole-body rollback. The caller retains its native journal
 """
 from copy import deepcopy
 import math
+from .intake_schedule import IntakeSchedule,IntakeEvent
+from ihm.native.session import Meal
 
 
 def finite(value,label,low=None,high=None):
@@ -70,7 +72,7 @@ class EmbodiedRuntime:
         names=(__name__,'ihm.assembly.articulated','ihm.native.mechanical_stream','ihm.native.coupled_session',
             'ihm.native.session','ihm.assembly.sensorimotor','ihm.assembly.sensorimotor_catalog',
             'ihm.assembly.brain','ihm.assembly.body_exchange','ihm.assembly.body_microstructure',
-            'ihm.assembly.respiratory_feedback','ihm.assembly.embodied_respiration','ihm.app.embodied')
+            'ihm.assembly.respiratory_feedback','ihm.assembly.embodied_respiration','ihm.assembly.intake_schedule','ihm.app.embodied')
         receipts=[_loaded_source(sys.modules[name]) for name in names if name in sys.modules]
         frozen={r['path']:r['bytes'] for r in receipts}
         frozen[reference_path]=reference_raw
@@ -122,9 +124,25 @@ class EmbodiedRuntime:
         self.time_s=0.;self.sequence=0;self.failed=False;self.closed=False;self.next_excitation={};self.frame=None
         self.native_state=native.snapshot();self.mechanical_state=plant.snapshot()
         self.cleanup_owner=CleanupOwners(native,plant)
+        self.intakes=IntakeSchedule(horizon_s=getattr(getattr(native,'config',None),'horizon_s',86400))
         self.reference_metabolic_w=finite(self.mechanical_state['total_muscle_metabolic_w'],'initial native muscle metabolic power',0)
         if abs(self.native_state['elapsed_s'])>1e-9 or abs(self.mechanical_state['time_s'])>1e-9:
             raise ValueError('Fresh common native and mechanical clocks required')
+
+    def schedule_intakes(self,data):
+        if self.failed or self.closed:raise RuntimeError('Embodied runtime is no longer accepting inputs')
+        if not isinstance(data,dict) or set(data)!={'events'} or not isinstance(data['events'],list) or not 1<=len(data['events'])<=256:
+            raise ValueError('Expected 1–256 intake events')
+        events=[]
+        for event in data['events']:
+            if not isinstance(event,dict) or set(event)!={'event_id','time_s','meal'} or not isinstance(event['meal'],dict):raise ValueError('Invalid intake event')
+            events.append(IntakeEvent(event['event_id'],event['time_s'],Meal(**event['meal'])))
+        self.intakes.add_events(events,round(self.time_s*50))
+        self.sequence+=1
+        try:return self.snapshot()
+        except BaseException as error:
+            self.failed=True
+            raise RuntimeError('Intake schedule changed but frame publication failed') from error
 
     def _abort(self):
         self.failed=True;self.cleanup_failures=[]
@@ -183,6 +201,12 @@ class EmbodiedRuntime:
             self.native.respiratory_load(pressure)
             self.native.exercise(intensity)
             if 'skin_compression_pa' in data:self.native.skin_compression(data['skin_compression_pa'])
+            if self.native_state.get('pending_meal',False) is False:
+                for event in self.intakes.due(round(self.time_s*50)):
+                    try:self.intakes.record_accepted(event.event_id,self.native.meal(event.meal))
+                    except BaseException as error:
+                        self.intakes.record_uncertain(event.event_id,str(error)[:1024] or type(error).__name__)
+                        raise
             native=self.native.step(dt)
             native['signal_metadata']=native_field_metadata(native['values'])
             if abs(native['elapsed_s']-end)>1e-8:raise RuntimeError('Native exchange clock diverged')
@@ -192,7 +216,7 @@ class EmbodiedRuntime:
             self.native_state=native;self.mechanical_state=mechanical;self.time_s=end;self.sequence+=1
             self.frame={'schema':'ihm.embodied-frame.v1','time_s':end,'sequence':self.sequence,
                 'entities':geometry['entities'],'skin_field':geometry['skin_field'],'respiration':geometry,'mechanics':mechanical,'neural':neural,'physiology':native,
-                'tissue_exchange':tissue,'respiratory_load':load,
+                'tissue_exchange':tissue,'respiratory_load':load,'intake_schedule':self.intakes.snapshot(),
                 'coupling':{'exchange_interval_s':dt,'motor_exchange_latency_s':dt,
                     'positive_muscle_work_j':work,'native_extra_metabolic_demand_w':incremental_w,
                     'muscle_metabolic_reference_w':self.reference_metabolic_w,'interval_muscle_metabolic_w':metabolic_w,
@@ -216,13 +240,15 @@ class EmbodiedRuntime:
             raise
 
     def snapshot(self):
-        if self.frame:return deepcopy(self.frame)
+        if self.frame:
+            frame=deepcopy(self.frame);frame.update(sequence=self.sequence,intake_schedule=self.intakes.snapshot())
+            return frame
         native=deepcopy(self.native_state);native['signal_metadata']=native_field_metadata(native['values'])
         geometry=self.respiratory_load.geometry(native['values']['lung_volume_ml'],self.mechanical_state['entities'],0.)
-        return {'schema':'ihm.embodied-frame.v1','time_s':0.,'sequence':0,
+        return {'schema':'ihm.embodied-frame.v1','time_s':0.,'sequence':self.sequence,
             'entities':geometry['entities'],'skin_field':geometry['skin_field'],'respiration':geometry,
             'mechanics':deepcopy(self.mechanical_state),'physiology':native,
-            'tissue_exchange':self.exchange.observe(self.native_state)}
+            'tissue_exchange':self.exchange.observe(self.native_state),'intake_schedule':self.intakes.snapshot()}
 
     def close(self):
         if self.closed:return

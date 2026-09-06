@@ -29,6 +29,8 @@ class Tests(unittest.TestCase):
             self.assertEqual(request(base,{})[0],201)
             self.assertEqual(request(base)[1]['sessions'][0]['status'],'initializing')
             self.assertEqual(request(base+'/'+owner.ident)[1]['status'],'initializing')
+            self.assertEqual(request(base+'/'+owner.ident+'/intakes',{'sequence':0,'events':[]})[0],200)
+            self.assertEqual(owner.calls[-1][1],'intakes')
             with self.assertRaises(HTTPError) as error:request(base+'/'+owner.ident+'/step',{'sequence':0})
             self.assertEqual(error.exception.code,503)
             self.assertTrue(request(base+'/'+owner.ident+'/close',{})[1]['closed'])

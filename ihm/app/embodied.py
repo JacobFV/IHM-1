@@ -63,13 +63,13 @@ class BodyActor:
             try:
                 if self.close_requested:raise RuntimeError('Body actor is closing')
                 if action=='snapshot':result=self.body.snapshot()
-                elif action=='step':
+                elif action in ('step','intakes'):
                     if not isinstance(data,dict) or type(data.get('sequence')) is not int:raise ValueError('Integer body sequence required')
                     if data['sequence']!=self.body.snapshot()['sequence']:raise ValueError('Body sequence changed; read current state')
                     command={k:v for k,v in data.items() if k!='sequence'}
-                    self._publish({'kind':'command','command':data})
-                    result=self.body.step(command)
-                    try:self._publish({'kind':'advance','frame':result})
+                    self._publish({'kind':'command','operation':action,'command':data})
+                    result=self.body.step(command) if action=='step' else self.body.schedule_intakes(command)
+                    try:self._publish({'kind':'advance' if action=='step' else 'intake_schedule','frame':result})
                     except BaseException:
                         self.body.failed=True
                         raise
@@ -78,8 +78,10 @@ class BodyActor:
             except BaseException as error:
                 try:self._publish({'kind':'error','operation':action,'error':str(error),'body_failed':getattr(self.body,'failed',False)})
                 except BaseException:self.body.failed=True
-                if getattr(self.body,'failed',False):self.error=str(error)
-                future.set_exception(error)
+                if getattr(self.body,'failed',False):
+                    self.error=str(error)
+                    future.set_exception(RuntimeError('Body operation outcome uncertain: '+str(error)))
+                else:future.set_exception(error)
             if self.cleanup_error is None and (self.close_requested or getattr(self.body,'failed',False)):
                 if self._cleanup() is None:return
 
