@@ -295,3 +295,33 @@ scales/rank/model diagnostics and exact last accepted numerical candidate. It
 starts from the original supported98 seed, never the unsupported failed candidate,
 and requires the successful metric receipt to match the executable manifest hash.
 No full native solve has occurred at this source checkpoint.
+
+### Actual support-feasible chunk and bounded continuation design
+
+`support-physical-root-nayktxy6` completed 190 calls in36.596 s. Native state
+remained unchanged and the process reaped. Acceleration cost fell
+6293.4602 ->1250.3931 ->190.3182 ->97.2130 ->64.1873 ->54.5911 ->53.0012.
+Maximum native acceleration fell54.1718 ->5.68810. Final normalized support
+was at most7.018e-7, gauge1.242e-7, and native constraint error3.450e-14.
+Physical equilibrium still fails the1e-4 acceleration criterion. No forward
+or reference promotion occurred.
+
+The final ratio was0.1137, versus earlier accepted ratios0.440–0.972; the
+solver's existing rule reduces the next radius from.015 to.0075. This weak
+late prediction must not be hidden by the large earlier improvement. No actual
+coordinate is within.005 native units of its XML limit. The final QP rank is28,
+with singular values2.461 to.003105; active hips/arms/lumbar limits are local
+trust boxes, not anatomical stops. Remaining dominant acceleration is right
+arm adduction5.6881 (torque−2.7724 Nm), followed by right arm rotation3.6109
+and flexion−3.3669; lumbar extension acceleration is−2.5564.
+
+A single smaller-radius continuation is prepared through `--resume` using the
+exact saved requested coordinates, verified executable-manifest identity and
+SHA-bound previous candidate/report/response journal. Prior response files are
+immutable and none is substituted for a fresh response. The last retained
+Jacobian precedes the final accepted step, so a fresh28-column Jacobian at the
+new point is required. Fresh resumed support/gauge feasibility is checked;
+actual replay q/acceleration differences are reported. The radius is derived
+from the prior accepted ratio by the same existing rule. If prediction quality
+or descent remains weak, further unchanged continuation is not justified;
+actual arm path/source-registration errors require renewed diagnosis.
