@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
 import {mountMicrovascularDetail,projectMicrovascularPatch} from '../src/microvascular-detail.js';
 class Element{
  constructor(tag){this.tagName=tag;this.children=[];this.attributes={};this.style={};this.value='';this._text='';}
@@ -54,4 +55,28 @@ test('kidney selection requests explicit control or injury scenario without musc
 test('missing polyline geometry and samples inconsistent with endpoints are rejected',()=>{
  const data=fixture();delete data.patch.zoom_edges[0].centerline_samples_m;assert.throws(()=>projectMicrovascularPatch(data),/polyline samples/);
  data.patch.zoom_edges[0].centerline_samples_m=[[1,2,3],[1.2,2,3]];assert.throws(()=>projectMicrovascularPatch(data),/endpoints/);
+});
+test('skin selection requires named territory and exposes transferred priors and uncertainty',async()=>{
+ const data=fixture();data.selection.name='Skin · left lower-leg anteromedial';
+ data.patch.registration.territory_id='left_lower_leg_anteromedial';data.patch.registration.source_triangle_id=126303;
+ data.patch.uncertainty={posterior_inference_performed:false,summary:'Forearm-to-lower-leg transfer; posterior uncertainty has not been inferred.'};
+ data.patch.graph.source_conditioning={human_confocal:{site:'middle volar forearm'}};
+ const calls=[],{host,view}=setup(async payload=>{calls.push(payload);return data;});view.updateSelection({id:'body-bp3d-FJ2810',name:'Skin'});
+ await host.querySelectorAll('button')[0].onclick();
+ assert.deepEqual(calls[0],{entity_id:'body-bp3d-FJ2810',territory_id:'left_lower_leg_anteromedial',patch_area_mm2:1,resolution_m:50e-6,scenario_id:'forearm_baseline_transfer_to_lower_leg_v1'});
+ assert.match(host.textContent,/posterior uncertainty has not been inferred/);assert.match(host.textContent,/126303/);assert.match(host.textContent,/middle volar forearm/);
+ const territory=host.querySelectorAll('select').find(e=>e.attributes['aria-label']==='Exact engineered skin territory');territory.value='right_lower_leg_posterolateral';territory.onchange();
+ await host.querySelectorAll('button')[0].onclick();assert.equal(calls[1].territory_id,'right_lower_leg_posterolateral');
+ assert.equal(host.querySelectorAll('polyline').length,1);
+});
+
+test('actual retained skin API fixture renders all physical loop vertices in tangent-depth view',async()=>{
+ const data=JSON.parse(readFileSync(new URL('../../data/research/skin_microvascular/api_patch.json',import.meta.url),'utf8'));
+ const projection=projectMicrovascularPatch(data,{plane:'02'}),caps=projection.edges.filter(x=>x.edge.vessel_class==='papillary_capillary_loop');
+ assert.equal(caps.length,7);assert.equal(projection.edges.length,25);
+ for(const cap of caps){assert.ok(cap.points.length>=33);assert.ok(Math.abs(cap.diameterUnits*projection.umPerUnit-9.59)<1e-10);assert.ok(Math.max(...cap.points.map(p=>p[1]))-Math.min(...cap.points.map(p=>p[1]))>1);}
+ const {host,view}=setup(async()=>data);view.updateSelection({id:'body-bp3d-FJ2810'});
+ await host.querySelectorAll('button')[0].onclick();assert.equal(host.querySelectorAll('polyline').length,25);
+ assert.match(host.textContent,/zero additional native blood volume/);assert.match(host.textContent,/posterior uncertainty has not been inferred/);
+ host.querySelectorAll('polyline')[5].onclick();assert.match(host.textContent,/papillary capillary loop/);
 });

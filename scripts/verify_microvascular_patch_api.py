@@ -28,6 +28,32 @@ class Checks(unittest.TestCase):
   self.assertEqual(r['patch']['graph']['peritubular_radius_conditioning']['mode'],'human_injury_area_equivalent')
  def test_kidney_rejects_muscle_conditioning(self):
   with self.assertRaises(PatchRequestError):self.service().materialize({'entity_id':'body-bp3d-FJ3147','cohort':'young_men'})
+ def test_skin_exact_face_and_curves_without_native_allocation(self):
+  r=self.service().materialize({'entity_id':'body-bp3d-FJ2810','territory_id':'left_lower_leg_anteromedial'})
+  p=r['patch'];self.assertEqual(p['registration']['territory_id'],'left_lower_leg_anteromedial')
+  self.assertTrue(p['registration']['exterior_eligible']);self.assertFalse(p['containment']['whole_patch_inside_authored_surface'])
+  self.assertEqual(p['graph']['ownership']['additional_native_volume_m3'],0)
+  self.assertEqual(p['graph']['constraints']['loop_count'],7)
+  self.assertEqual(p['uncertainty']['posterior_inference_performed'],False)
+  self.assertEqual(r['scenario']['id'],'forearm_baseline_transfer_to_lower_leg_v1')
+  self.assertIn('face',r['selection']['position_basis'])
+  self.assertEqual(len(p['registration']['local_to_body_rotation']),3)
+  self.assertTrue(any(len(e['centerline_samples_m'])>=33 for e in p['zoom_edges']))
+  self.assertLess(len(json.dumps(r).encode()),r['limits']['max_response_bytes'])
+ def test_skin_resolution_retains_identity_and_all_source_bends(self):
+  request={'entity_id':'body-bp3d-FJ2810','territory_id':'right_lower_leg_posterolateral'}
+  coarse=self.service().materialize(request)['patch'];fine=self.service().materialize(dict(request,resolution_m=5e-6))['patch']
+  self.assertEqual(coarse['graph']['id'],fine['graph']['id'])
+  for a,b in zip(coarse['zoom_edges'],fine['zoom_edges']):
+   self.assertEqual(a['edge_id'],b['edge_id']);self.assertGreaterEqual(len(b['centerline_samples_m']),len(a['centerline_samples_m']))
+   self.assertEqual(a['flow_m3_per_s'],b['flow_m3_per_s'])
+ def test_skin_invalid_site_and_incompatible_conditioning(self):
+  for extra in [{},{'territory_id':'unknown'},{'territory_id':'left_lower_leg_anteromedial','position_m':[0,0,0]},
+                {'territory_id':'left_lower_leg_anteromedial','cohort':'young_men'},
+                {'territory_id':'left_lower_leg_anteromedial','source_triangle_id':-1},
+                {'territory_id':'left_lower_leg_anteromedial','patch_area_mm2':100},
+                {'territory_id':'left_lower_leg_anteromedial','scenario_id':'human_kidney_control_v1'}]:
+   with self.subTest(extra=extra),self.assertRaises(PatchRequestError):self.service().materialize(dict(entity_id='body-bp3d-FJ2810',**extra))
  def test_bad_queries_rejected_before_materializer(self):
   for data in [{},{'entity_id':'other'},{'entity_id':'body-bp3d-FJ1442','native_volume_ml':4},{'entity_id':'body-bp3d-FJ1442','section_mm':[20,20]},{'entity_id':'body-bp3d-FJ1442','resolution_m':1e-12},{'entity_id':'body-bp3d-FJ1442','seed':True},{'entity_id':'body-bp3d-FJ1442','position_m':[float('nan'),0,0]}]:
    with self.subTest(data=data),patch('ihm.app.microvascular_patch.materialize_patch') as materializer:

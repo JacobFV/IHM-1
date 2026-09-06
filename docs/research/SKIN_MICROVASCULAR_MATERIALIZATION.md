@@ -106,3 +106,40 @@ membership and coordinate projection, measured density/diameter conditioning,
 conservation, pressure bounds/dissipation, ownership, reproducibility, pressure
 scaling, malformed/bounded requests and nominal slab failures. These are light
 Python checks, with no native engine, browser, download or whole-body generation.
+
+## Bounded API and local viewer
+
+The existing `POST /api/body/microvascular-patch` accepts:
+
+```json
+{"entity_id":"body-bp3d-FJ2810","territory_id":"left_lower_leg_anteromedial","scenario_id":"forearm_baseline_transfer_to_lower_leg_v1","patch_area_mm2":1,"resolution_m":0.00005,"seed":19}
+```
+
+Skin requires an explicit territory. Optional `source_triangle_id` selects an
+original eligible face within that exact territory; omission performs the bounded
+first-fit selection documented above. Free `position_m`, external zoom boxes and
+muscle conditioning fields are rejected for skin. Skin-specific fields are also
+rejected for other organs. The existing nonblocking process-wide lock, 32 KiB
+request, 256-edge, 20,000-point and 2 MiB response limits remain in force. Missing,
+changed or malformed source evidence produces structured errors. The adapter
+checks the prospective sample count before interpolation and retains every
+original papillary curve vertex while subdividing longer segments to the requested
+maximum spacing; changing numerical resolution does not change graph identity,
+radius or physical flow. No new native actor, blood allocation or output file is
+created by an API request.
+
+The response uses the existing `patch.zoom_edges` contract with physical SI
+polylines, stable edge IDs, class names, endpoint pressures and signed flows. Its
+local frame uses the original face tangent, orthogonal tangent and inward normal;
+`registration` retains source face/territory hashes and the geometric uncertainty.
+The detail viewer includes Skin in the region selector, a separate exact engineered
+territory selector, and bounded area input. Skin initially uses tangent/depth
+projection to expose loops; orthogonal projections, local zoom, physical diameter
+scale and the arc-length pressure inspection remain available. The evidence panel
+retains the primary conditioning and a specific uncertainty record:
+`posterior_inference_performed: false`. Published cohort SD is not represented as
+individual-vessel posterior uncertainty. The visible scope statement says that
+physical containment, packing and macro/native perfusion binding remain unverified.
+
+Service regressions: `.venv/bin/python scripts/verify_microvascular_patch_api.py`.
+Viewer regressions: `node --test app/test/microvascular-detail.test.js`.
