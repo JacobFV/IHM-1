@@ -21,3 +21,20 @@ A statically converged candidate requires all native udot magnitudes ≤1e-4 in 
 The source joint ranges include broad engineering values, and the COM/inertia spheres are not posterior anatomy. A static solution could still have an inappropriate folded pose; its supine morphology needs separate assessment. The solver therefore cannot by itself validate these proxies as a mattress or validate canonical tissue contact. Failure to find a solution within the finite budget is an unresolved initialization result, not permission to tune the convergence thresholds or extend the run automatically.
 
 No native static-pose run is claimed in this initial implementation. Build and native validation require the shared heavy-resource queue; source-only fixture checks and Python syntax verification run without a native process.
+
+## First authorized native static solve — 2026-09-05
+
+The header and minimal dispatch compiled successfully as `build-z5d66e33` in **22.35 s**, with **1,172,432 KiB** peak compiler child RSS. One authorized static solve at `data/derived/supine-static-solve-zppmkd4p` stopped at its hard **200 actual evaluations** after **7.495 s**. No physical time advanced. An observation before checkpoint restore confirmed that the continuing state remained unchanged; restore matched too. Dependent-coordinate and source-range rejection checks passed. The process was reaped and the shared resource slot released.
+
+The initial scaled residual norm was **168.0408**, and the best was **167.7376**: no static solution was established. Maximum generalized acceleration fell only from **2964.35** to **2958.04 rad/s²**, dominated by the elbows. The best candidate had zero kinetic energy by construction but still accelerated its COM at **9.6764 m/s²** toward the bed and had only **10.369 N** of support. Zero candidate velocity therefore provides no support evidence. The solver's best candidate is explicitly **not accepted or installed**. The retained report's `stopped` status denotes the evaluation budget, not physical divergence.
+
+A source-only follow-up identifies an additional specific source of initial pose imbalance. The retained passive elbow law is `6.09*exp(-6.94*(q-0.30))-11.03*exp(11.33*(q-2.40))-1.0*qdot`. At q=0 and zero speed it supplies **48.845 N·m** of flexion. Its isolated zero-torque angle is **1.56979 rad**, far from the retained straight-elbow default. This follows directly from the retained source expression and does not require a coefficient change. It does not imply that this angle is the full muscle/contact equilibrium. A passive-law-informed seed may merit a separately bounded investigation; the first 200-call solve barely moved elbow flexion from zero. No second static solve was run.
+
+Evidence SHA-256:
+
+- `report.json`: `b39a163d736854b83c061f4f98a6a2fa20280510f7faf89204cf4d996e41f305`
+- `evaluations.json`: `c5af52e49e4cb825d1577998bfec116142612947d18df66dba43d5d8190329ee`
+- `best_candidate.json`: `6d601de3e292430d779549d8c23504bea16b446b888bc35504434e358cdf1266`
+- `seed.json`: `4bf25da44252a0ef27eaec8d883bd705e1b53fe9fbc769a24d52b13a86a455e0`
+- `native/execution.json`: `ddc5587611b322e950e75cc1306ab29d9cbe184caa83050768f2c44bb57c67cb`
+- `native/inputs/subject_walk_scaled_ExpressionBasedCoordinateForceSet.xml`: `ff09a63fa9c2036a3692214889c87bee28bea6f51a503233692b288c5b28aba0`
