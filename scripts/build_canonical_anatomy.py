@@ -11,6 +11,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT/'scripts'))
+from ihm.assembly.skin_layers import physical_skin_support
 from ihm.assembly.anatomy import (FRAME, MODEL_ID, ROTATION, LandmarkRegistration,
     mesh_properties, normalized_name, physical_role, read_geometry, sha256, verify_assembly, write_json)
 OUT = ROOT/'data/derived/canonical'
@@ -247,6 +248,11 @@ def build():
     # Layer quadrature uses the acquired skin surface and depth intervals, not
     # offset meshes that could falsely imply validated collision-free volumes.
     skin = bp_by_name['skin']
+    support_path = ROOT/'data/research/engineered_skin_territories/materialization.json'
+    support_raw = support_path.read_bytes()
+    skin['physical_surface_support'] = physical_skin_support(
+        skin['reference_geometry'], (ROOT/skin['reference_geometry']['path']).read_bytes(), support_raw)
+    skin['physical_surface_support']['component_evidence_path'] = str(support_path.relative_to(ROOT))
     layers = [('epidermis', .0001, [.00005, .0002]), ('dermis', .0015, [.0005, .003]), ('hypodermis', .005, [.001, .02])]
     depth = 0.
     for name, thickness, prior_range in layers:
@@ -260,8 +266,8 @@ def build():
         e['shell'] = {'thickness_m': thickness, 'prior_range_m': prior_range, 'depth_interval_m': [depth, depth+thickness],
                       'depth_direction': 'inward along surface normal; integration coordinate only',
                       'geometry_materialized': False, 'prior_source': 'explicit engineering modeling assumption; not a measured or fitted thickness'}
-        e['volume_m3'] = skin['surface_area_m2']*thickness
-        e['volume_method'] = 'thin-shell area times assumed thickness; not measured volume'
+        e['volume_m3'] = skin['physical_surface_support']['area_m2']*thickness
+        e['volume_method'] = 'inferred exterior component area times assumed thickness; open-shell quadrature prior, not measured volume'
         entities.append(e)
         skin['connections'].append({'entity_id': e['id'], 'relation': 'has_layer', 'evidence': 'explicit shell partition'})
         depth += thickness
@@ -287,7 +293,7 @@ def build():
         {'id': 'LYMPHATIC-POSE-PRIOR', 'kind': 'registered structural topology', 'statement': 'Publisher graph lacks anatomical labels; source T-pose joint centers, transverse body scale 0.65, anterior scale 0.8 and -45 mm anterior translation are explicit pose priors. Body height follows BP skin; arm controls follow BP humerus/radius/hand. Nearest node-group associations within 60 mm are regional candidates, not anatomical identity or proven drainage. No source vertices or edges are removed.'},
         {'id': 'CANONICAL-GENERIC-REFERENCE', 'kind': 'reference selection', 'statement': 'The adult male BP atlas defines one generic body and its size. Dependent derivative sources add missing structures without adding independent subjects.'},
         {'id': 'Z-LANDMARK-REGISTRATION', 'kind': 'inferred geometry', 'statement': 'Shared named bone bounding-box centers constrain affine plus smooth residual deformation. Between anchors, smoothness is a model assumption; registration does not establish measured tissue boundaries.', 'smoothing_prior': .002, 'held_out_rms_m': reg_report['held_out_rms_m']},
-        {'id': 'SKIN-LAYER-PRIOR', 'kind': 'constitutive geometry prior', 'statement': 'Epidermis/dermis/hypodermis shell quadrature uses one acquired skin surface and nonoverlapping inward depth intervals. Uniform thickness and ranges are explicit engineering assumptions; no patient measurement or regional thickness field is asserted.', 'values': [{'layer': n, 'thickness_m': t, 'prior_range_m': r} for n,t,r in layers]},
+        {'id': 'SKIN-LAYER-PRIOR', 'kind': 'constitutive geometry prior', 'statement': 'Epidermis/dermis/hypodermis shell quadrature uses a reviewed exterior component of the acquired skin asset and nonoverlapping inward depth intervals. Inner/seam components remain in source geometry but do not duplicate layer volume; exterior exclusivity and self-intersections remain unvalidated. Uniform thickness and ranges are explicit engineering assumptions; no patient measurement or regional thickness field is asserted.', 'values': [{'layer': n, 'thickness_m': t, 'prior_range_m': r} for n,t,r in layers]},
         {'id': 'REGIONAL-SUPPORT', 'kind': 'spatial relation prior', 'statement': 'Nearest-bone relations provide a regional indexing substrate. They are not insertion sites, contacts, joints, or physiological exchange pathways.'}]
     assembly = {'schema_version': 1, 'model_id': MODEL_ID, 'name': 'IHM · canonical generic human',
         'frame': {'id': FRAME, 'units': 'm', 'axes': {'x': 'left', 'y': 'superior', 'z': 'anterior'},

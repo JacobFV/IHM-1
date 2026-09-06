@@ -1,0 +1,41 @@
+{
+  "passed": true,
+  "physical_support": {
+    "schema": "ihm.physical-skin-support.v1",
+    "area_m2": 1.7804602548390722,
+    "raw_source_area_m2": 3.502598974493317,
+    "selected_triangle_count": 109183,
+    "source_triangle_count": 203382,
+    "selected_component_id": 0,
+    "source_geometry_sha256": "e724b62e6fc21764a0cf79c1874e96b9852755dc420711360a02d0b7afd93d05",
+    "component_evidence_sha256": "de669f96f6db5b150dd467f149464677e19f22ec2e7be5a77d895d873b3fef1a",
+    "area_basis": "Explicit inferred exterior component; uniform inward layer depth is a separate prior",
+    "clinical_body_surface_area": false,
+    "physical_surface_exclusivity_validated": false,
+    "self_intersections_tested": false,
+    "signed_integral_is_closed_volume": false
+  },
+  "layer_candidates": [
+    {
+      "id": "body-skin-epidermis",
+      "thickness_m": 0.0001,
+      "existing_volume_m3": 0.0003502598974493317,
+      "candidate_volume_m3": 0.00017804602548390723
+    },
+    {
+      "id": "body-skin-dermis",
+      "thickness_m": 0.0015,
+      "existing_volume_m3": 0.005253898461739976,
+      "candidate_volume_m3": 0.0026706903822586083
+    },
+    {
+      "id": "body-skin-hypodermis",
+      "thickness_m": 0.005,
+      "existing_volume_m3": 0.017512994872466586,
+      "candidate_volume_m3": 0.00890230127419536
+    }
+  ],
+  "canonical_mutated": false,
+  "native_model_mutated": false,
+  "wall_s": 0.29152057399915066
+}

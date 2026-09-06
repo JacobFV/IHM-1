@@ -2,6 +2,7 @@
 """Build mechanical bindings on the single canonical anatomy; preserve sources."""
 from pathlib import Path
 import gzip
+from copy import deepcopy
 import hashlib
 import json
 import sys
@@ -85,7 +86,9 @@ def main():
                       'centroid_m':e['centroid_m'],'bounds_m':e['bounds_m'],'volume_m3':volume,'volume_basis':basis,'material':mat,
                       'mass_kg':mass,'mass_role':'numerical_boundary_carrier' if carrier else 'material_partition_proxy','inertia_diagonal_kg_m2':[inertia]*3,'fiber_axis':axis.tolist(),
                       'uncertainty':{'biological':'unquantified generic prior; no empirical calibration','discretization':'one affine solid per surface, rigid isotropic-inertia reduction'},
-                      'reference_geometry':e['reference_geometry']})
+                      'reference_geometry':e['reference_geometry'],
+                      **({'shell':deepcopy(e['shell'])} if 'shell' in e else {}),
+                      **({'physical_surface_support':deepcopy(e['physical_surface_support'])} if 'physical_surface_support' in e else {})})
     total=sum(e['mass_kg'] for e in specs);carriers=sum(e['mass_role']=='numerical_boundary_carrier' for e in specs);factor=(77.1107029-carriers*1e-6)/total
     for e in specs:
         e['mass_kg']*=factor;e['inertia_diagonal_kg_m2']=[v*factor for v in e['inertia_diagonal_kg_m2']]
