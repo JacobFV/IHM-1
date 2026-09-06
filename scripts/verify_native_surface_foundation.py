@@ -1,6 +1,6 @@
 """Explicitly gated two-millisecond controlled native surface-contact fixture."""
 from pathlib import Path
-import argparse,json,signal,sys,tempfile,time
+import argparse,json,signal,sys,tempfile,time,traceback
 import numpy as np
 ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT))
 from ihm.assembly.supine_contact import foundation
@@ -28,11 +28,12 @@ def run(manifest_path):
                 assert all(c['geometry_type']=='retained_skin_foundation' for c in initial['contacts'])
                 checkpoint=stream.checkpoint()
                 evaluated=stream._request('evaluate_static_pose 1 pelvis_tx -0.001')
+                write('static_translation.json',evaluated)
                 reference=np.array(data['reference_points_source_m']);reference[:,0]-=.001
                 origins=np.array([initial['bodies'][name]['transform_ground'] for name in names])[:,:3,3];origins[:,0]-=.001
                 expected=foundation(reference,np.zeros_like(reference),data['area_m2'],owners,origins,manifest['plane_source_x_m'],manifest['material'])
-                assert np.allclose(evaluated['contact_force_n'],expected['body_forces_n'].sum(0),rtol=1e-8,atol=1e-8)
-                assert np.isclose(evaluated['surface_foundation']['elastic_energy_j'],expected['elastic_energy_j'],rtol=1e-8,atol=1e-10)
+                assert np.allclose(evaluated['contact_force_n'],expected['body_forces_n'].sum(0),rtol=1e-8,atol=1e-8), f"Static force native={evaluated['contact_force_n']} Python={expected['body_forces_n'].sum(0).tolist()}"
+                assert np.isclose(evaluated['surface_foundation']['elastic_energy_j'],expected['elastic_energy_j'],rtol=1e-8,atol=1e-10), f"Static energy native={evaluated['surface_foundation']['elastic_energy_j']} Python={expected['elastic_energy_j']}"
                 write('static_translation.json',evaluated)
                 stream.restore(checkpoint);stream.release(checkpoint)
             frame=stream.advance(.002);write(variant+'_advanced.json',frame)
@@ -54,7 +55,9 @@ def run(manifest_path):
             else:report['sphere_support_n']=frame['contact_force_n']
             stream.close();stream=None
         report['passed']=True
-    except Exception as error:report['error']=f'{type(error).__name__}: {error}'
+    except Exception as error:
+        report['error']=f'{type(error).__name__}: {error}'
+        write('failure.json',{'error':report['error'],'traceback':traceback.format_exc()})
     finally:
         signal.setitimer(signal.ITIMER_REAL,0);signal.signal(signal.SIGALRM,old)
         if stream is not None:stream.close()
