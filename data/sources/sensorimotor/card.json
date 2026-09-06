@@ -1,0 +1,29 @@
+{
+  "id": "geyer-herr-2010-distal-reflex",
+  "doi": "10.1109/TNSRE.2010.2047592",
+  "url": "https://www.cs.cmu.edu/~cga/tmp-public/song.pdf",
+  "retrieved_date": "2026-09-05",
+  "path": "data/raw/sensorimotor/geyer_herr_2010.pdf",
+  "sha256": "8a60efec9ceba5120c1679610f676ab297e8dce887ed4ae6f0890f7e17e13d94",
+  "bytes": 892401,
+  "evidence": "published model parameters, manually tuned in original sagittal walking model, not generic-person measurement",
+  "locations": [
+    "Table I page269",
+    "Appendix I page270"
+  ],
+  "parameters": {
+    "SOL_force_gain": 1.2,
+    "GAS_force_gain": 1.1,
+    "TA_length_gain": 1.1,
+    "TA_length_offset": 0.71,
+    "SOL_to_TA_inhibition_gain": 0.3,
+    "distal_loop_delay_s": 0.02,
+    "prestimulation": 0.01
+  },
+  "transfer_assumptions": [
+    "Two native gastrocnemius heads form one normalized force sensor; common excitation",
+    "Source distal loop delay split equally into afferent/efferent paths; split not source identified",
+    "5 N foot normal force stance threshold is engineering prior",
+    "Pinned cortical population-rate bridge gains and effector targeting are engineered, uncalibrated"
+  ]
+}
