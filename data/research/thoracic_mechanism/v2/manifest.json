@@ -1,0 +1,1367 @@
+{
+  "schema": "ihm.thoracic-mechanism.v1",
+  "native_activation_allowed": false,
+  "anatomy_manifest": {
+    "path": "data/research/thoracic_anatomy/v3/manifest.json",
+    "sha256": "441048b974d982f9efa75e75a12302c2a627dee566e4ae0c9a69b996ca0539e3",
+    "bytes": 509112
+  },
+  "code_inputs": [
+    {
+      "path": "scripts/build_thoracic_mechanism.py",
+      "sha256": "da495f89ecccb69e9b463886d177a3734a6f4fcc9d747886e2e97d99570db83b",
+      "bytes": 12928
+    },
+    {
+      "path": "ihm/assembly/thoracic_mechanism.py",
+      "sha256": "23a8c253dc414072e51a7e6f78924c0c52c830e679155897074b5fa858de290c",
+      "bytes": 10929
+    }
+  ],
+  "materials": {
+    "body-bp3d-FJ1451": {
+      "map_kind": "moving_anchors",
+      "anchor_count": 12,
+      "source_anchor_nodes": [
+        22635,
+        42487,
+        36342,
+        20316,
+        38163,
+        30306,
+        3898,
+        8562,
+        40140,
+        35948,
+        46974,
+        34168
+      ],
+      "target_owners": [
+        "body-bp3d-FJ3340",
+        "body-bp3d-FJ3334",
+        "body-bp3d-FJ3342",
+        "body-bp3d-FJ3330",
+        "body-bp3d-FJ3348",
+        "body-bp3d-FJ3338",
+        "body-bp3d-FJ3344",
+        "body-bp3d-FJ3346",
+        "body-bp3d-FJ3347",
+        "body-bp3d-FJ3336",
+        "body-bp3d-FJ3331",
+        "body-bp3d-FJ3332"
+      ],
+      "reference_gap_m": [
+        2.0880613017683358e-05,
+        4.512438365228526e-05,
+        4.7013615049240296e-05,
+        6.121021156640738e-05,
+        6.138542172205272e-05,
+        6.957614533732968e-05,
+        7.006539802203608e-05,
+        7.463383950990627e-05,
+        7.858576779542557e-05,
+        9.816521787278914e-05,
+        9.899580799200473e-05,
+        0.021624685672860074
+      ],
+      "discarded_duplicate_node_candidates": [
+        {
+          "source_vertex": 22635,
+          "target_entity": "body-bp3d-FJ3340",
+          "gap_m": 2.0880613017683358e-05
+        },
+        {
+          "source_vertex": 36342,
+          "target_entity": "body-bp3d-FJ3342",
+          "gap_m": 4.7013615049240296e-05
+        },
+        {
+          "source_vertex": 20316,
+          "target_entity": "body-bp3d-FJ3330",
+          "gap_m": 6.121021156640738e-05
+        },
+        {
+          "source_vertex": 38163,
+          "target_entity": "body-bp3d-FJ3348",
+          "gap_m": 6.138542172205272e-05
+        },
+        {
+          "source_vertex": 30306,
+          "target_entity": "body-bp3d-FJ3338",
+          "gap_m": 6.957614533732968e-05
+        },
+        {
+          "source_vertex": 3898,
+          "target_entity": "body-bp3d-FJ3344",
+          "gap_m": 7.006539802203608e-05
+        },
+        {
+          "source_vertex": 8562,
+          "target_entity": "body-bp3d-FJ3346",
+          "gap_m": 7.463383950990627e-05
+        },
+        {
+          "source_vertex": 40140,
+          "target_entity": "body-bp3d-FJ3347",
+          "gap_m": 7.858576779542557e-05
+        },
+        {
+          "source_vertex": 35948,
+          "target_entity": "body-bp3d-FJ3336",
+          "gap_m": 9.816521787278914e-05
+        },
+        {
+          "source_vertex": 46974,
+          "target_entity": "body-bp3d-FJ3331",
+          "gap_m": 9.899580799200473e-05
+        }
+      ],
+      "interpolation": "Cardinal three-nearest-anchor inverse-square displacement interpolation; source-near attachment offsets rotate with target rigid owner",
+      "scope": "Engineering material map; source topology retained, no measured fiber or strain calibration",
+      "map_file": "maps/body-bp3d-FJ1451.npz",
+      "map_sha256": "bfe34d52e3523f11056eb230f327173387a7121b89163dd2f088c0dd8f4bd619",
+      "mass_kg": 0.09671827911857929
+    },
+    "body-bp3d-FJ1451M": {
+      "map_kind": "moving_anchors",
+      "anchor_count": 12,
+      "source_anchor_nodes": [
+        13368,
+        25743,
+        10081,
+        37163,
+        43992,
+        37057,
+        37492,
+        44455,
+        45602,
+        43871,
+        48265,
+        34168
+      ],
+      "target_owners": [
+        "body-bp3d-FJ3225",
+        "body-bp3d-FJ3232",
+        "body-bp3d-FJ3233",
+        "body-bp3d-FJ3234",
+        "body-bp3d-FJ3230",
+        "body-bp3d-FJ3235",
+        "body-bp3d-FJ3231",
+        "body-bp3d-FJ3229",
+        "body-bp3d-FJ3236",
+        "body-bp3d-FJ3228",
+        "body-bp3d-FJ3226",
+        "body-bp3d-FJ3227"
+      ],
+      "reference_gap_m": [
+        2.715437349682716e-05,
+        4.017760570261917e-05,
+        4.932960571500342e-05,
+        5.120187594222386e-05,
+        6.678001197963593e-05,
+        6.906706885339802e-05,
+        8.298301030930541e-05,
+        8.318100744762749e-05,
+        8.491407421625026e-05,
+        0.00010013615730592319,
+        0.0001052566862484287,
+        0.022709682861722303
+      ],
+      "discarded_duplicate_node_candidates": [
+        {
+          "source_vertex": 13368,
+          "target_entity": "body-bp3d-FJ3225",
+          "gap_m": 2.715437349682716e-05
+        },
+        {
+          "source_vertex": 25743,
+          "target_entity": "body-bp3d-FJ3232",
+          "gap_m": 4.017760570261917e-05
+        },
+        {
+          "source_vertex": 10081,
+          "target_entity": "body-bp3d-FJ3233",
+          "gap_m": 4.932960571500342e-05
+        },
+        {
+          "source_vertex": 37163,
+          "target_entity": "body-bp3d-FJ3234",
+          "gap_m": 5.120187594222386e-05
+        },
+        {
+          "source_vertex": 43992,
+          "target_entity": "body-bp3d-FJ3230",
+          "gap_m": 6.678001197963593e-05
+        },
+        {
+          "source_vertex": 37057,
+          "target_entity": "body-bp3d-FJ3235",
+          "gap_m": 6.906706885339802e-05
+        },
+        {
+          "source_vertex": 37492,
+          "target_entity": "body-bp3d-FJ3231",
+          "gap_m": 8.298301030930541e-05
+        },
+        {
+          "source_vertex": 44455,
+          "target_entity": "body-bp3d-FJ3229",
+          "gap_m": 8.318100744762749e-05
+        },
+        {
+          "source_vertex": 45602,
+          "target_entity": "body-bp3d-FJ3236",
+          "gap_m": 8.491407421625026e-05
+        },
+        {
+          "source_vertex": 48265,
+          "target_entity": "body-bp3d-FJ3226",
+          "gap_m": 0.0001052566862484287
+        }
+      ],
+      "interpolation": "Cardinal three-nearest-anchor inverse-square displacement interpolation; source-near attachment offsets rotate with target rigid owner",
+      "scope": "Engineering material map; source topology retained, no measured fiber or strain calibration",
+      "map_file": "maps/body-bp3d-FJ1451M.npz",
+      "map_sha256": "6c1dc957243128491598dcfc622ed61aa2d0e1e9a4862b3b4b0b915f385ab09a",
+      "mass_kg": 0.09671497965353416
+    },
+    "body-bp3d-FJ1454": {
+      "map_kind": "moving_anchors",
+      "anchor_count": 9,
+      "source_anchor_nodes": [
+        14728,
+        2961,
+        16852,
+        14204,
+        41407,
+        9972,
+        43354,
+        16960,
+        40194
+      ],
+      "target_owners": [
+        "body-bp3d-FJ3344",
+        "body-bp3d-FJ3347",
+        "body-bp3d-FJ3348",
+        "body-bp3d-FJ3342",
+        "body-bp3d-FJ3340",
+        "body-bp3d-FJ3346",
+        "body-bp3d-FJ3338",
+        "body-bp3d-FJ3330",
+        "body-bp3d-FJ3331"
+      ],
+      "reference_gap_m": [
+        3.710795063053199e-05,
+        4.48664685483056e-05,
+        5.173973328108832e-05,
+        8.266946231831978e-05,
+        9.894993683679547e-05,
+        0.00012391125856832605,
+        0.00012841946892906933,
+        0.00014347473645221932,
+        0.00018689638840806844
+      ],
+      "discarded_duplicate_node_candidates": [
+        {
+          "source_vertex": 14728,
+          "target_entity": "body-bp3d-FJ3344",
+          "gap_m": 3.710795063053199e-05
+        },
+        {
+          "source_vertex": 2961,
+          "target_entity": "body-bp3d-FJ3347",
+          "gap_m": 4.48664685483056e-05
+        },
+        {
+          "source_vertex": 16852,
+          "target_entity": "body-bp3d-FJ3348",
+          "gap_m": 5.173973328108832e-05
+        },
+        {
+          "source_vertex": 14204,
+          "target_entity": "body-bp3d-FJ3342",
+          "gap_m": 8.266946231831978e-05
+        },
+        {
+          "source_vertex": 41407,
+          "target_entity": "body-bp3d-FJ3340",
+          "gap_m": 9.894993683679547e-05
+        },
+        {
+          "source_vertex": 9972,
+          "target_entity": "body-bp3d-FJ3346",
+          "gap_m": 0.00012391125856832605
+        },
+        {
+          "source_vertex": 16960,
+          "target_entity": "body-bp3d-FJ3330",
+          "gap_m": 0.00014347473645221932
+        }
+      ],
+      "interpolation": "Cardinal three-nearest-anchor inverse-square displacement interpolation; source-near attachment offsets rotate with target rigid owner",
+      "scope": "Engineering material map; source topology retained, no measured fiber or strain calibration",
+      "map_file": "maps/body-bp3d-FJ1454.npz",
+      "map_sha256": "3dc9e49dc1f701c73242464b0c4d51d4bb1a4e83566924c0614d89e3feea2c87",
+      "mass_kg": 0.07639621790833918
+    },
+    "body-bp3d-FJ1454M": {
+      "map_kind": "moving_anchors",
+      "anchor_count": 10,
+      "source_anchor_nodes": [
+        27057,
+        24785,
+        13967,
+        7999,
+        7583,
+        42598,
+        10423,
+        29076,
+        41770,
+        40200
+      ],
+      "target_owners": [
+        "body-bp3d-FJ3225",
+        "body-bp3d-FJ3235",
+        "body-bp3d-FJ3236",
+        "body-bp3d-FJ3233",
+        "body-bp3d-FJ3234",
+        "body-bp3d-FJ3230",
+        "body-bp3d-FJ3232",
+        "body-bp3d-FJ3226",
+        "body-bp3d-FJ3231",
+        "body-bp3d-FJ3227"
+      ],
+      "reference_gap_m": [
+        5.182904591056648e-05,
+        6.821062967007179e-05,
+        6.875492709631604e-05,
+        7.379024325768408e-05,
+        8.581777205216586e-05,
+        9.776584270588497e-05,
+        0.00011173629669908589,
+        0.0001345947993052079,
+        0.00014908172255500058,
+        0.019583810455067234
+      ],
+      "discarded_duplicate_node_candidates": [
+        {
+          "source_vertex": 27057,
+          "target_entity": "body-bp3d-FJ3225",
+          "gap_m": 5.182904591056648e-05
+        },
+        {
+          "source_vertex": 24785,
+          "target_entity": "body-bp3d-FJ3235",
+          "gap_m": 6.821062967007179e-05
+        },
+        {
+          "source_vertex": 13967,
+          "target_entity": "body-bp3d-FJ3236",
+          "gap_m": 6.875492709631604e-05
+        },
+        {
+          "source_vertex": 7999,
+          "target_entity": "body-bp3d-FJ3233",
+          "gap_m": 7.379024325768408e-05
+        },
+        {
+          "source_vertex": 7583,
+          "target_entity": "body-bp3d-FJ3234",
+          "gap_m": 8.581777205216586e-05
+        },
+        {
+          "source_vertex": 10423,
+          "target_entity": "body-bp3d-FJ3232",
+          "gap_m": 0.00011173629669908589
+        },
+        {
+          "source_vertex": 29076,
+          "target_entity": "body-bp3d-FJ3226",
+          "gap_m": 0.0001345947993052079
+        },
+        {
+          "source_vertex": 41770,
+          "target_entity": "body-bp3d-FJ3231",
+          "gap_m": 0.00014908172255500058
+        }
+      ],
+      "interpolation": "Cardinal three-nearest-anchor inverse-square displacement interpolation; source-near attachment offsets rotate with target rigid owner",
+      "scope": "Engineering material map; source topology retained, no measured fiber or strain calibration",
+      "map_file": "maps/body-bp3d-FJ1454M.npz",
+      "map_sha256": "536172a2ada69c6d9a9f3436da4731259ccff4770b2ecb4ac46b401f1eae1f1e",
+      "mass_kg": 0.0763987618564856
+    },
+    "body-bp3d-FJ1455": {
+      "map_kind": "moving_anchors",
+      "anchor_count": 10,
+      "source_anchor_nodes": [
+        3133,
+        7187,
+        41314,
+        28560,
+        23033,
+        26894,
+        20295,
+        28458,
+        30305,
+        29317
+      ],
+      "target_owners": [
+        "body-bp3d-FJ3344",
+        "body-bp3d-FJ3346",
+        "body-bp3d-FJ3332",
+        "body-bp3d-FJ3340",
+        "body-bp3d-FJ3348",
+        "body-bp3d-FJ3331",
+        "body-bp3d-FJ3347",
+        "body-bp3d-FJ3342",
+        "body-bp3d-FJ3330",
+        "body-bp3d-FJ3338"
+      ],
+      "reference_gap_m": [
+        2.690724809413625e-05,
+        4.564657708960043e-05,
+        4.971609397354485e-05,
+        5.3788102773760836e-05,
+        6.128621378419218e-05,
+        7.229529721912026e-05,
+        7.781362348592594e-05,
+        8.752422521791411e-05,
+        9.608667961793681e-05,
+        0.000106011367314993
+      ],
+      "discarded_duplicate_node_candidates": [
+        {
+          "source_vertex": 3133,
+          "target_entity": "body-bp3d-FJ3344",
+          "gap_m": 2.690724809413625e-05
+        },
+        {
+          "source_vertex": 7187,
+          "target_entity": "body-bp3d-FJ3346",
+          "gap_m": 4.564657708960043e-05
+        },
+        {
+          "source_vertex": 28560,
+          "target_entity": "body-bp3d-FJ3340",
+          "gap_m": 5.3788102773760836e-05
+        },
+        {
+          "source_vertex": 23033,
+          "target_entity": "body-bp3d-FJ3348",
+          "gap_m": 6.128621378419218e-05
+        },
+        {
+          "source_vertex": 26894,
+          "target_entity": "body-bp3d-FJ3331",
+          "gap_m": 7.229529721912026e-05
+        },
+        {
+          "source_vertex": 20295,
+          "target_entity": "body-bp3d-FJ3347",
+          "gap_m": 7.781362348592594e-05
+        },
+        {
+          "source_vertex": 28458,
+          "target_entity": "body-bp3d-FJ3342",
+          "gap_m": 8.752422521791411e-05
+        },
+        {
+          "source_vertex": 30305,
+          "target_entity": "body-bp3d-FJ3330",
+          "gap_m": 9.608667961793681e-05
+        }
+      ],
+      "interpolation": "Cardinal three-nearest-anchor inverse-square displacement interpolation; source-near attachment offsets rotate with target rigid owner",
+      "scope": "Engineering material map; source topology retained, no measured fiber or strain calibration",
+      "map_file": "maps/body-bp3d-FJ1455.npz",
+      "map_sha256": "cf161809518baae707f6cb902d569cd4069e156b18c257557c5d36215dae2410",
+      "mass_kg": 0.07811020777000903
+    },
+    "body-bp3d-FJ1455M": {
+      "map_kind": "moving_anchors",
+      "anchor_count": 10,
+      "source_anchor_nodes": [
+        25440,
+        35847,
+        17248,
+        41980,
+        33748,
+        40470,
+        26132,
+        40452,
+        17474,
+        20358
+      ],
+      "target_owners": [
+        "body-bp3d-FJ3233",
+        "body-bp3d-FJ3236",
+        "body-bp3d-FJ3225",
+        "body-bp3d-FJ3226",
+        "body-bp3d-FJ3232",
+        "body-bp3d-FJ3227",
+        "body-bp3d-FJ3231",
+        "body-bp3d-FJ3230",
+        "body-bp3d-FJ3235",
+        "body-bp3d-FJ3234"
+      ],
+      "reference_gap_m": [
+        3.0927172518688914e-05,
+        3.4315011292404185e-05,
+        3.767081098146421e-05,
+        5.368668363758542e-05,
+        5.6902460403851516e-05,
+        6.640730381523518e-05,
+        6.847079669487519e-05,
+        8.06367782093664e-05,
+        8.134033439814695e-05,
+        9.628997871019852e-05
+      ],
+      "discarded_duplicate_node_candidates": [
+        {
+          "source_vertex": 25440,
+          "target_entity": "body-bp3d-FJ3233",
+          "gap_m": 3.0927172518688914e-05
+        },
+        {
+          "source_vertex": 35847,
+          "target_entity": "body-bp3d-FJ3236",
+          "gap_m": 3.4315011292404185e-05
+        },
+        {
+          "source_vertex": 17248,
+          "target_entity": "body-bp3d-FJ3225",
+          "gap_m": 3.767081098146421e-05
+        },
+        {
+          "source_vertex": 41980,
+          "target_entity": "body-bp3d-FJ3226",
+          "gap_m": 5.368668363758542e-05
+        },
+        {
+          "source_vertex": 33748,
+          "target_entity": "body-bp3d-FJ3232",
+          "gap_m": 5.6902460403851516e-05
+        },
+        {
+          "source_vertex": 26132,
+          "target_entity": "body-bp3d-FJ3231",
+          "gap_m": 6.847079669487519e-05
+        },
+        {
+          "source_vertex": 17474,
+          "target_entity": "body-bp3d-FJ3235",
+          "gap_m": 8.134033439814695e-05
+        },
+        {
+          "source_vertex": 20358,
+          "target_entity": "body-bp3d-FJ3234",
+          "gap_m": 9.628997871019852e-05
+        }
+      ],
+      "interpolation": "Cardinal three-nearest-anchor inverse-square displacement interpolation; source-near attachment offsets rotate with target rigid owner",
+      "scope": "Engineering material map; source topology retained, no measured fiber or strain calibration",
+      "map_file": "maps/body-bp3d-FJ1455M.npz",
+      "map_sha256": "11ce25e9ea025c1a885014d63c6f64cbd5ee5644a9552d20d38fe49f6611c937",
+      "mass_kg": 0.07811032613565197
+    },
+    "body-bp3d-FJ3131": {
+      "map_kind": "moving_anchors",
+      "anchor_count": 16,
+      "source_anchor_nodes": [
+        16724,
+        27396,
+        30458,
+        17019,
+        4729,
+        33694,
+        18014,
+        34102,
+        1200,
+        16460,
+        13271,
+        785,
+        30609,
+        2047,
+        5484,
+        31983
+      ],
+      "target_owners": [
+        "body-bp3d-FJ3159",
+        "body-bp3d-FJ3227",
+        "body-bp3d-FJ3226",
+        "body-bp3d-FJ3162",
+        "body-bp3d-FJ3331",
+        "body-bp3d-FJ3225",
+        "body-bp3d-FJ3153",
+        "body-bp3d-FJ3236",
+        "body-bp3d-FJ3330",
+        "body-bp3d-FJ3157",
+        "body-bp3d-FJ3332",
+        "body-bp3d-FJ3348",
+        "body-bp3d-FJ3234",
+        "body-bp3d-FJ3347",
+        "body-bp3d-FJ3346",
+        "body-bp3d-FJ3235"
+      ],
+      "reference_gap_m": [
+        9.308900311002881e-05,
+        0.00011583108391102472,
+        0.00013061240369905642,
+        0.0001777122269287758,
+        0.0001980313359041306,
+        0.00020312764459830257,
+        0.00023513636554143734,
+        0.00031235396587856617,
+        0.00033231612961151866,
+        0.00034676131560483356,
+        0.0003932959445507103,
+        0.0004910365465014873,
+        0.0032591445948285235,
+        0.0033112376779687804,
+        0.003828822273232357,
+        0.004163016334342176
+      ],
+      "discarded_duplicate_node_candidates": [],
+      "interpolation": "Cardinal three-nearest-anchor inverse-square displacement interpolation; source-near attachment offsets rotate with target rigid owner",
+      "scope": "Engineering material map; source topology retained, no measured fiber or strain calibration",
+      "map_file": "maps/body-bp3d-FJ3131.npz",
+      "map_sha256": "4ff449df84ef2a9f2af2c45e75bf830cf8c8ef2434cc2b5f639f2efc9b66cad1",
+      "mass_kg": 0.38341646819962577
+    },
+    "body-bp3d-FJ3153": {
+      "map_kind": "rigid",
+      "driver": 24,
+      "map_file": "maps/body-bp3d-FJ3153.npz",
+      "map_sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85",
+      "mass_kg": 0.005568084205101682
+    },
+    "body-bp3d-FJ3178": {
+      "map_kind": "rigid",
+      "driver": 24,
+      "map_file": "maps/body-bp3d-FJ3178.npz",
+      "map_sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85",
+      "mass_kg": 0.12820169170638507
+    },
+    "body-bp3d-FJ3225": {
+      "map_kind": "rigid",
+      "driver": 9,
+      "map_file": "maps/body-bp3d-FJ3225.npz",
+      "map_sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85",
+      "mass_kg": 0.03880775669419662
+    },
+    "body-bp3d-FJ3226": {
+      "map_kind": "rigid",
+      "driver": 10,
+      "map_file": "maps/body-bp3d-FJ3226.npz",
+      "map_sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85",
+      "mass_kg": 0.025806956126591975
+    },
+    "body-bp3d-FJ3227": {
+      "map_kind": "rigid",
+      "driver": 11,
+      "map_file": "maps/body-bp3d-FJ3227.npz",
+      "map_sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85",
+      "mass_kg": 0.014632372641828513
+    },
+    "body-bp3d-FJ3228": {
+      "map_kind": "rigid",
+      "driver": 0,
+      "map_file": "maps/body-bp3d-FJ3228.npz",
+      "map_sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85",
+      "mass_kg": 0.01385044788604822
+    },
+    "body-bp3d-FJ3229": {
+      "map_kind": "rigid",
+      "driver": 1,
+      "map_file": "maps/body-bp3d-FJ3229.npz",
+      "map_sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85",
+      "mass_kg": 0.03258469281998401
+    },
+    "body-bp3d-FJ3230": {
+      "map_kind": "rigid",
+      "driver": 2,
+      "map_file": "maps/body-bp3d-FJ3230.npz",
+      "map_sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85",
+      "mass_kg": 0.040821962017362254
+    },
+    "body-bp3d-FJ3231": {
+      "map_kind": "rigid",
+      "driver": 3,
+      "map_file": "maps/body-bp3d-FJ3231.npz",
+      "map_sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85",
+      "mass_kg": 0.056556461153423526
+    },
+    "body-bp3d-FJ3232": {
+      "map_kind": "rigid",
+      "driver": 4,
+      "map_file": "maps/body-bp3d-FJ3232.npz",
+      "map_sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85",
+      "mass_kg": 0.06822700902422485
+    },
+    "body-bp3d-FJ3233": {
+      "map_kind": "rigid",
+      "driver": 5,
+      "map_file": "maps/body-bp3d-FJ3233.npz",
+      "map_sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85",
+      "mass_kg": 0.07133762601780143
+    },
+    "body-bp3d-FJ3234": {
+      "map_kind": "rigid",
+      "driver": 6,
+      "map_file": "maps/body-bp3d-FJ3234.npz",
+      "map_sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85",
+      "mass_kg": 0.07258779454403985
+    },
+    "body-bp3d-FJ3235": {
+      "map_kind": "rigid",
+      "driver": 7,
+      "map_file": "maps/body-bp3d-FJ3235.npz",
+      "map_sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85",
+      "mass_kg": 0.05476387461019878
+    },
+    "body-bp3d-FJ3236": {
+      "map_kind": "rigid",
+      "driver": 8,
+      "map_file": "maps/body-bp3d-FJ3236.npz",
+      "map_sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85",
+      "mass_kg": 0.04787930813239972
+    },
+    "body-bp3d-FJ3239": {
+      "map_kind": "moving_anchors",
+      "anchor_count": 2,
+      "source_anchor_nodes": [
+        301,
+        65
+      ],
+      "target_owners": [
+        "body-bp3d-FJ3228",
+        "body-bp3d-FJ3290"
+      ],
+      "reference_gap_m": [
+        9.233092656312885e-05,
+        0.00026032289565083654
+      ],
+      "discarded_duplicate_node_candidates": [],
+      "interpolation": "Cardinal three-nearest-anchor inverse-square displacement interpolation; source-near attachment offsets rotate with target rigid owner",
+      "scope": "Engineering material map; source topology retained, no measured fiber or strain calibration",
+      "map_file": "maps/body-bp3d-FJ3239.npz",
+      "map_sha256": "28b7c553a668fcc01fa6b1bcf212d54853f12013fd58003c793c976cd6a9f4ba",
+      "mass_kg": 0.004251410118698624
+    },
+    "body-bp3d-FJ3242": {
+      "map_kind": "moving_anchors",
+      "anchor_count": 2,
+      "source_anchor_nodes": [
+        73,
+        239
+      ],
+      "target_owners": [
+        "body-bp3d-FJ3178",
+        "body-bp3d-FJ3229"
+      ],
+      "reference_gap_m": [
+        0.00012710723818899032,
+        0.00016392159711271903
+      ],
+      "discarded_duplicate_node_candidates": [],
+      "interpolation": "Cardinal three-nearest-anchor inverse-square displacement interpolation; source-near attachment offsets rotate with target rigid owner",
+      "scope": "Engineering material map; source topology retained, no measured fiber or strain calibration",
+      "map_file": "maps/body-bp3d-FJ3242.npz",
+      "map_sha256": "479f356db2502bf49d4bff4714c1f61624b829e381301c078ddc8e3dc5bf283a",
+      "mass_kg": 0.004299157007369736
+    },
+    "body-bp3d-FJ3245": {
+      "map_kind": "moving_anchors",
+      "anchor_count": 2,
+      "source_anchor_nodes": [
+        112,
+        278
+      ],
+      "target_owners": [
+        "body-bp3d-FJ3178",
+        "body-bp3d-FJ3230"
+      ],
+      "reference_gap_m": [
+        8.59249090776787e-05,
+        0.00017474624459500558
+      ],
+      "discarded_duplicate_node_candidates": [],
+      "interpolation": "Cardinal three-nearest-anchor inverse-square displacement interpolation; source-near attachment offsets rotate with target rigid owner",
+      "scope": "Engineering material map; source topology retained, no measured fiber or strain calibration",
+      "map_file": "maps/body-bp3d-FJ3245.npz",
+      "map_sha256": "d733b43628a54ed0f4472168cc79c3c2b19ffc81641cd3c6579d06a0a441d0fd",
+      "mass_kg": 0.004078941455406061
+    },
+    "body-bp3d-FJ3248": {
+      "map_kind": "moving_anchors",
+      "anchor_count": 2,
+      "source_anchor_nodes": [
+        308,
+        84
+      ],
+      "target_owners": [
+        "body-bp3d-FJ3231",
+        "body-bp3d-FJ3178"
+      ],
+      "reference_gap_m": [
+        0.00012114800865055874,
+        0.00016324904287621643
+      ],
+      "discarded_duplicate_node_candidates": [],
+      "interpolation": "Cardinal three-nearest-anchor inverse-square displacement interpolation; source-near attachment offsets rotate with target rigid owner",
+      "scope": "Engineering material map; source topology retained, no measured fiber or strain calibration",
+      "map_file": "maps/body-bp3d-FJ3248.npz",
+      "map_sha256": "4e6d6daf91cd167e5a2e6dc5024f03f0a4a85a296e80cab859fa9698a1fef341",
+      "mass_kg": 0.004939789279344332
+    },
+    "body-bp3d-FJ3251": {
+      "map_kind": "moving_anchors",
+      "anchor_count": 2,
+      "source_anchor_nodes": [
+        140,
+        504
+      ],
+      "target_owners": [
+        "body-bp3d-FJ3178",
+        "body-bp3d-FJ3232"
+      ],
+      "reference_gap_m": [
+        0.00010426293684711792,
+        0.0001442098817695658
+      ],
+      "discarded_duplicate_node_candidates": [],
+      "interpolation": "Cardinal three-nearest-anchor inverse-square displacement interpolation; source-near attachment offsets rotate with target rigid owner",
+      "scope": "Engineering material map; source topology retained, no measured fiber or strain calibration",
+      "map_file": "maps/body-bp3d-FJ3251.npz",
+      "map_sha256": "a4466751162f0fc766047a7a8f9d2e7803d08c96f77696bfc0dd3c15a3c9d244",
+      "mass_kg": 0.008889582789974105
+    },
+    "body-bp3d-FJ3254": {
+      "map_kind": "moving_anchors",
+      "anchor_count": 2,
+      "source_anchor_nodes": [
+        115,
+        700
+      ],
+      "target_owners": [
+        "body-bp3d-FJ3178",
+        "body-bp3d-FJ3233"
+      ],
+      "reference_gap_m": [
+        0.0001640275586601093,
+        0.00019473766969958927
+      ],
+      "discarded_duplicate_node_candidates": [],
+      "interpolation": "Cardinal three-nearest-anchor inverse-square displacement interpolation; source-near attachment offsets rotate with target rigid owner",
+      "scope": "Engineering material map; source topology retained, no measured fiber or strain calibration",
+      "map_file": "maps/body-bp3d-FJ3254.npz",
+      "map_sha256": "82d26d141270120a2796216e99920932290442f67c4f3c74addb0736413c60fc",
+      "mass_kg": 0.012793190756682463
+    },
+    "body-bp3d-FJ3255": {
+      "map_kind": "moving_anchors",
+      "anchor_count": 2,
+      "source_anchor_nodes": [
+        1120,
+        137
+      ],
+      "target_owners": [
+        "body-bp3d-FJ3234",
+        "body-bp3d-FJ3178"
+      ],
+      "reference_gap_m": [
+        3.0083217912937694e-05,
+        0.00011084962832590459
+      ],
+      "discarded_duplicate_node_candidates": [],
+      "interpolation": "Cardinal three-nearest-anchor inverse-square displacement interpolation; source-near attachment offsets rotate with target rigid owner",
+      "scope": "Engineering material map; source topology retained, no measured fiber or strain calibration",
+      "map_file": "maps/body-bp3d-FJ3255.npz",
+      "map_sha256": "383f1f31dfa48fa75b215504d05b394329a664a40de86768a465615c022f8783",
+      "mass_kg": 0.02112727288108169
+    },
+    "body-bp3d-FJ3290": {
+      "map_kind": "rigid",
+      "driver": 24,
+      "map_file": "maps/body-bp3d-FJ3290.npz",
+      "map_sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85",
+      "mass_kg": 0.08201495545226553
+    },
+    "body-bp3d-FJ3330": {
+      "map_kind": "rigid",
+      "driver": 21,
+      "map_file": "maps/body-bp3d-FJ3330.npz",
+      "map_sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85",
+      "mass_kg": 0.038820064901501146
+    },
+    "body-bp3d-FJ3331": {
+      "map_kind": "rigid",
+      "driver": 22,
+      "map_file": "maps/body-bp3d-FJ3331.npz",
+      "map_sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85",
+      "mass_kg": 0.025787999119250792
+    },
+    "body-bp3d-FJ3332": {
+      "map_kind": "rigid",
+      "driver": 23,
+      "map_file": "maps/body-bp3d-FJ3332.npz",
+      "map_sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85",
+      "mass_kg": 0.01464712681220014
+    },
+    "body-bp3d-FJ3333": {
+      "map_kind": "moving_anchors",
+      "anchor_count": 2,
+      "source_anchor_nodes": [
+        19,
+        211
+      ],
+      "target_owners": [
+        "body-bp3d-FJ3334",
+        "body-bp3d-FJ3290"
+      ],
+      "reference_gap_m": [
+        6.0628706072141384e-05,
+        0.00018763890854488877
+      ],
+      "discarded_duplicate_node_candidates": [],
+      "interpolation": "Cardinal three-nearest-anchor inverse-square displacement interpolation; source-near attachment offsets rotate with target rigid owner",
+      "scope": "Engineering material map; source topology retained, no measured fiber or strain calibration",
+      "map_file": "maps/body-bp3d-FJ3333.npz",
+      "map_sha256": "995079850bcd6c122bc6009bf5a8b151bbe093855c5a0d2ef5819ba88ece478a",
+      "mass_kg": 0.004275981299887644
+    },
+    "body-bp3d-FJ3334": {
+      "map_kind": "rigid",
+      "driver": 12,
+      "map_file": "maps/body-bp3d-FJ3334.npz",
+      "map_sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85",
+      "mass_kg": 0.01386591127846575
+    },
+    "body-bp3d-FJ3335": {
+      "map_kind": "moving_anchors",
+      "anchor_count": 2,
+      "source_anchor_nodes": [
+        376,
+        208
+      ],
+      "target_owners": [
+        "body-bp3d-FJ3336",
+        "body-bp3d-FJ3178"
+      ],
+      "reference_gap_m": [
+        7.037762428509601e-05,
+        0.00012120742551512001
+      ],
+      "discarded_duplicate_node_candidates": [],
+      "interpolation": "Cardinal three-nearest-anchor inverse-square displacement interpolation; source-near attachment offsets rotate with target rigid owner",
+      "scope": "Engineering material map; source topology retained, no measured fiber or strain calibration",
+      "map_file": "maps/body-bp3d-FJ3335.npz",
+      "map_sha256": "68ba073fc077e51c43372c6329a21fef4d3960a0dcd7a9827bf564a541922f33",
+      "mass_kg": 0.004314939454200676
+    },
+    "body-bp3d-FJ3336": {
+      "map_kind": "rigid",
+      "driver": 13,
+      "map_file": "maps/body-bp3d-FJ3336.npz",
+      "map_sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85",
+      "mass_kg": 0.032589053865832655
+    },
+    "body-bp3d-FJ3337": {
+      "map_kind": "moving_anchors",
+      "anchor_count": 2,
+      "source_anchor_nodes": [
+        60,
+        271
+      ],
+      "target_owners": [
+        "body-bp3d-FJ3338",
+        "body-bp3d-FJ3178"
+      ],
+      "reference_gap_m": [
+        6.714193920337605e-05,
+        8.941051392310457e-05
+      ],
+      "discarded_duplicate_node_candidates": [],
+      "interpolation": "Cardinal three-nearest-anchor inverse-square displacement interpolation; source-near attachment offsets rotate with target rigid owner",
+      "scope": "Engineering material map; source topology retained, no measured fiber or strain calibration",
+      "map_file": "maps/body-bp3d-FJ3337.npz",
+      "map_sha256": "32cc11e6e1d22ba51a2b2093ebab736db2552ecb9fe8d2181bac3acafd21df0d",
+      "mass_kg": 0.004098019950592626
+    },
+    "body-bp3d-FJ3338": {
+      "map_kind": "rigid",
+      "driver": 14,
+      "map_file": "maps/body-bp3d-FJ3338.npz",
+      "map_sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85",
+      "mass_kg": 0.04080173866763784
+    },
+    "body-bp3d-FJ3339": {
+      "map_kind": "moving_anchors",
+      "anchor_count": 2,
+      "source_anchor_nodes": [
+        344,
+        371
+      ],
+      "target_owners": [
+        "body-bp3d-FJ3178",
+        "body-bp3d-FJ3340"
+      ],
+      "reference_gap_m": [
+        1.8309833423627624e-05,
+        7.169246822359472e-05
+      ],
+      "discarded_duplicate_node_candidates": [],
+      "interpolation": "Cardinal three-nearest-anchor inverse-square displacement interpolation; source-near attachment offsets rotate with target rigid owner",
+      "scope": "Engineering material map; source topology retained, no measured fiber or strain calibration",
+      "map_file": "maps/body-bp3d-FJ3339.npz",
+      "map_sha256": "39b28fc753e1f7b2afe44ad7d401782afec7422655982148e50a2e301041a75d",
+      "mass_kg": 0.004950040701455194
+    },
+    "body-bp3d-FJ3340": {
+      "map_kind": "rigid",
+      "driver": 15,
+      "map_file": "maps/body-bp3d-FJ3340.npz",
+      "map_sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85",
+      "mass_kg": 0.056459366946847875
+    },
+    "body-bp3d-FJ3341": {
+      "map_kind": "moving_anchors",
+      "anchor_count": 2,
+      "source_anchor_nodes": [
+        595,
+        483
+      ],
+      "target_owners": [
+        "body-bp3d-FJ3342",
+        "body-bp3d-FJ3178"
+      ],
+      "reference_gap_m": [
+        5.3793679926185664e-05,
+        6.087536447518632e-05
+      ],
+      "discarded_duplicate_node_candidates": [],
+      "interpolation": "Cardinal three-nearest-anchor inverse-square displacement interpolation; source-near attachment offsets rotate with target rigid owner",
+      "scope": "Engineering material map; source topology retained, no measured fiber or strain calibration",
+      "map_file": "maps/body-bp3d-FJ3341.npz",
+      "map_sha256": "2ce1ba9accf5f685a3ad4dd60f133a89bebb3107a10ea0b2cbedbb7e37da9259",
+      "mass_kg": 0.008890360558201141
+    },
+    "body-bp3d-FJ3342": {
+      "map_kind": "rigid",
+      "driver": 16,
+      "map_file": "maps/body-bp3d-FJ3342.npz",
+      "map_sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85",
+      "mass_kg": 0.0682324437297194
+    },
+    "body-bp3d-FJ3343": {
+      "map_kind": "moving_anchors",
+      "anchor_count": 2,
+      "source_anchor_nodes": [
+        795,
+        665
+      ],
+      "target_owners": [
+        "body-bp3d-FJ3344",
+        "body-bp3d-FJ3178"
+      ],
+      "reference_gap_m": [
+        2.183666641220858e-05,
+        0.0002845926914030113
+      ],
+      "discarded_duplicate_node_candidates": [],
+      "interpolation": "Cardinal three-nearest-anchor inverse-square displacement interpolation; source-near attachment offsets rotate with target rigid owner",
+      "scope": "Engineering material map; source topology retained, no measured fiber or strain calibration",
+      "map_file": "maps/body-bp3d-FJ3343.npz",
+      "map_sha256": "aa63b57a0a46e388bb81edc63436069dd9a3aff9daffc196e25c435b3ce1b54c",
+      "mass_kg": 0.0128061163457824
+    },
+    "body-bp3d-FJ3344": {
+      "map_kind": "rigid",
+      "driver": 17,
+      "map_file": "maps/body-bp3d-FJ3344.npz",
+      "map_sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85",
+      "mass_kg": 0.07122008442276874
+    },
+    "body-bp3d-FJ3345": {
+      "map_kind": "moving_anchors",
+      "anchor_count": 2,
+      "source_anchor_nodes": [
+        229,
+        1189
+      ],
+      "target_owners": [
+        "body-bp3d-FJ3346",
+        "body-bp3d-FJ3178"
+      ],
+      "reference_gap_m": [
+        1.3453624047098584e-05,
+        6.479410158340665e-05
+      ],
+      "discarded_duplicate_node_candidates": [],
+      "interpolation": "Cardinal three-nearest-anchor inverse-square displacement interpolation; source-near attachment offsets rotate with target rigid owner",
+      "scope": "Engineering material map; source topology retained, no measured fiber or strain calibration",
+      "map_file": "maps/body-bp3d-FJ3345.npz",
+      "map_sha256": "3ca678ac013bcff26e80da9e8626a45b9e7c16d56700fb596273f07ac97cbdf3",
+      "mass_kg": 0.02117329290976156
+    },
+    "body-bp3d-FJ3346": {
+      "map_kind": "rigid",
+      "driver": 18,
+      "map_file": "maps/body-bp3d-FJ3346.npz",
+      "map_sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85",
+      "mass_kg": 0.07260027444446573
+    },
+    "body-bp3d-FJ3347": {
+      "map_kind": "rigid",
+      "driver": 19,
+      "map_file": "maps/body-bp3d-FJ3347.npz",
+      "map_sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85",
+      "mass_kg": 0.05476066826349444
+    },
+    "body-bp3d-FJ3348": {
+      "map_kind": "rigid",
+      "driver": 20,
+      "map_file": "maps/body-bp3d-FJ3348.npz",
+      "map_sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85",
+      "mass_kg": 0.0478739472063566
+    }
+  },
+  "moving_material_count": 48,
+  "locked_internal_coordinates": [
+    11,
+    23
+  ],
+  "independent_generalized_coordinates": 30,
+  "coordinate_convention": "v_torso(3),omega_torso(3),24ribangles(rad),sternum_anterior(m),diaphragm_inferior(m); all spatial values in frozen torso axes",
+  "engineering_domain": {
+    "rib_angles_abs_rad": 0.05,
+    "sternum_abs_m": 0.005,
+    "diaphragm_abs_m": 0.02,
+    "scope": "Declared kinematic exploration bound, not physiological ROM or stiffness calibration; reject local cavity facet flips"
+  },
+  "diaphragm_axis_in_torso": [
+    0.08198199531804033,
+    -0.9966264926943631,
+    -0.0038192281164156393
+  ],
+  "material_map_audit": [
+    {
+      "entity": "body-bp3d-FJ1451",
+      "anchors": 12,
+      "maximum_node_to_anchor_distance_m": 0.11398333907128708
+    },
+    {
+      "entity": "body-bp3d-FJ1451M",
+      "anchors": 12,
+      "maximum_node_to_anchor_distance_m": 0.14286094946839023
+    },
+    {
+      "entity": "body-bp3d-FJ1454",
+      "anchors": 9,
+      "maximum_node_to_anchor_distance_m": 0.09248321313433046
+    },
+    {
+      "entity": "body-bp3d-FJ1454M",
+      "anchors": 10,
+      "maximum_node_to_anchor_distance_m": 0.13931254418138359
+    },
+    {
+      "entity": "body-bp3d-FJ1455",
+      "anchors": 10,
+      "maximum_node_to_anchor_distance_m": 0.13137052314944936
+    },
+    {
+      "entity": "body-bp3d-FJ1455M",
+      "anchors": 10,
+      "maximum_node_to_anchor_distance_m": 0.15047727353324816
+    },
+    {
+      "entity": "body-bp3d-FJ3131",
+      "anchors": 16,
+      "maximum_node_to_anchor_distance_m": 0.11564717581099833
+    },
+    {
+      "entity": "body-bp3d-FJ3239",
+      "anchors": 2,
+      "maximum_node_to_anchor_distance_m": 0.02049443664534343
+    },
+    {
+      "entity": "body-bp3d-FJ3242",
+      "anchors": 2,
+      "maximum_node_to_anchor_distance_m": 0.02408718831433006
+    },
+    {
+      "entity": "body-bp3d-FJ3245",
+      "anchors": 2,
+      "maximum_node_to_anchor_distance_m": 0.02037201008270903
+    },
+    {
+      "entity": "body-bp3d-FJ3248",
+      "anchors": 2,
+      "maximum_node_to_anchor_distance_m": 0.024932769158077895
+    },
+    {
+      "entity": "body-bp3d-FJ3251",
+      "anchors": 2,
+      "maximum_node_to_anchor_distance_m": 0.040329365306188414
+    },
+    {
+      "entity": "body-bp3d-FJ3254",
+      "anchors": 2,
+      "maximum_node_to_anchor_distance_m": 0.0469092856910015
+    },
+    {
+      "entity": "body-bp3d-FJ3255",
+      "anchors": 2,
+      "maximum_node_to_anchor_distance_m": 0.07287146225721296
+    },
+    {
+      "entity": "body-bp3d-FJ3333",
+      "anchors": 2,
+      "maximum_node_to_anchor_distance_m": 0.02259869779898836
+    },
+    {
+      "entity": "body-bp3d-FJ3335",
+      "anchors": 2,
+      "maximum_node_to_anchor_distance_m": 0.022885116073334467
+    },
+    {
+      "entity": "body-bp3d-FJ3337",
+      "anchors": 2,
+      "maximum_node_to_anchor_distance_m": 0.02369423778052386
+    },
+    {
+      "entity": "body-bp3d-FJ3339",
+      "anchors": 2,
+      "maximum_node_to_anchor_distance_m": 0.02605060049135145
+    },
+    {
+      "entity": "body-bp3d-FJ3341",
+      "anchors": 2,
+      "maximum_node_to_anchor_distance_m": 0.03722946350620685
+    },
+    {
+      "entity": "body-bp3d-FJ3343",
+      "anchors": 2,
+      "maximum_node_to_anchor_distance_m": 0.05019643116049168
+    },
+    {
+      "entity": "body-bp3d-FJ3345",
+      "anchors": 2,
+      "maximum_node_to_anchor_distance_m": 0.06695130461856681
+    }
+  ],
+  "cavity": {
+    "file": "cavity.npz",
+    "sha256": "8c258a85da0b4d9d8921021a1e35cd67356a577e09a802ea250df537432e7607",
+    "reference_geometric_volume_m3": 0.0065260456935740604,
+    "vertices": 3422,
+    "faces": 6840,
+    "source_lobes": [
+      {
+        "path": "data/derived/canonical/geometry/body-za-2de3d6737090b6f5.json.gz",
+        "sha256": "957608e3562f774de71213bf6003613401eee0ecfcaecb14e6e87298b029ec52",
+        "bytes": 171231,
+        "retained_copy": "lung_sources/body-za-2de3d6737090b6f5.json.gz",
+        "entity_id": "body-za-2de3d6737090b6f5",
+        "name": "inferior lobe of left lung",
+        "registered_source_geometry_sha256": "4f7198ffde9f6fac4deb72d6099ce1f7af3bf99fd98e05ae5a74cd623507e38e",
+        "source_schema": "Registered Z-Anatomy topology; this snapshot has no display-decimation field"
+      },
+      {
+        "path": "data/derived/canonical/geometry/body-za-984141fb35e90177.json.gz",
+        "sha256": "ca6aa6ddc87ae31dd259dcdcb7750f6482051ec29e4a5d1c9e0d0f42d94591f4",
+        "bytes": 156755,
+        "retained_copy": "lung_sources/body-za-984141fb35e90177.json.gz",
+        "entity_id": "body-za-984141fb35e90177",
+        "name": "inferior lobe of right lung",
+        "registered_source_geometry_sha256": "2d8ee854b1752ba81c559c9d24f4299f7a219afd82237e166261e332f5fc8798",
+        "source_schema": "Registered Z-Anatomy topology; this snapshot has no display-decimation field"
+      },
+      {
+        "path": "data/derived/canonical/geometry/body-za-915a592641ffe9b0.json.gz",
+        "sha256": "90ecb57ecd64c3774b09df150a9d71eaecca5d43e064fd4b9b555eeb1758e86e",
+        "bytes": 137134,
+        "retained_copy": "lung_sources/body-za-915a592641ffe9b0.json.gz",
+        "entity_id": "body-za-915a592641ffe9b0",
+        "name": "middle lobe of right lung",
+        "registered_source_geometry_sha256": "f052c868e5f908a9dc2cb08ea546efc86841e0cf1d011fdba2fbca5bf70ac2e8",
+        "source_schema": "Registered Z-Anatomy topology; this snapshot has no display-decimation field"
+      },
+      {
+        "path": "data/derived/canonical/geometry/body-za-0667ce7832fc9367.json.gz",
+        "sha256": "c3b2630dac4ffabe92967b342e00e16b65ad9d314c964d174aeec4525faf17b7",
+        "bytes": 171331,
+        "retained_copy": "lung_sources/body-za-0667ce7832fc9367.json.gz",
+        "entity_id": "body-za-0667ce7832fc9367",
+        "name": "superior lobe of left lung",
+        "registered_source_geometry_sha256": "2c70654b09164911a59a699b9e4e48d36ceb59a56cea277ab3b990feb2f44c1b",
+        "source_schema": "Registered Z-Anatomy topology; this snapshot has no display-decimation field"
+      },
+      {
+        "path": "data/derived/canonical/geometry/body-za-05ffc920dd6517bb.json.gz",
+        "sha256": "6d12276fb25ab2ca853d5cbc4719f719a5f377f9211334119c2e2732701f1869",
+        "bytes": 144513,
+        "retained_copy": "lung_sources/body-za-05ffc920dd6517bb.json.gz",
+        "entity_id": "body-za-05ffc920dd6517bb",
+        "name": "superior lobe of right lung",
+        "registered_source_geometry_sha256": "a99130dab9c693facbf96d1fd066464cb81f9c476f292316c1d0855b4966acf0",
+        "source_schema": "Registered Z-Anatomy topology; this snapshot has no display-decimation field"
+      }
+    ],
+    "material_entity_order": [
+      "body-bp3d-FJ3131",
+      "body-bp3d-FJ3153",
+      "body-bp3d-FJ3178",
+      "body-bp3d-FJ3225",
+      "body-bp3d-FJ3226",
+      "body-bp3d-FJ3227",
+      "body-bp3d-FJ3228",
+      "body-bp3d-FJ3229",
+      "body-bp3d-FJ3230",
+      "body-bp3d-FJ3231",
+      "body-bp3d-FJ3232",
+      "body-bp3d-FJ3233",
+      "body-bp3d-FJ3234",
+      "body-bp3d-FJ3235",
+      "body-bp3d-FJ3236",
+      "body-bp3d-FJ3290",
+      "body-bp3d-FJ3330",
+      "body-bp3d-FJ3331",
+      "body-bp3d-FJ3332",
+      "body-bp3d-FJ3334",
+      "body-bp3d-FJ3336",
+      "body-bp3d-FJ3338",
+      "body-bp3d-FJ3340",
+      "body-bp3d-FJ3342",
+      "body-bp3d-FJ3344",
+      "body-bp3d-FJ3346",
+      "body-bp3d-FJ3347",
+      "body-bp3d-FJ3348"
+    ],
+    "maximum_nearest_material_node_gap_m": 0.02324371537815404,
+    "derived_data_license": "CC BY-SA4.0; retained Z-Anatomy upstream attribution applies to lobe-derived cavity data",
+    "upstream_license": {
+      "path": "data/raw/anatomy/extended/License.txt",
+      "sha256": "196b66b56551a862e59872f7cdb70e6d9a6ad84e9105962fca8ec28c14e97520",
+      "bytes": 2754,
+      "retained_copy": "Z-Anatomy-License.txt"
+    },
+    "basis": "Closed oriented convex envelope of five registered lobe surfaces, displacement-bound to nearest mechanical material nodes",
+    "gas_mapping": "Optional explicit native reference supplies constant offset Vgas0\u2212Vgeom0. No native gas store or gas-exchange area introduced.",
+    "limitations": [
+      "Convex envelope fills interlobar gaps, mediastinum and concavities; it is not actual gas-exchange volume.",
+      "Lobe-to-thoracic-node interpolation is engineered; nearest-node gaps retained, not calibrated pleural contact.",
+      "Fixed topology/orientation checks do not prove global absence of self-intersection after deformation."
+    ]
+  },
+  "mass_ownership": "Every one of48debited material shares is represented with positive degree2 triangle quadrature; residual17.937704kg core supplies rigid6DOF inertia. No separate modal mass added.",
+  "native_recoil_ownership": "BioGears left/right PleuralCavityToRespiratoryMuscle compliances remain native; mechanism has noK/damping. Its ideal pressure driver remains owner until an explicit port replaces it.",
+  "pressure_work": "Qinternal=p*dV/dq. Closed-envelope uniform pressure resultant/moment should cancel. Pointloads expose6parent+26internal generalized force and fixed-parent reaction.",
+  "not_implemented": [
+    "Passive constitutive laws, damping, chemical activation, native integration or coupled clock acceptance",
+    "Subject-specific strain/attachment calibration and globally certified cavity/contact geometry",
+    "Other whole-body segments and cervical mechanics: this is the explicitly composed reduced-torso subsystem only"
+  ]
+}
