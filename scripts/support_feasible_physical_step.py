@@ -38,7 +38,17 @@ def physical_step(acceleration,jacobian,q,bounds,support,support_jacobian,radius
 def feasible_trial(current,candidate,predicted_reduction):
     # Both dictionaries must retain the original physical-gate quantities.
     feasible=max(map(abs,candidate['support_constraints']+candidate['gauge_residual']))<=1e-4
-    actual=.5*(np.sum(np.asarray(current['udot'])**2)-np.sum(np.asarray(candidate['udot'])**2))
+    u=np.asarray(current['udot'],float);v=np.asarray(candidate['udot'],float)
+    # Lexicographic on the quantity physical_gate actually gates (max|udot|<=1e-4) first:
+    # a step that raises max|udot| is never progress even when sum(udot^2) falls, which is
+    # exactly how support-physical-root-xgpiykt1 drifted 5.6881 -> 5.9038 while accepting.
+    # Sum of squares stays the tie-break and the trust-region quality measure, because the
+    # bounded QP predicts that model and nothing predicts the nonsmooth maximum.
+    maximum=float(np.max(np.abs(u)));candidate_maximum=float(np.max(np.abs(v)))
+    actual=.5*float(u@u-v@v)
     ratio=actual/predicted_reduction if predicted_reduction>0 else None
-    return dict(feasible=feasible,actual_reduction=float(actual),reduction_ratio=ratio,
-        accepted=bool(feasible and predicted_reduction>0 and actual>0 and ratio>=.1))
+    nonregressive=bool(candidate_maximum<=maximum)
+    return dict(feasible=feasible,actual_reduction=actual,reduction_ratio=ratio,
+        maximum_abs_acceleration=maximum,candidate_maximum_abs_acceleration=candidate_maximum,
+        maximum_reduction=float(maximum-candidate_maximum),gated_maximum_not_increased=nonregressive,
+        accepted=bool(feasible and nonregressive and predicted_reduction>0 and actual>0 and ratio>=.1))
