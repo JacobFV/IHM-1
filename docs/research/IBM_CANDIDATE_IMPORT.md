@@ -108,5 +108,32 @@ owners to check preflight rejection, single-pin forwarding, full source retentio
 and preservation of optional regional-native selection. An additional lightweight
 check verified 102 candidate files, 72 loaded IBM module receipts and actual IHM
 loaded-code attestation. `verify_regional_embodied_factory.py` default/regional
-routing remains passing. No native factory acceptance or app configuration change
-is claimed by this integration; those remain separately scheduled.
+routing remains passing. Actual native factory acceptance is recorded below. App configuration and default
+promotion remain unchanged.
+
+## Actual candidate factory acceptance
+
+`data/derived/audits/candidate-regional-factory-o81_fuoo/verification.json` records
+a successful real `regional_skin=True` factory initialization with candidate
+`398375cc...` and one native skin sensor. The fixture reuses `skin-contact-0`, its
+cortical assignment, gain 0.1 and reference temperature 33 C from the previously
+retained cutaneous factory receipt; these remain explicitly engineering priors.
+The native material manifest/quadrature/triangle identity and transformed current
+coordinate frame match the receptor binding.
+
+All clocks remain zero. Shared brain/receptor identity, 102 archived candidate
+files and 72 loaded IBM module receipts were verified. Initialization, snapshot
+and cleanup took 2.067 s; both native processes were reaped. The fixture uses a
+30 s alarm, parent 2 GiB soft / 4 GiB hard address-space limit, nice 10 and one
+BLAS/OMP thread; child launchers retain their existing 4 GiB hard ceilings.
+
+Run only in a coordinated native slot:
+
+```sh
+PYTHONPATH=. OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 nice -n 10 \
+  .venv/bin/python scripts/verify_candidate_embodied_factory.py --native
+```
+
+This establishes source-bound native initialization and cleanup, not a coupled
+step, receptor response under native motion, equilibrium, full brain completion
+or promotion of the candidate to the default runtime.

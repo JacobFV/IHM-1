@@ -83,7 +83,76 @@ def probe(hot_swap=False):
             bind_cutaneous(root,[point],config,source_pin=pin)
             assert constructor.call_args.kwargs['source_pin'] is pin
 
+def native_probe():
+    """Actual candidate/regional/one-material-site init, snapshot and cleanup only."""
+    import hashlib,resource,signal,time
+    from ihm.brain.candidate import SourcePin
+    from ihm.assembly.embodied import EmbodiedRuntime
+    pin=SourcePin.load(ROOT/'data/derived/ibm-candidates/398375cc993ac17907d4ddd9f6d53eed2fab31de/source_pin.json')
+    reference=ROOT/'data/derived/audits/cutaneous-factory-ylro2d66/body/manifest.json'
+    retained=json.loads(reference.read_bytes())['cutaneous_materialization']
+    selected=retained['sites'][0]
+    configuration={'regions':{selected['id']:selected['sensory_region']},
+        'recruitment_hz_per_response':retained['recruitment_hz_per_response'],
+        'reference_temperature_C':selected['reference_temperature_C']}
+    surface=ROOT/'data/derived/supine-surface-contact-exmzq9pq/manifest.json'
+    assert hashlib.sha256(surface.read_bytes()).hexdigest()==selected['material_identity']['manifest_sha256']
+    output=Path(tempfile.mkdtemp(prefix='candidate-regional-factory-',dir=ROOT/'data/derived/audits'))
+    resource.setrlimit(resource.RLIMIT_AS,(2*1024**3,4*1024**3))
+    def deadline(signum,frame):raise TimeoutError('30 second candidate factory acceptance deadline')
+    old=signal.signal(signal.SIGALRM,deadline);signal.alarm(30)
+    started=time.monotonic();body=None
+    def write(name,value):(output/name).write_text(json.dumps(value,indent=2,allow_nan=False)+'\n')
+    try:
+        body=EmbodiedRuntime.from_workspace(ROOT,output/'body',source_pin=pin,
+            regional_skin=True,surface_contact_manifest=str(surface.relative_to(ROOT)),
+            cutaneous_configuration=configuration)
+        initial=body.snapshot();receipt=json.loads((output/'body/manifest.json').read_bytes())
+        assert initial['time_s']==initial['physiology']['elapsed_s']==initial['mechanics']['time_s']==0.
+        assert body.neural.time_s==body.neural.brain.time_s==body.cutaneous.time_s==0.
+        assert receipt['brain_source_pin']==pin.to_dict()
+        assert body.neural.brain.source_identity['package_sha256']==body.cutaneous.audit['package_sha256']==pin.package_sha256
+        contacts=initial['mechanics']['cutaneous_contacts']
+        assert len(contacts)==1 and contacts[0]['material_identity']==selected['material_identity']
+        assert contacts[0]['coordinate_frame']=='canonical_current_world'
+        assert body.cutaneous.audit['sites'][0]['material_identity']==contacts[0]['material_identity']
+        assert initial['tissue_exchange']['regional_skin']['available'] is True
+        assert initial['physiology']['values']['tissue.regional_skin.completed_native_steps']==0
+        candidate=json.loads((pin.artifact_dir/'manifest.json').read_bytes())
+        for relative in ('manifest.json','source_pin.json',*('source/'+path for path in candidate['files'])):
+            source=pin.artifact_dir/relative;archived=output/'body/inputs'/source.relative_to(ROOT)
+            assert archived.read_bytes()==source.read_bytes()
+            assert receipt['sources'][str(source.relative_to(ROOT))]==hashlib.sha256(source.read_bytes()).hexdigest()
+        assert receipt['brain_candidate_loaded_modules']['ibm.processes.neural']['package_sha256']==pin.package_sha256
+        write('initial.json',{'time_s':initial['time_s'],'physiology':initial['physiology'],
+            'tissue_exchange':initial['tissue_exchange'],'cutaneous_contacts':contacts,
+            'brain_source_identity':body.neural.brain.source_identity,'cutaneous_materialization':body.cutaneous.audit})
+        physiology=body.native.process;mechanics=body.plant.native.process
+        body.close();body=None
+        assert physiology.poll() is not None and mechanics.poll() is not None
+        report={'passed':True,'advances':0,'regional_skin':True,'selected_cutaneous_site':selected['id'],
+            'prior_configuration':configuration,'prior_reference_manifest_sha256':hashlib.sha256(reference.read_bytes()).hexdigest(),
+            'package_sha256':pin.package_sha256,'neural_source_sha256':pin.neural_source_sha256,
+            'candidate_files_verified':len(candidate['files'])+2,'loaded_modules':len(receipt['brain_candidate_loaded_modules']),
+            'factory_manifest_sha256':hashlib.sha256((output/'body/manifest.json').read_bytes()).hexdigest(),
+            'native_pid':physiology.pid,'mechanical_pid':mechanics.pid,
+            'native_exit_code':physiology.returncode,'mechanical_exit_code':mechanics.returncode,
+            'both_processes_reaped':True,'wall_s':time.monotonic()-started,
+            'parent_peak_rss_kib':resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,
+            'maximum_child_peak_rss_kib':resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss,
+            'parent_soft_address_space_bytes':2*1024**3,'hard_address_space_bytes':4*1024**3,
+            'scope':'Actual candidate/regional/selected-skin factory init, snapshot, source retention and cleanup; no exchange step, receptor response, equilibrium or default promotion'}
+        write('verification.json',report)
+        print(json.dumps({'passed':True,'output':str(output),'wall_s':report['wall_s'],'both_processes_reaped':True}))
+    except BaseException as error:
+        write('failure.json',{'error':str(error),'wall_s':time.monotonic()-started})
+        raise
+    finally:
+        if body:body.close()
+        signal.alarm(0);signal.signal(signal.SIGALRM,old)
+
 if __name__=='__main__':
-    if sys.argv[1:]==['--probe']:probe()
+    if sys.argv[1:]==['--native']:native_probe()
+    elif sys.argv[1:]==['--probe']:probe()
     elif sys.argv[1:]==['--hot-swap']:probe(True)
     else:unittest.main()
