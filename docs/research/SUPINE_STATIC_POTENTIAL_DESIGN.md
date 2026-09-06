@@ -325,3 +325,28 @@ actual replay q/acceleration differences are reported. The radius is derived
 from the prior accepted ratio by the same existing rule. If prediction quality
 or descent remains weak, further unchanged continuation is not justified;
 actual arm path/source-registration errors require renewed diagnosis.
+
+### Smaller-radius continuation: support retained, physical outlier stalled
+
+`support-physical-root-xgpiykt1` completed182 calls in36.358 s; native process
+reaped and continuing state unchanged. Exact requested-q replay differed by
+7.137e-11 in actual q and5.779e-7 in maximum acceleration. Previous receipts
+remain immutable. Final support is<=7.961e-8 normalized, gauge<=2.609e-9 and
+constraint error2.441e-14. The physical acceleration gate still fails:
+maximum5.903845, compared with5.688101 before continuation.
+
+Cost fell53.0012 ->42.9547 ->41.7605 ->41.1224 ->41.0010 ->40.4029 ->40.3499.
+After the useful first smaller-radius step, several predicted decreases failed
+actual merit tests. The last iteration rejected radii.00375/.001875/.0009375
+(negative actual reductions) and.00046875 (ratio.0869), accepting only.000234375
+with a0.05297 cost reduction and ratio.4511. This is a32-fold contraction from
+the chunk's initial radius; the last gain is only0.131% of current cost.
+
+Right arm adduction remains the dominant acceleration5.90385, followed by
+right arm flexion−3.23334, left adduction3.08073 and lumbar extension−2.82789.
+No equilibrium, forward run or reference promotion is claimed. Stop unchanged
+native continuations: investigate local model/derivative agreement and actual
+arm path/source-registration effects before spending another solve chunk.
+The separately demonstrated native wrap force/path mismatch is relevant
+background, but these solver results alone do not prove it causes the current
+stagnation; candidate wrap corrections remain separate unpromoted physics.
