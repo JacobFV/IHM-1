@@ -69,3 +69,74 @@ retained metadata baseline law checks; candidate mass/inertia/damping recomputat
 No complete geometry scan, native acceptance, shared canonical overwrite or
 supine/native mass change was performed. Adoption still requires the downstream
 owner checks above and a coordinated, reviewable canonical publication.
+
+## Persisted candidate-root acceptance (2026-09-06)
+
+The accepted bounded staging epoch is
+`data/derived/skin-layer-epoch-20260906-v2`. It contains an isolated `root/`,
+`registration.json`, `differences.json`, historical `migration_manifest.json`,
+and `acceptance.json` with SHA-256 hashes for 28 output files. Derived payloads
+remain local retained artifacts; acceptance/difference receipts are committed.
+The earlier v1 stage remains historical and is not the selected candidate.
+
+```sh
+.venv/bin/python scripts/stage_skin_layer_candidate.py \
+  --candidate /tmp/ihm-skin-layer-candidate-final-20260906 \
+  --output data/derived/a-new-skin-epoch
+.venv/bin/python scripts/verify_skin_candidate_stage.py \
+  data/derived/skin-layer-epoch-20260906-v2
+```
+
+The stager copies bounded canonical metadata, the profile's exact patient file,
+and the body manifest's 14 runtime source files into its private root. It
+regenerates respiration from staged anatomy and calls the actual `body.build`
+and `CanonicalBody.from_workspace` interfaces. All 2,408 entities load with
+matching staged source/executor/patient receipts. This is loader acceptance,
+not a running physiology/mechanics/body-runtime session.
+
+Registration is recomputed twice with `CanonicalRegistration`: original and
+candidate mechanics use the same retained
+`data/derived/supine-support-5ma720yd/initial_native.json`. The resulting full
+registration manifests are exactly equal. No native executable is instantiated;
+this registration comparison provides no new native equilibrium evidence.
+
+Exact old/new differences, enumerated in `differences.json`:
+
+- Anatomy: four changed entity rows, consisting of the parent support receipt
+  and three layer support/volume/method updates. Assumption ledger also changes.
+  Every entity's geometry reference, bounds, centroid and principal axis is equal.
+- Mechanics: 2,399 rows change only proxy mass/inertia; three layer rows also
+  change material volume, volume basis, shell and support; parent skin gains
+  support only. All 3,341 support-link damping values change coherently.
+- Respiration: only `anatomy_sha256` changes; reconstructed physical parameters
+  and bindings are equal to the retained artifact.
+- Body manifest: only source and executor receipts change. Registration is equal.
+  Native mass migration is explicitly false.
+
+**Source-mask reuse can use geometry identity.** `physical_skin_support` already
+checks exact skin bytes and the matching source geometry receipt independently
+of the evidence's whole-anatomy epoch. The stager additionally proves equality
+of every source-mask input entity's geometry reference, bounds and centroid,
+plus equality of all candidate anatomical geometry metadata. It retains the
+historical evidence bytes and old `anatomy_sha256`; an explicit new equivalence
+receipt establishes the restricted reuse. This does not relabel the original
+territory materialization as a new run or establish anatomical drainage.
+
+Direct-consumer evaluation is recorded under `acceptance`:
+
+| Consumer | Bounded result | Remaining publication requirement |
+| --- | --- | --- |
+| Body manifest/loader | Actual build and loader pass, all hashes checked | Start a new owner only after coordinated publication. |
+| Articulated registration | Actual old/new reconstruction exactly equal | Keep existing native owners pinned; create new provenance for future owners. |
+| Respiration/systemic projection input | Actual respiration rebuilt; only anatomy receipt differs | No systemic/native trajectory was rerun. |
+| Engineered territory component mask | Exact skin bytes and referenced geometry metadata agree | Keep source artifact historical; separate equivalence receipt is sufficient for mask support, not a new territory claim. |
+| Supine contact | New shell metadata is consumable by the migrated builder; source geometry equal | Support owner must build a separate contact/statics epoch; old accepted equilibrium remains pinned. |
+| Hair fragment | Referenced skin geometry and all anatomical geometric metadata equal | Existing full-anatomy receipt remains historical; hair owner needs explicit equivalence or fresh fragment generation. |
+| Material-domain ownership | Geometry equal, canonical allocation changed | Dedicated domain metadata regeneration/acceptance still required; no hash-only relabeling. |
+| Body-runtime registry/local touch | Candidate body assets load; anatomy epoch necessarily changes | Registry/touch outputs must be created under the new owner; no runtime stepping performed. |
+| Viewer asset serving | Source references preserved, only skin geometry physically copied | Stage is not a full viewer root; other geometry remains in original source storage. Explicit source-root asset serving or complete asset materialization is required before viewer adoption. |
+
+No heavy build is needed to repeat the completed checks. Full material-domain,
+contact or native acceptance must be separately scoped; the candidate is not
+ready for wholesale canonical promotion until those required consumers are
+resolved. The root stage has no symlinks into writable live canonical assets.
