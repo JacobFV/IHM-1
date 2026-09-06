@@ -75,6 +75,8 @@ inline std::string evaluate(OpenSim::Model& model, const SimTK::State& continuin
         system.getRigidBodyForces(candidate,SimTK::Stage::Dynamics),zero,tree_residual);
     matter.calcResidualForce(candidate,system.getMobilityForces(candidate,SimTK::Stage::Dynamics),
         system.getRigidBodyForces(candidate,SimTK::Stage::Dynamics),zero,candidate.getMultipliers(),constrained_residual);
+    SimTK::Vector mass_udot;matter.multiplyByM(candidate,candidate.getUDot(),mass_udot);
+    const double dynamic_identity=(constrained_residual+mass_udot).norm();
     std::ostringstream out;
     out << "{\"kind\":\"static_pose_evaluated\",\"physical_time_advanced_s\":0,\"continuing_state_unchanged\":true,\"time_s\":";
     number(out,candidate.getTime());
@@ -96,6 +98,8 @@ inline std::string evaluate(OpenSim::Model& model, const SimTK::State& continuin
     out << ",\"constraint_position_error\":"; number(out,candidate.getQErr().norm());
     out << ",\"constraint_velocity_error\":"; number(out,candidate.getUErr().norm());
     out << ",\"constraint_acceleration_error\":"; number(out,candidate.getUDotErr().norm());
+    out<<",\"mass_times_udot\":";array(out,mass_udot);
+    out<<",\"dynamic_residual_identity_norm\":";number(out,dynamic_identity);
     out << ",\"constraint_multipliers\":"; array(out,candidate.getMultipliers());
     out << ",\"tree_zero_acceleration_residual_mobility_force\":"; array(out,tree_residual);
     out << ",\"constrained_zero_acceleration_residual_mobility_force\":"; array(out,constrained_residual);
