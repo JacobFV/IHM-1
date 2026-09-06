@@ -7,6 +7,9 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <sstream>
+#include <iomanip>
+#include <limits>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -17,7 +20,7 @@ struct IHMMetabolicMusclePrior {
 };
 struct IHMMetabolicMusclePower {
   std::string muscle_type;
-  double metabolic_w,active_fiber_work_w,heat_w,analysis_mass_kg,slow_twitch_fraction;
+  double metabolic_w,active_fiber_work_w,heat_w,analysis_mass_kg,slow_twitch_fraction,roundoff_tolerance_w;
 };
 struct IHMMetabolicPower {
   double total_muscle_metabolic_w=0.,active_fiber_work_w=0.,muscle_heat_w=0.,analysis_mass_kg=0.;
@@ -75,10 +78,21 @@ public:
       const auto& m=*muscles_[i];const double total=power[static_cast<int>(i)+2];
       const double force=m.getActiveFiberForce(state),velocity=m.getFiberVelocity(state),mass=probe_->getMuscleMass(m.getName());
       valid(total,"individual power");valid(force,"active force");valid(velocity,"fiber velocity");valid(mass,"analysis muscle mass");
-      if(total<0||mass<=0)throw std::runtime_error("Out-of-domain native muscle metabolism");
+      // Native cancellation in forbid_negative_total_power can leave a tiny
+      // signed residual. Preserve raw power; admit only a scaled FP error.
+      const double work=-std::max(0.,force)*velocity;
+      const double tolerance=64*std::numeric_limits<double>::epsilon()*std::max({1.,std::abs(work),mass});
+      if(total < -tolerance || mass<=0) {
+        std::ostringstream diagnostic;diagnostic<<std::setprecision(17)
+          <<"Out-of-domain native muscle metabolism: muscle="<<m.getName()
+          <<" power_w="<<total<<" analysis_mass_kg="<<mass
+          <<" active_force_n="<<force<<" fiber_velocity_m_s="<<velocity
+          <<" activation="<<m.getActivation(state)<<" excitation="<<m.getExcitation(state);
+        throw std::runtime_error(diagnostic.str());
+      }
       // This reproduces the source probe's active-force floor and signed work.
-      const double work=-std::max(0.,force)*velocity,heat=total-work;
-      result.muscles.emplace(m.getName(),IHMMetabolicMusclePower{m.getConcreteClassName(),total,work,heat,mass,probe_->getRatioSlowTwitchFibers(m.getName())});
+      const double heat=total-work;
+      result.muscles.emplace(m.getName(),IHMMetabolicMusclePower{m.getConcreteClassName(),total,work,heat,mass,probe_->getRatioSlowTwitchFibers(m.getName()),tolerance});
       sum+=total;result.active_fiber_work_w+=work;result.muscle_heat_w+=heat;result.analysis_mass_kg+=mass;
     }
     if(std::abs(sum-power[0])>1e-10*std::max(1.,std::abs(power[0])))throw std::runtime_error("Metabolic total differs from native per-muscle sum");

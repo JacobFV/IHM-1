@@ -110,3 +110,24 @@ advance with `Out-of-domain native muscle metabolism`. No successful integrated
 trajectory or viewer promotion is claimed. The earlier source-checker failure
 is retained separately at `embodied-native-kzihzxr1`; generated dataclass method
 receipts are now handled by a tested source-verification correction.
+
+## Instrumented follow-up
+
+`data/derived/supine-support-tt0k8jes` identified the rejected `ehl_l` power as
+-9.4635567759726085e-17 W at positive analysis mass 0.10655017692467443 kg.
+The native nonnegative-total calculation can leave a cancellation residual.
+The adapter now preserves raw signed power and publishes a per-muscle numerical
+tolerance: 64 double epsilons times max(1 W, absolute active fiber power, analysis
+mass times the source 1 W/kg minimum-heat scale). It still rejects nonfinite
+values, nonpositive mass and materially negative power; it does not clamp energy.
+
+With rebuilt adapter `build-xz0ktmvi`, integrated attempt
+`data/derived/audits/embodied-native-bigr07yz` passed the mechanical advance but
+rejected a negative metabolic increment relative to the fixed initial reference
+before sending physiological boundary commands. A source-aware signed-demand
+port is required; redefining the reference or silently clipping would hide this
+missing coupling. Production viewer promotion remains blocked.
+
+Independent support run `data/derived/supine-support-5ma720yd` advanced 0.2 s
+then hit its predefined kinetic-growth divergence stop (10.002 wall seconds).
+The numerical metabolism correction does not resolve physical support stability.
