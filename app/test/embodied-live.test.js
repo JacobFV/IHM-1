@@ -46,3 +46,28 @@ test('source handoff waits for confirmed pending body cleanup',async()=>{
  assert.equal(result.closed,true);assert.equal(waits,2);
  await assert.rejects(closeBodyOwner(async()=>{throw Error('Offline');},'/body/id',async()=>{}),/Offline/);
 });
+test('schedule sequence updates do not fabricate physiology time samples',()=>{
+ const h=new LiveBodyHistory(3);h.push('body',frame(0));h.push('body',frame(.02,1));
+ const scheduled={...frame(.02,2),intake_schedule:{events:[{event_id:'drink'}]}};
+ assert.equal(h.push('body',scheduled),false);
+ assert.equal(h.frame,scheduled);assert.equal(h.sequence,2);
+ assert.deepEqual(h.series('heart_rate_per_min').time_s,[0,.02]);
+ h.push('body',frame(.04,3));assert.deepEqual(h.series('heart_rate_per_min').time_s,[0,.02,.04]);
+ assert.throws(()=>h.push('body',frame(.02,4)),/clock reversed/);
+});
+import {scheduleBodyIntakes} from '../src/embodied-live.js';
+test('intake scheduling uses the current body sequence and recovers without replay',async()=>{
+ const events=[{event_id:'water',time_s:.02,meal:{name:'water',water_ml:250}}];
+ const accepted={...frame(.02,5),intake_schedule:{events}};const calls=[];
+ const result=await scheduleBodyIntakes(async(path,data)=>{
+  calls.push({path,data});if(data)throw Error('Lost response');return accepted;
+ },'/body/id',4,events);
+ assert.deepEqual(calls,[{path:'/body/id/intakes',data:{sequence:4,events}},{path:'/body/id',data:undefined}]);
+ assert.equal(result.frame,accepted);assert.equal(result.recovered,true);
+ assert.equal(result.frame.time_s,.02);
+});
+test('intake double network failure never retries POST and invalid sequences never send',async()=>{
+ let posts=0;const request=async(path,data)=>{if(data)posts++;throw Error('Offline');};
+ await assert.rejects(scheduleBodyIntakes(request,'/body/id',0,[{event_id:'water'}]),/Offline/);assert.equal(posts,1);
+ await assert.rejects(scheduleBodyIntakes(request,'/body/id',-1,[{}]),/Missing current/);assert.equal(posts,1);
+});

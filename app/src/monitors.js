@@ -3,6 +3,7 @@
 export const MONITORS = [
   {id:'live',title:'Live body',description:'Current unified native physiology and neural/mechanical clock.',tags:['live','physiology','signals']},
   ...[1,2,3].map(i=>({id:`live-signal-${i}`,title:`Live signal ${i}`,description:'An independently selected signal from the active body, using actual recorded live samples.',tags:['live','physiology','signals']})),
+  {id:'intake',title:'Food & drink',description:'Schedule native nutrient and water intake on the active body clock; inspect queued, issued and accepted events.',tags:['live','controls','physiology','food','drink']},
   {id:'motor',title:'Motor & skin inputs',description:'Named muscle descending drive, selective sensory/motor blocks and whole-Skin pressure.',tags:['live','controls','neural','muscle','skin']},
   {
     id: "selection",
@@ -181,7 +182,7 @@ export function mountMonitors() {
     ),
   );
   const liveContents={};
-  for(const id of ['live','motor','live-signal-1','live-signal-2','live-signal-3']){
+  for(const id of ['live','motor','intake','live-signal-1','live-signal-2','live-signal-3']){
     const mount=node('div');mount.id=id==='live'?'live-body-monitor':id==='motor'?'live-motor-monitor':`${id}-monitor`;
     mount.append(node('p','muted','Start Body to inspect its current computed state.'));
     liveContents[id]=mount;

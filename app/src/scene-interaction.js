@@ -2,7 +2,8 @@ import * as THREE from 'three';
 import { TransformControls } from 'three/addons/controls/TransformControls.js';
 import './scene-interaction.css';
 import {cursorSpring,advanceScene} from './scene-forces.js';
-import {bodyEndpoint,bodyEnvironment,bodyCommand,frameScope,materialOffset,materialPoint,createBodyOwner,closeBodyOwner} from './embodied-live.js';
+import {bodyEndpoint,bodyEnvironment,bodyCommand,frameScope,materialOffset,materialPoint,createBodyOwner,closeBodyOwner,scheduleBodyIntakes} from './embodied-live.js';
+import {mountIntakeMonitor} from './intake-monitor.js';
 import {mountEmbodiedPanels} from './embodied-panels.js';
 
 export function mountSceneInteraction({scene,camera,renderer,controls,group,getObjects,getSelected,onSelect,onFrame,onPauseReplay}) {
@@ -24,6 +25,34 @@ export function mountSceneInteraction({scene,camera,renderer,controls,group,getO
   let mode='select',session=null,state=null,running=false,pending=false,creating=null,drag=null,gizmoDragging=false;
   let lastStep=0,lastPoll=0,disposed=false,environment='bed',kind='embodied',initializing=false,faulted=false,selectedId=null,lastError='',resetting=false,resetTask=null;
   const panels=mountEmbodiedPanels();
+  let intakeTask=null,intakeOwner=null,intakeSignature='',intakeConnected=false;
+  let intake=mountIntakeMonitor(document.getElementById('intake-monitor'),{submit:scheduleIntakes});
+  function syncIntake(){const connected=!disposed&&!resetting&&!initializing&&!faulted&&kind==='embodied'&&!!session&&!!state;if(connected!==intakeConnected){intakeConnected=connected;intake.setConnected(connected);}}
+  function clearIntake(){intake.dispose();intake=mountIntakeMonitor(document.getElementById('intake-monitor'),{submit:scheduleIntakes});intakeOwner=null;intakeSignature='';intakeConnected=false;}
+  async function scheduleIntakes(events) {
+    if(intakeTask)throw Error('An intake request is already pending');
+    if(disposed||resetting||initializing||faulted||kind!=='embodied'||!session||!state)throw Error('Start a unified body before scheduling intake');
+    const owner=session;
+    intakeTask=Promise.resolve().then(async()=>{
+      while(pending)await new Promise(resolve=>setTimeout(resolve,10));
+      if(disposed||resetting||owner!==session)throw Error('Body owner changed before intake could be scheduled');
+      pending=true;
+      try{
+        const result=await scheduleBodyIntakes(request,endpoint()+'/'+owner,state.sequence,events);
+        if(disposed)return;
+        accept(result.frame);
+        if(result.recovered){
+          running=false;playText('Resume '+label());
+          const known=new Set((result.frame.intake_schedule?.events||[]).map(e=>e.event_id));
+          if(!events.every(e=>known.has(e.event_id)))throw result.error;
+          status('Intake request recovered from current body state. Body paused; review the schedule before resuming.');
+        }
+        return result.frame.intake_schedule;
+      }catch(error){running=false;playText(faulted?'Reset required':'Resume '+label());status(error.message);throw error;}
+      finally{pending=false;}
+    });
+    try{return await intakeTask;}finally{intakeTask=null;syncIntake();}
+  }
   const endpoint=()=>bodyEndpoint(kind);
   const playText=(text)=>{if(!disposed)$('scene-play').textContent=text;};
   const label=()=>kind==='embodied'?'Body':'reduced mechanics';
@@ -67,8 +96,14 @@ export function mountSceneInteraction({scene,camera,renderer,controls,group,getO
     }
   }
   function accept(frame) {
-    if(!frame?.entities||!Number.isFinite(frame.time_s)||!Number.isInteger(frame.sequence)||(kind==='embodied'&&frame.schema!=='ihm.embodied-frame.v1')){faulted=true;throw Error(frame?.error||'Body owner has no valid live frame; Reset required.');}
-    panels.update(session,frame);state=frame;onFrame(frame);
+    if(!frame?.entities||!Number.isFinite(frame.time_s)||!Number.isInteger(frame.sequence)||(kind==='embodied'&&frame.schema!=='ihm.embodied-frame.v1')){faulted=true;syncIntake();throw Error(frame?.error||'Body owner has no valid live frame; Reset required.');}
+    panels.update(session,frame);state=frame;
+    if(kind==='embodied'){
+      if(intakeOwner&&intakeOwner!==session)clearIntake();intakeOwner=session;
+      const schedule=frame.intake_schedule||{events:[]},signature=JSON.stringify(schedule);
+      if(signature!==intakeSignature){intake.update(schedule);intakeSignature=signature;}
+    }
+    syncIntake();onFrame(frame);
     const currentEnvironment={free:'studio',supine:'bed',upright:'floor'}[frame.mechanics?.body_environment?.kind];
     if(kind==='embodied'&&currentEnvironment){environment=currentEnvironment;$('scene-environment').value=environment;}
     $('scene-scope').textContent=frameScope(frame);
@@ -94,7 +129,7 @@ export function mountSceneInteraction({scene,camera,renderer,controls,group,getO
     if(frame?.schema==='ihm.embodied-frame.v1'){initialized(frame);return;}
     if(frame?.error||frame?.closed||frame?.status==='error')throw Error(frame.error||'Body closed before initialization completed.');
     if(!['initializing','ready','closing'].includes(frame?.status))throw Error('Unexpected body startup state');
-    initializing=true;status('Body initializing · waiting for the native resource slot. Reset requests cleanup.');
+    initializing=true;syncIntake();status('Body initializing · waiting for the native resource slot. Reset requests cleanup.');
     panels.status('Body initializing · no live physiological frame yet.');
   }
   async function start() {
@@ -118,11 +153,11 @@ export function mountSceneInteraction({scene,camera,renderer,controls,group,getO
   }
   function reset() {
     if(resetTask)return resetTask;
-    resetting=true;running=false;drag=null;gizmoDragging=false;arrow.visible=false;gizmo.detach();controls.enabled=true;
+    resetting=true;syncIntake();running=false;drag=null;gizmoDragging=false;arrow.visible=false;gizmo.detach();controls.enabled=true;
     resetTask=Promise.resolve().then(async()=>{
     try{
       if(creating){try{await creating;}catch(error){if(!session)throw error;}}
-      while(pending)await new Promise(resolve=>setTimeout(resolve,10));
+      while(pending||intakeTask)await new Promise(resolve=>setTimeout(resolve,10));
       running=false;
       if(session){
         if(kind==='embodied')await closeBodyOwner(request,endpoint()+'/'+session,async()=>{
@@ -132,15 +167,15 @@ export function mountSceneInteraction({scene,camera,renderer,controls,group,getO
         else if((await request(endpoint()+'/'+session+'/close',{})).closed!==true)throw Error('Reduced scene did not confirm closure');
       }
       if(disposed)return;
-      session=null;state=null;initializing=false;faulted=false;selectedId=null;environment=$('scene-environment').value;kind=$('scene-owner').value;environmentMeshes();panels.clear();
+      session=null;state=null;initializing=false;faulted=false;selectedId=null;environment=$('scene-environment').value;kind=$('scene-owner').value;environmentMeshes();panels.clear();clearIntake();syncIntake();
       $('scene-play').textContent='Start '+label();$('scene-clock').textContent='0.00 s';$('scene-force-value').textContent='0 N';
       onFrame(null);status('Body reset. Start '+label()+' to advance.');
-    }catch(e){status(e.message);throw e;}finally{resetting=false;resetTask=null;}
+    }catch(e){status(e.message);throw e;}finally{resetting=false;resetTask=null;syncIntake();}
     });
     return resetTask;
   }
   $('scene-reconnect').onclick=async()=>{
-    if(disposed||resetting||pending||creating)return;
+    if(disposed||resetting||pending||intakeTask||creating)return;
     if(kind!=='embodied'){status('Select Unified body before reconnecting.');return;}
     running=false;pending=true;
     try{
@@ -206,7 +241,7 @@ export function mountSceneInteraction({scene,camera,renderer,controls,group,getO
     return [{id:drag.id,force_n:force,point_m:point.toArray()}];
   }
   async function update(now) {
-    if(disposed||resetting||pending||!session)return;
+    if(disposed||resetting||pending||intakeTask||!session)return;
     if(initializing){
       if(now-lastPoll<500)return;lastPoll=now;pending=true;
       try{const frame=await request(endpoint()+'/'+session);if(!disposed)pendingStatus(frame);}
@@ -226,7 +261,7 @@ export function mountSceneInteraction({scene,camera,renderer,controls,group,getO
   }
   function unload(){if(session)navigator.sendBeacon(endpoint()+'/'+session+'/close',new Blob(['{}'],{type:'application/json'}));}
   window.addEventListener('pagehide',unload);environmentMeshes();
-  return {update,reset,createControls:()=>mount,get state(){return state;},get active(){return !!session||!!creating||pending;},
-    dispose(){disposed=true;running=false;unload();window.removeEventListener('pagehide',unload);gizmo.dispose();scene.remove(gizmo.getHelper());group.remove(environmentGroup,gizmoTarget,arrow);
+  return {update,reset,scheduleIntakes,createControls:()=>mount,get state(){return state;},get active(){return !!session||!!creating||pending;},
+    dispose(){disposed=true;intake.dispose();running=false;unload();window.removeEventListener('pagehide',unload);gizmo.dispose();scene.remove(gizmo.getHelper());group.remove(environmentGroup,gizmoTarget,arrow);
       renderer.domElement.removeEventListener('pointerdown',down,true);renderer.domElement.removeEventListener('pointermove',move,true);renderer.domElement.removeEventListener('pointerup',up,true);renderer.domElement.removeEventListener('pointercancel',up,true);}};
 }

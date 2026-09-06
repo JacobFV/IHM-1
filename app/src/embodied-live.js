@@ -33,7 +33,8 @@ export class LiveBodyHistory {
   if(!owner||frame?.schema!=='ihm.embodied-frame.v1'||!Number.isFinite(frame.time_s)||frame.time_s<0||!Number.isInteger(frame.sequence)||frame.sequence<0||!frame.physiology?.values)throw Error('Invalid live body frame');
   if(this.owner!==owner){this.clear();this.owner=owner;}
   if(frame.sequence===this.sequence){if(frame.time_s!==this.frame.time_s)throw Error('Inconsistent duplicate body sequence');return false;}
-  if(frame.sequence<this.sequence||this.samples.length&&frame.time_s<=this.samples.at(-1).time_s)throw Error('Live body clock reversed');
+  if(frame.sequence<this.sequence||this.samples.length&&frame.time_s<this.samples.at(-1).time_s)throw Error('Live body clock reversed');
+  if(this.frame&&frame.time_s===this.frame.time_s){this.sequence=frame.sequence;this.frame=frame;return false;}
   const values=Object.fromEntries(Object.entries(frame.physiology.values).map(([k,v])=>[k,Number.isFinite(v)?v:null]));
   this.samples.push({time_s:frame.time_s,values});if(this.samples.length>this.limit)this.samples.shift();
   this.sequence=frame.sequence;this.frame=frame;return true;
@@ -83,4 +84,11 @@ export async function closeBodyOwner(request,path,wait) {
   await wait();result=await request(path);
  }
  return result;
+}
+
+// Recover an uncertain intake POST by reading the owner, never replaying events.
+export async function scheduleBodyIntakes(request,path,sequence,events) {
+ if(!Number.isInteger(sequence)||sequence<0||!Array.isArray(events)||!events.length)throw Error('Missing current body sequence or intake events');
+ try{return {frame:await request(path+'/intakes',{sequence,events}),recovered:false};}
+ catch(error){try{return {frame:await request(path),recovered:true,error};}catch{throw error;}}
 }

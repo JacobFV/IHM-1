@@ -17,3 +17,7 @@ test("monitor search combines words with overlapping category membership", () =>
   assert.deepEqual(filterMonitors("contact", "vascular"), []);
   assert.deepEqual(filterMonitors("invented medicine"), []);
 });
+test('food and drink schedule is discoverable in the live monitor catalog',()=>{
+ assert.deepEqual(filterMonitors('food','live').map(m=>m.id),['intake']);
+ assert.deepEqual(filterMonitors('drink','controls').map(m=>m.id),['intake']);
+});
