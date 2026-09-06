@@ -88,11 +88,15 @@ def tetrahedralize(v,f,flags):
     Path(name).unlink()
     # A run can return status 0 having meshed almost nothing: the right inferior lung
     # lobe yields 9 tets over 4.77e-12 m3 against a 6.66e-4 m3 surface. Gate on the
-    # volume the tets actually account for, not merely on a zero exit and a tet count.
+    # volume the tets actually account for. The ratio is computed here, against this
+    # call's own input, so the gate cannot be defeated by a caller that never sets it.
     outcome['volume_gate']=VOLUME_GATE
-    error=outcome.get('tet_volume_vs_surface_relative_error')
+    surface=abs(signed_volume(v,f))
+    meshed=outcome.get('tet_volume_m3')
+    error=(meshed-surface)/surface if meshed is not None and surface>0 else None
+    outcome['tet_volume_vs_surface_relative_error']=error
     outcome['succeeded']=(outcome.get('status')==0 and outcome.get('tets',0)>0
-                          and (error is None or abs(error)<=VOLUME_GATE))
+                          and error is not None and abs(error)<=VOLUME_GATE)
     outcome['seconds']=time.monotonic()-started
     return outcome
 
@@ -132,9 +136,13 @@ def self_test():
     assert not bad['succeeded'] and bad['tetgen_stdout'],'a failing run must retain its native message'
     open_shell=tetrahedralize(v,f[:3],'pYq1.414')
     assert not open_shell['succeeded']
-    starved=dict(good,tet_volume_vs_surface_relative_error=-.9999999928)
-    starved['succeeded']=(starved['status']==0 and starved['tets']>0
-                          and abs(starved['tet_volume_vs_surface_relative_error'])<=VOLUME_GATE)
+    assert abs(good['tet_volume_vs_surface_relative_error'])<1e-12,'a sound mesh accounts for its volume'
+    original_volume=igl.volume
+    try:
+        igl.volume=lambda tv,tt:np.asarray(original_volume(tv,tt),float)*1e-9
+        starved=tetrahedralize(v,f,'pYq1.414')
+    finally:igl.volume=original_volume
+    assert starved['status']==0 and starved['tets']>0,'the starved fixture must still exit cleanly'
     assert not starved['succeeded'],'a zero-exit run that meshed no volume is not a success'
     original=tetgen.tetrahedralize
     try:
