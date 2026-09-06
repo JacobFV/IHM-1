@@ -46,8 +46,9 @@ Omitting the pin preserves the existing default package and independently retain
 legacy regional law. Explicit candidates do not silently replace a live process:
 `SnapshotLoader` rejects a different IBM package identity once any IBM modules are
 loaded. Start a new process/session to select another candidate. The embodied
-factory has not been changed by this increment; its owner must forward one pin to
-both controller and cutaneous construction and retain it in the body receipt.
+factory accepts `EmbodiedRuntime.from_workspace(..., source_pin=pin)` and forwards
+the identical pin to controller and cutaneous construction. It verifies and loads
+the selected package before source receipts, output creation or native startup.
 
 ## Evidence policy and bounded acceptance
 
@@ -85,3 +86,27 @@ shared identity and the intentional inhibition-law probe delta: -160 to
 bounded compatibility result, not biological calibration or approval to replace
 existing body sessions. Broader coupled behavior and new vascular/microcircuit
 materialization remain separate work.
+
+## Body factory retention
+
+The candidate directory must resolve inside the factory's configured workspace.
+This is an explicit criterion for root-relative receipt paths; direct standalone
+`IBMBackend` usage can still use a candidate elsewhere. Invalid pins, changed
+manifests/source, a mismatched `source_pin.json`, or a different already-loaded IBM
+identity fail before native owners are created.
+
+Body `output/inputs` retains the exact candidate manifest, pin JSON and every
+candidate Python source file at its original workspace-relative path. The final
+body manifest contains `brain_source_pin`, `brain_candidate_loaded_modules` with
+per-module source hashes, and the ordinary source/loaded-code receipts for the
+candidate and snapshot-loader implementation. Sources are checked again after
+factory initialization. Replaying the archive in a relocated workspace requires
+an explicit rebased pin; original absolute paths are retained as provenance.
+
+`verify_candidate_embodied_factory.py` uses fresh Python processes and fake native
+owners to check preflight rejection, single-pin forwarding, full source retention
+and preservation of optional regional-native selection. An additional lightweight
+check verified 102 candidate files, 72 loaded IBM module receipts and actual IHM
+loaded-code attestation. `verify_regional_embodied_factory.py` default/regional
+routing remains passing. No native factory acceptance or app configuration change
+is claimed by this integration; those remain separately scheduled.

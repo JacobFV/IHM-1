@@ -32,7 +32,7 @@ def native_field_metadata(values):
     return result
 
 
-def bind_cutaneous(root,contacts,configuration):
+def bind_cutaneous(root,contacts,configuration,*,source_pin=None):
     """Bind explicit cortical recruitment priors to exact native material sites."""
     from .cutaneous_feedback import CutaneousFeedback
     if not isinstance(configuration,dict) or set(configuration)!={'regions','recruitment_hz_per_response','reference_temperature_C'}:
@@ -49,7 +49,43 @@ def bind_cutaneous(root,contacts,configuration):
             'area_basis':point['area_basis'],'sensory_region':regions[point['id']],
             'reference_temperature_C':configuration['reference_temperature_C'],
             'support_basis':'Retained native skin quadrature, rigid canonical registration; cortical mapping and recruitment are explicit engineering priors'})
-    return CutaneousFeedback(root,sites=sites,recruitment_hz_per_response=configuration['recruitment_hz_per_response'])
+    return CutaneousFeedback(root,sites=sites,recruitment_hz_per_response=configuration['recruitment_hz_per_response'],source_pin=source_pin)
+
+
+def _prepare_brain_candidate(root,source_pin):
+    """Verify/load one candidate before native startup and freeze its exact bytes."""
+    if source_pin is None:return {},{}
+    import hashlib,json,sys
+    from ihm.brain.candidate import SourcePin,verify_pin
+    from ihm.brain.ibm_backend import IBMBackend
+    if not isinstance(source_pin,SourcePin):raise ValueError('Explicit SourcePin required')
+    if not source_pin.artifact_dir.is_relative_to(root):
+        raise ValueError('Body source candidate must be inside the configured workspace for retained relative receipts')
+    manifest,snapshots=verify_pin(source_pin)
+    pin_path=source_pin.artifact_dir/'source_pin.json'
+    pin_raw=pin_path.read_bytes()
+    if json.loads(pin_raw)!=source_pin.to_dict():raise ValueError('Retained source pin file differs from selected pin')
+    manifest_path=source_pin.artifact_dir/'manifest.json'
+    manifest_raw=manifest_path.read_bytes()
+    if hashlib.sha256(manifest_raw).hexdigest()!=source_pin.manifest_sha256:
+        raise ValueError('Candidate manifest changed during preparation')
+    # SnapshotLoader rejects an already-loaded different package here, before
+    # output creation, source receipt capture or either native owner is opened.
+    IBMBackend(source_pin=source_pin)
+    frozen={manifest_path:manifest_raw,pin_path:pin_raw}
+    frozen.update({source_pin.artifact_dir/'source'/name:raw for name,raw in snapshots.items()})
+    loaded={}
+    for name,module in tuple(sys.modules.items()):
+        if name=='ibm' or name.startswith('ibm.'):
+            if getattr(module,'__ihm_source_identity__',None)!=source_pin.package_sha256:
+                raise RuntimeError('Loaded IBM module differs from selected source pin')
+            from pathlib import Path
+            path=Path(module.__file__).resolve()
+            if path not in frozen:raise ValueError('Loaded IBM module lacks a captured source receipt')
+            loaded[name]={'path':str(path.relative_to(root)),
+                          'source_sha256':hashlib.sha256(frozen[path]).hexdigest(),
+                          'package_sha256':source_pin.package_sha256}
+    return frozen,loaded
 
 
 class CleanupOwners:
@@ -70,7 +106,7 @@ class CleanupOwners:
 
 class EmbodiedRuntime:
     @classmethod
-    def from_workspace(cls,root,output,*,environment='supine',state_path=None,surface_contact_manifest=None,cutaneous_configuration=None,bed_material=None,regional_skin=False):
+    def from_workspace(cls,root,output,*,environment='supine',state_path=None,surface_contact_manifest=None,cutaneous_configuration=None,bed_material=None,regional_skin=False,source_pin=None):
         if type(regional_skin) is not bool:raise ValueError('regional_skin must be a bool')
         from pathlib import Path
         import hashlib,json,sys
@@ -88,6 +124,7 @@ class EmbodiedRuntime:
         from .cutaneous_feedback import CutaneousFeedback
         root=Path(root).resolve();output=Path(output).resolve()
         if not output.is_relative_to(root) or output.exists():raise ValueError('Fresh retained embodied output required')
+        candidate_frozen,candidate_loaded=_prepare_brain_candidate(root,source_pin)
         sensor_indices=[]
         if cutaneous_configuration is not None:
             if surface_contact_manifest is None:raise ValueError('Cutaneous binding requires native surface contact')
@@ -112,8 +149,10 @@ class EmbodiedRuntime:
             'ihm.assembly.cutaneous_feedback','ihm.brain.causal','ihm.brain.ibm_backend','ihm.brain.port_mapping',
             'ihm.assembly.respiratory_feedback','ihm.assembly.embodied_respiration','ihm.assembly.intake_schedule','ihm.app.embodied')
         if regional_skin:names+=('ihm.native.regional_session',)
+        if source_pin is not None:names+=('ihm.brain.candidate','ihm.brain.source_loader',)
         receipts=[_loaded_source(sys.modules[name]) for name in names if name in sys.modules]
         frozen={r['path']:r['bytes'] for r in receipts}
+        frozen.update(candidate_frozen)
         frozen[reference_path]=reference_raw
         variant_dir=root/'data/runtime/physiology/variants';current=engine_variant;seen=set()
         while True:
@@ -145,19 +184,20 @@ class EmbodiedRuntime:
             plant=ArticulatedBodyPlant(root,output/'mechanics',environment=environment,target_mass_kg=mass,
                 augmented_registration='data/derived/mechanics/whole_body_arm26_v2/registration.json',
                 surface_contact_manifest=surface_contact_manifest,surface_sensor_indices=sensor_indices,bed_material=bed_material)
-            neural=SensorimotorController.from_root(root,muscle_catalog=plant.muscle_catalog)
+            neural=SensorimotorController.from_root(root,muscle_catalog=plant.muscle_catalog,source_pin=source_pin)
             reference=native.snapshot()
             identity={key:manifest[key] for key in ('library_sha256','executable_sha256','state_sha256')}
             identity['manifest_sha256']=hashlib.sha256((output/'physiology/manifest.json').read_bytes()).hexdigest()
             exchange=NativeTissueExchange.from_workspace(root,reference,identity)
             respiratory_path=root/'data/derived/canonical/respiration.json'
             respiratory=EmbodiedRespiration(json.loads(frozen[respiratory_path]),reference['values']['lung_volume_ml'])
-            cutaneous=None if cutaneous_configuration is None else bind_cutaneous(root,plant.snapshot().get('cutaneous_contacts'),cutaneous_configuration)
+            cutaneous=None if cutaneous_configuration is None else bind_cutaneous(root,plant.snapshot().get('cutaneous_contacts'),cutaneous_configuration,source_pin=source_pin)
             body=cls(plant,neural,native,exchange,respiratory,cutaneous=cutaneous,reference_identity=hashlib.sha256((output/'mechanics/native/execution.json').read_bytes()).hexdigest())
             if any(p.read_bytes()!=raw for p,raw in frozen.items()):raise ValueError('Embodied source changed during initialization; reopen with a stable revision')
             (output/'manifest.json').write_text(json.dumps({'schema':'ihm.embodied-runtime.v1','sources':hashes,
                 'loaded_code':{str(r['path'].relative_to(root)):r['loaded_code_sha256'] for r in receipts},
                 'source_receipts':{str(r['path'].relative_to(root)):{k:v for k,v in r.items() if k not in ('path','bytes')} for r in receipts},
+                'brain_source_pin':None if source_pin is None else source_pin.to_dict(),'brain_candidate_loaded_modules':candidate_loaded,
                 'environment':environment,'regional_skin':regional_skin,'cutaneous_materialization':None if cutaneous is None else cutaneous.audit,'native_identity':identity,'effective_mechanical_mass_kg':mass,
                 'physiology_scope':'Paired retained thermal-corrected research initial state/library; known long-run glucose and acid-base failures remain unresolved',
                 'mass_mapping':'Initial native patient mass, including native initial GI contents, uniformly scales source segment inertia; local mass distribution is an engineering prior',
