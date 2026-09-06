@@ -18,4 +18,20 @@ Validation command:
 PYTHONPATH=.:scripts OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 .venv/bin/python -m unittest scripts.verify_lumbar_controller_readiness scripts.verify_regional_embodied_factory scripts.verify_candidate_embodied_factory scripts.verify_embodied_intake_mass scripts.verify_sensorimotor
 ```
 
-All 26 tests passed. Controller stimuli are explicitly synthetic fixtures, not measured proprioception. These checks do not establish native coupled feedback, an equilibrated supported initial pose, calibrated trunk co-contraction, or whole-body stability. Native factory initialization is queued separately; no feedback advance is authorized until supported-reference evidence exists.
+All 26 tests passed. Controller stimuli are explicitly synthetic fixtures, not measured proprioception. These checks do not establish native coupled feedback, an equilibrated supported initial pose, calibrated trunk co-contraction, or whole-body stability. Native initialization is validated below; no feedback advance is authorized until supported-reference evidence exists.
+
+## Actual zero-step native acceptance
+
+`data/derived/audits/lumbar-controller-factory-miey4gjq/verification.json` records a passing 98-muscle factory initialization with `regional_skin=True`, actual native CE observation validation for the six added muscles, exact controller checkpoint restore, and cleanup. Wall time was 1.777 s, parent peak RSS 771,544 KiB and maximum child peak RSS 196,028 KiB. Physiology exited by controlled SIGTERM (-15), mechanics exited 0, and both were reaped. All clocks remained zero; no feedback advance or supported equilibrium was tested.
+
+The run retained these SHA256 identities:
+
+- Registration: `6d94486340828c9a06147e119d7fd8fdfa2393fd8d68fa4cb2f5e030e4a83492`
+- Model: `7f6c40224fbc43359d6b2997efeb499c5ffe4d19c786d37b849312efd20d2114`
+- Catalog: `106e4f0d33f8f6624f1ee9eb0660ff988a161c228c0e6a524a662417e489d1ee`
+- Physiology library: `bc91cbab829c04bfa2df7490433af5bee752e7514332ac715e9f0bd11a17650a`
+- Initial physiological state: `cba7ffb523728d86e8f07b2a30b215b040676c30580e8accda722d175bd687b3`
+- Regional neural law: `f8c7d3172af71b399d9e6301f068d8fde8adf3363941ef0d3d3ec50ef62f663b` (legacy preserved law; no candidate selected in this run).
+- Factory manifest: `b0f6626b7fecadf4f6ed029027b8c1347ad15856e810362b848977fc44f6ce26`
+
+The verifier's `--native` mode is separately queue-gated, with a 30-second alarm and 2 GiB soft/4 GiB hard address-space limits. It must run with native threads limited to one and nice level 10. Default invocation remains a lightweight suite.

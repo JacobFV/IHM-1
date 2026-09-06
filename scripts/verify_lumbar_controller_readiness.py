@@ -104,4 +104,51 @@ class Tests(unittest.TestCase):
         changed=deepcopy(ROWS);changed[-1]['assignment_basis']+=' revised prior'
         with self.assertRaises(ValueError):controller(changed).restore(saved)
 
-if __name__=='__main__':unittest.main()
+def native_probe():
+    """Queue-gated actual init/snapshot only; no mechanical or physiological advance."""
+    import hashlib,resource,signal,time
+    from ihm.assembly.embodied import EmbodiedRuntime
+    output=Path(tempfile.mkdtemp(prefix='lumbar-controller-factory-',dir=ROOT/'data/derived/audits'))
+    resource.setrlimit(resource.RLIMIT_AS,(2*1024**3,4*1024**3))
+    def deadline(signum,frame):raise TimeoutError('30 second lumbar factory deadline')
+    old=signal.signal(signal.SIGALRM,deadline);signal.alarm(30)
+    start=time.monotonic();body=None
+    def write(name,value):(output/name).write_text(json.dumps(value,indent=2,allow_nan=False)+'\n')
+    try:
+        body=EmbodiedRuntime.from_workspace(ROOT,output/'body',augmented_registration=REGISTRATION,regional_skin=True)
+        frame=body.snapshot();mechanics=frame['mechanics']
+        assert frame['time_s']==frame['physiology']['elapsed_s']==mechanics['time_s']==0.
+        assert body.neural.time_s==body.neural.brain.time_s==0.
+        assert body.plant.muscle_catalog==ROWS and set(mechanics['muscles'])=={r['id'] for r in ROWS}
+        sensors=body.neural._validate_observation(mechanics)
+        selected={r['id']:sensors[r['id']] for r in ADDED}
+        assert all(s['length_field']=='fiber_length_m' and s['sensor_basis'] for s in selected.values())
+        checkpoint=body.neural.checkpoint();body.neural.restore(checkpoint)
+        assert checkpoint==body.neural.checkpoint()
+        receipt=json.loads((output/'body/manifest.json').read_bytes())
+        assert receipt['mechanical_registration_override']['path']==REGISTRATION
+        assert receipt['mechanical_registration_override']['catalog_sha256']==hashlib.sha256((ROOT/'data/derived/lumbar-muscle-native-lb45uirs/variant/catalog.json').read_bytes()).hexdigest()
+        write('initial.json',{'time_s':0.,'added_native_sensors':selected,'controller_model_sha256':body.neural.model_sha256,
+            'brain_source_identity':body.neural.brain.source_identity,'mechanical_registration':receipt['mechanical_registration_override']})
+        physiology=body.native.process;mechanical=body.plant.native.process
+        body.close();body=None
+        assert physiology.poll() is not None and mechanical.poll() is not None
+        report={'passed':True,'advances':0,'muscle_count':98,'added_muscles':list(selected),
+            'registration_sha256':receipt['mechanical_registration_override']['sha256'],
+            'factory_manifest_sha256':hashlib.sha256((output/'body/manifest.json').read_bytes()).hexdigest(),
+            'both_processes_reaped':True,'physiology_exit_code':physiology.returncode,'mechanical_exit_code':mechanical.returncode,
+            'wall_s':time.monotonic()-start,'parent_peak_rss_kib':resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,
+            'maximum_child_peak_rss_kib':resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss,
+            'scope':'Actual 98-muscle factory initialization, native CE observation validation, immutable controller restore, zero clocks and cleanup; no feedback advance or supported equilibrium claim'}
+        write('verification.json',report);print(json.dumps({'passed':True,'output':str(output),'wall_s':report['wall_s']}))
+    except BaseException as error:
+        write('failure.json',{'error':str(error),'wall_s':time.monotonic()-start});raise
+    finally:
+        if body:body.close()
+        signal.alarm(0);signal.signal(signal.SIGALRM,old)
+
+if __name__=='__main__':
+    import sys
+    if sys.argv[1:]==['--native']:native_probe()
+    else:unittest.main()
+
