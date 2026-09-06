@@ -29,8 +29,8 @@ def run(manifest_path):
                 checkpoint=stream.checkpoint()
                 evaluated=stream._request('evaluate_static_pose 1 pelvis_tx -0.001')
                 write('static_translation.json',evaluated)
-                reference=np.array(data['reference_points_source_m']);reference[:,0]-=.001
-                origins=np.array([initial['bodies'][name]['transform_ground'] for name in names])[:,:3,3];origins[:,0]-=.001
+                reference=np.array(data['reference_points_source_m']);actual_shift=evaluated['coordinates']['pelvis_tx']['value']-initial['coordinates']['pelvis_tx']['value'];reference[:,0]+=actual_shift
+                origins=np.array([initial['bodies'][name]['transform_ground'] for name in names])[:,:3,3];origins[:,0]+=actual_shift
                 expected=foundation(reference,np.zeros_like(reference),data['area_m2'],owners,origins,manifest['plane_source_x_m'],manifest['material'])
                 assert np.allclose(evaluated['contact_force_n'],expected['body_forces_n'].sum(0),rtol=1e-8,atol=1e-8), f"Static force native={evaluated['contact_force_n']} Python={expected['body_forces_n'].sum(0).tolist()}"
                 assert np.isclose(evaluated['surface_foundation']['elastic_energy_j'],expected['elastic_energy_j'],rtol=1e-8,atol=1e-10), f"Static energy native={evaluated['surface_foundation']['elastic_energy_j']} Python={expected['elastic_energy_j']}"
