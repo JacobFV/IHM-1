@@ -1,0 +1,83 @@
+--- a/src/io/biogears/BioGearsPhysiology.cpp
++++ b/src/io/biogears/BioGearsPhysiology.cpp
+@@ -475,6 +475,13 @@
+   void BiogearsPhysiology::Marshall(const Gastrointestinal& in, CDM::BioGearsGastrointestinalSystemData& out)
+   {
+     io::Physiology::Marshall(in, out);
++    out.DrugTransitStates().clear();
++    for (const auto& item : in.m_DrugTransitStates) {
++      if (!item.second) continue; // A null lookup entry owns no recorded state.
++      auto state = std::make_unique<CDM::DrugTransitStateData>();
++      io::Physiology::Marshall(*item.second, *state);
++      out.DrugTransitStates().push_back(std::move(state));
++    }
+   }
+   // class HepaticSystem
+   void BiogearsPhysiology::UnMarshall(const CDM::BioGearsHepaticSystemData& in, const SESubstanceManager& substances, Hepatic& out)
+--- a/src/io/cdm/Physiology.cpp
++++ b/src/io/cdm/Physiology.cpp
+@@ -438,16 +438,17 @@
+   }
+ 
+   void Physiology::Marshall(const SEDrugTransitState& in, CDM::DrugTransitStateData& out) {
++    out.LumenDissolvedMasses().clear(); out.LumenSolidMasses().clear(); out.EnterocyteMasses().clear();
+     for (auto tdMass : in.m_LumenDissolvedMasses) {
+-      out.LumenDissolvedMasses().push_back(std::unique_ptr<CDM::ScalarMassData>());
++      out.LumenDissolvedMasses().push_back(std::make_unique<CDM::ScalarMassData>());
+       io::Property::Marshall(tdMass, out.LumenDissolvedMasses().back());
+     }
+     for (auto tsMass : in.m_LumenSolidMasses) {
+-      out.LumenSolidMasses().push_back(std::unique_ptr<CDM::ScalarMassData>());
++      out.LumenSolidMasses().push_back(std::make_unique<CDM::ScalarMassData>());
+       io::Property::Marshall(tsMass, out.LumenSolidMasses().back());
+     }
+     for (auto eMass : in.m_EnterocyteMasses) {
+-      out.EnterocyteMasses().push_back(std::unique_ptr<CDM::ScalarMassData>());
++      out.EnterocyteMasses().push_back(std::make_unique<CDM::ScalarMassData>());
+       io::Property::Marshall(eMass, out.EnterocyteMasses().back());
+     }
+     if (in.m_TotalMassMetabolized && in.m_TotalMassMetabolized->IsValid()) {
+@@ -456,7 +457,7 @@
+     }
+     if (in.m_TotalMassExcreted && in.m_TotalMassExcreted->IsValid()) {
+       out.MassExcreted(std::make_unique<std::remove_reference<decltype(out.MassExcreted())>::type>());
+-      io::Property::Marshall(*in.m_TotalMassMetabolized, out.MassExcreted());
++      io::Property::Marshall(*in.m_TotalMassExcreted, out.MassExcreted());
+     }
+ 
+     out.Substance(in.m_Substance->GetName());
+--- a/src/cdm/system/physiology/SEGastrointestinalSystem.cpp
++++ b/src/cdm/system/physiology/SEGastrointestinalSystem.cpp
+@@ -9,6 +9,7 @@
+ CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ specific language governing permissions and limitations under the License.
+ **************************************************************************************/
++#include <memory>
+ #include <biogears/cdm/system/physiology/SEGastrointestinalSystem.h>
+ 
+ #include <biogears/cdm/properties/SEScalarMass.h>
+@@ -47,6 +48,8 @@
+ //-------------------------------------------------------------------------------
+ void SEGastrointestinalSystem::Invalidate()
+ {
++  for (auto& item : m_DrugTransitStates) delete item.second;
++  m_DrugTransitStates.clear();
+   SESystem::Invalidate();
+   SAFE_DELETE(m_ChymeAbsorptionRate);
+   SAFE_DELETE(m_StomachContents);
+@@ -154,9 +157,12 @@
+ //-------------------------------------------------------------------------------
+ SEDrugTransitState* SEGastrointestinalSystem::NewDrugTransitState(const SESubstance* sub)
+ {
+-  SEDrugTransitState* catState = new SEDrugTransitState(*sub);
+-  m_DrugTransitStates[sub] = catState;
+-  return catState;
++  if (!sub) throw CommonDataModelException("Missing drug substance");
++  auto fresh = std::make_unique<SEDrugTransitState>(*sub);
++  auto& owned = m_DrugTransitStates[sub];
++  delete owned;
++  owned = fresh.release();
++  return owned;
+ }
+ //-------------------------------------------------------------------------------
+ SEDrugTransitState::SEDrugTransitState(const SESubstance& sub)

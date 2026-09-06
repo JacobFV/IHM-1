@@ -1,0 +1,22 @@
+{
+  "original": {
+    "receipt": "data/derived/audits/native-gi-codec-_e7npnsp/report.json",
+    "receipt_sha256": "1ca49f4cba31832be7b28876a63437f94028a29d57a2b63e40af31d3dd507198",
+    "returncodes": {
+      "original/roundtrip": 3,
+      "original/nested": 139,
+      "original/cleanup": 3
+    },
+    "probe_sha256": "0542d9c5ddb3cb656444f4f844668023eb10633184eb1a336cd1b855a04dbcd3"
+  },
+  "corrected": {
+    "receipt": "data/derived/audits/native-gi-codec-o32kvmex/report.json",
+    "receipt_sha256": "60ffd0b2beb3b3e0ba09774ad9add7a2c2a2a8c9d5327747ab16de5d67e84aa8",
+    "returncodes": {
+      "corrected/roundtrip": 0,
+      "corrected/nested": 0,
+      "corrected/cleanup": 0
+    },
+    "probe_sha256": "0542d9c5ddb3cb656444f4f844668023eb10633184eb1a336cd1b855a04dbcd3"
+  }
+}
