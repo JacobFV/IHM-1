@@ -133,7 +133,8 @@ def compile_one(out,r,index,replace_unbound=False):
  flags=(cwd/f'CMakeFiles/{target}.dir/flags.make').read_text();defines=shlex.split(next(line.split('=',1)[1] for line in flags.splitlines() if line.startswith('CXX_DEFINES =')))
  options=shlex.split(next(line.split('=',1)[1] for line in flags.splitlines() if line.startswith('CXX_FLAGS =')))
  includes=shlex.split((cwd/f'CMakeFiles/{target}.dir/includes_CXX.rsp').read_text())
- command=['c++',*defines,*options,'-I'+str(out),'-I'+str(out/'generated'),*includes,'-c',job['source'],'-o',job['object']]
+ quoted=['-iquote',str(SOURCE/'projects/biogears/libBiogears/src/io/biogears')] if Path(job['source']).name=='BioGearsPhysiology.cpp' else []
+ command=['c++',*defines,*options,'-I'+str(out),'-I'+str(out/'generated'),*includes,*quoted,'-c',job['source'],'-o',job['object']]
  source_digest=sha(Path(job['source']))
  run(out,r,command,f'compile-{index:02d}',cwd);guard(out,r)
  r['compiled'][str(index)]={'sha256':sha(Path(job['object'])),'source_sha256':source_digest,'frozen_inputs_sha256':hashlib.sha256(json.dumps(r['frozen_inputs'],sort_keys=True).encode()).hexdigest(),'input_binding_sha256':hashlib.sha256(json.dumps(r['external_build_inputs'],sort_keys=True).encode()).hexdigest()};r['stage']='compiling';record(out,r)
@@ -141,6 +142,12 @@ def link(out,r):
  if len(r['compiled'])!=len(r['jobs']):raise ValueError('Every dependent object must be compiled before link')
  binding=hashlib.sha256(json.dumps(r['external_build_inputs'],sort_keys=True).encode()).hexdigest()
  if any(c.get('input_binding_sha256')!=binding for c in r['compiled'].values()):raise ValueError('All objects must be compiled under the complete current input binding before link')
+ for job in r['jobs']:
+  compiled=r['compiled'][str(job['index'])];digest=sha(Path(job['source']))
+  if 'source_sha256' in compiled:assert compiled['source_sha256']==digest
+  else:
+   assert r['external_build_inputs'].get(job['source'])==digest,'Earlier bound object lacks direct source evidence'
+   compiled['source_sha256']=digest;compiled['source_evidence']='Direct source was part of this object’s recorded complete input binding'
  for family,cwd,target in [('cdm',CDM,'libbiogears_cdm'),('core',CORE,'libbiogears')]:
   replacements={j['old_object']:j['object'] for j in r['jobs'] if j['family']==family}
   objects=[replacements.get(name,name) for name in r['inherited_objects'][family]];rsp=out/(family+'-objects.rsp');rsp.write_text(' '.join(shlex.quote(x) for x in objects)+'\n')
