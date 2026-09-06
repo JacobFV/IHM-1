@@ -26,6 +26,21 @@ class UpperbodyTests(unittest.TestCase):
             masses=lambda t:{b.get('name'):b.findtext('mass') for b in t.findall('.//BodySet/objects/Body')}
             self.assertEqual(masses(model),masses(target))
             self.assertEqual(len(model.findall('.//Thelen2003Muscle')),12)
+            # OpenSim 40500 binds the named abstract property by the concrete
+            # GeometryPath element's name, not by an extra <path> wrapper.
+            # An older donor name leaves the engine's default empty path.
+            self.assertEqual(model.get('Version'),'40500')
+            donor=ET.parse(ROOT/ARM_SOURCE).getroot()
+            donor_muscles={m.get('name'):m for m in donor.findall('.//Thelen2003Muscle')}
+            for muscle in model.findall('.//Thelen2003Muscle'):
+                paths=muscle.findall('./GeometryPath')
+                self.assertEqual(len(paths),1)
+                self.assertEqual(paths[0].get('name'),'path')
+                self.assertIsNone(muscle.find('path'))
+                name=muscle.get('name').removeprefix('arm26_')[:-2]
+                expected=donor_muscles[name].findall('./GeometryPath/PathPointSet/objects/PathPoint')
+                self.assertEqual(len(paths[0].findall('./PathPointSet/objects/PathPoint')),len(expected))
+                self.assertGreaterEqual(len(expected),2)
             self.assertEqual(len([w for w in model.findall('.//WrapObjectSet/objects/*') if w.get('name','').startswith('arm26_')]),8)
             for row in manifest['registrations']:
                 self.assertLess(row['elbow_landmark_residual_m'],1e-12)

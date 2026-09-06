@@ -13,6 +13,7 @@ from scipy.spatial.transform import Rotation
 from ihm.assembly.sensorimotor_catalog import native_muscle_catalog
 ARM_SOURCE='data/raw/anatomy/opensim-models/source/Models/Arm26/arm26.osim'
 TARGET_SOURCE='data/raw/mechanics/opensim-core/OpenSim/Examples/Moco/example3DWalking/subject_walk_scaled.osim'
+SCHEMA_SOURCE='data/raw/mechanics/opensim-core/OpenSim/Simulation/Model/Force.cpp'
 
 
 def vector(element,tag):
@@ -50,7 +51,9 @@ def build_upperbody_model(root,output):
     if (output/'registration.json').exists():raise ValueError('Preserve existing upperbody materialization')
     donor=ET.parse(root/ARM_SOURCE).getroot();target=ET.parse(root/TARGET_SOURCE).getroot()
     sha=lambda p:hashlib.sha256(Path(p).read_bytes()).hexdigest()
-    sources={p:sha(root/p) for p in (ARM_SOURCE,TARGET_SOURCE)}
+    sources={p:sha(root/p) for p in (ARM_SOURCE,TARGET_SOURCE,SCHEMA_SOURCE)}
+    if donor.get('Version')!='40000' or target.get('Version')!='40500':
+        raise ValueError('Unreviewed donor/target OpenSim XML migration')
     shoulder=vector(frame(donor,'r_shoulder','base'),'translation')
     elbow=vector(frame(donor,'r_elbow','r_humerus'),'translation')
     donor_muscles=donor.findall('.//ForceSet/objects/Thelen2003Muscle')
@@ -106,6 +109,14 @@ def build_upperbody_model(root,output):
                               'rotation_matrix':wrap_rotation.tolist(),'source_quadrant':original.findtext('quadrant'),'quadrant':w.findtext('quadrant')})
         for original in donor_muscles:
             m=deepcopy(original);name=original.get('name');key='arm26_'+name+'_'+side;m.set('name',key)
+            geometry_paths=m.findall('./GeometryPath')
+            if len(geometry_paths)!=1 or geometry_paths[0].get('name')!='geometrypath':
+                raise ValueError('Unexpected donor path property schema')
+            # Force::updateFromXMLNode performs this exact migration for a
+            # pre-40500 document. Embedding the donor into the 40500 target
+            # bypasses that document-version migration, so apply it here.
+            # It is a concrete one-object property; do not add a <path> node.
+            geometry_paths[0].set('name','path')
             path=[]
             for point in m.findall('.//PathPointSet/objects/*'):
                 if point.tag!='PathPoint':raise ValueError('Moving/conditional donor point needs explicit transform')
@@ -142,6 +153,10 @@ def build_upperbody_model(root,output):
     manifest={'schema':'ihm.upperbody-registration.v1','model_path':str(model_path.relative_to(root)),'model_sha256':sha(model_path),
         'catalog_path':str(catpath.relative_to(root)),'catalog_sha256':sha(catpath),'sources':sources,
         'builder_sha256':sha(__file__),'registrations':registrations,'muscle_count':92,'added_upperbody_muscles':12,
+        'xml_migration':{'source_document_version':40000,'target_document_version':40500,
+            'law_source':SCHEMA_SOURCE,'law_source_sha256':sources[SCHEMA_SOURCE],
+            'operation':'Force::updateFromXMLNode: GeometryPath name geometrypath -> path; concrete element retained without wrapper',
+            'applied_to':12,'numerical_parameters_changed_by_migration':False},
         'body_count':len(bodies),'body_mass_modified':False,'joint_tree_modified':False,
         'source_urls':{'Arm26':'https://github.com/opensim-org/opensim-models/blob/master/Models/Arm26/arm26.osim',
                        'law':'https://github.com/opensim-org/opensim-core/blob/main/OpenSim/Actuators/Thelen2003Muscle.cpp'},
@@ -153,6 +168,6 @@ def build_upperbody_model(root,output):
 
 if __name__=='__main__':
     root=Path(__file__).resolve().parents[1]
-    out=root/'data/derived/mechanics/whole_body_arm26_v1'
+    out=root/'data/derived/mechanics/whole_body_arm26_v2'
     report=build_upperbody_model(root,out)
     print(json.dumps({'path':str(out),'muscles':report['muscle_count'],'native_verified':False}))

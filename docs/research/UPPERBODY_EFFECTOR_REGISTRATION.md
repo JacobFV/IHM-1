@@ -51,3 +51,32 @@ OPENBLAS_NUM_THREADS=1 prlimit --as=1073741824 -- nice -n 10 .venv/bin/python -m
 ```
 
 The source build took 0.19 s and 71,964 KiB peak RSS; the bounded test used 80,660 KiB peak RSS. Both ran under a 1 GiB address-space limit. No native compilation, optimizer, browser, full-body simulation or live IBM access occurred. Native mechanical acceptance must record actual force/moment arms and bilateral registration behavior before these XML checks can support a movement claim.
+
+## Native-load failure and XML compatibility correction
+
+The first native attempt at v1 failed cleanly: `/forceset/arm26_TRIlong_r/path`
+had fewer than two parsed path points. Its log remains at
+`data/derived/articulated-acceptance-h2tqwejy/plant/native/engine.log`.
+The prior source test counted all nested path points and missed property binding.
+
+The held donor document is OpenSim 40000; the target is 40500. In the held primary
+`OpenSim/Simulation/Model/Force.cpp:78–92`, `Force::updateFromXMLNode` migrates
+the direct concrete element `<GeometryPath name="geometrypath">` to
+`<GeometryPath name="path">` for older documents. Inserting the older donor into
+a 40500 document bypassed that automatic migration. This is a name-attribute
+change; adding a `<path>` wrapper would be incorrect.
+
+The builder now applies that exact migration and records its source hash.
+The corrected immutable materialization is
+`data/derived/mechanics/whole_body_arm26_v2/registration.json`. v1 remains intact.
+A new regression failed on the old property name, then passed after correction.
+Each new muscle now has one directly bound `GeometryPath` named `path`, no
+wrapper, and its complete donor path-point count. Comparing v1 and v2 XML trees
+after only the 12 name substitutions produced identical serialized trees: geometry,
+wraps, muscle coefficients, source bodies and joints were preserved.
+
+The corrected source/controller check passed in 0.41 s wall time with 79,896 KiB
+peak RSS; XML emission used 72,064 KiB and 0.19 s. Both were single-threaded under
+1 GiB address-space limits. No native job or compiler ran for this correction.
+The manifest deliberately remains `native_verified:false`; the mechanics owner
+must execute a separate native load/force acceptance with this exact v2 input.

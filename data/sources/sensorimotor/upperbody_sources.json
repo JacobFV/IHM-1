@@ -132,5 +132,18 @@
     "geometry_synthesized": 363,
     "connective_paths_not_muscles": 24,
     "unverified_synthetic_attachment_basis": "principal surface extrema projected to nearest same-side bones; not anatomical insertion evidence"
+  },
+  "xml_compatibility": {
+    "source_path": "data/raw/mechanics/opensim-core/OpenSim/Simulation/Model/Force.cpp",
+    "sha256": "9ee76a13e7a224cfbb4b4103b79229b683cef2e516381c6e2d98d4baac06b8be",
+    "primary_url": "https://github.com/opensim-org/opensim-core/blob/main/OpenSim/Simulation/Model/Force.cpp",
+    "source_lines": "78-92",
+    "donor_document_version": 40000,
+    "target_document_version": 40500,
+    "migration": "Rename direct GeometryPath name from geometrypath to path. Do not introduce path wrapper.",
+    "failed_materialization": "data/derived/mechanics/whole_body_arm26_v1/registration.json",
+    "failed_native_receipt": "data/derived/articulated-acceptance-h2tqwejy/plant/native/engine.log",
+    "corrected_materialization": "data/derived/mechanics/whole_body_arm26_v2/registration.json",
+    "verification": "After only12 name-attribute substitutions, v1 and v2 model XML trees are byte-equivalent under ElementTree serialization. Native acceptance remains independent."
   }
 }
