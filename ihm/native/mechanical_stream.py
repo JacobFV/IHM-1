@@ -110,13 +110,23 @@ class NativeMechanicalStream:
             if not line.startswith('@IHM '):self.log.write(line);self.log.flush();continue
             data=json.loads(line[5:],parse_constant=lambda value:(_ for _ in ()).throw(ValueError('Nonfinite native response')))
             if 'error' in data:raise ValueError(data['error'])
-            for point in data.get('surface_foundation',{}).get('sensor_points',[]):
-                index=point['quadrature_index']
-                if index not in self.surface_sensor_identity:raise ValueError('Native emitted unrequested skin sensor')
-                point.update(id='skin-contact-'+str(index),material_identity=self.surface_sensor_identity[index],
-                    indentation_basis='native nonlinear confined-layer modeled compression',area_basis='projected reference quadrature area',
-                    point_basis='rigid reference material attachment in native source world')
+            self._bind_surface_sensors(data)
             return data
+    def _bind_surface_sensors(self,data):
+        points=data.get('surface_foundation',{}).get('sensor_points',[])
+        if not isinstance(points,list) or any(not isinstance(point,dict) or type(point.get('quadrature_index'))!=int for point in points):
+            raise ValueError('Invalid native skin sensor records')
+        indices=[point['quadrature_index'] for point in points]
+        if len(indices)!=len(set(indices)) or any(index not in self.surface_sensor_identity for index in indices):
+            raise ValueError('Duplicate or unrequested native skin sensor')
+        if data.get('kind') in ('initialized','observed','restored','advanced') and set(indices)!=set(self.surface_sensor_identity):
+            raise ValueError('Missing selected native skin sensor observation')
+        for point in points:
+            index=point['quadrature_index']
+            point.update(id='skin-contact-'+str(index),material_identity=copy.deepcopy(self.surface_sensor_identity[index]),
+                indentation_basis='native nonlinear confined-layer modeled compression',area_basis='projected reference quadrature area',
+                point_basis='rigid reference material attachment in native source world')
+
     def _request(self,command):
         with self.lock:
             if self.closed:raise ValueError('Native mechanical stream closed')

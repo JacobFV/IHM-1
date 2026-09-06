@@ -232,6 +232,9 @@ class EmbodiedRuntime:
                 c_checkpoint=self.cutaneous.checkpoint()
                 contacts=self.mechanical_state.get('cutaneous_contacts')
                 if not isinstance(contacts,list):raise ValueError('Explicit mechanical cutaneous contacts required')
+                required={key for key,site in self.cutaneous.sites.items() if site.get('mechanical_input')=='native_indentation'}
+                observed=[row.get('id') for row in contacts if isinstance(row,dict)]
+                if any(observed.count(key)!=1 for key in required):raise ValueError('Missing or duplicate native skin sensor observation')
                 blocks=data.get('skin_sensory_blocks',())
                 # Previously accepted receptor endpoints feed this exchange.
                 # Immediate blocks also remove already queued site contributions.

@@ -145,8 +145,10 @@ identical, confirming that future receptor endpoints are not injected early.
 
 `EmbodiedRuntime(..., cutaneous=registered_receptor)` now checkpoints receptor
 state alongside mechanics and neural state. It requires an explicit
-`mechanical_state.cutaneous_contacts` list: absence is an error, while an empty
-list means released contact. It samples the accepted physical state at the start
+`mechanical_state.cutaneous_contacts` list: absence is an error. Generic static
+force sites may omit released contacts, but native material sites must each emit
+one explicit observation, including zero indentation when released. Missing or
+duplicate selected native rows fail both protocol and runtime coverage checks. It samples the accepted physical state at the start
 of the exchange and delivers the previously accepted receptor endpoint to the
 single shared brain step. New receptor endpoints become available next exchange.
 `skin_sensory_blocks` removes both queued site contributions and receptor state;
@@ -178,3 +180,10 @@ identity into the pinned receptor. All clocks remained zero. The fixture's
 right-postcentral assignment and gain 0.1 are explicit engineering inputs.
 This verifies actual process/material identity wiring, not touch activation,
 supported equilibrium or a coupled advancing whole-body trajectory.
+
+
+A read-only integration review found that generic missing-contact release semantics
+could hide missing native sensor rows. The regression now rejects missing,
+duplicate and unrequested native samples, distinguishes control acknowledgments
+from physical-state responses, and verifies failure occurs before physiological
+mutation. Material receipts are copied so consumers cannot alter later identities.

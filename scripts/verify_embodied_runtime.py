@@ -87,6 +87,25 @@ class Tests(unittest.TestCase):
         self.assertEqual(before,receptor.checkpoint())
         self.assertFalse(body.failed)
 
+    def test_missing_native_sensor_is_unknown_not_release(self):
+        from pathlib import Path
+        from ihm.assembly.embodied import bind_cutaneous
+        contact={'id':'skin-contact-3','point_m':[0,0,0],'normal':[0,0,-1],
+            'force_n':[0,0,1],'contact_area_m2':.001,'indentation_m':.0001,
+            'material_identity':{'manifest_sha256':'a'*64,'quadrature_index':3,'triangle_index':8},
+            'indentation_basis':'native modeled compression','area_basis':'reference quadrature'}
+        receptor=bind_cutaneous(Path(__file__).resolve().parents[1],[contact],
+            {'regions':{'skin-contact-3':'brain-rh-postcentral'},'recruitment_hz_per_response':.1,'reference_temperature_C':33})
+        body=EmbodiedRuntime(Plant(),Neural(),Native(),Exchange(),Load(),cutaneous=receptor)
+        body.mechanical_state['cutaneous_contacts']=[]
+        with self.assertRaisesRegex(ValueError,'native skin sensor'):body.step({})
+        self.assertEqual(body.native.loads,[])
+        self.assertEqual(body.time_s,0)
+        self.assertEqual(receptor.time_s,0)
+        body.mechanical_state['cutaneous_contacts']=[{**contact,'force_n':[0,0,0],'indentation_m':0}]
+        frame=body.step({})
+        self.assertEqual(frame['cutaneous']['sites'][0]['indentation_um'],0)
+
     def test_delayed_actuation_native_load_and_work(self):
         body=self.body();first=body.step({'forces':[{'id':'chest','force_n':[2,0,0],'point_m':[0,0,0]}]})
         self.assertEqual(body.plant.commands,[{}]);self.assertEqual(body.native.loads,[2])
