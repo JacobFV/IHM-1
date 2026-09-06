@@ -424,3 +424,6 @@ Evidence SHA-256:
 - `data/derived/lumbar-supine-static-1g1q08u2/neutral.json`: `dc4da6217f032a2b99773a528f92edfa8373f0920b2d4b84af4807e686e764a9`
 - `data/derived/lumbar-supine-static-1g1q08u2/old_q_seed.json`: `9f69c0f34e87985faac9cc19cfe543e79a21de032878400138b0537cf66ba433`
 - `data/derived/lumbar-supine-static-1g1q08u2/comparison.json`: `8c74c427fe8bc4528fb2d94bd1c045d9eae12548930ebff5c668d222fabf1315`
+
+
+The next source-only [fixed-activation potential design](SUPINE_STATIC_POTENTIAL_DESIGN.md) derives a conditional effective muscle work potential and reproduces the six lumbar source branches against retained native observations. It proposes a prerequisite full-force gradient fixture before energy-based initialization; no further native solve or physiological energy substitution is claimed.
