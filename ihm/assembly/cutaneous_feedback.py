@@ -59,7 +59,7 @@ class CutaneousFeedback:
     A temperature sample is a caller-supplied native skin temperature in degC,
     applied to each explicit site as a declared spatially uniform transfer prior.
     """
-    def __init__(self, root, *, sites, recruitment_hz_per_response, delay_s=0.):
+    def __init__(self, root, *, sites, recruitment_hz_per_response, delay_s=0., source_pin=None):
         self.root = Path(root).resolve()
         self.recruitment = _number(recruitment_hz_per_response, 'recruitment gain', 0., 1e6)
         self.delay_s = _number(delay_s, 'conduction delay', 0., 10.)
@@ -108,7 +108,7 @@ class CutaneousFeedback:
                         raise ValueError(f'Explicit native {field} required')
             site['reference_temperature_C'] = _number(site.get('reference_temperature_C'), 'reference temperature', -100., 100.)
             self.sites[key] = site
-        backend = IBMBackend(self.root / 'data/derived/canonical/ibm-backend')
+        backend = IBMBackend(self.root / 'data/derived/canonical/ibm-backend') if source_pin is None else IBMBackend(source_pin=source_pin)
         thermal = _ThermalBackend(backend)
         self.models, self.initial = {}, {}
         for key, site in self.sites.items():
@@ -126,6 +126,7 @@ class CutaneousFeedback:
             self.initial[key] = {kind: m.checkpoint() for kind, m in models.items()}
         first = next(iter(self.models.values()))
         self.audit = {'schema': 'ihm.cutaneous-materialization.v1',
+            'source_pin': None if source_pin is None else source_pin.to_dict(),
             'package_sha256': backend.identity['package_sha256'],
             'sites': list(deepcopy(self.sites).values()),
             'receptors': {kind: deepcopy(m.audit) for kind, m in first.items()},

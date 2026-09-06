@@ -24,28 +24,39 @@ class WindowResult:
 
 
 class IBMBackend:
-    def __init__(self, artifact_dir=None):
-        self.artifact_dir = Path(artifact_dir or DEFAULT_ARTIFACT).resolve()
-        manifest = self.artifact_dir / 'manifest.json'
-        if not manifest.is_file():
-            raise FileNotFoundError('IBM artifact missing; run scripts/vendor_ibm_backend.py')
-        self.identity = json.loads(manifest.read_text())
-        source = self.artifact_dir / 'source'
-        actual={p.relative_to(source).as_posix() for p in source.rglob('*') if p.is_file() and '__pycache__' not in p.parts and p.suffix!='.pyc'}
-        if actual!=set(self.identity['files']):
-            raise ValueError('IBM source contains missing or unmanifested files')
-        snapshots={}
-        for rel, digest in self.identity['files'].items():
-            path=(source/rel).resolve()
-            if not path.is_relative_to(source):raise ValueError('IBM source path escapes artifact')
-            snapshots[rel]=path.read_bytes()
-            if hashlib.sha256(snapshots[rel]).hexdigest() != digest:
-                raise ValueError(f'IBM artifact hash mismatch: {rel}')
-        expected = hashlib.sha256(json.dumps(self.identity['files'], sort_keys=True).encode()).hexdigest()
-        if expected != self.identity['package_sha256']:
-            raise ValueError('IBM package manifest identity mismatch')
-        if expected != PINNED_PACKAGE_SHA256:
-            raise ValueError('IBM artifact differs from the package pinned by this IHM adapter')
+    def __init__(self, artifact_dir=None, *, source_pin=None):
+        self.source_pin = source_pin
+        if source_pin is not None:
+            from .candidate import verify_pin
+            if artifact_dir is not None and Path(artifact_dir).resolve() != source_pin.artifact_dir:
+                raise ValueError('Artifact directory differs from explicit source pin')
+            self.identity, snapshots = verify_pin(source_pin)
+            self.artifact_dir = source_pin.artifact_dir
+            source = self.artifact_dir / 'source'
+            expected = source_pin.package_sha256
+        else:
+            self.artifact_dir = Path(artifact_dir or DEFAULT_ARTIFACT).resolve()
+            manifest = self.artifact_dir / 'manifest.json'
+            if not manifest.is_file():
+                raise FileNotFoundError('IBM artifact missing; run scripts/vendor_ibm_backend.py')
+            self.identity = json.loads(manifest.read_text())
+            source = self.artifact_dir / 'source'
+            actual={p.relative_to(source).as_posix() for p in source.rglob('*') if p.is_file() and '__pycache__' not in p.parts and p.suffix!='.pyc'}
+            if actual!=set(self.identity['files']):
+                raise ValueError('IBM source contains missing or unmanifested files')
+            snapshots={}
+            for rel, digest in self.identity['files'].items():
+                path=(source/rel).resolve()
+                if not path.is_relative_to(source):raise ValueError('IBM source path escapes artifact')
+                snapshots[rel]=path.read_bytes()
+                if hashlib.sha256(snapshots[rel]).hexdigest() != digest:
+                    raise ValueError(f'IBM artifact hash mismatch: {rel}')
+            expected = hashlib.sha256(json.dumps(self.identity['files'], sort_keys=True).encode()).hexdigest()
+            if expected != self.identity['package_sha256']:
+                raise ValueError('IBM package manifest identity mismatch')
+            if expected != PINNED_PACKAGE_SHA256:
+                raise ValueError('IBM artifact differs from the package pinned by this IHM adapter')
+
         from .source_loader import install_snapshot
         install_snapshot(source,snapshots,expected)
         import ibm
@@ -72,8 +83,9 @@ class IBMBackend:
             regions=(('canonical_body_surface', OnSupport('body_surface')),),
             window=Window(n=n, dt=dt_s), frame='ihm_canonical_body',
             notes='IHM explicit body support subset; omitted dependencies are not executable')
+        build_options = {'substrate': False} if self.source_pin is not None and 'substrate' in inspect.signature(build).parameters else {}
         model = build(request, geometry=geometry, strict=False,
-                      implementation_override={'transduction': 'mechanoreceptor_'+kind})
+                      implementation_override={'transduction': 'mechanoreceptor_'+kind}, **build_options)
         if 'transduction.mechanoreceptor' not in model.components or not model.layout['transduction.mechanoreceptor'].n_sites:
             raise ValueError('IBM materializer produced no receptor sites')
         return model

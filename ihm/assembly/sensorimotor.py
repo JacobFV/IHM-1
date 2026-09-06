@@ -48,13 +48,13 @@ class SensorimotorController:
     from the previous exchange; they share this brain integration and saturation.
     """
     @classmethod
-    def from_root(cls,root,**kwargs):
+    def from_root(cls,root,*,source_pin=None,**kwargs):
         root=Path(root)
         paper=root/'data/raw/sensorimotor/geyer_herr_2010.pdf'
         if hashlib.sha256(paper.read_bytes()).hexdigest()!=SOURCE_SHA256:
             raise ValueError('Reflex primary source hash mismatch')
         kwargs.setdefault('muscle_catalog',native_muscle_catalog(root))
-        return cls(BodyBrain(json.loads((root/'data/derived/canonical/brain.json').read_text()),root=root),**kwargs)
+        return cls(BodyBrain(json.loads((root/'data/derived/canonical/brain.json').read_text()),root=root,source_pin=source_pin),**kwargs)
 
     def __init__(self,brain,parameters=None,*,muscle_catalog=None):
         if not isinstance(brain,BodyBrain) or brain.time_s!=0:raise ValueError('Fresh pinned BodyBrain required')
@@ -73,7 +73,7 @@ class SensorimotorController:
         for row in self.catalog:
             if row['side'] not in ('r','l') or row['motor_region'] not in brain.ids or row['sensory_region'] not in brain.ids:raise ValueError('Invalid sensorimotor assignment')
         self.reference_rates=dict(zip(brain.ids,brain.state[:,1].tolist()))
-        identity={'brain':brain.data,'brain_step_s':brain.max_step_s,'parameters':asdict(self.parameters),
+        identity={'brain':brain.data,'brain_source_identity':brain.source_identity,'brain_step_s':brain.max_step_s,'parameters':asdict(self.parameters),
                   'catalog':self.catalog,'reflex_source_sha256':SOURCE_SHA256,'implementation_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
                   'brain_implementation_sha256':hashlib.sha256(Path(__file__).with_name('brain.py').read_bytes()).hexdigest()}
         self.model_sha256=hashlib.sha256(json.dumps(identity,sort_keys=True,allow_nan=False).encode()).hexdigest()

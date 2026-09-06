@@ -30,8 +30,14 @@ def verify_sources(data, root=None):
     return verified
 
 
-def _load_rate_law(data, root):
+def _load_rate_law(data, root, source_pin=None):
     verify_sources(data, root)
+    if source_pin is not None:
+        from ihm.brain.ibm_backend import IBMBackend
+        IBMBackend(source_pin=source_pin)
+        # Both receptors and regional dynamics execute this same verified module.
+        from ibm.processes.neural import wilson_cowan_excitatory, shunting_inhibition_rate
+        return wilson_cowan_excitatory, shunting_inhibition_rate
     source = next(s for s in data['sources'] if s.get('role') == 'executed_neural_law')
     path = Path(root) / source['preserved_path']
     original = ast.parse(path.read_text())
@@ -50,15 +56,19 @@ class BodyBrain:
     """Reusable regional ODE with independent state and explicit input/output ports."""
 
     @classmethod
-    def from_dict(cls, data, *, root=None, max_step_s=.001):
-        return cls(data, root=root, max_step_s=max_step_s)
+    def from_dict(cls, data, *, root=None, max_step_s=.001, source_pin=None):
+        return cls(data, root=root, max_step_s=max_step_s, source_pin=source_pin)
 
-    def __init__(self, data, *, root=None, max_step_s=.001):
+    def __init__(self, data, *, root=None, max_step_s=.001, source_pin=None):
         if not math.isfinite(max_step_s) or not 0 < max_step_s <= .002:
             raise ValueError('max_step_s must be in (0, 0.002] for the 5 ms source rate relaxation')
         self.data = data
         self.max_step_s = max_step_s
-        self.source_rate_law, self.source_inhibition_law = _load_rate_law(data, Path(root or ROOT))
+        self.source_rate_law, self.source_inhibition_law = _load_rate_law(data, Path(root or ROOT), source_pin)
+        self.source_identity = source_pin.to_dict() if source_pin is not None else {
+            'package_sha256': None, 'neural_source_sha256': next(
+                s['sha256'] for s in data['sources'] if s.get('role') == 'executed_neural_law'),
+            'selection': 'legacy independently preserved regional law'}
         self.theta = dict(data['parameters']['ibm_wilson_cowan'])
         self.coupling = dict(data['parameters']['body_transfer_priors'])
         n = len(data['nodes'])
@@ -151,6 +161,7 @@ class BodyBrain:
                 afferent = sensory[self.ids.index(sensory_id)]
                 motor_drive[motor_id] = min(100., float(afferent / 100. * y[self.ids.index(motor_id), 1]))
         return {'time_s': self.time_s, 'model_id': self.data['id'],
+                'source_identity': dict(self.source_identity),
                 'regional_state': {'node_ids': self.ids, 'potential_mV': y[:,0].tolist(),
                                    'activity_hz': y[:,1].tolist(), 'adaptation_mV': y[:,2].tolist()},
                 'autonomic_commands': {'sympathetic_fraction': sympathetic,
