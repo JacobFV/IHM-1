@@ -91,3 +91,71 @@ ticks during worker execution. Final tube coordinates matched exactly, with no
 unintegrated intervals. Process RSS was 121.54 MiB. These are noisy fixture
 measurements, not a full-viewer responsiveness guarantee. Normals, bounds, and
 GPU uploads remain on the main thread; the off-thread solver still costs CPU.
+
+## Opt-in authoritative mechanical hair prototype
+
+`ihm/assembly/hair_dynamics.py` owns a separate SI beam state for explicit
+mechanical experiments. It ports the straight uniform small-deflection beam
+model, including physical guide masses, axial/bending stiffness, moving
+two-node clamps, implicit substeps, and checkpoint/restore. It does **not**
+silently replace or synchronize the JavaScript view solver.
+
+`ihm/assembly/hair_feedback.py` connects that state to the same registered
+native body load/checkpoint interface used by `GarmentFeedback`. It computes
+free-node contact against `MovingSurfaceContact`, distributes equal/opposite
+surface impulses through retained vertex owners, and includes both force and
+moment from the moving follicle clamp. Native/body and hair intervals are
+iterated from common checkpoints; nonconvergence rolls both back. Acceptance
+also requires root and first-segment clamp synchronization within 1 nm, even
+when the requested whole-surface convergence tolerance is looser. No root snap
+or unreported state reset repairs a mismatch.
+
+The receipt separates physical impact/friction dissipation, external gravity
+work, hair energy change, numerical beam energy defect, native interface work,
+and interface quadrature discrepancy. It reports linear/angular impulse
+residuals and small-deflection validity. Numerical losses are not relabeled as
+physical heat. The finite-body fixture includes translational mass and
+rotational inertia; it exercises moving contact, force/torque feedback,
+momentum accounting, energy accounting, exact replay, and rollback. Run only
+the small fixture with:
+
+```
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 .venv/bin/python scripts/verify_hair_feedback.py
+```
+
+The bounded check completed in 0.22 s with 77,944 KiB peak RSS. Its one-guide,
+four-node moving-body interval produced two contacts; linear/angular momentum
+and the coupled energy receipt agree within 1e-18 in SI units. Impact loss was
+6.20e-15 J, numerical beam energy defect −4.33e-14 J, and interface work
+quadrature discrepancy 4.90e-21 J. These are synthetic numerical checks, not
+anatomical calibration or a production throughput claim.
+
+This is a bounded physical prototype, **not live anatomical or garment hair
+coupling**. Contact is discrete nearest face-interior centerline-node contact
+with zero radial clearance, a 4 mm search band, and no shaft/edge/CCD/self
+certificate. Existing Coulomb coefficients are explicit caller inputs. The
+surface patch is limited to 65,536 vertices/131,072 triangles; candidate
+queries retain the existing 100,000-pair batch cap. Hair is limited to 512
+guides, 3–32 nodes per guide, and 240 substeps per parent interval. These caps
+reject oversized requests; they do not reduce the source strand population.
+
+Required before anatomical live enablement:
+
+- Join attachment `sample_ids` to population `ids` and retained `face_index`;
+  current view attachments contain triangle coordinates and source SHA but
+  omit source face/node indices. Verify source bytes/hash and tangent rules;
+  do not substitute nearest-face registration. The low-level constructor
+  verifies barycentric root reconstruction and fixed owner indices, but does
+  not itself verify anatomical source provenance.
+- Provide source-bound material vertex owners and a physically justified
+  inertial policy. Native canonical hair proxies already contribute mass;
+  added physical guide masses must be reconciled explicitly. Do not subtract
+  an entire proxy or multiply guide masses by rendered-population counts.
+- Attach the Python owner explicitly to an authoritative native session, and
+  bridge its JSON-ready state/receipt to the viewer. `frame()` currently marks
+  `viewer_synchronized: false`. The JavaScript worker has no reaction sink and
+  must remain separate until this ownership transfer exists.
+- Follicle faces spanning different rigid owners are rejected because their
+  clamp orientation derivative is not implemented. Whole-body source surfaces,
+  live native execution, browser display, and deformable garment contact have
+  not been validated by this fixture.
