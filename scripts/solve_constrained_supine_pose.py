@@ -2,7 +2,7 @@
 from pathlib import Path
 import argparse,hashlib,json,signal,sys,tempfile,time
 import numpy as np
-from scipy.optimize import minimize,NonlinearConstraint,Bounds
+from scipy.optimize import minimize,NonlinearConstraint,Bounds,least_squares
 ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT));sys.path.insert(0,str(ROOT/'scripts'))
 from build_supine_initial_state import analyze,recipe
 from static_pose_journal import PoseJournal,pose_key
@@ -22,7 +22,23 @@ def dynamic_metric(native):
     return value/normalization
 
 
-def run(seed_path,material,resume_path=None,resume_cache=None):
+def acceleration_residual(native):
+    """All mobilities, each divided by 1 rad/s² or 1 m/s²; no inertia weights."""
+    acceleration=np.asarray(native['udot'],float)
+    if acceleration.ndim!=1 or len(acceleration)!=len(native['mobility_rotational']) or not np.all(np.isfinite(acceleration)):
+        raise ValueError('Invalid all-mobility acceleration residual')
+    return acceleration
+
+
+def static_converged(entry):
+    native=entry['native']
+    return bool(np.max(np.abs(acceleration_residual(native)))<=1e-4
+        and max(map(abs,entry['support_constraints']+entry['gauge_residual']))<=1e-4
+        and all(np.isfinite(native[key]) and abs(native[key])<=1e-5 for key in
+            ('constraint_position_error','constraint_velocity_error','constraint_acceleration_error')))
+
+
+def run(seed_path,material,resume_path=None,resume_cache=None,mode='constrained'):
     from ihm.native.mechanical_stream import NativeMechanicalStream
     seed_record=json.loads(seed_path.read_text())
     if not seed_record['passed'] or seed_record['material']!=material:raise ValueError('Matching force/moment-supported rigid seed required')
@@ -37,7 +53,7 @@ def run(seed_path,material,resume_path=None,resume_cache=None):
     seed=dict(seed_record['best']['seed_coordinates'])
     if resume_path is not None:
         resumed=json.loads(resume_path.read_text())
-        if max(abs(v) for v in resumed['support_constraints'])>1e-4 or max(abs(v) for v in resumed['gauge_residual'])>1e-4:raise ValueError('Resume candidate lost support constraints')
+        if mode=='constrained' and (max(abs(v) for v in resumed['support_constraints'])>1e-4 or max(abs(v) for v in resumed['gauge_residual'])>1e-4):raise ValueError('Resume candidate lost support constraints')
         seed.update(resumed['coordinates'])
         if resume_cache is None:seed['mtp_angle_r']=0.;seed['mtp_angle_l']=0.
     bounds=[base['coordinate_bounds'][n] for n in names]
@@ -45,7 +61,7 @@ def run(seed_path,material,resume_path=None,resume_cache=None):
     if any(not lo<=value<=hi for value,(lo,hi) in zip(x0,bounds)):raise ValueError('Supported seed outside source bounds')
     output=Path(tempfile.mkdtemp(prefix='constrained-supine-',dir=ROOT/'data/derived'));started=time.monotonic();stream=None;evaluations=[];cache={};best=None;best_feasible=None;journal=None;cache_hits=0
     report=dict(passed=False,accepted_equilibrium=False,physical_time_advanced_s=0,material=material,
-                maximum_evaluations=200,maximum_wall_s=60,objective='udot^T M udot/(mass*g^2), cross-checked against -r dot udot; no cost floor',
+                maximum_evaluations=200,maximum_wall_s=60,mode=mode,objective=('all mobility accelerations divided by 1 rad/s^2 or 1 m/s^2, no inertia weighting' if mode=='acceleration-root' else 'udot^T M udot/(mass*g^2), cross-checked against -r dot udot; no cost floor'),
                 toe_seed=('exact resumed coordinates retained for cache reuse' if resume_cache is not None else 'held passive law neutral0 on resume; pure ankle damping has no preferred static angle so retained ankle q'),held_gauge_coordinates={n:seed[n] for n in gauges},
                 scope='Native generalized-force static solve with explicit support force/pitch/roll balance; unchanged forward acceptance remains mandatory')
     def write(name,value):(output/name).write_text(json.dumps(value,indent=2,allow_nan=False)+'\n')
@@ -69,7 +85,9 @@ def run(seed_path,material,resume_path=None,resume_cache=None):
         mapping=dict(zip(native['mobility_coordinate_names'],range(len(residual))))
         support=residual[[mapping[n] for n in ('pelvis_tx','pelvis_tilt','pelvis_rotation')]]
         root=residual[[mapping[n] for n in gauges]]
-        cost=dynamic_metric(native);entry=dict(native=native,coordinates=candidate,cost=cost,support_constraints=support.tolist(),gauge_residual=root.tolist())
+        mass_metric=dynamic_metric(native)
+        cost=mass_metric if mode=='constrained' else float(acceleration_residual(native)@acceleration_residual(native))
+        entry=dict(native=native,coordinates=candidate,cost=cost,dynamic_mass_metric=mass_metric,support_constraints=support.tolist(),gauge_residual=root.tolist())
         journal.append(values,entry)
         cache[key]=entry;evaluations.append(dict(evaluation=len(evaluations)+1,wall_s=time.monotonic()-started,cost=cost,
             support_constraint_norm=float(np.linalg.norm(support)),full_root_residual_norm=float(np.linalg.norm(np.r_[support,root])),
@@ -87,7 +105,7 @@ def run(seed_path,material,resume_path=None,resume_cache=None):
         identity=dict(schema='ihm.static-pose-cache.v1',protocol_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
             journal_sha256=hashlib.sha256((ROOT/'scripts/static_pose_journal.py').read_bytes()).hexdigest(),
             source_sha256=execution['source_sha256'],build_files=execution['build']['files'],
-            material=material,mass_kg=77.6122029,environment='supine',coordinate_order=names,
+            material=material,mass_kg=77.6122029,environment='supine',mode=mode,coordinate_order=names,
             held_gauges={n:seed[n] for n in gauges},bounds=bounds,
             surface_manifest_sha256=hashlib.sha256(manifest_path.read_bytes()).hexdigest())
         # JSON normalization keeps tuples/lists identical after disk round-trip.
@@ -119,12 +137,30 @@ def run(seed_path,material,resume_path=None,resume_cache=None):
             with (output/'optimizer_iterates.jsonl').open('a') as destination:destination.write(json.dumps(record,allow_nan=False)+'\n')
             write('last_optimizer_iterate.json',entry)
             return False
-        result=minimize(lambda q:evaluate(q)['cost'],x0,method='trust-constr',jac=lambda q:derivatives(q)[0],
-             bounds=Bounds(*np.array(bounds).T,keep_feasible=True),constraints=[constraint],callback=retain_iterate,
-             options={'maxiter':30,'gtol':1e-8,'xtol':1e-10,'initial_tr_radius':.03,'verbose':0})
-        final=evaluate(result.x);write('final_candidate.json',final)
+        if mode=='acceleration-root':
+            # Zero-origin displacement gives the bounded TRF method a local first
+            # step (~.03 in coordinate units), independent of absolute pelvis q.
+            def root_jacobian(delta):
+                q=x0+delta;base=acceleration_residual(evaluate(q)['native'])
+                jac=np.zeros((len(base),len(q)))
+                for index,(lo,hi) in enumerate(bounds):
+                    step=1e-5 if q[index]+1e-5<=hi else -1e-5
+                    shifted=q.copy();shifted[index]+=step
+                    jac[:,index]=(acceleration_residual(evaluate(shifted)['native'])-base)/step
+                return jac
+            result=least_squares(lambda delta:acceleration_residual(evaluate(x0+delta)['native']),np.zeros(len(x0)),
+                jac=root_jacobian,bounds=(np.array(bounds)[:,0]-x0,np.array(bounds)[:,1]-x0),
+                method='trf',x_scale=.03,ftol=1e-10,xtol=1e-10,gtol=1e-10,max_nfev=200,
+                callback=lambda delta:retain_iterate(x0+delta))
+            final=evaluate(x0+result.x)
+        else:
+            result=minimize(lambda q:evaluate(q)['cost'],x0,method='trust-constr',jac=lambda q:derivatives(q)[0],
+                 bounds=Bounds(*np.array(bounds).T,keep_feasible=True),constraints=[constraint],callback=retain_iterate,
+                 options={'maxiter':30,'gtol':1e-8,'xtol':1e-10,'initial_tr_radius':.03,'verbose':0})
+            final=evaluate(result.x)
+        write('final_candidate.json',final)
         report.update(optimizer_success=bool(result.success),optimizer_message=str(result.message),
-             static_candidate_converged=bool(np.max(np.abs(final['native']['udot']))<=1e-4 and np.max(np.abs(final['support_constraints']))<=1e-4))
+             static_candidate_converged=static_converged(final))
         report['status']='static_candidate_converged' if report['static_candidate_converged'] else 'static_residual_unresolved'
         observed=stream._request('observe');report['continuing_state_unchanged']=all(before[k]==observed[k] for k in before if k!='kind')
         if not report['continuing_state_unchanged']:raise AssertionError('Static solve mutated continuing state')
@@ -140,6 +176,6 @@ def run(seed_path,material,resume_path=None,resume_cache=None):
 
 
 if __name__=='__main__':
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--run-native',action='store_true');parser.add_argument('--seed',type=Path);parser.add_argument('--resume',type=Path);parser.add_argument('--resume-cache',type=Path);parser.add_argument('--material',choices=('MM','HM'),default='MM');args=parser.parse_args()
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--run-native',action='store_true');parser.add_argument('--seed',type=Path);parser.add_argument('--resume',type=Path);parser.add_argument('--resume-cache',type=Path);parser.add_argument('--mode',choices=('constrained','acceleration-root'),default='constrained');parser.add_argument('--material',choices=('MM','HM'),default='MM');args=parser.parse_args()
     if not args.run_native or args.seed is None:raise SystemExit('Coordinated --run-native slot and --seed required')
-    run(args.seed.resolve(),args.material,None if args.resume is None else args.resume.resolve(),None if args.resume_cache is None else args.resume_cache.resolve())
+    run(args.seed.resolve(),args.material,None if args.resume is None else args.resume.resolve(),None if args.resume_cache is None else args.resume_cache.resolve(),args.mode)
