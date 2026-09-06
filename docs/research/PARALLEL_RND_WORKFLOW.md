@@ -50,6 +50,11 @@ input hashes, PID, output receipts, measured peak memory when available, and
 whether validation actually completed. Larger jobs require a fresh measured
 budget; do not silently raise a failed cap. No concurrent heavy browser check.
 
+The current manual grant and waiting jobs are checkpointed in
+`artifacts/heavy-job-queue.json`. This is a recovery note, not a process lock;
+actual agent/process receipts take precedence. Update it at handoffs and inspect
+liveness after interruption before granting a new slot.
+
 Freeze native source/header inputs from compilation through verification. Before
 restarting after interruption, check surviving owned processes and existing
 receipts. See [the incident note](INCIDENT_2026-09-05_RESOURCE_CONTENTION.md).
@@ -58,14 +63,18 @@ receipts. See [the incident note](INCIDENT_2026-09-05_RESOURCE_CONTENTION.md).
 
 | Owner | Current bounded responsibility | Resource lane |
 | --- | --- | --- |
-| Root | Shared runtime, signed adapter, live intake/API integration, integration acceptance | Heavy queue coordinator |
-| GI transport | Corrected native shared-donor variant and linked conservation fixtures (completed) | Released |
-| Signed native port | Muscle-only chemical/heat/work variant and native local ledgers (completed) | Released |
-| Mechanical energy ledger | Signed work/heat/reference checkpoints and projection (completed) | Released |
-| Support equilibrium | Anatomical surface foundation and constrained supported initialization | Source work; request native slot |
-| Intake scheduler / live wiring | Scheduler and live monitor/controller integration (completed) | No production viewer promotion yet |
-| Neural coverage | Actual cutaneous operator to shared controller integration | Bounded operator fixtures |
-| Vascular evidence | Explicit human-muscle geometry/radius/flow materializations | Bounded graph fixtures |
+| Root | Shared integration, source-skin layer correction, acceptance review and durable recovery records | Heavy queue coordinator |
+| GI transport | Complete-species native lumen/colon/rectum/fecal ownership and mapped circuit-volume fixture | Queue |
+| Signed native port | Native private sleep-state serialization repair; staged isolated schema/CDM/engine rebuild | Queue |
+| Mechanical energy ledger | Routine cardiovascular signed-demand reader and separate transferred vascular-law experiment | Read-only diagnosis after failed response check |
+| Support equilibrium | Fresh 98-muscle supported-reference diagnostics; source shell eligibility and missing-cell uncertainty | Queue |
+| Hair performance | Source-bound exterior guides, actual residual native inertia installation and common-clock coupling | Queue |
+| Neural coverage | 98-muscle proprioception/controller/checkpoint validation and factory readiness | Queue |
+| Actor recovery | Source-registered thoracic material mechanism, kinetic matrix and cavity-volume work conjugacy | Bounded source/mechanics work |
+| Lymph mapping | Explicit anatomical territory priors and configurable conservative regional native circuits | Queue |
+| Registration audit | Actual 98-muscle geometry acceptance completed; source/registration reviews | Available for bounded review |
+| Intake scheduler / live wiring | Independent integration reviews; served mass/intake monitors already built | Small checks, no browser load |
+| Vascular evidence / skin evidence / spectra audit | Existing scoped increments accepted; available for next independent tasks | No active heavy job |
 
 The same workers can receive subsequent bounded implementation work. Completed
 local checks do not close whole-body objectives. The signed adapter's small
