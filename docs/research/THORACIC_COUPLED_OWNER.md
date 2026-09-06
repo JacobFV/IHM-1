@@ -103,15 +103,51 @@ adding its replacement. Tests use the actual composite material metric with a
 clearly declared native-remainder fixture and a nontrivial parent map/bias;
 this algebraic proof is not represented as a native runtime extraction.
 
-## Prepared scheduled native proof
+## Completed read-only native operator proof
 
 `native_thoracic_operator_snapshot.cpp` is a separate, read-only extractor for
 the frozen 22-body/92-muscle model. It initializes one native state, sets a small
 declared velocity vector, and emits the same-state operators above. It performs
 no integration and applies no force. `build_thoracic_native_snapshot.py` prepares
 one translation unit with retained input/library hashes, a 2 GiB memory cap,
-120-second CPU compile cap and wall-clock timeouts. Native work requires the
-parent agent's scheduling grant. `verify_thoracic_native_snapshot.py` is ready
-to check the actual extracted reference mass/bias block, full active rank and
-new cross-inertia once such a snapshot exists. Compilation and extraction are
-not yet claimed by this source-only document.
+120-second CPU compile cap and wall-clock timeouts. The compile/extraction ran under the parent agent's explicit scheduling grant.
+`verify_thoracic_native_snapshot.py` passed against the actual extracted
+reference mass/bias block and enlarged metric. No simulation time advanced.
+
+The first compile succeeded but model deserialization failed because the frozen
+model contained unregistered private `ExcitationPorts`, `PortForces` and
+`Foundation` components. The retry preserves those component types through
+explicit inertial-only deserialization guards: any request for their control or
+applied-force callbacks throws. It does **not** reconstruct the private runtime
+controller values, external loads or contact quadrature. The output explicitly
+sets force/control state restoration and force/coupled-state equivalence to
+false. Zero-force inverse dynamics is used throughout. Missing VTP display
+asset warnings are retained; display meshes are not part of this mass/frame
+operator proof.
+
+`data/research/thoracic_mechanism/native_operator_proof_v1` retains both attempt
+logs/sources, the successful snapshot and build/library/header receipts, and the
+proof. The first builder lost its in-memory library receipt list on failure;
+this limitation is recorded rather than reconstructed as a pre-failure claim.
+The repaired builder persists receipts before compilation and retains failed
+status. The successful retry checks all bound inputs again after execution.
+
+The exact frozen native model contains 22 bodies, 92 muscles, 33 tree speeds and
+two original coordinate couplers. Adding the 32 internal source coordinates
+gives 65 tree speeds, with 63 positive metric directions after the two rib
+locks **before** native constraint projection. This does not claim 63 physically
+independent constrained degrees of freedom.
+
+| Actual extraction/replacement check | Result |
+|---|---:|
+| Original native mass-block maximum error | 1.421085e-14 |
+| Original native inertial-bias maximum error | 3.035766e-18 |
+| Minimum eigenvalue after rib locks, mixed units | 6.767164e-5 |
+| Native/new-internal cross-mass Frobenius norm, mixed units | 1.500126 |
+| Reconstructed torso partition mass (kg) | 27.65467696526032 |
+
+Snapshot SHA-256:
+`9b290e9fec24c5e5bcafa7c19f28386ba7eb8b3c141e7ad56ae21d8e91b0e629`.
+Native constraint projection, evolving full-body composite integration,
+force/contact ownership and physiological coupling remain separate acceptance
+steps. The scheduled native slot was released immediately after verification.

@@ -1,0 +1,171 @@
+{
+  "schema": "retained-thoracic-native-operator-proof-v1",
+  "artifacts": [
+    {
+      "path": "data/derived/audits/thoracic-native-operator-v1/native_thoracic_operator_snapshot.cpp",
+      "sha256": "c8c436619d72d16f97c806a5c79c69d42a7f0d4cb8e9e1ffe77aba1c7a6f0acd",
+      "bytes": 3153,
+      "retained_copy": "v1-native_thoracic_operator_snapshot.cpp.gz"
+    },
+    {
+      "path": "data/derived/audits/thoracic-native-operator-v1/compile.log",
+      "sha256": "4bcf2e7f755165dfd0ae9f520a953ee836bff5fb47845f048bfb80b1ffdbc2f3",
+      "bytes": 8891,
+      "retained_copy": "v1-compile.log.gz"
+    },
+    {
+      "path": "data/derived/audits/thoracic-native-operator-v1/run.log",
+      "sha256": "b39466048ca2ab17c05db4c9be1dbc2907e2697bee7acca7aba045a58449bbcc",
+      "bytes": 224,
+      "retained_copy": "v1-run.log.gz"
+    },
+    {
+      "path": "data/derived/audits/thoracic-native-operator-v2/native_thoracic_operator_snapshot.cpp",
+      "sha256": "9c43842c0b9f1e4914a8b4ae97a623bee83afdcd4f84638bd3fb01e7de9c02d6",
+      "bytes": 4633,
+      "retained_copy": "v2-native_thoracic_operator_snapshot.cpp.gz"
+    },
+    {
+      "path": "data/derived/audits/thoracic-native-operator-v2/compile.log",
+      "sha256": "80661383093e2e2a425c984068a0966a5ed88c102b4c8e8d094f3551d62a24df",
+      "bytes": 8891,
+      "retained_copy": "v2-compile.log.gz"
+    },
+    {
+      "path": "data/derived/audits/thoracic-native-operator-v2/run.log",
+      "sha256": "c22d5a2b4f9b682212b476bc738c91cd06a8139080104d33c080e5672e86722a",
+      "bytes": 3937,
+      "retained_copy": "v2-run.log.gz"
+    },
+    {
+      "path": "data/derived/audits/thoracic-native-operator-v2/snapshot.json",
+      "sha256": "9b290e9fec24c5e5bcafa7c19f28386ba7eb8b3c141e7ad56ae21d8e91b0e629",
+      "bytes": 15053,
+      "retained_copy": "v2-snapshot.json.gz"
+    },
+    {
+      "path": "data/derived/audits/thoracic-native-operator-v2/manifest.json",
+      "sha256": "4b74163c6aa994a28d0603d3aea399c1cadf829106c536decccd564afa3678f5",
+      "bytes": 7440,
+      "retained_copy": "v2-manifest.json.gz"
+    },
+    {
+      "path": "data/derived/audits/thoracic-native-operator-v2/composition_proof.json",
+      "sha256": "a11e927911487c7b78ed151dae6cb7d80788921e254b32f067e3c90213eb0e4c",
+      "bytes": 2417,
+      "retained_copy": "v2-composition_proof.json.gz"
+    },
+    {
+      "path": "scripts/build_thoracic_native_snapshot.py",
+      "sha256": "ef751d05a143d37266c5be0aeacce7024e6a5912b4dbe1db587c21954c020cb0",
+      "bytes": 3955,
+      "retained_copy": "successful-build-script.py.gz"
+    }
+  ],
+  "first_attempt": {
+    "status": "compile succeeded; model deserialization failed on unregistered ExcitationPorts before initSystem",
+    "private_types_also_present": [
+      "PortForces",
+      "Foundation"
+    ],
+    "failed_builder_git_commit": "f1ab0cb",
+    "failed_builder_sha256": "1341e515a00e9e36b8e43076839916bfe7e2d1cade6ab26d4e2c05b2e21736cf",
+    "failed_builder_retained_copy": "failed-build-script.py.gz",
+    "limitation": "The first builder retained source/model/binary/logs but did not persist its in-memory library receipts on failure. No claim of recovered pre-failure library pins. Successful retry records and checks its actual libraries/headers before and after execution."
+  },
+  "successful_attempt": {
+    "status": "read-only native extraction and source replacement proof passed",
+    "native_integrated": false,
+    "private_force_control_state_restored": false,
+    "force_or_coupled_state_equivalence_claimed": false,
+    "private_callbacks_throw_if_requested": true
+  },
+  "proof": {
+    "schema": "thoracic-actual-native-operator-proof-v1",
+    "snapshot_sha256": "9b290e9fec24c5e5bcafa7c19f28386ba7eb8b3c141e7ad56ae21d8e91b0e629",
+    "native_model_sha256": "899148fee8932126fd266a64f38c95a7fbecaa6651df908c8e4e890a8197b9d6",
+    "native_speed_count": 33,
+    "composed_speed_count": 65,
+    "native_constraints_projected": false,
+    "native_integrated": false,
+    "reference_native_mass_block_max_error": 1.4210854715202004e-14,
+    "reference_native_bias_max_error": 3.0357660829594124e-18,
+    "active_eigenvalues": [
+      6.767163758123226e-05,
+      8.624109689268953e-05,
+      0.00017925986141477398,
+      0.00017927188557410555,
+      0.0001991646367618178,
+      0.00023266591087452545,
+      0.0002430227440877039,
+      0.0002617764212952879,
+      0.000498540748241091,
+      0.0005193474728853117,
+      0.0005811138834944637,
+      0.0006705705243135679,
+      0.000676617856634246,
+      0.000729119478839058,
+      0.0007679125448553318,
+      0.000835388239933468,
+      0.0009525751943049043,
+      0.0009585749688844038,
+      0.0009813181421922264,
+      0.0009813930415463199,
+      0.0011069897269721724,
+      0.0011141574728095061,
+      0.001134786600883027,
+      0.0012296295187206384,
+      0.001369029107811929,
+      0.0016221316865104303,
+      0.0016576230462582579,
+      0.0022423948693798255,
+      0.0025753607806385903,
+      0.0030522071242713297,
+      0.0041473642729043195,
+      0.006580259428618938,
+      0.006737575527195001,
+      0.011989204496596835,
+      0.012188649990080425,
+      0.015151373958250768,
+      0.015208677438977709,
+      0.02536397471045901,
+      0.029409845651151376,
+      0.03407803504697845,
+      0.042695348007020975,
+      0.05194912898314039,
+      0.08795695011731762,
+      0.09221191756120033,
+      0.10147260282382219,
+      0.10462784068874989,
+      0.14309540310188348,
+      0.1793751295066476,
+      0.2795529670852377,
+      0.42339201383672925,
+      0.45364150637607675,
+      0.4867695233561149,
+      0.5259487605010122,
+      2.217185525568242,
+      2.251810451741408,
+      2.395541675196802,
+      3.0499857646982695,
+      3.789959710887399,
+      18.866733524010222,
+      19.542056070012812,
+      78.5340860264703,
+      79.6398286929998,
+      80.32633906292227
+    ],
+    "native_to_new_internal_cross_mass_norm": 1.5001259774225666,
+    "retained_source_subsystem_mass_kg": 27.65467696526032,
+    "scope": "Actual unconstrained tree operator extraction and reference replacement; no integrated native composite/contact/physiology acceptance"
+  },
+  "model_retained_elsewhere": "data/research/cervical_inertia/v2/inputs/03-assembled_model.osim.gz",
+  "native_constraints": {
+    "declared_original_couplers": 2,
+    "projection_performed": false,
+    "tree_speed_count": 33,
+    "enlarged_tree_speed_count": 65,
+    "rib_locks": 2,
+    "positive_metric_directions_before_native_constraint_projection": 63
+  }
+}

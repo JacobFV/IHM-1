@@ -29,13 +29,22 @@ def main():
     for include in ['install/opensim/include','install/opensim/include/OpenSim','install/simbody/include/simbody']:command+=['-isystem',str(runtime/include)]
     executable=out/'snapshot';command+=[str(retained),'-o',str(executable),*flags]
     env={**os.environ,'OPENBLAS_NUM_THREADS':'1','OMP_NUM_THREADS':'1'}
-    with (out/'compile.log').open('w') as log:subprocess.run(command,stdout=log,stderr=subprocess.STDOUT,check=True,timeout=180,env=env)
-    evidence={'schema':'thoracic-native-snapshot-build-v1','inputs':[receipt(p,v) for p,v in inputs.items()],'compile_command':command,'native_integrated':False,'native_snapshot_run':False,'executable':receipt(executable,executable.read_bytes())}
-    if args.run:
-        run=[limiter,'--as=2147483648','--cpu=60','nice','-n','10',str(executable),str(out/'assembled_model.osim'),str(out/'snapshot.json')]
-        with (out/'run.log').open('w') as log:subprocess.run(run,stdout=log,stderr=subprocess.STDOUT,check=True,timeout=90,env=env)
-        evidence['native_snapshot_run']=True;evidence['run_command']=run;evidence['snapshot']=receipt(out/'snapshot.json',(out/'snapshot.json').read_bytes())
-    if any(p.read_bytes()!=raw for p,raw in inputs.items()):raise ValueError('Bound input changed during extraction')
+    evidence={'schema':'thoracic-native-snapshot-build-v1','status':'prepared','inputs':[receipt(p,v) for p,v in inputs.items()],'compile_command':command,'native_integrated':False,'native_snapshot_run':False}
+    def persist():
+        (out/'manifest.json').write_text(json.dumps(evidence,indent=2)+'\n')
+    persist()
+    try:
+        with (out/'compile.log').open('w') as log:subprocess.run(command,stdout=log,stderr=subprocess.STDOUT,check=True,timeout=180,env=env)
+        evidence['status']='compiled';evidence['executable']=receipt(executable,executable.read_bytes());persist()
+        if args.run:
+            run=[limiter,'--as=2147483648','--cpu=60','nice','-n','10',str(executable),str(out/'assembled_model.osim'),str(out/'snapshot.json')]
+            evidence['run_command']=run;persist()
+            with (out/'run.log').open('w') as log:subprocess.run(run,stdout=log,stderr=subprocess.STDOUT,check=True,timeout=90,env=env)
+            evidence['native_snapshot_run']=True;evidence['snapshot']=receipt(out/'snapshot.json',(out/'snapshot.json').read_bytes())
+        if any(p.read_bytes()!=raw for p,raw in inputs.items()):raise ValueError('Bound input changed during extraction')
+        evidence['status']='complete';persist()
+    except Exception as error:
+        evidence['status']='failed';evidence['error']=str(error);persist();raise
     (out/'manifest.json').write_text(json.dumps(evidence,indent=2)+'\n');print(json.dumps({'build':str(out),'native_snapshot_run':args.run}))
 
 if __name__=='__main__':main()

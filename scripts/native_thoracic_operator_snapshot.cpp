@@ -5,12 +5,32 @@
 #include <cmath>
 #include <filesystem>
 
+// Frozen private components have no serialized runtime force/control payload.
+// Preserve their XML component types for inertial extraction; fail immediately
+// if any caller tries to use this as a restored force-bearing native plant.
+class ExcitationPorts final:public OpenSim::Controller {
+    OpenSim_DECLARE_CONCRETE_OBJECT(ExcitationPorts,OpenSim::Controller);
+public:
+    void computeControls(const SimTK::State&,SimTK::Vector&) const override {throw std::runtime_error("Private control callback forbidden in inertial extractor");}
+};
+class PortForces final:public OpenSim::Force {
+    OpenSim_DECLARE_CONCRETE_OBJECT(PortForces,OpenSim::Force);
+public:
+    void computeForce(const SimTK::State&,SimTK::Vector_<SimTK::SpatialVec>&,SimTK::Vector&) const override {throw std::runtime_error("Private point-force callback forbidden in inertial extractor");}
+};
+class Foundation final:public OpenSim::Force {
+    OpenSim_DECLARE_CONCRETE_OBJECT(Foundation,OpenSim::Force);
+public:
+    void computeForce(const SimTK::State&,SimTK::Vector_<SimTK::SpatialVec>&,SimTK::Vector&) const override {throw std::runtime_error("Private foundation-force callback forbidden in inertial extractor");}
+};
+
 static void number(std::ostream& out,double x){if(!std::isfinite(x))throw std::runtime_error("Nonfinite operator snapshot");out<<std::setprecision(17)<<x;}
 template<class V>static void vector(std::ostream& out,const V& v){out<<'[';for(int i=0;i<v.size();++i){if(i)out<<',';number(out,v[i]);}out<<']';}
 template<class M>static void matrix(std::ostream& out,const M& m,int rows,int cols){out<<'[';for(int i=0;i<rows;++i){if(i)out<<',';out<<'[';for(int j=0;j<cols;++j){if(j)out<<',';number(out,m(i,j));}out<<']';}out<<']';}
 int main(int argc,char** argv){try{
     if(argc!=3)throw std::runtime_error("model.osim fresh-output.json required");
     if(std::filesystem::exists(argv[2]))throw std::runtime_error("Refuse existing evidence output");
+    OpenSim::Object::registerType(ExcitationPorts());OpenSim::Object::registerType(PortForces());OpenSim::Object::registerType(Foundation());
     OpenSim::Model model(argv[1]);model.setUseVisualizer(false);auto& state=model.initSystem();
     for(int i=0;i<state.getNU();++i)state.updU()[i]=.001*(i+1);
     const auto& system=model.getMultibodySystem();system.realize(state,SimTK::Stage::Velocity);
@@ -20,7 +40,7 @@ int main(int argc,char** argv){try{
     const auto frame_bias=matter.calcBiasForFrameJacobian(state,index,SimTK::Vec3(0));const auto transform=matter.getMobilizedBody(index).getBodyTransform(state);
     SimTK::Vector qdot;matter.multiplyByN(state,false,state.getU(),qdot);
     std::ofstream out(argv[2]);if(!out)throw std::runtime_error("Cannot open output");
-    out<<"{\"schema\":\"thoracic-native-tree-operator-v1\",\"native_integrated\":false,\"native_constraints_projected\":false,\"zero_applied_force_inverse_dynamics\":true,\"q\":";vector(out,state.getQ());
+    out<<"{\"schema\":\"thoracic-native-tree-operator-v1\",\"native_integrated\":false,\"private_force_control_state_restored\":false,\"force_or_coupled_state_equivalence_claimed\":false,\"private_callbacks_throw_if_requested\":true,\"native_constraints_projected\":false,\"zero_applied_force_inverse_dynamics\":true,\"q\":";vector(out,state.getQ());
     out<<",\"u\":";vector(out,state.getU());out<<",\"qdot\":";vector(out,qdot);
     out<<",\"mass_matrix\":";matrix(out,mass,mass.nrow(),mass.ncol());out<<",\"inertial_bias\":";vector(out,bias);
     out<<",\"torso_frame_jacobian_world_angular_first\":";matrix(out,jacobian,6,jacobian.ncol());
