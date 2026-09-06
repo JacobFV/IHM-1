@@ -152,10 +152,10 @@ def run(seed_path,material,resume_path=None,resume_cache=None,mode='constrained'
             write('last_optimizer_iterate.json',entry)
             return False
         if mode in ('acceleration-root','balanced-root'):
-            q=interior_origin(x0,bounds)
+            q=interior_origin(x0,bounds,preserve=mode=='balanced-root')
             report['local_solver']=dict(method=('support-constrained linear Newton plus bounded nonlinear support correction' if mode=='balanced-root' else 'bounded variable least-squares Newton step plus backtracking'),
                 maximum_support_corrections=(3 if mode=='balanced-root' else 0),
-                maximum_coordinate_step=.03,interior_margin=1e-12,maximum_iterations=10,
+                maximum_coordinate_step=.03,interior_margin=(0. if mode=='balanced-root' else 1e-12),maximum_iterations=10,
                 maximum_backtracks=6,origin_coordinate_changes={name:float(v-x0[i]) for i,(name,v) in enumerate(zip(names,q)) if v!=x0[i]})
             success=False;message='Local Newton iteration cap'
             for iteration in range(10):

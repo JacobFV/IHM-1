@@ -5,6 +5,7 @@ import bounded_static_root as root
 def main():
     assert hasattr(root,'interior_origin'),'Missing explicit interior origin'
     bounds=np.array([[0.,.1],[-.1,.1]])
+    original=np.array([5e-13,0.]);assert np.array_equal(root.interior_origin(original,bounds,preserve=True),original)
     q=root.interior_origin([5e-13,0.],bounds)
     assert q[0]>=1e-12 and q[1]==0.
     d=root.local_step(np.eye(2),[.01,-.02],q,bounds)

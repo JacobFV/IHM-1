@@ -3,10 +3,11 @@ import numpy as np
 from scipy.optimize import lsq_linear
 
 
-def interior_origin(q,bounds):
+def interior_origin(q,bounds,*,preserve=False):
     q=np.asarray(q,float);bounds=np.asarray(bounds,float)
     if not np.all(np.isfinite(q)) or np.any(q<bounds[:,0]) or np.any(q>bounds[:,1]):
         raise ValueError('Initial root pose outside source bounds')
+    if preserve:return q.copy()
     margin=np.minimum(1e-12,np.diff(bounds,axis=1)[:,0]/4)
     return np.clip(q,bounds[:,0]+margin,bounds[:,1]-margin)
 
