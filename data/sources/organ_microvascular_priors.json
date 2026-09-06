@@ -1,0 +1,230 @@
+{
+  "schema": "ihm.organ_microvascular_priors.v1",
+  "sources": [
+    {
+      "path": "data/research/organ_microvascular/muscle_article.xml",
+      "sha256": "2b8f61d28aeb5480a6846b772217e60c39a9743a19a87bce81b56b344e5bbf71",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5566646/",
+      "locator": "Table 3; demographic ages Table 1",
+      "license": "CC-BY; article license",
+      "tier": "measured_other_human_cohort"
+    }
+  ],
+  "organs": {
+    "Muscle": {
+      "materialization_supported": true,
+      "species": "Homo sapiens",
+      "region": "vastus lateralis",
+      "specimen": "human biopsy transverse sections; healthy young and unusually healthy recreationally active older adults",
+      "scope": "cross-sectional capillary numerical density and fiber supply domains",
+      "cohorts": {
+        "young_men": {
+          "n": 13,
+          "age": {
+            "mean": 22.1,
+            "sd": 2.9,
+            "unit": "year",
+            "uncertainty": "between-participant standard deviation",
+            "observed_range": null,
+            "distribution_family": null
+          },
+          "density": {
+            "mean": 331,
+            "sd": 94,
+            "unit": "capillary/mm2",
+            "uncertainty": "between-participant standard deviation",
+            "observed_range": null,
+            "distribution_family": null
+          },
+          "capillary_per_fiber": {
+            "mean": 1.74,
+            "sd": 0.57,
+            "unit": "1",
+            "uncertainty": "between-participant standard deviation",
+            "observed_range": null,
+            "distribution_family": null
+          },
+          "domain_area": {
+            "mean": 3233,
+            "sd": 1252,
+            "unit": "um2",
+            "uncertainty": "between-participant standard deviation",
+            "observed_range": null,
+            "distribution_family": null
+          },
+          "log_domain_sd": {
+            "mean": 0.171,
+            "sd": 0.022,
+            "unit": "1",
+            "uncertainty": "between-participant standard deviation",
+            "observed_range": null,
+            "distribution_family": null
+          }
+        },
+        "young_women": {
+          "n": 5,
+          "age": {
+            "mean": 21,
+            "sd": 2.4,
+            "unit": "year",
+            "uncertainty": "between-participant standard deviation",
+            "observed_range": null,
+            "distribution_family": null
+          },
+          "density": {
+            "mean": 340,
+            "sd": 120,
+            "unit": "capillary/mm2",
+            "uncertainty": "between-participant standard deviation",
+            "observed_range": null,
+            "distribution_family": null
+          },
+          "capillary_per_fiber": {
+            "mean": 1.44,
+            "sd": 0.69,
+            "unit": "1",
+            "uncertainty": "between-participant standard deviation",
+            "observed_range": null,
+            "distribution_family": null
+          },
+          "domain_area": {
+            "mean": 3149,
+            "sd": 855,
+            "unit": "um2",
+            "uncertainty": "between-participant standard deviation",
+            "observed_range": null,
+            "distribution_family": null
+          },
+          "log_domain_sd": {
+            "mean": 0.166,
+            "sd": 0.016,
+            "unit": "1",
+            "uncertainty": "between-participant standard deviation",
+            "observed_range": null,
+            "distribution_family": null
+          }
+        },
+        "older_men": {
+          "n": 22,
+          "age": {
+            "mean": 73.5,
+            "sd": 3.9,
+            "unit": "year",
+            "uncertainty": "between-participant standard deviation",
+            "observed_range": null,
+            "distribution_family": null
+          },
+          "density": {
+            "mean": 286,
+            "sd": 78,
+            "unit": "capillary/mm2",
+            "uncertainty": "between-participant standard deviation",
+            "observed_range": null,
+            "distribution_family": null
+          },
+          "capillary_per_fiber": {
+            "mean": 1.46,
+            "sd": 0.41,
+            "unit": "1",
+            "uncertainty": "between-participant standard deviation",
+            "observed_range": null,
+            "distribution_family": null
+          },
+          "domain_area": {
+            "mean": 3667,
+            "sd": 969,
+            "unit": "um2",
+            "uncertainty": "between-participant standard deviation",
+            "observed_range": null,
+            "distribution_family": null
+          },
+          "log_domain_sd": {
+            "mean": 0.172,
+            "sd": 0.018,
+            "unit": "1",
+            "uncertainty": "between-participant standard deviation",
+            "observed_range": null,
+            "distribution_family": null
+          }
+        },
+        "older_women": {
+          "n": 6,
+          "age": {
+            "mean": 74.5,
+            "sd": 3.7,
+            "unit": "year",
+            "uncertainty": "between-participant standard deviation",
+            "observed_range": null,
+            "distribution_family": null
+          },
+          "density": {
+            "mean": 312,
+            "sd": 139,
+            "unit": "capillary/mm2",
+            "uncertainty": "between-participant standard deviation",
+            "observed_range": null,
+            "distribution_family": null
+          },
+          "capillary_per_fiber": {
+            "mean": 1.08,
+            "sd": 0.38,
+            "unit": "1",
+            "uncertainty": "between-participant standard deviation",
+            "observed_range": null,
+            "distribution_family": null
+          },
+          "domain_area": {
+            "mean": 3434,
+            "sd": 963,
+            "unit": "um2",
+            "uncertainty": "between-participant standard deviation",
+            "observed_range": null,
+            "distribution_family": null
+          },
+          "log_domain_sd": {
+            "mean": 0.158,
+            "sd": 0.019,
+            "unit": "1",
+            "uncertainty": "between-participant standard deviation",
+            "observed_range": null,
+            "distribution_family": null
+          }
+        }
+      },
+      "age_n_note": "Young men Table 1 n=14, Table 3 n=13; total recruited47, capillary46",
+      "unsupported": [
+        "3D branching topology",
+        "radius",
+        "permeability",
+        "longitudinal tortuosity",
+        "joint individual-level covariance"
+      ],
+      "source_index": 0
+    },
+    "Skin": {
+      "materialization_supported": false,
+      "species": "Homo sapiens",
+      "region": "arm/leg OCTA",
+      "reason": "Held workbook cohort discrepancy; no image masks acquired or density derived"
+    },
+    "Lung": {
+      "materialization_supported": false,
+      "species": "Homo sapiens",
+      "region": "single donor lungs",
+      "reason": "Alveolar/septal measurements do not establish a capillary sheet"
+    },
+    "Kidney": {
+      "materialization_supported": false,
+      "species": "Homo sapiens",
+      "region": "LADAF-2021-17 right kidney",
+      "reason": "Reduced arterial graph is held, not a population capillary prior; thickness semantics unresolved",
+      "source_card": "data/sources/hipct-kidney-arterial.json"
+    },
+    "Liver": {
+      "materialization_supported": false,
+      "species": "Homo sapiens",
+      "region": "central-to-portal vein biopsy axes",
+      "reason": "Human sinusoidal observables located, numerical curves not extracted"
+    }
+  }
+}
