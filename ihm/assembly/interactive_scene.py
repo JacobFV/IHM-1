@@ -39,6 +39,81 @@ def _code_hash(code):
     return hashlib.sha256(json.dumps(normalized(code),sort_keys=True).encode()).hexdigest()
 
 
+def _dataclass_generated(module,raw):
+    """Rebuild a restricted inert dataclass declaration, never a module body.
+
+    Dynamic defaults, inheritance and custom decorators fail closed. This is
+    sufficient for the configuration records in the native body factory.
+    """
+    import ast,dataclasses,reprlib
+    generated={};hashes={}
+    def mismatch():raise ValueError('Loaded code differs from source; unsupported or changed dataclass')
+    for node in ast.parse(raw).body:
+        cls=vars(module).get(getattr(node,'name',None))
+        if not isinstance(node,ast.ClassDef) or not isinstance(cls,type) or not dataclasses.is_dataclass(cls):continue
+        if node.bases or node.keywords or len(node.decorator_list)!=1:mismatch()
+        decorator=node.decorator_list[0];options={}
+        if isinstance(decorator,ast.Call):
+            if decorator.args:mismatch()
+            for option in decorator.keywords:
+                if option.arg is None or not isinstance(option.value,ast.Constant) or type(option.value.value) is not bool:mismatch()
+                options[option.arg]=option.value.value
+            decorator=decorator.func
+        if not isinstance(decorator,ast.Name) or vars(module).get(decorator.id) is not dataclasses.dataclass:mismatch()
+        namespace={'__module__':module.__name__,'__qualname__':node.name,'__annotations__':{}}
+        user_methods=set()
+        for statement in node.body:
+            if isinstance(statement,ast.AnnAssign) and isinstance(statement.target,ast.Name):
+                name=statement.target.id
+                namespace['__annotations__'][name]=object
+                if statement.value is not None:
+                    try:namespace[name]=ast.literal_eval(statement.value)
+                    except (ValueError,TypeError):mismatch()
+            elif isinstance(statement,(ast.FunctionDef,ast.AsyncFunctionDef)):
+                user_methods.add(statement.name);namespace[statement.name]=object()
+            elif isinstance(statement,ast.Pass):pass
+            elif isinstance(statement,ast.Expr) and isinstance(statement.value,ast.Constant) and isinstance(statement.value.value,str):pass
+            else:mismatch()
+        if list(namespace['__annotations__'])!=[field.name for field in dataclasses.fields(cls)]:mismatch()
+        try:expected=dataclasses.dataclass(type(node.name,(),namespace),**options)
+        except (ValueError,TypeError):mismatch()
+        def compare(actual,wanted,label):
+            if actual is cls and wanted is expected:return
+            if isinstance(actual,types.FunctionType) and isinstance(wanted,types.FunctionType):
+                digest=_code_hash(actual.__code__)
+                if digest!=_code_hash(wanted.__code__):mismatch()
+                hashes[label]=digest
+                compare(actual.__defaults__,wanted.__defaults__,label+'.defaults')
+                compare(actual.__kwdefaults__,wanted.__kwdefaults__,label+'.kwdefaults')
+                if actual.__code__.co_freevars!=wanted.__code__.co_freevars:mismatch()
+                for name,a,b in zip(actual.__code__.co_freevars,actual.__closure__ or (),wanted.__closure__ or ()):
+                    compare(a.cell_contents,b.cell_contents,label+'.closure.'+name)
+                return
+            if type(actual) is not type(wanted):mismatch()
+            if isinstance(actual,(tuple,list)):
+                if len(actual)!=len(wanted):mismatch()
+                for index,(a,b) in enumerate(zip(actual,wanted)):compare(a,b,label+'.'+str(index))
+            elif isinstance(actual,dict):
+                if actual.keys()!=wanted.keys():mismatch()
+                for key in actual:compare(actual[key],wanted[key],label+'.'+str(key))
+            elif actual is wanted:return
+            elif isinstance(actual,(str,int,float,bool,bytes,type(None),set)):
+                if actual!=wanted:mismatch()
+            else:mismatch()
+        for name,method in vars(expected).items():
+            if name in user_methods or not isinstance(method,types.FunctionType):continue
+            actual=vars(cls).get(name)
+            compare(actual,method,node.name+'.'+name)
+            generated[(node.name,name)]=actual
+    generators={}
+    if generated:
+        generators={'python_version':sys.version,'implementation':sys.implementation.name,'modules':{}}
+        for generator in (dataclasses,reprlib):
+            path=Path(generator.__file__).resolve()
+            generators['modules'][generator.__name__]={'path':str(path),'source_sha256':hashlib.sha256(path.read_bytes()).hexdigest()}
+    return generated,hashes,generators
+
+
 def _loaded_source(module):
     """Bind retained source to loaded function bytecode, including nested code.
 
@@ -51,18 +126,21 @@ def _loaded_source(module):
         for value in code.co_consts:
             if isinstance(value,types.CodeType):visit(value)
     visit(compile(raw,str(path),'exec',optimize=sys.flags.optimize))
+    generated,generated_hashes,generators=_dataclass_generated(module,raw)
     loaded={}
     for name,value in vars(module).items():
         if getattr(value,'__module__',None)!=module.__name__:continue
         if isinstance(value,types.FunctionType):loaded[value.__qualname__]=value.__code__
         elif isinstance(value,type):
-            for method in vars(value).values():
+            for method_name,method in vars(value).items():
+                if (name,method_name) in generated:continue
                 if isinstance(method,(classmethod,staticmethod)):method=method.__func__
                 if isinstance(method,types.FunctionType):loaded[method.__qualname__]=method.__code__
     hashes={name:_code_hash(code) for name,code in loaded.items()}
     if any(name not in compiled or _code_hash(compiled[name])!=digest for name,digest in hashes.items()):
         raise ValueError('Loaded code differs from source; restart the server before creating a scene')
-    return {'path':path,'bytes':raw,'source_sha256':hashlib.sha256(raw).hexdigest(),'loaded_code_sha256':hashes}
+    return {'path':path,'bytes':raw,'source_sha256':hashlib.sha256(raw).hexdigest(),'loaded_code_sha256':hashes,
+            'generated_code_sha256':generated_hashes,'code_generators':generators}
 
 ENVIRONMENTS={
     'studio':dict(label='Studio',gravity=[0.,0.,0.],axis=1,plane=-.96,
