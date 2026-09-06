@@ -406,3 +406,21 @@ The new quadrature omits only original index 15948/face165251, preserving the ex
 `scripts/verify_lumbar_supine_static.py` prepares a maximum-two-evaluation/15-second-hard-deadline native diagnostic at model-neutral q and the old accepted q seed. Each evaluation is copied-state, with unchanged controls, zero physical time and no reference reset. It records actual force/generalized-torque/acceleration comparisons and instantaneous hip acceleration direction, which must not be mislabeled perturbation stability. The continuing state is compared afterward and the owned process is closed/reaped; archive/input hashes are independently checked. Source preparation and fixtures pass; native execution is queued and has not occurred. No new solve or equilibrium promotion is authorized by this preparation.
 
 Reference SHA-256: `38e1cd70b0b24eee3271da004fac463bcc021ee74bb6448f3d6d8fb921778cd1`.
+
+
+## Actual 98-muscle two-pose diagnostic
+
+`lumbar-supine-static-1g1q08u2` completed the two authorized copied-state evaluations in 0.621 s with one BLAS/OMP thread and nice10. The 98-muscle model instantiated, all six added lumbar activations remained 0.05, the continuing state was unchanged, and the owned process was closed/reaped. The frozen archive remained intact. No physical time, optimization or response-cache reuse occurred. Passing the protocol diagnostic is not passing equilibrium.
+
+At neutral q, contact support is zero and maximum acceleration is 2960.25 native units/s²; lumbar extension residual is −90.29336 N·m. At the old92-muscle q seed, support is 761.36057 N but maximum acceleration is 54.17176 rad/s² (lumbar extension), with left/right hip flexion −54.12927/−40.79589. Lumbar extension residual changes from old +5.93754 to +12.82721 N·m, bending from −0.35030 to +5.81625, and rotation from +1.94731 to +1.52168. Shoulder adduction residuals remain unchanged within about 3e−11 N·m. These actual findings show that the prior pose is not settled under the added lumbar dynamics.
+
+Right hip rotation is near its upper source bound at 0.69812683 rad, with outward acceleration +11.68665 rad/s² compared with the prior model's inward −0.21681. This is instantaneous acceleration direction, not a perturbation stability result. Assembly moved the requested seed hip coordinate inward by 1.86206e−6 rad; every other independent coordinate changed at most 5.54e−11. Accordingly, the old/new torque comparison is at nearby actual assembled q, not an exact matched-q experiment or an application of the old numerical-equivalence envelope. The seed was the prior actual native pose, rather than an imported response.
+
+Maximum skin compression is 1.49513 mm and bed deflection 84.33134 mm. Position/velocity constraint errors are zero and acceleration error is 4.67287e−14. All-acceleration equilibrium still fails by a large margin. No initial reference promotion or forward integration follows this receipt.
+
+Evidence SHA-256:
+
+- `data/derived/lumbar-supine-static-1g1q08u2/report.json`: `2de29a84c6967ad349903922a64b87e0234b0b70a827f051630f88fff393bd62`
+- `data/derived/lumbar-supine-static-1g1q08u2/neutral.json`: `dc4da6217f032a2b99773a528f92edfa8373f0920b2d4b84af4807e686e764a9`
+- `data/derived/lumbar-supine-static-1g1q08u2/old_q_seed.json`: `9f69c0f34e87985faac9cc19cfe543e79a21de032878400138b0537cf66ba433`
+- `data/derived/lumbar-supine-static-1g1q08u2/comparison.json`: `8c74c427fe8bc4528fb2d94bd1c045d9eae12548930ebff5c668d222fabf1315`
