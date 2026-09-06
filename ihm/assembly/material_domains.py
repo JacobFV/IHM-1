@@ -7,6 +7,9 @@ from pathlib import Path
 import gzip, hashlib, itertools, json
 import numpy as np
 
+VOXEL_CELL_CAP=16_000_000
+GRID_BYTES_PER_CELL=113
+
 def source_surface(path):
     """Weld only byte-equal vertex coordinates, preserving all source positions."""
     path=Path(path)
@@ -26,19 +29,90 @@ def source_surface(path):
                     'welding':'exact coordinate equality only; no moved coordinates or hole filling',
                     'watertight_after_welding':True}
 
-def winding_numbers(points,vertices,triangles,chunk=96):
-    """Generalized winding by oriented solid angle; no ray-jitter assumption."""
-    p=np.asarray(points,float);tri=np.asarray(vertices,float)[np.asarray(triangles,int)]
+def _corner_winding(p,tri,chunk=None):
+    """Dense oriented solid angle over explicit triangle corner coordinates."""
+    if not len(p):return np.empty(0)
+    if not len(tri):return np.zeros(len(p))
+    step=int(chunk) if chunk else max(1,min(len(p),(1<<17)//len(tri)))  # keep the (step,faces,3) temporaries cache resident
     result=[]
-    for start in range(0,len(p),chunk):
-        a=tri[None,:,0]-p[start:start+chunk,None,:]
-        b=tri[None,:,1]-p[start:start+chunk,None,:]
-        c=tri[None,:,2]-p[start:start+chunk,None,:]
+    for start in range(0,len(p),step):
+        a=tri[None,:,0]-p[start:start+step,None,:]
+        b=tri[None,:,1]-p[start:start+step,None,:]
+        c=tri[None,:,2]-p[start:start+step,None,:]
         la=np.linalg.norm(a,axis=2);lb=np.linalg.norm(b,axis=2);lc=np.linalg.norm(c,axis=2)
         determinant=np.einsum('ijk,ijk->ij',a,np.cross(b,c))
         denominator=la*lb*lc+np.einsum('ijk,ijk->ij',a,b)*lc+np.einsum('ijk,ijk->ij',b,c)*la+np.einsum('ijk,ijk->ij',c,a)*lb
         result.append(np.sum(2*np.arctan2(determinant,denominator),axis=1)/(4*np.pi))
-    return np.concatenate(result) if result else np.empty(0)
+    return np.concatenate(result)
+
+def winding_numbers(points,vertices,triangles,chunk=96):
+    """Generalized winding by oriented solid angle; no ray-jitter assumption.
+
+    Reference kernel: dense O(points x faces). Retained as the equivalence
+    baseline for WindingHierarchy, not as the production evaluator.
+    """
+    return _corner_winding(np.asarray(points,float),np.asarray(vertices,float)[np.asarray(triangles,int)],chunk)
+
+def oriented_boundary(faces):
+    """Oriented edges the face set does not cancel internally; empty when closed."""
+    faces=np.asarray(faces,int)
+    e=np.concatenate((faces[:,[0,1]],faces[:,[1,2]],faces[:,[2,0]]))
+    unique,inverse=np.unique(np.sort(e,axis=1),axis=0,return_inverse=True)
+    net=np.rint(np.bincount(inverse,weights=np.where(e[:,0]<e[:,1],1.,-1.),minlength=len(unique))).astype(int)
+    keep=np.flatnonzero(net)
+    if not len(keep):return np.empty((0,2),int)
+    edges=np.repeat(unique[keep],np.abs(net[keep]),axis=0)
+    flip=np.repeat(net[keep]<0,np.abs(net[keep]));edges[flip]=edges[flip][:,::-1]
+    return edges
+
+class WindingHierarchy:
+    """Exact hierarchical solid angle; far subtrees collapse to their boundary cap.
+
+    A face subset and the apex fan over its oriented boundary form a closed
+    surface contained in the subset bounding box, because the apex is the box
+    centre. Outside that box the subset winding is therefore exactly the negated
+    cap winding: the substitution is algebraic, not an error-bounded far-field
+    approximation, so classification cannot drift. A closed subset caps to
+    nothing, which is the bounding-volume cull.
+    """
+    def __init__(self,vertices,triangles,leaf=64,margin=1e-9):
+        self.x=np.asarray(vertices,float);self.faces=np.asarray(triangles,int)
+        self.leaf=int(leaf);self.margin=float(margin);self.nodes=[]
+        self._build(np.arange(len(self.faces)))
+        self.lower=self.nodes[0]['lower'];self.upper=self.nodes[0]['upper']
+    def _build(self,index):
+        corners=self.x[self.faces[index]];flat=corners.reshape(-1,3)
+        lower=flat.min(axis=0);upper=flat.max(axis=0);center=(lower+upper)/2
+        pad=self.margin*max(float((upper-lower).max()),1e-30)
+        boundary=oriented_boundary(self.faces[index])
+        cap=None
+        if len(boundary)<len(index):
+            a=self.x[boundary[:,0]];b=self.x[boundary[:,1]]
+            cap=np.stack((np.broadcast_to(center,a.shape),b,a),axis=1)
+        node={'lower':lower-pad,'upper':upper+pad,'cap':cap,'children':None,'tri':None}
+        self.nodes.append(node);slot=len(self.nodes)-1
+        if len(index)<=self.leaf:node['tri']=corners;return slot
+        mid=corners.mean(axis=1);axis=int(np.argmax(mid.max(axis=0)-mid.min(axis=0)))
+        order=index[np.argsort(mid[:,axis],kind='stable')];half=len(order)//2
+        node['children']=(self._build(order[:half]),self._build(order[half:]))
+        return slot
+    def __call__(self,points,chunk=None):
+        p=np.asarray(points,float);out=np.zeros(len(p))
+        if not len(p):return out
+        stack=[(0,np.arange(len(p)))]
+        while stack:
+            i,sel=stack.pop()
+            node=self.nodes[i];q=p[sel]
+            if node['cap'] is not None:
+                near=np.all((q>=node['lower'])&(q<=node['upper']),axis=1)
+                if not near.all():
+                    j=sel[~near]
+                    if len(node['cap']):out[j]-=_corner_winding(p[j],node['cap'],chunk)
+                    sel=sel[near]
+                    if not len(sel):continue
+            if node['children'] is None:out[sel]+=_corner_winding(p[sel],node['tri'],chunk)
+            else:stack.extend((c,sel) for c in node['children'])
+        return out
 
 def voxel_partition(surfaces,*,spacing_m):
     """Use cell-center winding occupancy; later sources win intersecting cells.
@@ -53,13 +127,21 @@ def voxel_partition(surfaces,*,spacing_m):
     allx=np.concatenate([np.asarray(s[1],float) for s in surfaces])
     origin=np.floor(allx.min(axis=0)/h+1e-10)*h
     divisions=np.ceil((allx.max(axis=0)-origin)/h-1e-10).astype(int)
-    if np.any(divisions<1) or np.prod(divisions)>2_000_000:raise ValueError('Unsupported voxel domain extent')
+    count=float(np.prod(divisions,dtype=float))
+    if np.any(divisions<1) or count>VOXEL_CELL_CAP:raise ValueError(
+        f'Voxel domain {tuple(int(d) for d in divisions)} = {count:.3g} cells exceeds the {VOXEL_CELL_CAP:.3g} cell cap; '
+        f'the grid phase holds about {GRID_BYTES_PER_CELL} B/cell (int64 cell indices, float64 centers, owner, coverage, '
+        f'per-source winding and mask), so the cap bounds pre-occupancy grid memory near '
+        f'{VOXEL_CELL_CAP*GRID_BYTES_PER_CELL/2**30:.1f} GiB; the requested grid would need {count*GRID_BYTES_PER_CELL/2**30:.3g} GiB')
     cells=np.stack(np.meshgrid(*(np.arange(n) for n in divisions),indexing='ij'),axis=-1).reshape(-1,3)
     centers=origin+(cells+.5)*h
     owners=np.full(len(cells),-1,int);coverage=np.zeros(len(cells),int)
     source_counts=[]
     for i,(name,x,t) in enumerate(surfaces):
-        winding=winding_numbers(centers,x,t);inside=np.abs(winding)>.5
+        x=np.asarray(x,float);inside=np.zeros(len(cells),bool)
+        tree=WindingHierarchy(x,t)
+        box=np.all((centers>=tree.lower)&(centers<=tree.upper),axis=1)
+        if box.any():inside[box]=np.abs(tree(centers[box]))>.5
         coverage+=inside;owners[inside]=i;source_counts.append(int(inside.sum()))
     occupied=owners>=0;cells=cells[occupied];owners=owners[occupied]
     if not len(cells):raise ValueError('No resolved material cells; refine the grid')
