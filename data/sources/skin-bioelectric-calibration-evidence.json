@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "id": "skin-bioelectric-calibration-evidence",
+  "accessed_date": "2026-09-05",
+  "status": "evidence_only_no_runtime_parameter_fit",
+  "human_hydration": {
+    "reference": "https://doi.org/10.1038/s41598-020-73684-y",
+    "acquisition_url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7557913/fullTextXML",
+    "response_sha256": "5f905a0296a1e1d7c447470382e3d4e061d722bf96bb830d61b85b3fff8c21d3",
+    "extraction": "JATS table-wrap id Tab2; human in vivo rows selected verbatim numerics",
+    "population": "4 humans, 3 left volar forearm sites each; site replicates are not 12 independent people",
+    "protocol": "150 mM NaCl surface hydration; regression over 30\u2013120 s",
+    "uncertainty": "Published fitted summaries; no raw subject trajectories or parameter SE in this table",
+    "rows": [
+      {
+        "method": "HP conductance in vivo",
+        "rate_s_inverse": 0.0136,
+        "time_95_conversion_min": 4,
+        "r_squared": 0.991,
+        "estimated_hydration_percent": 97
+      },
+      {
+        "method": "NE conductance in vivo",
+        "rate_s_inverse": 0.0051,
+        "time_95_conversion_min": 10,
+        "r_squared": 0.831,
+        "estimated_hydration_percent": 96
+      },
+      {
+        "method": "NE MIX in vivo",
+        "rate_s_inverse": 0.0095,
+        "time_95_conversion_min": 5,
+        "r_squared": 0.997,
+        "estimated_hydration_percent": 91
+      },
+      {
+        "method": "NE 1\u00a0kHz in vivo",
+        "rate_s_inverse": 0.0062,
+        "time_95_conversion_min": 8,
+        "r_squared": 0.764,
+        "estimated_hydration_percent": 93
+      }
+    ],
+    "restriction": "Hydration-response rate is not electrical RC charging rate and does not identify Vm, conductance, capacitance or ionic flux"
+  },
+  "human_membrane": {
+    "reference": "https://pubmed.ncbi.nlm.nih.gov/1690740/",
+    "doi": "10.1002/jcp.1041430103",
+    "extraction": "Primary study abstract; manual numerical facts, not acquired individual recordings",
+    "preparation": "Cultured undifferentiated proliferative human keratinocytes in low calcium medium",
+    "mean_resting_membrane_voltage_mV": -24,
+    "extracellular_calcium_step_mM": [
+      0.15,
+      2
+    ],
+    "voltage_gated_current_magnitude_ratio": 2,
+    "uncertainty": "n and dispersion unavailable in inspected abstract; cannot assign a likelihood variance",
+    "restriction": "Not intact adult forearm and not transepithelial potential"
+  },
+  "native_bulk_snapshot": {
+    "path": "data/derived/audits/native-skin-compression-s725ktdm/unchanged/receipts.jsonl",
+    "time_s": 0.4000000000000001,
+    "temperature_k": 304.33864396517924,
+    "ions": {
+      "Sodium": {
+        "inside_mM": 15.013156751196952,
+        "outside_mM": 143.83107474254155,
+        "nernst_V": 0.05926294024684091
+      },
+      "Potassium": {
+        "inside_mM": 115.5439927949581,
+        "outside_mM": 4.46991882044613,
+        "nernst_V": -0.08529391823098928
+      },
+      "Chloride": {
+        "inside_mM": 4.794911172780479,
+        "outside_mM": 105.36329769490949,
+        "nernst_V": -0.08103426104696579
+      }
+    },
+    "measured_human_data": false,
+    "owner": "BioGears simulated bulk Skin",
+    "membrane_voltage_predicted": false
+  },
+  "local_source_sha256": {
+    "ihm/assembly/skin_bioelectric.py": "61d01a6543f4ebdc0b10dd7555f4c9969e0a4047717dc1454833857e7a0a7937",
+    "ihm/materialize/skin.py": "96a167d4e04e72da636aa8705ea0d82f3b1a8dd13fca282262f10c524d2b2c78",
+    "ihm/calibration/skin.py": "bb17417ae2fd813c6001a24b8e66a548c92e644bed1e0742164933cd54927a42",
+    "data/derived/canonical/skin-electric.json": "c2022ada622b552ac1135ba0e3c8c00311ee636cc7173cf6657c8bccaadfcd9a",
+    "data/derived/audits/native-skin-compression-s725ktdm/unchanged/receipts.jsonl": "b74d67200e338e26b48b874feb6504298f685f5def30b576eba54c348de2bd5c"
+  },
+  "extracted_files_sha256": {
+    "docs/research/evidence/skin-bioelectric/morin-2020-human-hydration.csv": "4d2bcd99e943f109aeac779050c1de871330072d9122cb314107ca930dd2431f",
+    "docs/research/evidence/skin-bioelectric/morin-2020-table2.xml": "c32904b0cb285dd189df60226977a62bd46e62b25a71e612a798ec93f1ceb661"
+  }
+}

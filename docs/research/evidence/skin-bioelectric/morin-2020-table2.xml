@@ -1,0 +1,83 @@
+<?xml version='1.0' encoding='utf-8'?>
+<table-wrap xmlns:ns0="http://www.w3.org/1998/Math/MathML" xmlns:ns1="http://www.w3.org/1999/xlink" id="Tab2" position="float" orientation="portrait"><label>Table 2</label><caption><p>Summary of hydration dynamics of the initial hydration process according to the first order kinetics model.</p></caption><table frame="hsides" rules="groups"><thead><tr><th align="left" rowspan="2" colspan="1">Method</th><th align="left" colspan="3" rowspan="1">First order kinetics (Fig. <xref rid="Fig3" ref-type="fig">3</xref>A)</th><th align="left" rowspan="2" colspan="1">Degree of hydration, <inline-formula id="IEq28"><alternatives><tex-math id="M1">\documentclass[12pt]{minimal}
+				\usepackage{amsmath}
+				\usepackage{wasysym} 
+				\usepackage{amsfonts} 
+				\usepackage{amssymb} 
+				\usepackage{amsbsy}
+				\usepackage{mathrsfs}
+				\usepackage{upgreek}
+				\setlength{\oddsidemargin}{-69pt}
+				\begin{document}$${\theta }_{h}$$\end{document}</tex-math><ns0:math id="M2"><ns0:msub><ns0:mi>θ</ns0:mi><ns0:mi>h</ns0:mi></ns0:msub></ns0:math><inline-graphic ns1:href="41598_2020_73684_Article_IEq28.gif" /></alternatives></inline-formula>, (Fig. <xref rid="Fig3" ref-type="fig">3</xref>B) at time <inline-formula id="IEq29"><alternatives><tex-math id="M3">\documentclass[12pt]{minimal}
+				\usepackage{amsmath}
+				\usepackage{wasysym} 
+				\usepackage{amsfonts} 
+				\usepackage{amssymb} 
+				\usepackage{amsbsy}
+				\usepackage{mathrsfs}
+				\usepackage{upgreek}
+				\setlength{\oddsidemargin}{-69pt}
+				\begin{document}$${t}_{h}$$\end{document}</tex-math><ns0:math id="M4"><ns0:msub><ns0:mi>t</ns0:mi><ns0:mi>h</ns0:mi></ns0:msub></ns0:math><inline-graphic ns1:href="41598_2020_73684_Article_IEq29.gif" /></alternatives></inline-formula></th></tr><tr><th align="left" colspan="1" rowspan="1"><inline-formula id="IEq30"><alternatives><tex-math id="M5">\documentclass[12pt]{minimal}
+				\usepackage{amsmath}
+				\usepackage{wasysym} 
+				\usepackage{amsfonts} 
+				\usepackage{amssymb} 
+				\usepackage{amsbsy}
+				\usepackage{mathrsfs}
+				\usepackage{upgreek}
+				\setlength{\oddsidemargin}{-69pt}
+				\begin{document}$$k$$\end{document}</tex-math><ns0:math id="M6"><ns0:mi>k</ns0:mi></ns0:math><inline-graphic ns1:href="41598_2020_73684_Article_IEq30.gif" /></alternatives></inline-formula></th><th align="left" colspan="1" rowspan="1">Hydration time,<inline-formula id="IEq31"><alternatives><tex-math id="M7">\documentclass[12pt]{minimal}
+				\usepackage{amsmath}
+				\usepackage{wasysym} 
+				\usepackage{amsfonts} 
+				\usepackage{amssymb} 
+				\usepackage{amsbsy}
+				\usepackage{mathrsfs}
+				\usepackage{upgreek}
+				\setlength{\oddsidemargin}{-69pt}
+				\begin{document}$${t}_{h}$$\end{document}</tex-math><ns0:math id="M8"><ns0:msub><ns0:mi>t</ns0:mi><ns0:mi>h</ns0:mi></ns0:msub></ns0:math><inline-graphic ns1:href="41598_2020_73684_Article_IEq31.gif" /></alternatives></inline-formula></th><th align="left" colspan="1" rowspan="1">R<sup>2</sup></th></tr></thead><tbody><tr><td align="left" colspan="1" rowspan="1">HP conductance in vivo</td><td align="left" colspan="1" rowspan="1">0.0136</td><td align="left" colspan="1" rowspan="1">4</td><td align="left" colspan="1" rowspan="1">0.991</td><td align="left" colspan="1" rowspan="1">97%</td></tr><tr><td align="left" colspan="1" rowspan="1">HP conductance in vitro</td><td align="left" colspan="1" rowspan="1">0.0087</td><td align="left" colspan="1" rowspan="1">6</td><td align="left" colspan="1" rowspan="1">0.993</td><td align="left" colspan="1" rowspan="1">95%</td></tr><tr><td align="left" colspan="1" rowspan="1">NE conductance in vivo</td><td align="left" colspan="1" rowspan="1">0.0051</td><td align="left" colspan="1" rowspan="1">10</td><td align="left" colspan="1" rowspan="1">0.831</td><td align="left" colspan="1" rowspan="1">96%</td></tr><tr><td align="left" colspan="1" rowspan="1">NE conductance in vitro</td><td align="left" colspan="1" rowspan="1">–</td><td align="left" colspan="1" rowspan="1">–</td><td align="left" colspan="1" rowspan="1">–</td><td align="left" colspan="1" rowspan="1">–</td></tr><tr><td align="left" colspan="1" rowspan="1">NE MIX in vivo</td><td align="left" colspan="1" rowspan="1">0.0095</td><td align="left" colspan="1" rowspan="1">5</td><td align="left" colspan="1" rowspan="1">0.997</td><td align="left" colspan="1" rowspan="1">91%</td></tr><tr><td align="left" colspan="1" rowspan="1">NE MIX in vitro</td><td align="left" colspan="1" rowspan="1">–</td><td align="left" colspan="1" rowspan="1">–</td><td align="left" colspan="1" rowspan="1">–</td><td align="left" colspan="1" rowspan="1">–</td></tr><tr><td align="left" colspan="1" rowspan="1">NE 1 kHz in vivo</td><td align="left" colspan="1" rowspan="1">0.0062</td><td align="left" colspan="1" rowspan="1">8</td><td align="left" colspan="1" rowspan="1">0.764</td><td align="left" colspan="1" rowspan="1">93%</td></tr><tr><td align="left" colspan="1" rowspan="1">NE 1 kHz in vitro</td><td align="left" colspan="1" rowspan="1">–</td><td align="left" colspan="1" rowspan="1">–</td><td align="left" colspan="1" rowspan="1">–</td><td align="left" colspan="1" rowspan="1">–</td></tr><tr><td align="left" colspan="1" rowspan="1">4E conductance in vitro</td><td align="left" colspan="1" rowspan="1">0.0049</td><td align="left" colspan="1" rowspan="1">10</td><td align="left" colspan="1" rowspan="1">0.963</td><td align="left" colspan="1" rowspan="1">88%</td></tr><tr><td align="left" colspan="1" rowspan="1">4E MIX in vitro</td><td align="left" colspan="1" rowspan="1">0.0034</td><td align="left" colspan="1" rowspan="1">15</td><td align="left" colspan="1" rowspan="1">0.904</td><td align="left" colspan="1" rowspan="1">97%</td></tr><tr><td align="left" colspan="1" rowspan="1">4E 1 kHz in vitro</td><td align="left" colspan="1" rowspan="1">0.0080</td><td align="left" colspan="1" rowspan="1">6</td><td align="left" colspan="1" rowspan="1">0.964</td><td align="left" colspan="1" rowspan="1">88%</td></tr></tbody></table><table-wrap-foot><p>First order rate constants, <inline-formula id="IEq32"><alternatives><tex-math id="M9">\documentclass[12pt]{minimal}
+				\usepackage{amsmath}
+				\usepackage{wasysym} 
+				\usepackage{amsfonts} 
+				\usepackage{amssymb} 
+				\usepackage{amsbsy}
+				\usepackage{mathrsfs}
+				\usepackage{upgreek}
+				\setlength{\oddsidemargin}{-69pt}
+				\begin{document}$$k$$\end{document}</tex-math><ns0:math id="M10"><ns0:mi>k</ns0:mi></ns0:math><inline-graphic ns1:href="41598_2020_73684_Article_IEq32.gif" /></alternatives></inline-formula> (s<sup>−1</sup>), obtained by linear regression (see Fig. <xref rid="Fig3" ref-type="fig">3</xref>A) and estimated hydration times, <inline-formula id="IEq33"><alternatives><tex-math id="M11">\documentclass[12pt]{minimal}
+				\usepackage{amsmath}
+				\usepackage{wasysym} 
+				\usepackage{amsfonts} 
+				\usepackage{amssymb} 
+				\usepackage{amsbsy}
+				\usepackage{mathrsfs}
+				\usepackage{upgreek}
+				\setlength{\oddsidemargin}{-69pt}
+				\begin{document}$${t}_{h}$$\end{document}</tex-math><ns0:math id="M12"><ns0:msub><ns0:mi>t</ns0:mi><ns0:mi>h</ns0:mi></ns0:msub></ns0:math><inline-graphic ns1:href="41598_2020_73684_Article_IEq33.gif" /></alternatives></inline-formula>, (in minutes) required to reach 95% conversion, i.e. <inline-formula id="IEq34"><alternatives><tex-math id="M13">\documentclass[12pt]{minimal}
+				\usepackage{amsmath}
+				\usepackage{wasysym} 
+				\usepackage{amsfonts} 
+				\usepackage{amssymb} 
+				\usepackage{amsbsy}
+				\usepackage{mathrsfs}
+				\usepackage{upgreek}
+				\setlength{\oddsidemargin}{-69pt}
+				\begin{document}$$\alpha$$\end{document}</tex-math><ns0:math id="M14"><ns0:mi>α</ns0:mi></ns0:math><inline-graphic ns1:href="41598_2020_73684_Article_IEq34.gif" /></alternatives></inline-formula> = 0.95 in Eq. (<xref rid="Equ2" ref-type="">2</xref>). The degree of hydration, <inline-formula id="IEq35"><alternatives><tex-math id="M15">\documentclass[12pt]{minimal}
+				\usepackage{amsmath}
+				\usepackage{wasysym} 
+				\usepackage{amsfonts} 
+				\usepackage{amssymb} 
+				\usepackage{amsbsy}
+				\usepackage{mathrsfs}
+				\usepackage{upgreek}
+				\setlength{\oddsidemargin}{-69pt}
+				\begin{document}$${{\varvec{\theta}}}_{{\varvec{h}}}$$\end{document}</tex-math><ns0:math id="M16"><ns0:msub><ns0:mrow><ns0:mi mathvariant="bold-italic">θ</ns0:mi></ns0:mrow><ns0:mrow><ns0:mi mathvariant="bold-italic">h</ns0:mi></ns0:mrow></ns0:msub></ns0:math><inline-graphic ns1:href="41598_2020_73684_Article_IEq35.gif" /></alternatives></inline-formula>, was calculated with Eq. (<xref rid="Equ3" ref-type="">3</xref>) (see Fig. <xref rid="Fig3" ref-type="fig">3</xref>B) together with the hydration time,<inline-formula id="IEq36"><alternatives><tex-math id="M17">\documentclass[12pt]{minimal}
+				\usepackage{amsmath}
+				\usepackage{wasysym} 
+				\usepackage{amsfonts} 
+				\usepackage{amssymb} 
+				\usepackage{amsbsy}
+				\usepackage{mathrsfs}
+				\usepackage{upgreek}
+				\setlength{\oddsidemargin}{-69pt}
+				\begin{document}$${t}_{h}$$\end{document}</tex-math><ns0:math id="M18"><ns0:msub><ns0:mi>t</ns0:mi><ns0:mi>h</ns0:mi></ns0:msub></ns0:math><inline-graphic ns1:href="41598_2020_73684_Article_IEq36.gif" /></alternatives></inline-formula>. If the degree of hydration is close to 95%, it supports the first order kinetics model with 95% conversion.</p></table-wrap-foot></table-wrap>

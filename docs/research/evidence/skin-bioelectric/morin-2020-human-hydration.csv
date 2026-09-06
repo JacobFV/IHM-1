@@ -1,0 +1,5 @@
+method,rate_s_inverse,time_95_conversion_min,r_squared,estimated_hydration_percent
+HP conductance in vivo,0.0136,4,0.991,97
+NE conductance in vivo,0.0051,10,0.831,96
+NE MIX in vivo,0.0095,5,0.997,91
+NE 1 kHz in vivo,0.0062,8,0.764,93
