@@ -64,3 +64,20 @@ The preregistered diagnostic gradient gate is 1e−4 in each native generalized-
 The first compile (`effective-potential-build-pqbqcago`) failed because OpenSim `PathActuator::computeMomentArm` requires a mutable Coordinate reference; its failed log is retained. The API-only correction obtains that reference through `model.updCoordinateSet().get(name)`, without changing q or the physical force model. One authorized retry (`effective-potential-build-3a9juno_`) compiled successfully under the existing4GiB/60s, nice10/single-thread limits. The compiler was reaped and the slot released; the native gradient fixture has not yet run.
 
 Build manifest SHA-256: `8df1d4a894bf80ee52c1cc27a851d477b3ecfa41da6668e5166fc633c2b456da`; executable SHA-256: `f4d387bde698a4074fddf383d4df792bc798fd82f628e5a82bf37962415bb9a0`.
+
+
+## Actual all98 gradient gate: failed, no optimizer
+
+`native-effective-potential-_livswt7` completed64 copied-state evaluations in13.287s, with continuing state unchanged and owned process reaped. No physical time advanced. The actual assembled difference matrix condition was2.9387; native coordinate-rate/mobility mapping passed, ideal knee-coupler reaction work canceled to4.44e−16, and all sampled fiber branches met the declared interior/stiffness/velocity checks. Nevertheless the gradient gate **failed**: maximum effective-energy versus physical generalized-force error was10.17787. Component errors were gravity1.39862e−5, joint expressions1.30733e−8 and contact1.92377e−4 in their native force/torque units. A repeat changed actual q by up to1.43832e−6, so its energy difference−1.00884e−7J is not a same-q branch-equivalence certificate.
+
+The largest defect is source-specific: retained `Thelen2003Muscle.cpp` lines420–428 passes `mli.fiberLength` (metres) into `calcfpefisoPE`, while that function at1468 onward expects normalized fiber length and activates only above1. All18Thelen fibers here are shorter than1m. Native passive fiber potential is therefore omitted despite nonzero passive fiber force. Using `getMusclePotentialEnergy()` uncritically in the proposed merit was wrong. The exact source-law passive primitive from the earlier analytical derivation can correct the *numerical merit*; no physiological library or energy ledger was modified.
+
+The offline attribution retains every original response and adds the normalized-length primitive minus the actual metres-argument primitive. It reduces the full gradient error from10.17787 to0.01572835. The four remaining dominant muscle failures are bilateral Arm26 BIClong and BRA, all with `hybrid` path wraps. Corrected muscle energy versus tendon-force times measured path-length derivative agrees about1e−9 for those paths, but their measured length gradients disagree with native moment arms: BIClong errors0.00010719/0.00023356m, BRA0.00010915/0.00013442m. The corresponding worst torque discrepancy is0.01572835N·m. The other94muscles have corrected energy/work errors at most1.26690e−5. No wrapped muscle was excluded to make a balance pass.
+
+The normalization fixture reproduces the erroneous zero energy for a0.14m fiber with0.1m optimal length, verifies the correct primitive derivative against passive force, and asserts that the remaining native gate still fails. Next work requires a targeted source/path-wrapping virtual-work and numerical precision audit, plus contact finite-difference refinement. The complete effective-potential solver is not enabled. Neither unchanged acceleration optimization nor a tolerance increase is justified by this failed prerequisite.
+
+Evidence SHA-256:
+
+- `data/derived/native-effective-potential-_livswt7/report.json`: `eed0fa36f75131ed8d71673a76453a23ebedac8d04bdfd4cc9c51fcd2bd2aa3e`
+- `data/derived/native-effective-potential-_livswt7/observations.jsonl`: `b179b815e1fa9ca8265d56a7749cdff5cdb1caa14008a301812faa045b13e612`
+- `data/derived/native-effective-potential-_livswt7/failure_attribution.json`: `fe99de385312521b37e98f131a5381b6e46a192805dcc481f56a3cb361b01a56`
