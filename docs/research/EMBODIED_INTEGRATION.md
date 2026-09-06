@@ -131,3 +131,28 @@ missing coupling. Production viewer promotion remains blocked.
 Independent support run `data/derived/supine-support-5ma720yd` advanced 0.2 s
 then hit its predefined kinetic-growth divergence stop (10.002 wall seconds).
 The numerical metabolism correction does not resolve physical support stability.
+
+## Signed native variant and intake integration
+
+The runtime now selects `whole_body_integrity_signed_muscle_v2`, verifies the
+manifest/library ancestry through the shared-donor and substrate corrections
+to the retained thermal base, and binds its mechanical reference to the native
+execution receipt. Signed chemical, work and heat interval ledgers replace the
+generic Exercise proxy. Local native port acceptance is recorded independently
+in SIGNED_METABOLIC_IMPLEMENTATION.md.
+
+Actual full-body attempt `data/derived/audits/embodied-native-4em_78hv` reached
+the signed native port, which rejected DeltaM=-36.4893172371 W against an
+8.6861257440 W eligible decrement. DeltaH=+0.5663103651 W and DeltaW=
+-37.0556276022 W. The fixed mechanical initialization/reference is inconsistent
+with that native budget; no reference adjustment or clipping was applied. Native
+state may have changed before rejection, so the whole session terminates and
+retains its failed log. This is not a successful integrated trajectory.
+
+Intake scheduling now runs on the same actor/controller and sequence as body
+steps. Scheduling changes sequence without advancing physical time. Due events
+issue native Meal commands once before their next physiological step, with
+explicit accepted/uncertain receipts. Nineteen small runtime/actor/HTTP checks
+passed for this integration; native whole-body intake acceptance is still gated
+on a viable mechanical/physiological initial state. Intake mass changes do not
+yet update the mechanical segment inertia distribution.

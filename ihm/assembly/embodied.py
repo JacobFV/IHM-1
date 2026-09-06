@@ -21,7 +21,7 @@ def native_field_metadata(values):
         ('molarity_mmol_per_l','mmol/L'),('concentration_g_per_l','g/L'),('ml_per_min','mL/min'),
         ('ml_per_s','mL/s'),('l_per_min','L/min'),('l_per_s','L/s'),('pmol_per_min','pmol/min'),
         ('per_min','1/min'),('mmhg','mmHg'),('cmh2o','cmH2O'),('_pa','Pa'),('_ml','mL'),
-        ('_mg','mg'),('_g','g'),('_w','W'),('_j','J'),('_c','degC'),('_mv','mV')]
+        ('_kcal','kcal'),('_mg','mg'),('_g','g'),('_w','W'),('_j','J'),('_c','degC'),('_mv','mV')]
     result={}
     for name in values:
         unit=next((u for suffix,u in suffixes if name.endswith(suffix)),None)
@@ -54,7 +54,7 @@ class EmbodiedRuntime:
         from pathlib import Path
         import hashlib,json,sys
         from ihm.native.session import SessionConfig
-        from ihm.native.coupled_session import CoupledNativeSession
+        from ihm.native.coupled_session import SignedCoupledNativeSession
         from .articulated import ArticulatedBodyPlant
         from .sensorimotor import SensorimotorController
         from .body_exchange import NativeTissueExchange
@@ -64,8 +64,9 @@ class EmbodiedRuntime:
         if not output.is_relative_to(root) or output.exists():raise ValueError('Fresh retained embodied output required')
         reference_path=root/'data/derived/systemic/exertion_v3/exercise/native/manifest.json'
         reference_raw=reference_path.read_bytes();reference_manifest=json.loads(reference_raw)
-        engine_variant=reference_manifest['configuration']['engine_variant']
-        if engine_variant!='whole_body_integrity_evaporation_humidity':raise ValueError('Expected retained final thermal-corrected research variant')
+        base_variant=reference_manifest['configuration']['engine_variant']
+        if base_variant!='whole_body_integrity_evaporation_humidity':raise ValueError('Expected retained final thermal-corrected research variant')
+        engine_variant='whole_body_integrity_signed_muscle_v2'
         state=Path(state_path) if state_path else Path(reference_manifest['configuration']['state_path'])
         if state_path is None and hashlib.sha256(state.read_bytes()).hexdigest()!=reference_manifest['state_sha256']:
             raise ValueError('Paired native initial state changed')
@@ -76,6 +77,17 @@ class EmbodiedRuntime:
         receipts=[_loaded_source(sys.modules[name]) for name in names if name in sys.modules]
         frozen={r['path']:r['bytes'] for r in receipts}
         frozen[reference_path]=reference_raw
+        variant_dir=root/'data/runtime/physiology/variants';current=engine_variant;seen=set()
+        while True:
+            if current in seen:raise ValueError('Cyclic native variant lineage')
+            seen.add(current);path=variant_dir/current/'manifest.json';raw=path.read_bytes();entry=json.loads(raw);frozen[path]=raw
+            if hashlib.sha256((path.parent/'libbiogears.so.8.0.0').read_bytes()).hexdigest()!=entry['library_sha256']:raise ValueError('Native lineage library changed')
+            if current==base_variant:
+                if entry['library_sha256']!=reference_manifest['library_sha256']:raise ValueError('Paired native base library changed')
+                break
+            parent=entry['parent_variant'];parent_path=variant_dir/parent/'manifest.json';parent_raw=parent_path.read_bytes()
+            if hashlib.sha256(parent_raw).hexdigest()!=entry['parent_manifest_sha256'] or json.loads(parent_raw)['library_sha256']!=entry['parent_library_sha256']:raise ValueError('Native lineage manifest changed')
+            current=parent
         for name in ('respiration','brain','anatomy','mechanics','microvascular','profile'):
             p=root/f'data/derived/canonical/{name}.json';frozen[p]=p.read_bytes()
         output.mkdir(parents=True)
@@ -86,9 +98,9 @@ class EmbodiedRuntime:
             hashes[str(relative)]=hashlib.sha256(raw).hexdigest()
         native=plant=None
         try:
-            native=CoupledNativeSession(SessionConfig(state_path=state,engine_variant=engine_variant,horizon_s=120),output/'physiology')
+            native=SignedCoupledNativeSession(SessionConfig(state_path=state,engine_variant=engine_variant,horizon_s=120),output/'physiology')
             manifest=json.loads((output/'physiology/manifest.json').read_text())
-            if manifest['library_sha256']!=reference_manifest['library_sha256']:raise ValueError('Paired native research library changed')
+            if manifest['library_sha256']!=json.loads(frozen[variant_dir/engine_variant/'manifest.json'])['library_sha256']:raise ValueError('Signed native library changed')
             weight=manifest['patient_identity']['Weight']
             if weight['unit']!='kg':raise ValueError('Expected explicit native initial mass in kg')
             mass=finite(float(weight['value']),'native initial body mass',1,500)
@@ -101,7 +113,7 @@ class EmbodiedRuntime:
             exchange=NativeTissueExchange.from_workspace(root,reference,identity)
             respiratory_path=root/'data/derived/canonical/respiration.json'
             respiratory=EmbodiedRespiration(json.loads(frozen[respiratory_path]),reference['values']['lung_volume_ml'])
-            body=cls(plant,neural,native,exchange,respiratory)
+            body=cls(plant,neural,native,exchange,respiratory,reference_identity=hashlib.sha256((output/'mechanics/native/execution.json').read_bytes()).hexdigest())
             if any(p.read_bytes()!=raw for p,raw in frozen.items()):raise ValueError('Embodied source changed during initialization; reopen with a stable revision')
             (output/'manifest.json').write_text(json.dumps({'schema':'ihm.embodied-runtime.v1','sources':hashes,
                 'loaded_code':{str(r['path'].relative_to(root)):r['loaded_code_sha256'] for r in receipts},
@@ -119,13 +131,17 @@ class EmbodiedRuntime:
                 error.add_note(str(cleanup_error))
             raise
 
-    def __init__(self,plant,neural,native,exchange,respiratory_load):
+    def __init__(self,plant,neural,native,exchange,respiratory_load,*,reference_identity=None):
         self.plant,self.neural,self.native,self.exchange,self.respiratory_load=plant,neural,native,exchange,respiratory_load
         self.time_s=0.;self.sequence=0;self.failed=False;self.closed=False;self.next_excitation={};self.frame=None
         self.native_state=native.snapshot();self.mechanical_state=plant.snapshot()
         self.cleanup_owner=CleanupOwners(native,plant)
         self.intakes=IntakeSchedule(horizon_s=getattr(getattr(native,'config',None),'horizon_s',86400))
-        self.reference_metabolic_w=finite(self.mechanical_state['total_muscle_metabolic_w'],'initial native muscle metabolic power',0)
+        import hashlib,json
+        self.metabolic_reference=deepcopy(self.mechanical_state['metabolic_reference'])
+        for key in ('M0_w','H0_w','W0_w'):finite(self.metabolic_reference[key],'native reference '+key)
+        self.reference_metabolic_w=self.metabolic_reference['M0_w']
+        self.metabolic_reference_id=hashlib.sha256(json.dumps({'native_execution_sha256':reference_identity,'reference':self.metabolic_reference},sort_keys=True).encode()).hexdigest()
         if abs(self.native_state['elapsed_s'])>1e-9 or abs(self.mechanical_state['time_s'])>1e-9:
             raise ValueError('Fresh common native and mechanical clocks required')
 
@@ -193,13 +209,13 @@ class EmbodiedRuntime:
             previous=finite(self.mechanical_state['muscle_metabolic_energy_j'],'previous native muscle metabolic energy')
             metabolic_w=(energy-previous)/dt
             incremental_w=metabolic_w-self.reference_metabolic_w
-            if incremental_w<0:raise ValueError('Muscle metabolic demand fell below initial reference; native exercise port cannot represent signed decrement')
-            max_work=finite(v['maximum_work_rate_w'],'native maximum work rate',1e-12)
-            intensity=incremental_w/max_work
-            if intensity>.5:raise ValueError('Computed metabolic demand exceeds the supported native exercise range')
+            signed_work=finite(mechanical['signed_active_fiber_work_j'],'signed active fiber work')-finite(self.mechanical_state['signed_active_fiber_work_j'],'previous signed work')
+            heat=finite(mechanical['muscle_heat_energy_j'],'native muscle heat')-finite(self.mechanical_state['muscle_heat_energy_j'],'previous muscle heat')
+            if abs((energy-previous)-signed_work-heat)>1e-10*(1+abs(energy-previous)+abs(signed_work)+abs(heat)):raise ValueError('Mechanical chemical/heat/work ledger mismatch')
+            delta_w=signed_work/dt-self.metabolic_reference['W0_w']
+            delta_h=heat/dt-self.metabolic_reference['H0_w']
             native_touched=True
             self.native.respiratory_load(pressure)
-            self.native.exercise(intensity)
             if 'skin_compression_pa' in data:self.native.skin_compression(data['skin_compression_pa'])
             if self.native_state.get('pending_meal',False) is False:
                 for event in self.intakes.due(round(self.time_s*50)):
@@ -207,7 +223,9 @@ class EmbodiedRuntime:
                     except BaseException as error:
                         self.intakes.record_uncertain(event.event_id,str(error)[:1024] or type(error).__name__)
                         raise
-            native=self.native.step(dt)
+            native=self.native.signed_step(self.metabolic_reference_id,incremental_w,delta_h,delta_w)
+            unmet=finite(native['values']['coupling.muscle_unmet_kcal'],'unmet native muscle energy')
+            if unmet>1e-12:raise RuntimeError('Native muscle energy demand is unmet; mechanical supply feedback is not yet supported')
             native['signal_metadata']=native_field_metadata(native['values'])
             if abs(native['elapsed_s']-end)>1e-8:raise RuntimeError('Native exchange clock diverged')
             tissue=self.exchange.observe(native)
@@ -220,8 +238,8 @@ class EmbodiedRuntime:
                 'coupling':{'exchange_interval_s':dt,'motor_exchange_latency_s':dt,
                     'positive_muscle_work_j':work,'native_extra_metabolic_demand_w':incremental_w,
                     'muscle_metabolic_reference_w':self.reference_metabolic_w,'interval_muscle_metabolic_w':metabolic_w,
-                    'native_exercise_intensity':intensity,
-                    'metabolic_law':'Native Umberger muscle energy increment / interval minus fixed initial muscle reference. BioGears owns basal metabolism and ramps its exercise setpoint; this is not instantaneous energy equality. Negative increments rejected.',
+                    'signed_work_increment_w':delta_w,'muscle_heat_increment_w':delta_h,'metabolic_reference_id':self.metabolic_reference_id,
+                    'metabolic_law':'Native Umberger signed chemical/heat/work increments relative to fixed reference; native muscle-only substrate budget and thermal source. Rejects excessive decrement and unmet supply; no basal/stress overwrite.',
                     'storage_owners':{'articulation_muscle':'native mechanical plant','neural':'pinned IBM plus declared decoder/reflexes',
                         'blood_gas_nutrients_heat':'BioGears','tissue_views':'native-owned compartments, no duplicate storage'},
                     'rollback':'An uncertain native commit terminates this runtime; no serializer-exactness claim'}}

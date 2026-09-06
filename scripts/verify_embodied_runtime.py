@@ -4,8 +4,8 @@ import unittest
 from ihm.assembly.embodied import EmbodiedRuntime
 
 class Plant:
-    def __init__(self):self.t=0.;self.force=0.;self.commands=[]
-    def snapshot(self):return {'time_s':self.t,'entities':{},'muscles':{},'foot_contact_force_n':{'r':0,'l':0},'total_muscle_metabolic_w':100.,'muscle_metabolic_energy_j':105*self.t}
+    def __init__(self):self.t=0.;self.force=0.;self.commands=[];self.rate=105.
+    def snapshot(self):return {'time_s':self.t,'entities':{},'muscles':{},'foot_contact_force_n':{'r':0,'l':0},'total_muscle_metabolic_w':100.,'muscle_metabolic_energy_j':self.rate*self.t,'signed_active_fiber_work_j':2*self.t,'muscle_heat_energy_j':(self.rate-2)*self.t,'metabolic_reference':{'M0_w':100.,'W0_w':1.,'H0_w':99.}}
     def checkpoint(self):return deepcopy(self.__dict__)
     def restore(self,state):self.__dict__=deepcopy(state)
     def advance(self,dt_s,forces=(),actuation=None):
@@ -25,9 +25,11 @@ class Native:
     def __init__(self):self.t=0;self.loads=[];self.demands=[];self.closed=False;self.fail=False;self.meals=[];self.meal_fail=False
     def snapshot(self):return {'elapsed_s':self.t,'time_s':100+self.t,'values':{
         'mean_arterial_pressure_mmhg':90,'oxygen_saturation':.98,'core_temperature_c':37,
-        'maximum_work_rate_w':100,'lung_volume_ml':3000}}
+        'maximum_work_rate_w':100,'lung_volume_ml':3000,'coupling.muscle_unmet_kcal':0}}
     def respiratory_load(self,p):self.loads.append(p)
-    def exercise(self,f):self.demands.append(f)
+    def exercise(self,f):raise AssertionError('Generic exercise must not own signed muscle demand')
+    def signed_step(self,reference,m,h,w):
+        assert abs(m-h-w)<1e-9;self.demands.append((m,h,w));return self.step(.02)
     def meal(self,meal):
         self.meals.append(meal)
         if self.meal_fail:raise RuntimeError('lost meal acknowledgment')
@@ -52,7 +54,7 @@ class Tests(unittest.TestCase):
     def test_delayed_actuation_native_load_and_work(self):
         body=self.body();first=body.step({'forces':[{'id':'chest','force_n':[2,0,0],'point_m':[0,0,0]}]})
         self.assertEqual(body.plant.commands,[{}]);self.assertEqual(body.native.loads,[2])
-        self.assertAlmostEqual(body.native.demands[0],.05);self.assertEqual(first['time_s'],.02)
+        self.assertAlmostEqual(body.native.demands[0][0],5.);self.assertEqual(first['time_s'],.02)
         body.step({});self.assertEqual(body.plant.commands[-1],{'muscle':.5})
         self.assertEqual(body.native.loads[-1],0)
     def test_scheduled_intake_changes_sequence_without_advancing_then_delivers_once(self):
@@ -71,11 +73,12 @@ class Tests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError,'lost meal'):body.step({})
         self.assertTrue(body.failed);self.assertEqual(len(body.native.meals),1)
         self.assertEqual(body.intakes.snapshot()['events'][0]['state'],'uncertain')
-    def test_negative_metabolic_increment_rolls_back_before_native(self):
-        body=self.body();body.reference_metabolic_w=110
-        with self.assertRaisesRegex(ValueError,'signed decrement'):body.step({})
-        self.assertEqual(body.plant.t,0);self.assertEqual(body.neural.t,0)
-        self.assertEqual(body.native.loads,[]);self.assertFalse(body.failed)
+    def test_signed_negative_increment_is_preserved_without_generic_exercise(self):
+        body=self.body();body.plant.rate=95
+        frame=body.step({})
+        self.assertEqual(body.native.demands,[(-5.,-6.,1.)])
+        self.assertEqual(frame['coupling']['native_extra_metabolic_demand_w'],-5)
+        self.assertFalse(body.failed)
     def test_horizon_preflight_has_no_side_effects(self):
         from types import SimpleNamespace
         body=self.body();body.native.config=SimpleNamespace(horizon_s=0)
