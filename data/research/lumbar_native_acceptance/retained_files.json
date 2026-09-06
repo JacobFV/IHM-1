@@ -1,0 +1,9 @@
+{
+  "data/derived/lumbar-muscle-native-lb45uirs/variant/registration.json": "6d94486340828c9a06147e119d7fd8fdfa2393fd8d68fa4cb2f5e030e4a83492",
+  "data/derived/lumbar-muscle-native-lb45uirs/variant/catalog.json": "106e4f0d33f8f6624f1ee9eb0660ff988a161c228c0e6a524a662417e489d1ee",
+  "data/derived/lumbar-muscle-native-lb45uirs/variant/subject_with_lumbar.osim": "7f6c40224fbc43359d6b2997efeb499c5ffe4d19c786d37b849312efd20d2114",
+  "data/derived/lumbar-muscle-native-lb45uirs/variant/insert.xml": "014d733419c6a6b589cbb3b2e528eaed8c7a8eb302fec10abed0840ccd405b6f",
+  "data/derived/lumbar-muscle-native-lb45uirs/command.json": "667d947f9f7f6789f98658b75f672d4e5e589194916416050325eb9f4b451e8f",
+  "data/derived/lumbar-muscle-native-lb45uirs/compile.log": "02976be403c04d004117cce157edf47b787ced5ded814b5a66e065be06bdf7b9",
+  "data/derived/lumbar-muscle-native-lb45uirs/probe.log": "0a27651e4f25a408ff072c49f0a5f2af2a0027a29d545ada3e5ccc88b54ba8b7"
+}

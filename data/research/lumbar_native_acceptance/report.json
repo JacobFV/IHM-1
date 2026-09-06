@@ -1,0 +1,38 @@
+{
+  "schema": "ihm.lumbar-native-acceptance.v1",
+  "passed": true,
+  "output_dir": "data/derived/lumbar-muscle-native-lb45uirs",
+  "variant_registration": "data/derived/lumbar-muscle-native-lb45uirs/variant/registration.json",
+  "muscles": 98,
+  "bodies": 22,
+  "poses": 7,
+  "observations": 126,
+  "max_virtual_work_moment_arm_error_m": 1.0655230864298204e-10,
+  "max_tendon_fiber_balance_error_N": 1.4210854715202004e-14,
+  "activation_values": [
+    0.05
+  ],
+  "native_time_advanced_s": 0,
+  "default_promotion": false,
+  "source_hashes": {
+    "scripts/native_lumbar_muscle_probe.cpp": "504127eb61b491faa65d397975ef58af132daf21c7d927f917cfc96e94518075",
+    "scripts/accept_lumbar_muscle_variant.py": "b69606e9fb9e14c07bb6c5d27b8dc415d87f4340f9f499ef79c6e7b4c629ee37",
+    "scripts/materialize_lumbar_muscle_variant.py": "1c1eb794ff30dae4feed0a1a5fafbe1bbec9af31e96f2663a7f2f848297b12e3",
+    "data/runtime/opensim/install/opensim/lib/libosimExampleComponents.so": "ae15505276d59ba61e26e43ca5657cfc174d2040eef8be6beed7226aca74ae6f",
+    "data/runtime/opensim/install/opensim/lib/libosimMoco.so": "5414abe7c23bf5eca2dfed04c6614bd83a6e2357e8e8f2f1b6d49f770800b763",
+    "data/runtime/opensim/install/opensim/lib/libosimTools.so": "a637297f4cd2cc020e7b3692067b92b59eaa0c0feea9dca634bcb1e7d3861760",
+    "data/runtime/opensim/install/opensim/lib/libosimAnalyses.so": "a952e739999491141732fd86a64bb4ffaecb81b296e939a63de5a8881fa687c9",
+    "data/runtime/opensim/install/opensim/lib/libosimActuators.so": "954a9eecd352e74a99a81b898f1cb2d9ee5261411939f60f602771a6422e2d5d",
+    "data/runtime/opensim/install/opensim/lib/libosimSimulation.so": "3a041f37914bbfece5ff0c7409220977cfa48d25ff5086cabe8c5456b98e3e66",
+    "data/runtime/opensim/install/opensim/lib/libosimCommon.so": "e96de0a9ddfe4784abaa3d79d87ac44a01c08c169db64f4f67bb7a72a3fea687",
+    "data/runtime/opensim/install/simbody/lib/libSimTKsimbody.so.3.9": "99d7b40a552f4c4435a7958402f838652b55d5ed9d8ec0ed488076465e935275",
+    "data/runtime/opensim/install/simbody/lib/libSimTKmath.so.3.9": "f84aa40fcaf457e27b6587ad5c4f8558ef97c6f8268f3c85c834ca6485f469b6",
+    "data/runtime/opensim/install/simbody/lib/libSimTKcommon.so.3.9": "a3212e653e78bc2bca23f33f8c93429c167dfcc4c9897ab5044181488c29be77",
+    "data/runtime/opensim/sysroot/usr/lib/aarch64-linux-gnu/lapack/liblapack.so": "dd0411811064e3e6663223d0289feee8b39c543a7e93849c1ea538988e783fc1",
+    "data/runtime/opensim/sysroot/usr/lib/aarch64-linux-gnu/blas/libblas.so": "665a55ae42396049d8bca7db347d54ad07c068403da6029bc6776afda7e19368",
+    "data/runtime/opensim/install/opensim/lib/libosimLepton.so": "23c682a184f656f97a2b5b7d865882297aa8e644a99791fee7899c5f9b81f2a2"
+  },
+  "executable_sha256": "75dc5817d6ae8c8aa45c04903f699a6951aa1be039a60686462f636d95b96cc0",
+  "wall_s": 5.888924537008279,
+  "child_max_rss_kib": 1060752
+}
