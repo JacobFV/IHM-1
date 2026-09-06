@@ -3,7 +3,7 @@ import argparse, hashlib, json
 from pathlib import Path
 import numpy as np
 from scipy.linalg import null_space
-from bounded_static_root import constrained_local_step
+from bounded_static_root import constrained_local_step, balanced_backtracked_trial
 from static_pose_journal import pose_key
 
 
@@ -41,9 +41,15 @@ def audit(path):
             J.append((np.array(probe['native']['udot'])-a)/h)
             A.append((np.array(probe['support_constraints'])-c)/h)
         if len(J)!=len(q):continue
-        J=np.array(J).T;A=np.array(A).T
+        J=np.ascontiguousarray(np.array(J).T);A=np.ascontiguousarray(np.array(A).T)
         d=linear_diagnostic(J,a,A,c)
         step,_=constrained_local_step(J,a,q,bounds,A,c)
+        d['smaller_box_resolves']=[]
+        for radius in (.015,.0075):
+            small,_=constrained_local_step(J,a,q,bounds,A,c,radius=radius)
+            d['smaller_box_resolves'].append(dict(radius=radius,predicted_cost=float(np.linalg.norm(a+J@small)**2),
+                scaled_original_predicted_cost=float(np.linalg.norm(a+J@step*(radius/.03))**2),
+                direction_difference_norm=float(np.linalg.norm(small-step*(radius/.03)))))
         d.update(accepted_index=index,cost=entry['cost'],
             bounded_predicted_cost=float(np.linalg.norm(a+J@step)**2),
             local_box_active_coordinates=[names[k] for k in range(len(q)) if abs(abs(step[k])-.03)<1e-7],
@@ -51,6 +57,23 @@ def audit(path):
         if index+1<len(accepted):
             nextq=np.array(accepted[index+1]['values']);nextentry=cache[pose_key(nextq)]
             pred=a+J@(nextq-q)
+            trace=[]
+            def cached_trial(candidate):
+                observed=cache.get(pose_key(candidate))
+                if observed is None:raise ValueError('Exact rejected-trial cache replay missing; no nearest-neighbor substitution')
+                support_max=max(map(abs,observed['support_constraints']))
+                gauge_max=max(map(abs,observed['gauge_residual']))
+                trace.append(dict(cost=observed['cost'],maximum_coordinate_step=float(np.max(np.abs(candidate-q))),
+                    support_max=support_max,gauge_max=gauge_max,
+                    support_filter_pass=bool(max(support_max,gauge_max)<=1e-4),objective_decreases=bool(observed['cost']<entry['cost']),
+                    source_bounds_pass=bool(np.all(candidate>=bounds[:,0]) and np.all(candidate<=bounds[:,1])),
+                    largest_accelerations=sorted(zip(observed['native']['mobility_coordinate_names'],observed['native']['udot']),key=lambda item:-abs(item[1]))[:5],
+                    coordinate_sha256=hashlib.sha256(json.dumps(candidate.tolist()).encode()).hexdigest()))
+                return observed
+            replay_q,replay_entry=balanced_backtracked_trial(q,step,bounds,entry['cost'],cached_trial,A,
+                [names.index(n) for n in ('pelvis_tx','pelvis_tilt','pelvis_rotation')])
+            if replay_q is None or not np.array_equal(replay_q,nextq):raise ValueError('Cached trial replay did not reproduce accepted q exactly')
+            d['exact_trial_replay']=trace
             d['actual_next_cost']=nextentry['cost']
             d['actual_next_maximum_coordinate_step']=float(np.max(np.abs(nextq-q)))
             d['actual_next_predicted_cost']=float(pred@pred)

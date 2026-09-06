@@ -324,3 +324,21 @@ Evidence SHA-256:
 - `data/derived/constrained-supine-xovwbk2w/last_optimizer_iterate.json`: `369fc5fccc0425c4b7555b157f1df29837dd7516d5286db8c07f54510e025610`
 - `data/derived/constrained-supine-xovwbk2w/candidates.jsonl`: `d201acbd4bff6bb856523b2352f20a21ea6a730181f43c061d8e19be65b95e77`
 - `data/derived/constrained-supine-xovwbk2w/convergence_diagnostic.json`: `39074c4f349b8426d5d8e733596d3cca5c6acd96f477b55d724ef891663d65e8`
+
+
+## Exact rejected-step replay and hip range mechanics
+
+The source-only diagnostic now replays each complete accepted transition using the retained response cache and the unchanged backtracking function. It requires exact hexadecimal coordinate keys and reproduces the next accepted q exactly; no nearest-neighbor response substitutes for a missing trial. Reconstructing the Jacobian with the original C-contiguous memory layout is necessary to reproduce floating-point QP arithmetic; the initial alternate-layout exact-cache miss was caught before using any response. Five transitions replay successfully with the original layout.
+
+Each full 0.03 step initially violates support and increases objective. One root correction brings support below 3.8e−6, but corrected costs remain 103.70–111.76 versus current costs 75.54–77.53. Every half step (0.015) already passes support and gauges, but increases cost to 77.81–79.83. Each quarter step (0.0075) passes support and decreases objective. All 20 cached requested trial coordinates satisfy source bounds; no source-bound or material-domain rejection occurred. The rejection cause after correction is actual acceleration objective, not persistent support-filter failure.
+
+The right hip rotation range is −0.6981317 to +0.6981317 rad, marked clamped, unlocked and unprescribed in the assembled model. Retained OpenSim `Coordinate.cpp` lines 175–239 adds a clamped modeling option, while the lock/prescribed constraints are separate; lines 326–355 clamp `setValue` only when constraint enforcement is requested. `AssemblySolver.cpp` lines 100–110 passes clamped ranges to assembler `restrictQ`. Our static protocol checks requested and assembled coordinate ranges independently. Therefore the range is enforced by input validation, assembly and optimization; it supplies no physical stopping torque or unilateral dynamic reaction.
+
+The assembled force inventory is 80 Millard muscles, 12 Thelen muscles, 13 coordinate actuators, one external material-point force component and one surface foundation. It contains no `CoordinateLimitForce` or `Ligament`. Its two constraints are knee coordinate couplers; there is no hip limit constraint. Existing muscle passive forces remain active, but no declared capsular/ligament hip range law is represented. This is a physical-model coverage gap, not a reason to relax q bounds or add an arbitrary balancing torque.
+
+A concrete next numerical experiment is to resolve the same support-equality/source-bounded local QP inside a 0.0075 box, rather than quartering a direction optimized for the 0.03 box. On five retained Jacobians, the smaller-box solutions predict costs 72.92–74.19 versus 74.07–75.64 for the scaled original directions, and differ in coordinate direction by norms 0.0074–0.0092. These are predictions only. A source fixture verifies the smaller box and exact linear support equalities. Any native comparison must retain the original actual objective, support, source-domain and final equilibrium checks, with no controller or physical coefficient change. A physical hip-limit addition would separately require a retained source force law, coordinate convention mapping, energy/passivity tests and controlled native comparison; the range metadata alone cannot define its stiffness.
+
+Evidence SHA-256:
+
+- `data/derived/constrained-supine-xovwbk2w/rejected_trial_diagnostic.json`: `ddf7dfc0303045cb28957f013cf2ca69e32ef176b25e5bce06386946a0275bdc`
+- `data/derived/constrained-supine-xovwbk2w/hip_range_source_audit.json`: `e222bbe2aa87e042c327bdaaffa8543f420d81a3334f0b65ff445b679192163e`
