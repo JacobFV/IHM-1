@@ -86,3 +86,10 @@ Receipt hashes:
 - `data/derived/constrained-supine-672_i109/initial_supported_seed_native.json`: `587c234662f5762226af0346c1cf028fa82fbee368959696c37b064cfdddc1a1`
 - `data/derived/constrained-supine-672_i109/report.json`: `1e768c791ab25dbd62cf19f94f6d3906b57a3ff7d7e2eb37f6643aa9e02735dc`
 - `data/derived/native-static-metric-tfbdb6ua/report.json`: `31897538b3d6166e7c598ab8bcf1c03b1e45bfc8e042b731f0f902370982cfa9`
+
+
+## Source-bound evaluation recovery
+
+The constrained harness now writes every complete native response, requested coordinate vector, objective and support/gauge residual to `candidates.jsonl`, with per-record SHA-256. `cache_identity.json` binds native input hashes, build/dependency hashes, protocol/helper source, material, mass, coordinate order/bounds, held gauges and geometry manifest. `--resume-cache DIRECTORY` fails on identity mismatch, truncated records or conflicting responses; keys use exact floating-point representations, with no interpolation. Cached responses do not consume the 200-new-call allowance. All native work, cache loading and optimization remain inside the existing hard 60-second alarm.
+
+Optimizer callback iterates are retained in `optimizer_iterates.jsonl` and `last_optimizer_iterate.json`; all finite-difference samples remain recoverable from the evaluation journal. Restart uses a chosen recorded q and reconstructs matching finite differences from exact cache hits. It does **not** claim to restore SciPy's internal quasi-Newton/trust-region state. Pre-journal runs cannot recover evaluations that were never retained. Source-only fixtures verify full response recovery, exact-key separation, identity rejection and truncated-record rejection. No native resume has yet tested this increment.

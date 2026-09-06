@@ -5,6 +5,7 @@ import numpy as np
 from scipy.optimize import minimize,NonlinearConstraint,Bounds
 ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT));sys.path.insert(0,str(ROOT/'scripts'))
 from build_supine_initial_state import analyze,recipe
+from static_pose_journal import PoseJournal,pose_key
 
 
 def dynamic_metric(native):
@@ -21,7 +22,7 @@ def dynamic_metric(native):
     return value/normalization
 
 
-def run(seed_path,material,resume_path=None):
+def run(seed_path,material,resume_path=None,resume_cache=None):
     from ihm.native.mechanical_stream import NativeMechanicalStream
     seed_record=json.loads(seed_path.read_text())
     if not seed_record['passed'] or seed_record['material']!=material:raise ValueError('Matching force/moment-supported rigid seed required')
@@ -38,23 +39,25 @@ def run(seed_path,material,resume_path=None):
         resumed=json.loads(resume_path.read_text())
         if max(abs(v) for v in resumed['support_constraints'])>1e-4 or max(abs(v) for v in resumed['gauge_residual'])>1e-4:raise ValueError('Resume candidate lost support constraints')
         seed.update(resumed['coordinates'])
-        seed['mtp_angle_r']=0.;seed['mtp_angle_l']=0.
+        if resume_cache is None:seed['mtp_angle_r']=0.;seed['mtp_angle_l']=0.
     bounds=[base['coordinate_bounds'][n] for n in names]
     x0=np.array([seed[n] for n in names]);length=float(np.ptp(np.load(ROOT/manifest['arrays_path'])['reference_points_source_m'][:,1]))
     if any(not lo<=value<=hi for value,(lo,hi) in zip(x0,bounds)):raise ValueError('Supported seed outside source bounds')
-    output=Path(tempfile.mkdtemp(prefix='constrained-supine-',dir=ROOT/'data/derived'));started=time.monotonic();stream=None;evaluations=[];cache={};best=None;best_feasible=None
+    output=Path(tempfile.mkdtemp(prefix='constrained-supine-',dir=ROOT/'data/derived'));started=time.monotonic();stream=None;evaluations=[];cache={};best=None;best_feasible=None;journal=None;cache_hits=0
     report=dict(passed=False,accepted_equilibrium=False,physical_time_advanced_s=0,material=material,
                 maximum_evaluations=200,maximum_wall_s=60,objective='udot^T M udot/(mass*g^2), cross-checked against -r dot udot; no cost floor',
-                toe_seed='held passive law neutral0; pure ankle damping has no preferred static angle so retained ankle q',held_gauge_coordinates={n:seed[n] for n in gauges},
+                toe_seed=('exact resumed coordinates retained for cache reuse' if resume_cache is not None else 'held passive law neutral0 on resume; pure ankle damping has no preferred static angle so retained ankle q'),held_gauge_coordinates={n:seed[n] for n in gauges},
                 scope='Native generalized-force static solve with explicit support force/pitch/roll balance; unchanged forward acceptance remains mandatory')
     def write(name,value):(output/name).write_text(json.dumps(value,indent=2,allow_nan=False)+'\n')
     def deadline(signum,stack):
         if stream is not None and stream.process.poll() is None:stream.process.kill()
         raise TimeoutError('Constrained statics reached60s wall cap')
     def evaluate(values):
-        nonlocal best,best_feasible
-        key=np.asarray(values,dtype=float).tobytes()
-        if key in cache:return cache[key]
+        nonlocal best,best_feasible,cache_hits
+        key=pose_key(values)
+        if key in cache:
+            cache_hits+=1
+            return cache[key]
         if len(evaluations)>=200:raise RuntimeError('Constrained statics reached200 actual evaluations')
         candidate={**seed,**dict(zip(names,map(float,values)))}
         command=['evaluate_static_pose',str(len(all_names))]
@@ -67,6 +70,7 @@ def run(seed_path,material,resume_path=None):
         support=residual[[mapping[n] for n in ('pelvis_tx','pelvis_tilt','pelvis_rotation')]]
         root=residual[[mapping[n] for n in gauges]]
         cost=dynamic_metric(native);entry=dict(native=native,coordinates=candidate,cost=cost,support_constraints=support.tolist(),gauge_residual=root.tolist())
+        journal.append(values,entry)
         cache[key]=entry;evaluations.append(dict(evaluation=len(evaluations)+1,wall_s=time.monotonic()-started,cost=cost,
             support_constraint_norm=float(np.linalg.norm(support)),full_root_residual_norm=float(np.linalg.norm(np.r_[support,root])),
             maximum_abs_udot=float(np.max(np.abs(native['udot']))),maximum_skin_indentation_m=native['maximum_penetration_m']))
@@ -79,6 +83,23 @@ def run(seed_path,material,resume_path=None):
     try:
         stream=NativeMechanicalStream(ROOT,output/'native',environment='supine',target_mass_kg=77.6122029,
             augmented_registration='data/derived/mechanics/whole_body_arm26_v2/registration.json',surface_contact_manifest=manifest_path,bed_material=material)
+        execution=json.loads((output/'native/execution.json').read_text())
+        identity=dict(schema='ihm.static-pose-cache.v1',protocol_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+            journal_sha256=hashlib.sha256((ROOT/'scripts/static_pose_journal.py').read_bytes()).hexdigest(),
+            source_sha256=execution['source_sha256'],build_files=execution['build']['files'],
+            material=material,mass_kg=77.6122029,environment='supine',coordinate_order=names,
+            held_gauges={n:seed[n] for n in gauges},bounds=bounds,
+            surface_manifest_sha256=hashlib.sha256(manifest_path.read_bytes()).hexdigest())
+        # JSON normalization keeps tuples/lists identical after disk round-trip.
+        identity=json.loads(json.dumps(identity))
+        journal=PoseJournal(output,identity,resume_cache);cache=journal.cache
+        report['recovered_evaluations']=len(cache)
+        for entry in cache.values():
+            dynamic_metric(entry['native'])
+            if best is None or entry['cost']<best['cost']:best=entry
+            if max(map(abs,entry['support_constraints']+entry['gauge_residual']))<=1e-4 and (best_feasible is None or entry['cost']<best_feasible['cost']):best_feasible=entry
+        if best is not None:write('best_candidate.json',best)
+        if best_feasible is not None:write('best_supported_candidate.json',best_feasible)
         checkpoint=stream.checkpoint();before=stream.snapshot()
         first=evaluate(x0);write('initial_supported_seed_native.json',first)
         def derivatives(q):
@@ -90,8 +111,16 @@ def run(seed_path,material,resume_path=None):
                 jacobian[:,index]=(np.array(value['support_constraints'])-base['support_constraints'])/step
             return gradient,jacobian
         constraint=NonlinearConstraint(lambda q:np.array(evaluate(q)['support_constraints']),0.,0.,jac=lambda q:derivatives(q)[1])
+        def retain_iterate(q,state=None):
+            entry=evaluate(q)
+            record=dict(iteration=None if state is None else int(state.nit),coordinates=entry['coordinates'],
+                values=list(map(float,q)),cost=entry['cost'],support_constraints=entry['support_constraints'],
+                gauge_residual=entry['gauge_residual'],trust_radius=None if state is None else float(state.tr_radius))
+            with (output/'optimizer_iterates.jsonl').open('a') as destination:destination.write(json.dumps(record,allow_nan=False)+'\n')
+            write('last_optimizer_iterate.json',entry)
+            return False
         result=minimize(lambda q:evaluate(q)['cost'],x0,method='trust-constr',jac=lambda q:derivatives(q)[0],
-             bounds=Bounds(*np.array(bounds).T,keep_feasible=True),constraints=[constraint],
+             bounds=Bounds(*np.array(bounds).T,keep_feasible=True),constraints=[constraint],callback=retain_iterate,
              options={'maxiter':30,'gtol':1e-8,'xtol':1e-10,'initial_tr_radius':.03,'verbose':0})
         final=evaluate(result.x);write('final_candidate.json',final)
         report.update(optimizer_success=bool(result.success),optimizer_message=str(result.message),
@@ -104,13 +133,13 @@ def run(seed_path,material,resume_path=None):
     finally:
         signal.setitimer(signal.ITIMER_REAL,0);signal.signal(signal.SIGALRM,old)
         if stream is not None:stream.close()
-        report.update(wall_s=time.monotonic()-started,evaluations=len(evaluations),best_cost=None if best is None else best['cost'],
+        report.update(wall_s=time.monotonic()-started,evaluations=len(evaluations),cache_hits=cache_hits,best_cost=None if best is None else best['cost'],
              best_supported_cost=None if best_feasible is None else best_feasible['cost'],
              source_sha256={str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in (seed_path,manifest_path,Path(__file__).resolve(),*(() if resume_path is None else (resume_path,)))})
         write('report.json',report);print(json.dumps({**report,'output':str(output)},indent=2))
 
 
 if __name__=='__main__':
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--run-native',action='store_true');parser.add_argument('--seed',type=Path);parser.add_argument('--resume',type=Path);parser.add_argument('--material',choices=('MM','HM'),default='MM');args=parser.parse_args()
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--run-native',action='store_true');parser.add_argument('--seed',type=Path);parser.add_argument('--resume',type=Path);parser.add_argument('--resume-cache',type=Path);parser.add_argument('--material',choices=('MM','HM'),default='MM');args=parser.parse_args()
     if not args.run_native or args.seed is None:raise SystemExit('Coordinated --run-native slot and --seed required')
-    run(args.seed.resolve(),args.material,None if args.resume is None else args.resume.resolve())
+    run(args.seed.resolve(),args.material,None if args.resume is None else args.resume.resolve(),None if args.resume_cache is None else args.resume_cache.resolve())
