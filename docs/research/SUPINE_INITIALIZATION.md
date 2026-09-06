@@ -304,3 +304,23 @@ Evidence SHA-256:
 - `data/derived/constrained-supine-a073o9cu/report.json`: `f8d37c6d02dc449f708c8c42740697a14e27081061ff9bf484fb34c8e1873505`
 - `data/derived/constrained-supine-a073o9cu/last_optimizer_iterate.json`: `33e07de0b5409c231e21708dc7c2a3446db573a9408c61702808ce247b76f2ff`
 - `data/derived/constrained-supine-a073o9cu/candidates.jsonl`: `b1a6c22293d67dd047298acfca01e988a1b59067d36b20c9b7b717ac853c65ca`
+
+
+## Slower continuation and offline convergence diagnostic
+
+`constrained-supine-xovwbk2w` used 200 new calls in 43.495 s, recovered 1636 responses with 21 cache hits, and verified the immutable archive. Accepted objectives were 77.52730 → 76.92468 → 76.42270 → 76.03802 → 75.54475 → 75.32286: only 4.6% improvement from the previous run. Maximum acceleration increased slightly to 4.76730 rad/s² (right arm adduction), followed by left arm adduction 4.03862 and right arm flexion −3.77481 rad/s². This slowing warrants diagnosis before another unchanged continuation.
+
+Support is 761.39693 N; normalized force/pitch/roll residuals are −2.78738e−5, 1.43005e−5, −9.53055e−6. Maximum gauge residual is 2.10960e−6. Constraint position/velocity errors are zero, acceleration error 2.31240e−14. Skin compression is 1.48952 mm and bed deflection 83.80278 mm. No physical time advanced, and equilibrium remains unaccepted. The best-supported 75.31037 is a finite-difference sample; the actual accepted q has 17/29 Jacobian samples cached, with 1836 successful responses retained.
+
+The new read-only `scripts/diagnose_static_convergence.py` verifies each retained response hash and reconstructs complete accepted-pose Jacobians. Its analytic fixture distinguishes a nonzero equality-constrained residual floor with zero tangent gradient from a pose with remaining tangent descent. It computes the support-null-space projected half-cost gradient, tangent singular spectrum, equality-only linear residual floor, bounded-QP prediction, active proposed bounds and body-aggregate contact changes. These use the solver's explicit native-coordinate/acceleration unit metric; they are local numerical diagnostics, not unit-invariant physical acceptance tests. The equality-only gradient and residual floor omit source inequalities and cannot establish a source-bounded local minimum.
+
+Five complete Jacobians from this run have full tangent rank 25, smallest singular values 0.594–0.678 versus largest about 26,690–26,696. The equality-projected half-cost gradient norm remains 2273–2990. Equality-only linear residual floor norms are 0.754–1.217, versus actual residual norm about 8.7; however their unconstrained proposed coordinate steps reach 4.4–5.1 native units and are not valid local/source-bounded trial proposals. The actual bounded QP predicts objective about 71.5–72.2, with lumbar bending, right arm rotation, left arm adduction and left arm rotation at the 0.03 local-step limit, and right hip rotation at its source bound. Accepted transitions instead move at most 0.0075 (quarter steps); right hip rotation ends only 9.19885e−5 rad below its upper source bound. This points to a combination of local-step restrictions, nonlinear trial rejection and an approaching source boundary, rather than demonstrated stationary convergence. Full/half-step rejection reasons should be inspected before spending another unchanged native budget.
+
+No body-aggregate contact appears or disappears across these accepted transitions. Per-quadrature active sets were not emitted, so no point-level contact-set stability is claimed. The helper does not modify the solver, cached evaluations or physical criteria.
+
+Evidence SHA-256:
+
+- `data/derived/constrained-supine-xovwbk2w/report.json`: `75de8152e804a255cbb352699c8e6b125c0a1055b5d18d3025929f550a33baea`
+- `data/derived/constrained-supine-xovwbk2w/last_optimizer_iterate.json`: `369fc5fccc0425c4b7555b157f1df29837dd7516d5286db8c07f54510e025610`
+- `data/derived/constrained-supine-xovwbk2w/candidates.jsonl`: `d201acbd4bff6bb856523b2352f20a21ea6a730181f43c061d8e19be65b95e77`
+- `data/derived/constrained-supine-xovwbk2w/convergence_diagnostic.json`: `39074c4f349b8426d5d8e733596d3cca5c6acd96f477b55d724ef891663d65e8`
