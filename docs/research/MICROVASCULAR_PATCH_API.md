@@ -38,3 +38,14 @@ The adapter enforces 32 KiB request JSON, at most 64 muscle capillary crossings 
 ## Verification
 
 `OPENBLAS_NUM_THREADS=1 .venv/bin/python scripts/verify_microvascular_patch_api.py` passes six tests: actual right/left canonical responses, unsupported/invalid/oversized preflight without invoking geometry, structured source/schema/containment failures, nonblocking busy behavior and output geometry caps. The inherited five embedding tests and eleven prior/hydraulic tests cover containment, stable identity, units, moments and network conservation. No native engine or browser is required for these service tests.
+
+### Local application acceptance, continuing wave
+
+The owned local server was refreshed after confirming there were no active body
+sessions or scenario runs. It serves `index-DuIrPImQ.js` with the kidney monitor.
+An actual local HTTP request for `body-bp3d-FJ3147` returned 122 edges in
+1,599,476 bytes and about 0.26 seconds; whole-kidney containment was true and
+cortical registration remained false. Receipt:
+`artifacts/workbench-kidney-refresh-verification.json`. No browser or native
+simulation was started by this check. Existing browser tabs need a refresh to
+load the new bundle.
