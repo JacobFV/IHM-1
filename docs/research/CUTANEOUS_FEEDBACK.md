@@ -156,6 +156,15 @@ is used only when the corresponding observation exists.
 
 The runtime fixture executes the actual pinned receptor model and verifies this
 latency, block behavior, synchronized clocks and missing-contact rollback.
-The workspace factory does not yet enable receptors: native selected material
-contact observations and moving coordinate registration must be connected first.
-This interface does not claim an accepted whole-body contact/reflex trajectory.
+The workspace factory now accepts `surface_contact_manifest` and an explicit
+`cutaneous_configuration` with `regions` mapping native `skin-contact-N` IDs to
+canonical brain populations, `recruitment_hz_per_response`, and
+`reference_temperature_C`. It requests those native quadrature sensors, binds
+actual material identities and current positions/normals through the same rigid
+canonical frame, and retains receptor priors in the session manifest. Direct skin
+indentation drives transduction; bed indentation is separate. Selection is bounded
+to 64 sensory sites while all source contact quadrature points remain in physics.
+No cortical mapping or gain is silently represented as measured connectivity.
+The default factory does not enable this optional setup without its explicit
+surface and cortical mapping inputs. Supported resting pose and accepted coupled
+whole-body contact/reflex trajectory remain outstanding.

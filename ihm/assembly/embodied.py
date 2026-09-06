@@ -32,6 +32,26 @@ def native_field_metadata(values):
     return result
 
 
+def bind_cutaneous(root,contacts,configuration):
+    """Bind explicit cortical recruitment priors to exact native material sites."""
+    from .cutaneous_feedback import CutaneousFeedback
+    if not isinstance(configuration,dict) or set(configuration)!={'regions','recruitment_hz_per_response','reference_temperature_C'}:
+        raise ValueError('Explicit cutaneous regions, recruitment and thermal reference required')
+    regions=configuration['regions']
+    if not isinstance(regions,dict) or not 1<=len(regions)<=64:raise ValueError('Expected 1 to 64 skin sensory regions')
+    if not isinstance(contacts,list) or len(contacts)!=len(regions) or {p['id'] for p in contacts}!=set(regions):
+        raise ValueError('Native skin sensor identities differ from requested cortical mapping')
+    sites=[]
+    for point in contacts:
+        sites.append({'id':point['id'],'position_m':point['point_m'],'normal':point['normal'],
+            'contact_area_m2':point['contact_area_m2'],'mechanical_input':'native_indentation',
+            'material_identity':point['material_identity'],'indentation_basis':point['indentation_basis'],
+            'area_basis':point['area_basis'],'sensory_region':regions[point['id']],
+            'reference_temperature_C':configuration['reference_temperature_C'],
+            'support_basis':'Retained native skin quadrature, rigid canonical registration; cortical mapping and recruitment are explicit engineering priors'})
+    return CutaneousFeedback(root,sites=sites,recruitment_hz_per_response=configuration['recruitment_hz_per_response'])
+
+
 class CleanupOwners:
     """Retain partial startup ownership until every owner confirms cleanup."""
     def __init__(self,native,plant):self.native=native;self.plant=plant
@@ -50,7 +70,7 @@ class CleanupOwners:
 
 class EmbodiedRuntime:
     @classmethod
-    def from_workspace(cls,root,output,*,environment='supine',state_path=None):
+    def from_workspace(cls,root,output,*,environment='supine',state_path=None,surface_contact_manifest=None,cutaneous_configuration=None):
         from pathlib import Path
         import hashlib,json,sys
         from ihm.native.session import SessionConfig
@@ -60,8 +80,19 @@ class EmbodiedRuntime:
         from .body_exchange import NativeTissueExchange
         from .embodied_respiration import EmbodiedRespiration
         from .interactive_scene import _loaded_source
+        from .cutaneous_feedback import CutaneousFeedback
         root=Path(root).resolve();output=Path(output).resolve()
         if not output.is_relative_to(root) or output.exists():raise ValueError('Fresh retained embodied output required')
+        sensor_indices=[]
+        if cutaneous_configuration is not None:
+            if surface_contact_manifest is None:raise ValueError('Cutaneous binding requires native surface contact')
+            regions=cutaneous_configuration.get('regions') if isinstance(cutaneous_configuration,dict) else None
+            if not isinstance(regions,dict) or not 1<=len(regions)<=64:raise ValueError('Expected explicit bounded skin sensor mapping')
+            for key in regions:
+                if not isinstance(key,str) or not key.startswith('skin-contact-') or not key[13:].isdigit():raise ValueError('Invalid native skin sensor ID')
+                index=int(key[13:])
+                if key!='skin-contact-'+str(index):raise ValueError('Noncanonical native skin sensor ID')
+                sensor_indices.append(index)
         reference_path=root/'data/derived/systemic/exertion_v3/exercise/native/manifest.json'
         reference_raw=reference_path.read_bytes();reference_manifest=json.loads(reference_raw)
         base_variant=reference_manifest['configuration']['engine_variant']
@@ -73,6 +104,7 @@ class EmbodiedRuntime:
         names=(__name__,'ihm.assembly.articulated','ihm.native.mechanical_stream','ihm.native.coupled_session',
             'ihm.native.session','ihm.assembly.sensorimotor','ihm.assembly.sensorimotor_catalog',
             'ihm.assembly.brain','ihm.assembly.body_exchange','ihm.assembly.body_microstructure',
+            'ihm.assembly.cutaneous_feedback','ihm.brain.causal','ihm.brain.ibm_backend','ihm.brain.port_mapping',
             'ihm.assembly.respiratory_feedback','ihm.assembly.embodied_respiration','ihm.assembly.intake_schedule','ihm.app.embodied')
         receipts=[_loaded_source(sys.modules[name]) for name in names if name in sys.modules]
         frozen={r['path']:r['bytes'] for r in receipts}
@@ -105,7 +137,8 @@ class EmbodiedRuntime:
             if weight['unit']!='kg':raise ValueError('Expected explicit native initial mass in kg')
             mass=finite(float(weight['value']),'native initial body mass',1,500)
             plant=ArticulatedBodyPlant(root,output/'mechanics',environment=environment,target_mass_kg=mass,
-                augmented_registration='data/derived/mechanics/whole_body_arm26_v2/registration.json')
+                augmented_registration='data/derived/mechanics/whole_body_arm26_v2/registration.json',
+                surface_contact_manifest=surface_contact_manifest,surface_sensor_indices=sensor_indices)
             neural=SensorimotorController.from_root(root,muscle_catalog=plant.muscle_catalog)
             reference=native.snapshot()
             identity={key:manifest[key] for key in ('library_sha256','executable_sha256','state_sha256')}
@@ -113,12 +146,13 @@ class EmbodiedRuntime:
             exchange=NativeTissueExchange.from_workspace(root,reference,identity)
             respiratory_path=root/'data/derived/canonical/respiration.json'
             respiratory=EmbodiedRespiration(json.loads(frozen[respiratory_path]),reference['values']['lung_volume_ml'])
-            body=cls(plant,neural,native,exchange,respiratory,reference_identity=hashlib.sha256((output/'mechanics/native/execution.json').read_bytes()).hexdigest())
+            cutaneous=None if cutaneous_configuration is None else bind_cutaneous(root,plant.snapshot().get('cutaneous_contacts'),cutaneous_configuration)
+            body=cls(plant,neural,native,exchange,respiratory,cutaneous=cutaneous,reference_identity=hashlib.sha256((output/'mechanics/native/execution.json').read_bytes()).hexdigest())
             if any(p.read_bytes()!=raw for p,raw in frozen.items()):raise ValueError('Embodied source changed during initialization; reopen with a stable revision')
             (output/'manifest.json').write_text(json.dumps({'schema':'ihm.embodied-runtime.v1','sources':hashes,
                 'loaded_code':{str(r['path'].relative_to(root)):r['loaded_code_sha256'] for r in receipts},
                 'source_receipts':{str(r['path'].relative_to(root)):{k:v for k,v in r.items() if k not in ('path','bytes')} for r in receipts},
-                'environment':environment,'native_identity':identity,'effective_mechanical_mass_kg':mass,
+                'environment':environment,'cutaneous_materialization':None if cutaneous is None else cutaneous.audit,'native_identity':identity,'effective_mechanical_mass_kg':mass,
                 'physiology_scope':'Paired retained thermal-corrected research initial state/library; known long-run glucose and acid-base failures remain unresolved',
                 'mass_mapping':'Initial native patient mass, including native initial GI contents, uniformly scales source segment inertia; local mass distribution is an engineering prior',
                 'native_checkpoint_exact':False,'exchange_dt_s':.02},indent=2)+'\n')

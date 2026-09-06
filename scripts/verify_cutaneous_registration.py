@@ -25,4 +25,21 @@ class Tests(unittest.TestCase):
         self.assertIsNone(r.cutaneous_contacts({}))
         self.assertEqual(r.cutaneous_contacts({'surface_foundation':{'sensor_points':[]}}),[])
 
+    def test_factory_binding_requires_exact_registered_materials(self):
+        from pathlib import Path
+        from ihm.assembly.embodied import bind_cutaneous
+        contact={'id':'skin-contact-3','point_m':[0,0,0],'normal':[0,0,-1],
+            'force_n':[0,0,1],'contact_area_m2':.001,'indentation_m':.0001,
+            'material_identity':{'manifest_sha256':'a'*64,'quadrature_index':3,'triangle_index':8},
+            'indentation_basis':'native nonlinear confined-layer modeled compression',
+            'area_basis':'projected reference quadrature area'}
+        config={'regions':{'skin-contact-3':'brain-rh-postcentral'},
+                'recruitment_hz_per_response':.1,'reference_temperature_C':33}
+        root=Path(__file__).resolve().parents[1]
+        model=bind_cutaneous(root,[contact],config)
+        frame=model.step(.02,{'time_s':0,'contacts':[contact]})
+        self.assertEqual(frame['sites'][0]['indentation_um'],100.)
+        with self.assertRaises(ValueError):bind_cutaneous(root,[],config)
+        with self.assertRaises(ValueError):bind_cutaneous(root,[contact,contact],config)
+
 if __name__=='__main__':unittest.main()
