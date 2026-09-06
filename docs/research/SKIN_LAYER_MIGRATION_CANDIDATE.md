@@ -140,3 +140,64 @@ No heavy build is needed to repeat the completed checks. Full material-domain,
 contact or native acceptance must be separately scoped; the candidate is not
 ready for wholesale canonical promotion until those required consumers are
 resolved. The root stage has no symlinks into writable live canonical assets.
+
+## Remaining consumer candidates and complete geometry snapshot
+
+The next selected metadata epoch is
+`data/derived/skin-consumers-20260906-v2`; v1 is historical. Run
+`verify_skin_consumer_candidates.py data/derived/skin-consumers-20260906-v2`
+to recheck retained outputs. `complete_skin_candidate_consumers.py` reproduces
+this epoch from the staged root into a fresh output directory.
+
+Both 4 mm and 2 mm retained pelvic domains were rebound without voxelization.
+Their original geometry source hashes, tetrahedra, vertices, owner indices,
+constitutive arrays, boundary triangles and fixed nodes are checked and retained.
+Per-owner tetra volume is checked against the parent materialization. Candidate
+allocation updates registry masses, per-owner inertial densities and per-element
+density arrays; `DynamicTetrahedra` reconstructs nodal mass and the explicit
+stability limit. Exclusive domain mass is checked through `MaterialOwnership`.
+No domain is activated, and no native mass is debited.
+
+| Domain | Tetrahedra | Old/new allocated kg | Old/new explicit limit s |
+| --- | ---: | ---: | ---: |
+| Pelvis 4 mm | 5,796 | 0.0762281941 / 0.0925386485 | 0.0000892907 / 0.0000983807 |
+| Pelvis 2 mm | 46,890 | 0.0762281941 / 0.0925386485 | 0.0000459624 / 0.0000506415 |
+
+All three owner densities scale by 1.2139687891260489, matching the existing
+canonical reallocation. Geometry and elastic material priors do not change.
+Parent manifests remain historical; new manifests bind the candidate anatomy
+and mechanics and their exact new arrays/registry files.
+
+`hair-equivalence.json` records the retained elastic_v3 fragment, exact skin
+geometry, three population/render asset hashes and unchanged source evidence.
+It does not regenerate roots, claim a new historical hair build, migrate
+residual native inventory, or certify evolving hair runtime code. Explicit
+old/new anatomy hashes establish only the geometric dependency equivalence.
+
+The separate `support/` candidate inherits the exact current
+`lumbar-supine-reference-1qex2x9i/contact` quadrature and native input bytes.
+Only layer thickness provenance and candidate source receipts change. The
+original omitted index 15948 / source face 165251 remains omitted; no deeper
+ray hit replaces it. Material thickness remains 0.0066 m. `accepted_support`
+and `native_integration` remain false: old equilibrium evidence cannot be
+relabelled as a solve under a new canonical source epoch. A new native solve
+is not required to prove byte equality, but any claim of a new accepted running
+owner belongs to its separate native acceptance workflow.
+
+The authorized geometry snapshot is
+`data/derived/skin-viewer-epoch-20260906-v1/root`. Its `acceptance.json` records
+2,405 unique geometry files totaling 192,730,414 bytes. A low-priority sequential
+pass hashes each source, makes an independent reflink-or-copy, checks destination
+hash, and rechecks source hash, inode, size and modification time. Every
+source modification time remains unchanged; no writable hardlink aliases exist.
+The plan in consumer v1 and selected consumer v2 is byte-identical and shares
+the exact plan hash recorded by this geometry snapshot.
+
+This resolves the incomplete canonical geometry serving inventory: the private
+root now contains every anatomical geometry reference, and the real body loader
+accepts all 2,408 entities. The original 193 MB dataset was not mesh-decoded,
+remeshed or sent to a native process. `materialize_skin_viewer_root.py` rejects
+existing destinations and enforces the explicit byte budget before copying.
+No browser, app server or viewer deployment was performed. Root promotion still
+needs its coordinated application/owner switch; all live canonical and frozen
+native references remain unchanged.
