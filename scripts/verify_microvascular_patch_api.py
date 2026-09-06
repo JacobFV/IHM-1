@@ -15,6 +15,19 @@ class Checks(unittest.TestCase):
  def test_mirrored_supported_selection(self):
   r=self.service().materialize({'entity_id':'body-bp3d-FJ1442M'})
   self.assertEqual(r['selection']['name'],'left vastus lateralis');self.assertTrue(r['patch']['containment']['whole_patch_inside_authored_surface'])
+ def test_kidney_returns_curved_geometry_and_boundary_ownership(self):
+  r=self.service().materialize({'entity_id':'body-bp3d-FJ3147'})
+  p=r['patch'];self.assertEqual(p['native_owner'],'RightKidney');self.assertEqual(len(p['graph']['edges']),122)
+  self.assertEqual(set(p['graph']['boundary_nodes']),{'arterial','venous','bowman','interstitial'})
+  self.assertTrue(p['containment']['whole_patch_inside_authored_surface']);self.assertFalse(p['containment']['cortical_location_verified'])
+  self.assertTrue(any(len(x['centerline_samples_m'])>100 for x in p['zoom_edges']))
+  self.assertLess(len(json.dumps(r).encode()),r['limits']['max_response_bytes'])
+ def test_kidney_injury_and_left_selection(self):
+  r=self.service().materialize({'entity_id':'body-bp3d-FJ3145','scenario_id':'human_kidney_injury_v1'})
+  self.assertEqual(r['patch']['native_owner'],'LeftKidney');self.assertTrue(r['patch']['graph']['body_registered'])
+  self.assertEqual(r['patch']['graph']['peritubular_radius_conditioning']['mode'],'human_injury_area_equivalent')
+ def test_kidney_rejects_muscle_conditioning(self):
+  with self.assertRaises(PatchRequestError):self.service().materialize({'entity_id':'body-bp3d-FJ3147','cohort':'young_men'})
  def test_bad_queries_rejected_before_materializer(self):
   for data in [{},{'entity_id':'other'},{'entity_id':'body-bp3d-FJ1442','native_volume_ml':4},{'entity_id':'body-bp3d-FJ1442','section_mm':[20,20]},{'entity_id':'body-bp3d-FJ1442','resolution_m':1e-12},{'entity_id':'body-bp3d-FJ1442','seed':True},{'entity_id':'body-bp3d-FJ1442','position_m':[float('nan'),0,0]}]:
    with self.subTest(data=data),patch('ihm.app.microvascular_patch.materialize_patch') as materializer:
