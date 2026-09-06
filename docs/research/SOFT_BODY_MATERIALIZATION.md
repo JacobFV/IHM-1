@@ -112,3 +112,69 @@ Open:
   graded local refinement and materialization composition.
 - Growth in tendons, ligaments, vessels, integument and nerve fibres, all using
   the same conforming approach.
+
+## Cross-structure conflict and the mesher decision
+
+Fusing several atlases means two sources can claim the same volume. Testing all
+62,973 bounding-box-overlapping pairs of the 2,403 repaired surfaces with CGAL
+finds 11,047 genuinely intersecting, 2,312,750 intersecting face pairs, and
+2,345 of 2,403 entities in conflict with only 58 clean. Total pairwise overlap
+is 3.1367 L, 8.31 percent of summed entity volume, and thin: median 12.9 mm3,
+thickness proxy median 0.489 mm.
+
+The conflict graph has two connected components and one holds 2,340 entities.
+There is no decomposition into independent neighbourhoods.
+
+Resolution is by declared role priority (rigid_bone, cartilage, tendon,
+ligament, fluid_cavity, vascular, nerve, muscle, soft_organ, connective_tissue,
+lymph_node_group), ties to larger volume, with conflicts graded rather than
+uniformly differenced: 4,269 segmentation noise at 0.112 L, 4,250 substantive,
+2,528 flagged as genuine inter-source modelling conflicts at 2.196 L, and 362
+neurovascular peers where neither displacement is justified. Five pairs are
+byte-identical surfaces authored twice under synonymous BodyParts3D ids and are
+duplicate entities rather than conflicts.
+
+Method: one exact CGAL arrangement imprints every crossing curve into both
+surfaces, coincident facets collapse to a single shared interface, and tets are
+labelled by winding number with disputed tets going to the priority owner. Six
+thigh structures that crashed TetGen now mesh with zero warnings at 112,576
+tets, box closure 0.0, per-structure volume error at most 1.83e-07 and residual
+pairwise overlap of exactly 0.0 over all 15 pairs; 48 entities reach 1,060,964
+tets with 0.0 residual overlap over 1,128 pairs.
+
+### The ceiling is a TetGen defect, not geometry
+
+An earlier diagnosis blaming sub-tolerance features was wrong, and wrong because
+arrange() overwrites its report each snap-loop iteration so the stored PLC was
+post-snap. Measured on the exact arrangement, 48, 50 and 60 entities are
+indistinguishable: minimum edge 8.897890141411458e-09 m, exactly 4 edges under
+tolerance, minimum facet area 1.062084714469123e-15 m2, zero residual
+self-intersections in every case, all present already at 6 entities. The exact
+route meshed 60 entities once and failed on a byte-identical PLC on re-run and
+in six repeats, with glibc corrupted-size aborts and SIGSEGV. Deterministic
+within a process, not across them. No PLC-cleaning route can lift it.
+
+Snap rounding is rejected on measurement: it lowers the ceiling from 48 to 12.
+CGAL ships no 3D snap rounding, and one quantisation at 1e-7 m drives minimum
+facet altitude from 2.100e-09 to 3.271e-18 m while creating crossings in PLCs
+that had none; the fixpoint loop diverges 57 to 10,130.
+
+fTetWild is built at data/runtime/tolerant-mesher/ after three aarch64 blockers:
+GMP 6.3.0 from source, a patch selecting geogram's Linux64-gcc-aarch64 instead
+of the hardcoded Linux64-gcc with its -m64, and -fsigned-char for Mesh.hpp's
+negative sentinels under an unsigned char.
+
+Both routes preserve conforming shared nodes at interfaces, measured
+independently of construction, so that property does not decide. Element quality
+does. TetGen -pY leaves 38 percent of tets under 5 degrees, a minimum dihedral
+of 0.000 degrees and one negative-volume tet, and any quality pass that fixes
+that moves the nodes and surrenders the exactness that was its only advantage.
+fTetWild reaches 100 entities and 526,645 tets with no tet under 5 degrees,
+paying 2.08e-04 m of interface position.
+
+Decision: fTetWild for the whole-body coarse materialization, the exact route
+for regional domains of at most 48 entities. Open: fTetWild sizes elements
+against the bounding-box diagonal, so at the 1.866 m whole-body diagonal an
+epsr of 1e-3 is a 1.87 mm envelope, wider than the cartilage the atlas carries;
+4.89e-06 m would need 2.6e-6, outside its design regime and unmeasured. Nothing
+above 100 entities has been measured.
