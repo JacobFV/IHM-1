@@ -395,3 +395,14 @@ Evidence SHA-256:
 The 12 arm26 muscles listed above do not imply absence of shoulder actuation: TRIlong, BIClong and BICshort on each side originate on the torso and cross the shoulder; the other six are elbow-only. Dedicated shoulder muscle coverage remains limited, and this is distinct from no shoulder-crossing muscle paths.
 
 The subsequent [skin topology audit](SUPINE_SURFACE_TOPOLOGY_AUDIT.md) finds no inner-shell samples in the frozen quadrature but one tiny seam sample whose exterior-only replacement lies 119 mm deeper. Historical frozen physics remains preserved; future geometry replacement requires a fresh input/cache boundary and explicit treatment of that unresolved ray. No further static solve followed this finding. The future builder now preserves explicit shell thickness across exterior-area layer-volume migration, with legacy inference permitted only under a named explicit basis.
+
+
+## Separately bound 98-muscle reference preparation
+
+`lumbar-supine-reference-1qex2x9i/manifest.json` binds the accepted six-muscle lumbar variant (`lumbar-muscle-native-lb45uirs`, 98 muscles/22 unchanged bodies), a fresh copy of the attested mptn9l8d engine archive, and new seam-omitted contact inputs. The compiled engine remains unchanged; the model and contact input identities are new. Old 92-muscle native responses are not reused. The old f58do2qb q is retained only as an explicitly unaccepted seed, including its independent gauge coordinates. All source/model defaults remain unchanged, including added lumbar activation 0.05; no activation or force coefficient is optimized.
+
+The new quadrature omits only original index 15948/face165251, preserving the exact numerical face/station/area/body rows of the other 21,380 samples and their original-index map. No119mm-deeper substitute is inserted. Projected area 0.000025m² remains explicitly missing/uncertain. The old material and plane remain unchanged; no canonical regeneration occurs. Row-by-row equality and material equality were verified, and the subset fixture preserves source identities/order.
+
+`scripts/verify_lumbar_supine_static.py` prepares a maximum-two-evaluation/15-second-hard-deadline native diagnostic at model-neutral q and the old accepted q seed. Each evaluation is copied-state, with unchanged controls, zero physical time and no reference reset. It records actual force/generalized-torque/acceleration comparisons and instantaneous hip acceleration direction, which must not be mislabeled perturbation stability. The continuing state is compared afterward and the owned process is closed/reaped; archive/input hashes are independently checked. Source preparation and fixtures pass; native execution is queued and has not occurred. No new solve or equilibrium promotion is authorized by this preparation.
+
+Reference SHA-256: `38e1cd70b0b24eee3271da004fac463bcc021ee74bb6448f3d6d8fb921778cd1`.
