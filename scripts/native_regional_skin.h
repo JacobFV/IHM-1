@@ -126,6 +126,9 @@ public:
     for(const auto& [n,node]:original_nodes)circuit.RemoveNode(*node);
     circuit.StateChange();
     for(auto* child:children)child->StateChange();
+    // Refresh the manager's global owning-leaf inventory as well as the parent
+    // cache. Existing BioGears tissue-category maps retain this same parent.
+    compartments.SECompartmentManager::StateChange();
     parent.Balance(BalanceLiquidBy::Mass);
   }
 

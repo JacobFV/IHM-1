@@ -25,7 +25,9 @@ Floating-point parity is verified with explicit tolerances, not bitwise identity
 
 The original extracellular species masses move once to three native liquid child
 compartments. The original parent's node mappings are removed before `AddChild`;
-its native mass and volume getters then produce child aggregates. Parent mass is
+its native mass and volume getters then produce child aggregates. The base
+compartment manager StateChange also refreshes the global owning-leaf inventory;
+the fixture requires all three children present and the aggregate parent absent. Parent mass is
 read-only, and no parent node remains active. Native species have one current mass
 scalar; they have no separate baseline/next mass slots to fabricate. Unknown mass
 states remain unknown. Water fraction and pH are retained when available.
@@ -90,7 +92,7 @@ at 1 GiB address space / 120 s CPU, and never initializes or advances a patient.
 It uses source-shipped substance definitions through isolated runtime symlinks.
 
 Retained successful evidence:
-`data/derived/audits/native-regional-skin-2__axp91/verification.json`.
+`data/derived/audits/native-regional-skin-nzsk85vx/verification.json`.
 
 | Check | Native result |
 | --- | --- |
@@ -102,8 +104,8 @@ Retained successful evidence:
 | Local 133.3224 Pa load | Regional pressure difference 0.9998002 mmHg |
 | Local drainage response, normalized by allocation fraction | 0.0099980 mL/s regional difference |
 | Unload | Requested region's applied pressure returned to zero |
-| Compile resource | 5.70 s, 545908 KiB maximum RSS |
-| Native fixture resource | 0.13 s, 43364 KiB maximum RSS |
+| Compile resource | 2.03 s, 547108 KiB maximum RSS |
+| Native fixture resource | 0.11 s, 43544 KiB maximum RSS |
 
 The initial fixture construction failure exposed a missing substance runtime
 working directory: BioGears setup returns before creating its circuit manager if
@@ -111,3 +113,22 @@ substances cannot load. The verifier now supplies the held runtime asset symlink
 before constructing BioGears. No source-law or solver adjustment concealed that
 failure. Native protein transport and full patient zero-boundary parity remain
 separate required gates before activation.
+
+## Completed isolated library receipt
+
+The new `whole_body_integrity_regional_skin_gi_v1` library was compiled and linked
+in the root-granted slot, preserving 359 inherited objects and replacing only
+Diffusion. Its library SHA256 is
+`4a836f61e6c123bfb5a5df806c325d4a217f1c707637a215b6f7ff84bc5ef949`; manifest SHA256
+is `ec5250b325ad9950f2b5324524153200c331f399c6ff6e172956f4b0e3b2c31a`. The manifest
+retains the corrected GI parent, signed ABI header hash, regional header hash and
+all object/source receipts. Compilation used 3.03 s / 532500 KiB peak RSS; linking
+used 0.62 s / 116632 KiB peak RSS.
+
+The same native fixture executable was subsequently run against this actual new
+library with `ldd` confirming resolution; all graph parity, leaf ownership and
+local loading checks passed. That receipt is
+`data/derived/audits/native-regional-skin-nzsk85vx/regional_variant_verification.json`.
+This proves the isolated library loads and the native graph split works. It does
+not execute the patched native Albumin transport methods or establish full-engine
+zero-load parity. The variant remains unactivated pending those lifecycle gates.

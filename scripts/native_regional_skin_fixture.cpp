@@ -59,6 +59,9 @@ int main() {
   auto& split=*regional.split;
   auto near=[](double a,double b,double tolerance){if(!std::isfinite(a)||!std::isfinite(b)||std::abs(a-b)>tolerance)throw std::runtime_error("Native parity/ownership invariant failed: "+std::to_string(a)+" vs "+std::to_string(b));};
   if(regional.owner.HasNodeMapping()||!regional.owner.HasChildren()||regional.owner.GetLeaves().size()!=3)throw std::runtime_error("Parent retained node ownership");
+  const auto& leaves=regional.bg.GetCompartments().GetLiquidLeafCompartments();
+  if(std::find(leaves.begin(),leaves.end(),&regional.owner)!=leaves.end())throw std::runtime_error("Parent remained in global owning-leaf inventory");
+  for(auto* child:split.children)if(std::find(leaves.begin(),leaves.end(),child)==leaves.end())throw std::runtime_error("Regional child missing from global owning-leaf inventory");
   if(regional.circuit.GetPath("SkinE3ToSkinL1")!=nullptr||regional.bg.GetCircuits().GetFluidPath("SkinE3ToSkinL1")==nullptr)throw std::runtime_error("Detached source-law lookup invariant");
   for(const std::string sub:{"Albumin","Glucose","Sodium"}) {
     auto* s=regional.bg.GetSubstances().GetSubstance(sub);double children=0;
