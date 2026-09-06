@@ -109,13 +109,13 @@ class CanonicalRegistration:
             'scope':'One global ground frame preserves native joint and environment consistency. Canonical source meshes have fixed segment-local embeddings; their anatomical boundaries are not guaranteed to coincide with native joint locations. No anatomical registration precision is fabricated.'})
 
 class ArticulatedBodyPlant:
-    def __init__(self,root,output,*,environment='supine',target_mass_kg=None,augmented_registration=None,enable_garments=False,surface_contact_manifest=None,surface_sensor_indices=()):
+    def __init__(self,root,output,*,environment='supine',target_mass_kg=None,augmented_registration=None,enable_garments=False,surface_contact_manifest=None,surface_sensor_indices=(),bed_material=None):
         self.root=Path(root).resolve();self.output=Path(output).resolve()
         if self.output.exists() or not self.output.is_relative_to(self.root):raise ValueError('Fresh owned articulated output required')
         path=self.root/'data/derived/canonical/mechanics.json';raw=path.read_bytes();payload=json.loads(raw)
         canonical_mass=sum(e['mass_kg'] for e in payload['entities']);target=canonical_mass if target_mass_kg is None else finite(target_mass_kg)
         self.output.mkdir(parents=True);(self.output/'canonical_mechanics.json').write_bytes(raw)
-        self.native=NativeMechanicalStream(self.root,self.output/'native',environment=environment,target_mass_kg=target,augmented_registration=augmented_registration,surface_contact_manifest=surface_contact_manifest,surface_sensor_indices=surface_sensor_indices)
+        self.native=NativeMechanicalStream(self.root,self.output/'native',environment=environment,target_mass_kg=target,augmented_registration=augmented_registration,surface_contact_manifest=surface_contact_manifest,surface_sensor_indices=surface_sensor_indices,bed_material=bed_material)
         try:
             self.registration=CanonicalRegistration(payload,self.native.snapshot());self.muscle_catalog=self.native.muscle_catalog or native_muscle_catalog(self.root)
             self.source_registration_manifest=self.registration.manifest();(self.output/'registration.json').write_text(json.dumps(self.source_registration_manifest,indent=2)+'\n')

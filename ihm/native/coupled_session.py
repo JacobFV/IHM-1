@@ -40,7 +40,7 @@ class SignedCoupledNativeSession(CoupledNativeSession):
         'native_tissue_ports.h','native_tissue_compression.h','native_signed_muscle_port.h')
 
     def __init__(self,config,output_dir,timeout_s=1800):
-        if config.engine_variant!='whole_body_integrity_signed_muscle_v2':raise ValueError('Signed adapter requires the matching source variant')
+        if config.engine_variant not in ('whole_body_integrity_signed_muscle_v2','whole_body_integrity_gi_absorption'):raise ValueError('Signed adapter requires the matching source variant')
         super().__init__(config,output_dir,timeout_s)
 
     def step(self,seconds):

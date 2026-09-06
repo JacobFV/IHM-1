@@ -163,3 +163,20 @@ disabled versus zero, positive/negative/return boundaries, eccentric heat, and
 one acknowledged native water intake consumed by the following step. Wall time
 was 1.963 s; caller peak RSS 587276 KiB. These boundary inputs were explicit
 small fixture values, not the incompatible mechanical resting reference.
+
+
+The continuing factory now selects `whole_body_integrity_gi_absorption`, whose
+immutable lineage includes signed-muscle-v2 and the shared-donor correction.
+The signed adapter was rebuilt at `signed-adapter-9q4tc17x` (4.51 s,
+623456 KiB peak compiler RSS). Actual whole-engine acceptance is retained at
+`data/derived/audits/signed-coupled-dbzx_jtg`: six signed steps, matched zero,
+positive/negative/eccentric heat, return and consumed water intake all pass
+(0.12 s simulated, 2.01 s wall). This is a boundary fixture, not a repaired
+whole-body mechanical reference or healthy long-run digestion demonstration.
+The Python session also retains explicit support for the original signed-v2
+variant; executable/library receipts must still match the requested variant.
+
+The articulated and embodied constructors now forward optional `bed_material`
+to the native measured-bed law. Bed selection does not supply a supported pose;
+its initial mechanical state remains subject to force/moment and joint residual
+acceptance. Native receipts retain the chosen curve and separate skin/bed strains.

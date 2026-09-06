@@ -70,7 +70,7 @@ class CleanupOwners:
 
 class EmbodiedRuntime:
     @classmethod
-    def from_workspace(cls,root,output,*,environment='supine',state_path=None,surface_contact_manifest=None,cutaneous_configuration=None):
+    def from_workspace(cls,root,output,*,environment='supine',state_path=None,surface_contact_manifest=None,cutaneous_configuration=None,bed_material=None):
         from pathlib import Path
         import hashlib,json,sys
         from ihm.native.session import SessionConfig
@@ -97,7 +97,7 @@ class EmbodiedRuntime:
         reference_raw=reference_path.read_bytes();reference_manifest=json.loads(reference_raw)
         base_variant=reference_manifest['configuration']['engine_variant']
         if base_variant!='whole_body_integrity_evaporation_humidity':raise ValueError('Expected retained final thermal-corrected research variant')
-        engine_variant='whole_body_integrity_signed_muscle_v2'
+        engine_variant='whole_body_integrity_gi_absorption'
         state=Path(state_path) if state_path else Path(reference_manifest['configuration']['state_path'])
         if state_path is None and hashlib.sha256(state.read_bytes()).hexdigest()!=reference_manifest['state_sha256']:
             raise ValueError('Paired native initial state changed')
@@ -138,7 +138,7 @@ class EmbodiedRuntime:
             mass=finite(float(weight['value']),'native initial body mass',1,500)
             plant=ArticulatedBodyPlant(root,output/'mechanics',environment=environment,target_mass_kg=mass,
                 augmented_registration='data/derived/mechanics/whole_body_arm26_v2/registration.json',
-                surface_contact_manifest=surface_contact_manifest,surface_sensor_indices=sensor_indices)
+                surface_contact_manifest=surface_contact_manifest,surface_sensor_indices=sensor_indices,bed_material=bed_material)
             neural=SensorimotorController.from_root(root,muscle_catalog=plant.muscle_catalog)
             reference=native.snapshot()
             identity={key:manifest[key] for key in ('library_sha256','executable_sha256','state_sha256')}

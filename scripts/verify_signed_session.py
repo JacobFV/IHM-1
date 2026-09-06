@@ -4,6 +4,15 @@ from types import SimpleNamespace
 from ihm.native.coupled_session import SignedCoupledNativeSession
 
 class Tests(unittest.TestCase):
+    def test_verified_gi_descendant_is_an_explicit_signed_variant(self):
+        from unittest.mock import patch
+        from ihm.native.session import VARIANTS
+        variant='whole_body_integrity_gi_absorption'
+        self.assertIn(variant,VARIANTS)
+        with patch('ihm.native.session.NativeSession.__init__',return_value=None) as initialize:
+            SignedCoupledNativeSession(SimpleNamespace(engine_variant=variant),'unused')
+            self.assertEqual(initialize.call_count,1)
+
     def session(self):
         session=SignedCoupledNativeSession.__new__(SignedCoupledNativeSession)
         session.config=SimpleNamespace(horizon_s=.04);session._elapsed_ticks=0;session.calls=[]
