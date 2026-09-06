@@ -36,3 +36,11 @@ exchange views must represent aggregate versus owning compartments explicitly,
 and spatial registration must identify any physical tissue territory before
 local body contact can supply these compartment pressures. Long-run and
 whole-body mechanical equivalence remain unverified.
+
+The shared runtime accepts `regional_skin_pressures` when its native owner
+supports those boundaries. It validates all region IDs/values and incompatible
+whole-Skin topology inputs before advancing any owner. Commands are delivered
+before the signed physiological exchange; an uncertain command terminates the
+session under the existing native-outcome policy. Unspecified pressures retain
+native boundary state; release is an explicit zero command. This input interface
+adds no anatomical region assignment or reconstructed contact pressure.

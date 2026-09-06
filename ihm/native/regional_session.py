@@ -13,6 +13,7 @@ class RegionalSignedNativeSession(SignedCoupledNativeSession):
         'native_body_ports.h','native_tissue_ports.h','native_regional_skin.h',
         'native_regional_species.h','native_signed_muscle_port.h')
     regions=('region_a','region_b','residual')
+    supports_whole_skin_compression=False
 
     def __init__(self,config,output_dir,timeout_s=1800):
         if config.engine_variant!='whole_body_integrity_regional_skin_graph_v2':

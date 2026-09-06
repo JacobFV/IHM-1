@@ -106,6 +106,22 @@ class Tests(unittest.TestCase):
         frame=body.step({})
         self.assertEqual(frame['cutaneous']['sites'][0]['indentation_um'],0)
 
+    def test_regional_pressure_inputs_are_validated_before_any_owner_advances(self):
+        body=self.body();pressures=[]
+        body.native.regions=('region_a','region_b','residual')
+        body.native.supports_whole_skin_compression=False
+        body.native.regional_skin_pressure=lambda region,value:pressures.append((region,value))
+        for data in ({'skin_compression_pa':0},{'regional_skin_pressures':{'unknown':1}},
+                     {'regional_skin_pressures':{'region_a':float('nan')}},
+                     {'regional_skin_pressures':{'region_a':1},'skin_compression_pa':0}):
+            with self.assertRaises(ValueError):body.step(data)
+        self.assertEqual(body.plant.t,0)
+        self.assertEqual(pressures,[])
+        body.step({'regional_skin_pressures':{'region_a':133.322,'residual':0}})
+        self.assertEqual(pressures,[('region_a',133.322),('residual',0)])
+        self.assertEqual(body.native.t,.02)
+        with self.assertRaises(ValueError):self.body().step({'regional_skin_pressures':{'region_a':1}})
+
     def test_delayed_actuation_native_load_and_work(self):
         body=self.body();first=body.step({'forces':[{'id':'chest','force_n':[2,0,0],'point_m':[0,0,0]}]})
         self.assertEqual(body.plant.commands,[{}]);self.assertEqual(body.native.loads,[2])

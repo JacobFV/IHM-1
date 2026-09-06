@@ -203,7 +203,7 @@ class EmbodiedRuntime:
             except BaseException as error:self.cleanup_failures.append({'owner':label,'error':str(error)})
 
     def _validate(self,data):
-        if not isinstance(data,dict) or set(data)-{'seconds','forces','descending','sensory_blocks','motor_blocks','skin_compression_pa','skin_sensory_blocks'}:
+        if not isinstance(data,dict) or set(data)-{'seconds','forces','descending','sensory_blocks','motor_blocks','skin_compression_pa','skin_sensory_blocks','regional_skin_pressures'}:
             raise ValueError('Unknown embodied input')
         dt=finite(data.get('seconds',.02),'embodied interval',.02,.02)
         forces=data.get('forces',[])
@@ -213,7 +213,14 @@ class EmbodiedRuntime:
             for key in ('force_n','point_m'):
                 if not isinstance(f[key],(list,tuple)) or len(f[key])!=3:raise ValueError('Expected spatial force/point vector')
                 for value in f[key]:finite(value,key,-1000 if key=='force_n' else -5,1000 if key=='force_n' else 5)
-        if 'skin_compression_pa' in data:finite(data['skin_compression_pa'],'whole-skin pressure',0,5000)
+        if 'skin_compression_pa' in data:
+            finite(data['skin_compression_pa'],'whole-skin pressure',0,5000)
+            if not getattr(self.native,'supports_whole_skin_compression',True):raise ValueError('Whole-Skin pressure topology is unavailable')
+        if 'regional_skin_pressures' in data:
+            pressures=data['regional_skin_pressures']
+            if not hasattr(self.native,'regional_skin_pressure') or not isinstance(pressures,dict) or set(pressures)-set(self.native.regions):raise ValueError('Unavailable or unknown regional skin pressure boundary')
+            if 'skin_compression_pa' in data:raise ValueError('Whole-Skin and regional pressure topologies cannot be combined')
+            for pressure in pressures.values():finite(pressure,'regional skin pressure',0,5000)
         blocks=data.get('skin_sensory_blocks',[])
         if not isinstance(blocks,(list,tuple)) or any(not isinstance(k,str) or self.cutaneous is None or k not in self.cutaneous.sites for k in blocks):raise ValueError('Unknown skin sensory block')
         horizon=getattr(getattr(self.native,'config',None),'horizon_s',None)
@@ -273,6 +280,7 @@ class EmbodiedRuntime:
             native_touched=True
             self.native.respiratory_load(pressure)
             if 'skin_compression_pa' in data:self.native.skin_compression(data['skin_compression_pa'])
+            for region,pressure in data.get('regional_skin_pressures',{}).items():self.native.regional_skin_pressure(region,pressure)
             if self.native_state.get('pending_meal',False) is False:
                 for event in self.intakes.due(round(self.time_s*50)):
                     try:self.intakes.record_accepted(event.event_id,self.native.meal(event.meal))
