@@ -64,12 +64,14 @@ def main():
     if len(matches)!=1:raise ValueError('Expected one inherited Diffusion object')
     inherited_source=(cwd/matches[0]).with_suffix('')
     if inherited_source.read_text()!=before:raise ValueError('Inherited shared-donor source mismatch')
+    signed_header=PARENT/'native_signed_muscle_port.h'
+    if not signed_header.exists():
+        signed_header=RUNTIME/'variants'/parent['signed_port_abi_parent']/'native_signed_muscle_port.h'
+    if sha(signed_header)!=parent['header_sha256']:raise ValueError('Inherited signed header changed')
     after=regional_source(before)
     out=args.output.resolve();out.mkdir(parents=True,exist_ok=False)
     patched=out/'Diffusion.cpp';patched.write_text(after)
     header=out/'native_regional_skin.h';header.write_bytes((ROOT/'scripts/native_regional_skin.h').read_bytes())
-    signed_header=PARENT/'native_signed_muscle_port.h'
-    if sha(signed_header)!=parent['header_sha256']:raise ValueError('Inherited signed header changed')
     (out/signed_header.name).write_bytes(signed_header.read_bytes())
     patch=out/'regional_skin_source_lookup.patch'
     patch.write_text(''.join(difflib.unified_diff(before.splitlines(True),after.splitlines(True),fromfile='parent/Diffusion.cpp',tofile='regional_skin/Diffusion.cpp')))
