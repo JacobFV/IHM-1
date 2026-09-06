@@ -44,8 +44,11 @@ export class ElasticHairSystem {
   const directions=Float64Array.from(root_tangents);for(let s=0;s<this.count;s++){const l=Math.hypot(...directions.slice(3*s,3*s+3));if(l<=0)throw Error('Zero root tangent');for(let k=0;k<3;k++)directions[3*s+k]/=l;}
   if(dt===0)return;const startRoots=this.root.slice(),startDirections=this.tangents.slice(),targetRoots=Float64Array.from(roots_m);this.gravity=Array.from(gravity_m_s2);
   const steps=Math.ceil(dt/this.maxSubstep-1e-10),h=dt/steps,x=this.positions,w=this.invMass;
+  // A step is synchronous: reuse the snapshot across substeps and updates.
+  // It is scratch state, so restore/reset need not serialize or clear it.
+  const before=this.beforeSubstep||(this.beforeSubstep=new Float64Array(x.length));
   for(let sub=1;sub<=steps;sub++){
-   const before=x.slice();
+   before.set(x);
    for(let s=0;s<this.count;s++){
     const rod=this.rods[s],{first,end}=rod,f=sub/steps;
     const dir=[0,1,2].map(k=>startDirections[3*s+k]*(1-f)+directions[3*s+k]*f),length=Math.hypot(...dir);
