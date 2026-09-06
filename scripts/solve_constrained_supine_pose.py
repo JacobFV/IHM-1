@@ -6,7 +6,7 @@ from scipy.optimize import minimize,NonlinearConstraint,Bounds,least_squares
 ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT));sys.path.insert(0,str(ROOT/'scripts'))
 from build_supine_initial_state import analyze,recipe
 from static_pose_journal import PoseJournal,pose_key
-from bounded_static_root import interior_origin,local_step
+from bounded_static_root import interior_origin,local_step,StaticDomainRejection,backtracked_trial
 
 
 def dynamic_metric(native):
@@ -81,7 +81,15 @@ def run(seed_path,material,resume_path=None,resume_cache=None,mode='constrained'
         for name in all_names:command.extend([name,str(candidate[name])])
         write('last_native_request.json',dict(status='pending',new_evaluation=len(evaluations)+1,
             coordinates=candidate,command=' '.join(command),wall_s=time.monotonic()-started))
-        native=stream._request(' '.join(command))
+        try:native=stream._request(' '.join(command))
+        except ValueError as error:
+            if type(error) is not ValueError or str(error)!='equal-pressure skin/bed solution exceeds retained domains':raise
+            rejection=dict(evaluation=len(evaluations)+1,wall_s=time.monotonic()-started,coordinates=candidate,
+                command=' '.join(command),classification='copied-state-material-domain-rejection',error=str(error))
+            with (output/'rejected_trials.jsonl').open('a') as destination:destination.write(json.dumps(rejection,allow_nan=False)+'\n')
+            evaluations.append(dict(evaluation=len(evaluations)+1,wall_s=time.monotonic()-started,rejected=True,error=str(error)))
+            write('evaluations.json',evaluations)
+            raise StaticDomainRejection(str(error)) from error
         write('last_native_request.json',dict(status='completed',new_evaluation=len(evaluations)+1,
             coordinates=candidate,wall_s=time.monotonic()-started))
         weight=native['mass_kg']*np.linalg.norm(native['gravity_m_s2'])
@@ -116,7 +124,7 @@ def run(seed_path,material,resume_path=None,resume_cache=None,mode='constrained'
             surface_manifest_sha256=hashlib.sha256(manifest_path.read_bytes()).hexdigest())
         # JSON normalization keeps tuples/lists identical after disk round-trip.
         identity=json.loads(json.dumps(identity))
-        journal=PoseJournal(output,identity,resume_cache,reuse_native_only=resume_cache is not None);cache=journal.cache
+        journal=PoseJournal(output,identity,resume_cache,reuse_native_only=resume_cache is not None,framing_root=ROOT);cache=journal.cache
         report['recovered_evaluations']=len(cache)
         for entry in cache.values():
             dynamic_metric(entry['native'])
@@ -158,13 +166,9 @@ def run(seed_path,material,resume_path=None,resume_cache=None,mode='constrained'
                     shifted=q.copy();shifted[index]+=step
                     jac[:,index]=(acceleration_residual(evaluate(shifted)['native'])-acceleration)/step
                 direction=local_step(jac,acceleration,q,bounds)
-                accepted=False
-                for backtrack in range(6):
-                    candidate=np.clip(q+direction*(.5**backtrack),np.array(bounds)[:,0],np.array(bounds)[:,1])
-                    trial=evaluate(candidate)
-                    if trial['cost']<current['cost']:
-                        q=candidate;retain_iterate(q);accepted=True;break
-                if not accepted:message='No decreasing valid local Newton step';break
+                candidate,trial=backtracked_trial(q,direction,np.array(bounds),current['cost'],evaluate)
+                if candidate is None:message='No decreasing valid local Newton step';break
+                q=candidate;retain_iterate(q)
             final=evaluate(q)
             from types import SimpleNamespace
             result=SimpleNamespace(success=success,message=message)

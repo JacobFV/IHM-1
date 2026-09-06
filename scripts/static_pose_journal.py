@@ -14,7 +14,7 @@ def digest(value):
 
 
 class PoseJournal:
-    def __init__(self,directory,identity,resume=None,reuse_native_only=False):
+    def __init__(self,directory,identity,resume=None,reuse_native_only=False,framing_root=None):
         self.directory=Path(directory);self.directory.mkdir(parents=True,exist_ok=True)
         self.identity=identity;self.cache={}
         (self.directory/'cache_identity.json').write_text(json.dumps(identity,indent=2,allow_nan=False)+'\n')
@@ -26,9 +26,14 @@ class PoseJournal:
                     raise ValueError('Unrecognized native evaluation cache schema')
                 omitted={'protocol_sha256','journal_sha256','solver_sha256'}
                 native_identity=lambda value:{k:v for k,v in value.items() if k not in omitted}
-                if native_identity(previous)!=native_identity(identity):raise ValueError('Native evaluation identity changed during solver migration')
+                comparable_previous=native_identity(previous);comparable_current=native_identity(identity);framing_audit=None
+                if comparable_previous.get('build_files')!=comparable_current.get('build_files') and framing_root is not None:
+                    from framing_build_migration import audit
+                    framing_audit=audit(previous,identity,framing_root)
+                    comparable_previous['build_files']=comparable_current['build_files']
+                if comparable_previous!=comparable_current:raise ValueError('Native evaluation identity changed during solver migration')
                 (self.directory/'cache_recovery.json').write_text(json.dumps(dict(previous_identity=previous,
-                    current_identity=identity,ignored_solver_metadata=sorted(omitted),
+                    current_identity=identity,ignored_solver_metadata=sorted(omitted),framing_audit=framing_audit,
                     scope='Reuse exact native responses; unchanged native build/input/protocol and coordinate domain required'),indent=2)+'\n')
             elif previous!=identity:
                 raise ValueError('Static cache source/protocol identity mismatch')
