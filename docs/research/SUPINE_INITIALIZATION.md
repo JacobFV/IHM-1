@@ -64,3 +64,25 @@ Evidence SHA-256:
 - `best_candidate.json`: `c46bbc0bcff41ec8a38e9d4c85d30080cf349d9fc5faa76097b297f574705ed9`
 - `seed.json`: `4f368cee657ec5e016e7bbe8838a23b281dd16ee6709ff254a8125569a7b2875`
 - `native/execution.json`: `cdaeeb2abfa4e142e202ccaa08585b9c3f7f305fc4a477cc785c025225de68ae`
+
+
+## Measured-bed constrained statics — 2026-09-05
+
+The measured MM bed/skin series law and posterior skin quadrature replace the inertia spheres in these opt-in experiments. Native MM and HM two-millisecond implementation fixtures passed (`native-surface-foundation-0hzzust1` and `native-surface-foundation-ch3sdupy`); their fresh default poses still had zero support. They verify the contact law, separate energies and indentation identities, not a settled body.
+
+The rigid source-only seed `supported-rigid-seed-ljyewh9y` balances weight and both normal-support moments for MM within the declared material domain. The first full native constrained solve (`constrained-supine-k970xisy`) stopped at 200 evaluations in 41.008 s. It held plane translation/heading gauges without locking physical joints and constrained normal force, pitch and roll residuals. Maximum generalized acceleration remained 1525.55 rad/s². Uniform weight-times-height torque normalization understated distal acceleration, so its small objective was not equilibrium evidence.
+
+The replacement objective is `udotᵀ M udot / (mass |gravity|²)`, cross-checked with `−rᵀ udot` and `r + M udot = 0` under the emitted dynamic constraint multiplier convention. Negative or nonfinite metrics fail; no cost floor is used. Native fixture `native-static-metric-tfbdb6ua` passed with identity norm 3.33e−13 and unchanged continuing state, using build `build-64ooel0c`.
+
+One authorized resumed MM solve (`constrained-supine-672_i109`) exhausted 200 native calls in 53.763 s; no physical time advanced. It reset only toes to their isolated source passive-law neutral, retaining ankle q because pure ankle damping has no preferred static angle. Its best support-feasible dynamic metric decreased from 3.45733 to 3.37995, and maximum acceleration from 1526.61 to 1486.95 rad/s². Toe accelerations remained 1466.54/1486.95 rad/s², ankle accelerations −992.99/−989.60 rad/s², and elbows 447.55/441.06 rad/s². Skin compression stayed at 1.35524 mm and bed deflection at 64.0424 mm.
+
+The support-feasible candidate's raw generalized residuals were pelvis translation X 0.0186719 N, pitch 0.0473951 N·m, and roll 0.000393530 N·m. Held translation gauges Y/Z had residuals 2.84e−14/7.11e−15 N and heading −3.71e−5 N·m. These nearly balanced external loads coexist with large internal accelerations. The lowest unrestricted objective 2.93574 violated the force constraint (normalized residual −0.000487793) and was not selected. Neither candidate meets the unchanged all-acceleration threshold of 1e−4 or has forward support acceptance. At the budget exception, the solver closed/reaped the native process; the separate identity fixture supplies continuing-state immutability evidence, not an unperformed post-budget observation.
+
+No startup pose or metabolic reference was promoted. A future accepted startup artifact must be loaded before first metabolic sampling in a fresh process, with zero clocks/work and a separate immutable neutral `registration_reference` to preserve canonical mesh embedding. Supported-pose transforms must not become the source registration reference. Cervical model or contact-owner changes invalidate these 22-body candidates.
+
+Receipt hashes:
+
+- `data/derived/constrained-supine-672_i109/best_supported_candidate.json`: `43ea1233176f0099f3b3416f0f8766df1e2e07a44aa313d5b806ba921057f52d`
+- `data/derived/constrained-supine-672_i109/initial_supported_seed_native.json`: `587c234662f5762226af0346c1cf028fa82fbee368959696c37b064cfdddc1a1`
+- `data/derived/constrained-supine-672_i109/report.json`: `1e768c791ab25dbd62cf19f94f6d3906b57a3ff7d7e2eb37f6643aa9e02735dc`
+- `data/derived/native-static-metric-tfbdb6ua/report.json`: `31897538b3d6166e7c598ab8bcf1c03b1e45bfc8e042b731f0f902370982cfa9`
