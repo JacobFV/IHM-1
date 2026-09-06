@@ -131,9 +131,51 @@ class CleanupOwners:
         if errors:raise RuntimeError('Cleanup remains unconfirmed: '+'; '.join(errors))
 
 
+def _prepare_mechanical_registration(root,relative):
+    """Bounded source-only opt-in preflight before either native owner starts."""
+    import xml.etree.ElementTree as ET
+    from pathlib import Path
+    import math,hashlib,json
+    root=Path(root).resolve();frozen={};total=0
+    def read(name,digest=None):
+        nonlocal total
+        if not isinstance(name,str) or Path(name).is_absolute() or '..' in Path(name).parts:
+            raise ValueError('Mechanical registration paths must be workspace-relative')
+        path=root/name
+        if not path.is_relative_to(root) or any(p.is_symlink() for p in (path,*path.parents)):
+            raise ValueError('Mechanical registration may not use symlink redirects')
+        if not path.is_file() or path.stat().st_size>32*1024*1024:
+            raise ValueError('Mechanical registration source must be a bounded ordinary file')
+        raw=path.read_bytes()
+        if digest is not None and hashlib.sha256(raw).hexdigest()!=digest:raise ValueError('Mechanical registration source hash differs')
+        if path not in frozen:total+=len(raw)
+        if total>64*1024*1024:raise ValueError('Mechanical registration exceeds 64 MiB source budget')
+        frozen[path]=raw;return raw
+    manifest=json.loads(read(relative))
+    if manifest.get('schema') not in ('ihm.upperbody-registration.v1','ihm.lumbar-muscle-variant.v1'):
+        raise ValueError('Unsupported mechanical registration schema')
+    model=ET.fromstring(read(manifest['model_path'],manifest['model_sha256']))
+    rows=json.loads(read(manifest['catalog_path'],manifest['catalog_sha256']))
+    for path,digest in manifest['sources'].items():read(path,digest)
+    if 'insert_path' in manifest:read(manifest['insert_path'],manifest['insert_sha256'])
+    muscles=[m for m in model.findall('.//ForceSet/objects/*') if 'Muscle' in m.tag]
+    if (not isinstance(rows,list) or len(rows)!=manifest['muscle_count']
+        or len({r['id'] for r in rows})!=len(rows) or {m.get('name') for m in muscles}!={r['id'] for r in rows}):
+        raise ValueError('Mechanical catalog and model muscle identities differ')
+    by_id={m.get('name'):m for m in muscles}
+    for row in rows:
+        if manifest['sources'].get(row['source_path'])!=row['source_sha256']:
+            raise ValueError('Mechanical catalog source owner differs')
+        for field,tag in (('max_isometric_force_n','max_isometric_force'),('optimal_fiber_length_m','optimal_fiber_length')):
+            value=row[field]
+            if isinstance(value,bool) or not math.isfinite(value) or value<=0 or not math.isclose(value,float(by_id[row['id']].findtext(tag)),rel_tol=1e-12):
+                raise ValueError('Mechanical catalog normalization differs from model')
+    return frozen,manifest,rows
+
+
 class EmbodiedRuntime:
     @classmethod
-    def from_workspace(cls,root,output,*,environment='supine',state_path=None,surface_contact_manifest=None,cutaneous_configuration=None,bed_material=None,regional_skin=False,source_pin=None,intake_mass=False):
+    def from_workspace(cls,root,output,*,environment='supine',state_path=None,surface_contact_manifest=None,cutaneous_configuration=None,bed_material=None,regional_skin=False,source_pin=None,intake_mass=False,augmented_registration=None):
         if type(regional_skin) is not bool:raise ValueError('regional_skin must be a bool')
         if type(intake_mass) is not bool:raise ValueError('intake_mass must be a bool')
         from pathlib import Path
@@ -154,6 +196,7 @@ class EmbodiedRuntime:
         from .cutaneous_feedback import CutaneousFeedback
         root=Path(root).resolve();output=Path(output).resolve()
         if not output.is_relative_to(root) or output.exists():raise ValueError('Fresh retained embodied output required')
+        mechanical_frozen,mechanical_manifest,mechanical_catalog=({},None,None) if augmented_registration is None else _prepare_mechanical_registration(root,augmented_registration)
         candidate_frozen,candidate_loaded=_prepare_brain_candidate(root,source_pin)
         sensor_indices=[]
         if cutaneous_configuration is not None:
@@ -184,6 +227,7 @@ class EmbodiedRuntime:
         receipts=[_loaded_source(sys.modules[name]) for name in names if name in sys.modules]
         frozen={r['path']:r['bytes'] for r in receipts}
         frozen.update(candidate_frozen)
+        frozen.update(mechanical_frozen)
         frozen[reference_path]=reference_raw
         variant_dir=root/'data/runtime/physiology/variants';current=engine_variant;seen=set()
         while True:
@@ -213,9 +257,11 @@ class EmbodiedRuntime:
             if weight['unit']!='kg':raise ValueError('Expected explicit native initial mass in kg')
             mass=finite(float(weight['value']),'native initial body mass',1,500)
             plant=ArticulatedBodyPlant(root,output/'mechanics',environment=environment,target_mass_kg=mass,
-                augmented_registration='data/derived/mechanics/whole_body_arm26_v2/registration.json',
+                augmented_registration=augmented_registration or 'data/derived/mechanics/whole_body_arm26_v2/registration.json',
                 surface_contact_manifest=surface_contact_manifest,surface_sensor_indices=sensor_indices,bed_material=bed_material,
                 instance_mass_variant='data/runtime/opensim/variants/instance_mass_v1' if intake_mass else None)
+            if mechanical_catalog is not None and plant.muscle_catalog!=mechanical_catalog:
+                raise ValueError('Native plant catalog differs from preflight mechanical identity')
             neural=SensorimotorController.from_root(root,muscle_catalog=plant.muscle_catalog,source_pin=source_pin)
             reference=native.snapshot()
             intake_bridge=intake_binding=None
@@ -233,6 +279,7 @@ class EmbodiedRuntime:
             (output/'manifest.json').write_text(json.dumps({'schema':'ihm.embodied-runtime.v1','sources':hashes,
                 'loaded_code':{str(r['path'].relative_to(root)):r['loaded_code_sha256'] for r in receipts},
                 'source_receipts':{str(r['path'].relative_to(root)):{k:v for k,v in r.items() if k not in ('path','bytes')} for r in receipts},
+                'mechanical_registration_override':None if mechanical_manifest is None else {'path':augmented_registration,'sha256':hashlib.sha256(mechanical_frozen[root/augmented_registration]).hexdigest(),'model_sha256':mechanical_manifest['model_sha256'],'catalog_sha256':mechanical_manifest['catalog_sha256']},
                 'brain_source_pin':None if source_pin is None else source_pin.to_dict(),'brain_candidate_loaded_modules':candidate_loaded,
                 'environment':environment,'regional_skin':regional_skin,'intake_mass':intake_mass,'intake_mass_binding':intake_binding,
                 'intake_mass_initial_bridge':None if intake_bridge is None else intake_bridge.snapshot(),
