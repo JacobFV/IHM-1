@@ -1,0 +1,53 @@
+{
+  "retrieved_utc": "2026-09-06T05:05:09.441653+00:00",
+  "sources": [
+    {
+      "file": "8599647.json",
+      "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:8599647%20AND%20SRC:MED&format=json&resultType=core",
+      "sha256": "9cf5652da356568e21b0a1ab46449244f85803342278d66e27a829c3a2897795",
+      "title": "Thermodynamic determination of the Na+: glucose coupling ratio for the human SGLT1 cotransporter.",
+      "doi": "10.1016/s0006-3495(95)80110-4",
+      "pmid": "8599647",
+      "license": "No reuse license asserted in returned article metadata; publisher copyright may apply",
+      "isOpenAccess": "N"
+    },
+    {
+      "file": "15804236.json",
+      "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:15804236%20AND%20SRC:MED&format=json&resultType=core",
+      "sha256": "9c2da7f89b3af044c86e8dbd30543fc019ae9783e590f4d8a61028e9fd9cbf79",
+      "title": "Characterization of mouse amino acid transporter B0AT1 (slc6a19).",
+      "doi": "10.1042/bj20050083",
+      "pmid": "15804236",
+      "license": "No reuse license asserted in returned article metadata; publisher copyright may apply",
+      "isOpenAccess": "N"
+    },
+    {
+      "file": "2544655.json",
+      "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:2544655%20AND%20SRC:MED&format=json&resultType=core",
+      "sha256": "6ed563ccd480fce75f659982da7606e04e017e01189bc63b1b03338e37d37dc3",
+      "title": "Stoichiometry and voltage dependence of the sodium pump in voltage-clamped, internally dialyzed squid giant axon.",
+      "doi": "10.1085/jgp.93.5.903",
+      "pmid": "2544655",
+      "license": "cc by-nc-sa",
+      "isOpenAccess": "Y"
+    },
+    {
+      "file": "PMC7013606.xml",
+      "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7013606/fullTextXML",
+      "sha256": "843007cd94a9d3fe76c33d8043bd00b42c77726c8f88f03e0b0b6abad5067a4a",
+      "license": [
+        "\u00a9 2020 by the authors. Licensee MDPI, Basel, Switzerland. This article is an open access article distributed under the terms and conditions of the Creative Commons Attribution (CC BY) license ( http://creativecommons.org/licenses/by/4.0/ )."
+      ]
+    },
+    {
+      "file": "sodium_pump_1967.json",
+      "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:10.1113/jphysiol.1967.sp008297&format=json&resultType=core",
+      "sha256": "c46c037e05ab581fe45ea1e9655ddeb8128de1247a03bd78ed507de32f7224a8",
+      "title": "The stoicheiometry of the sodium pump.",
+      "doi": "10.1113/jphysiol.1967.sp008297",
+      "pmid": "4228075",
+      "license": "No reuse license asserted; publisher copyright may apply",
+      "isOpenAccess": "N"
+    }
+  ]
+}
