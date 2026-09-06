@@ -1,0 +1,127 @@
+{
+  "schema": "ihm.arm26-wrap-source-audit.v1",
+  "native_modified": false,
+  "sources": {
+    "data/raw/mechanics/opensim-core/OpenSim/Simulation/Wrap/WrapCylinder.cpp": {
+      "sha256": "ce01766de755cd78ae2b21a271809d5c988082e87a50e9ebf5302c9282662580",
+      "bytes": 28125
+    },
+    "data/raw/mechanics/opensim-core/OpenSim/Simulation/Wrap/WrapEllipsoid.cpp": {
+      "sha256": "a7b82703ae1874be991a71726ef84fcb79a45f9cbd339459c84edf449eff5d34",
+      "bytes": 41018
+    },
+    "data/raw/mechanics/opensim-core/OpenSim/Simulation/Wrap/PathWrapPoint.cpp": {
+      "sha256": "64acaa71bccbedbb834052a5a6f27951acee97c17f4a4a789a6c33ffe1ba88d4",
+      "bytes": 5650
+    },
+    "data/raw/mechanics/opensim-core/OpenSim/Simulation/Model/GeometryPath.cpp": {
+      "sha256": "48b0ca965aae8c0cf9f6f5ea901a57d6916700160b202de526fdf44f8f3bfdd6",
+      "bytes": 53148
+    },
+    "data/raw/mechanics/opensim-core/OpenSim/Simulation/MomentArmSolver.cpp": {
+      "sha256": "42b6614770f04354b597fecfa8c166a6c4b3e2d9a72cd780682bbad1a0c40ad3",
+      "bytes": 6928
+    },
+    "data/derived/mechanics/whole_body_arm26_v2/subject_with_arms.osim": {
+      "sha256": "e697dc40b2939f5edbc2879bcbd7e5954ffbabbb234032c403d57f5c39ea3810",
+      "bytes": 484175
+    }
+  },
+  "native_receipt": "data/derived/native-wrap-work-ovst3fef/report.json",
+  "native_receipt_sha256": "713a893c3513922d5f9781c514465f5f27a65e9ae63787ff80f23ae2d7d8453a",
+  "native_evaluations": 50,
+  "paths": [
+    {
+      "muscle": "arm26_BIClong_r",
+      "wrap_count": 1,
+      "wraps": [
+        {
+          "method": "hybrid",
+          "range": "2 3",
+          "object": {
+            "body": "humerus_r",
+            "type": "WrapEllipsoid",
+            "properties": {
+              "active": "true",
+              "xyz_body_rotation": "-2.0339437704387358 -1.0225784537506593 0.95385624066902541",
+              "translation": "0.003444611088556533 0.0081349390966692237 0.00024386097524561174",
+              "quadrant": "-y",
+              "dimensions": "0.027559229367297551 0.02204738349383804 0.02204738349383804"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "muscle": "arm26_BRA_r",
+      "wrap_count": 1,
+      "wraps": [
+        {
+          "method": "hybrid",
+          "range": "-1 -1",
+          "object": {
+            "body": "humerus_r",
+            "type": "WrapCylinder",
+            "properties": {
+              "active": "true",
+              "xyz_body_rotation": "-0.15122742909166276 -0.010976531377739684 0.17838558241099439",
+              "translation": "0.010762215833025718 -0.3216818013377219 -0.0039687438912971405",
+              "quadrant": "all",
+              "radius": "0.017637906795070431",
+              "length": "0.055118458734595102"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "muscle": "arm26_BIClong_l",
+      "wrap_count": 1,
+      "wraps": [
+        {
+          "method": "hybrid",
+          "range": "2 3",
+          "object": {
+            "body": "humerus_l",
+            "type": "WrapEllipsoid",
+            "properties": {
+              "active": "true",
+              "xyz_body_rotation": "2.0339437704387358 1.0225784537506595 0.95385624066902541",
+              "translation": "0.003444611088556533 0.0081349390966692237 -0.00024386097524561174",
+              "quadrant": "-y",
+              "dimensions": "0.027559229367297551 0.02204738349383804 0.02204738349383804"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "muscle": "arm26_BRA_l",
+      "wrap_count": 1,
+      "wraps": [
+        {
+          "method": "hybrid",
+          "range": "-1 -1",
+          "object": {
+            "body": "humerus_l",
+            "type": "WrapCylinder",
+            "properties": {
+              "active": "true",
+              "xyz_body_rotation": "0.15122742909166276 0.010976531377739684 0.17838558241099439",
+              "translation": "0.010762215833025718 -0.3216818013377219 0.0039687438912971405",
+              "quadrant": "all",
+              "radius": "0.017637906795070431",
+              "length": "0.055118458734595102"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "cylinder_correction": "Selected-branch analytic unrolled cylinder solution, exact axial tangency and length; preserve wrap transform/radius/quadrant/finite bounds, reject inadmissible branches.",
+  "ellipsoid_correction": "Stationary constrained surface geodesic with free contact endpoints; integrated arc and endpoint tensions derived from same converged solution. Hybrid plane may seed but cannot constrain final path.",
+  "not_claimed": [
+    "No actual corrected Arm26 native acceptance or quantified allocation of observed ellipsoid error among chord sum, plane selection and tangent residual.",
+    "No model or source-library patch; no muscle exclusion, force-parameter change, or moment-arm torque fudge."
+  ]
+}
