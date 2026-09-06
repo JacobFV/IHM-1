@@ -8,4 +8,12 @@ This selection installs the native engineering regions `region_a`, `region_b` an
 
 `verify_regional_embodied_factory.py` has three lightweight tests for default/opt-in routing and source capture, strict flag validation, and unchanged lineage rejection before native creation. These tests deliberately use fake native/mechanical owners and fake source attestation, so they establish factory control flow rather than native physiology or authentic runtime source binding. All three and the existing eleven embodied-runtime checks pass.
 
-The same script's explicit `--native` mode is prepared for a coordinated native slot. It initializes the actual regional factory, takes an initial snapshot with zero advances, verifies native regional ownership availability and retained source receipts, and checks that cleanup reaps both native owners. Actual acceptance results will be retained separately; no equilibrium or integrated-step acceptance is implied.
+The same script's explicit `--native` mode runs only in a coordinated native slot. It initializes the actual regional factory, takes an initial snapshot with zero advances, verifies native regional ownership availability and retained source receipts, and checks that cleanup reaps both native owners. No equilibrium or integrated-step acceptance is implied.
+
+## Actual zero-advance acceptance
+
+Receipt: `data/derived/audits/regional-embodied-factory-mi8ikftk/verification.json`. Actual factory initialization, regional owning-state projection, initial snapshot and cleanup passed in 1.743 s with **zero native or mechanical advances**. The parent peak RSS was 228092 KiB. Real source receipts include the regional session and observer; initial engineering fractions and requested/applied pressures match the declared zero-load installation.
+
+Both processes were reaped. The native process exited by the existing factory cleanup's deliberate termination path (`-15`); the mechanical process exited `0`. This is a cleanup-ownership result, not a graceful native checkpoint or serializer result.
+
+The first retained attempt, `regional-embodied-factory-6i_5_nui`, failed before native startup because a 2 GiB parent hard limit prevented the existing child launcher from setting its 4 GiB ceiling. The passing run used a 2 GiB parent soft limit and 4 GiB hard limit, permitting the unchanged child ceilings; OpenBLAS/OMP remained single-threaded. No simulator advance or state repair occurred during that launcher correction.
