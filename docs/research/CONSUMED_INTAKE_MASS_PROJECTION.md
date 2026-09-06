@@ -55,3 +55,22 @@ Review counterexamples cover wrong point/site velocity and missing/disabled
 owner acknowledgment; both reject. Actual native coupled acceptance and embodied
 factory activation remain required before this bridge can be claimed as live
 whole-body intake feedback.
+
+### Actual endpoint acceptance
+
+`data/derived/audits/intake-mass-bridge-ho3xdh6h/verification.json` records two
+actual native water consumptions (10 and 20 mL) projected into the actual
+92-muscle mechanical model at the hash-bound canonical stomach centroid on the
+torso. Total mechanical mass increased by 0.03 kg. Both common endpoints, exact
+coordinate values, frozen muscle reference/accumulated ledgers, constraint and
+momentum residuals, explicit owner inventory, and no-op receipt reobservation
+passed. Both processes were reaped; wall time was 1.90 seconds.
+
+Run: `OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 prlimit
+--as=2147483648:4294967296 nice -n 10 .venv/bin/python -m
+scripts.verify_intake_mass_native --run` with the shared heavy slot reserved.
+
+This is a free-body, two-owner mass-boundary acceptance. Physiology used its
+ordinary native advancement; it does not validate the whole-body signed
+metabolic loop, supported equilibrium, swallowing mechanics, regional organ
+deformation or excretion. The receipt preserves that distinction.
