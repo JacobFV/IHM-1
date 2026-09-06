@@ -56,12 +56,13 @@ def constrained_local_step(jacobian,acceleration,q,bounds,support_jacobian,suppo
         maximum_coordinate_step=float(np.max(np.abs(result.x))))
 
 
-def balanced_backtracked_trial(q,direction,bounds,current_cost,evaluate,support_jacobian,root_indices):
+def balanced_backtracked_trial(q,direction,bounds,current_cost,evaluate,support_jacobian,root_indices,*,radius=.03,maximum_backtracks=6):
+    if not 0<radius<=.03 or not 1<=maximum_backtracks<=6:raise ValueError("Invalid support trial box or attempt cap")
     root_block=np.asarray(support_jacobian)[:,root_indices]
     if not np.isfinite(np.linalg.cond(root_block)) or np.linalg.cond(root_block)>1e10:
         raise ValueError('Ill-conditioned support-coordinate correction')
-    lo=np.maximum(bounds[:,0],q-.03);hi=np.minimum(bounds[:,1],q+.03)
-    for backtrack in range(6):
+    lo=np.maximum(bounds[:,0],q-radius);hi=np.minimum(bounds[:,1],q+radius)
+    for backtrack in range(maximum_backtracks):
         candidate=np.clip(q+direction*(.5**backtrack),lo,hi)
         try:
             for correction in range(4):
@@ -76,3 +77,16 @@ def balanced_backtracked_trial(q,direction,bounds,current_cost,evaluate,support_
                 candidate=corrected
         except StaticDomainRejection:continue
     return None,None
+
+
+def recomputed_box_trial(jacobian,acceleration,q,bounds,support_jacobian,support,current_cost,evaluate,root_indices,radius):
+    """At most six local QPs/four evaluations each; no physical tolerance changes."""
+    trace=[]
+    for attempt in range(6):
+        trial_radius=radius*(.5**attempt)
+        direction,diagnostic=constrained_local_step(jacobian,acceleration,q,bounds,support_jacobian,support,radius=trial_radius)
+        candidate,entry=balanced_backtracked_trial(q,direction,bounds,current_cost,evaluate,support_jacobian,root_indices,
+            radius=trial_radius,maximum_backtracks=1)
+        trace.append(dict(radius=trial_radius,accepted=candidate is not None,**diagnostic))
+        if candidate is not None:return candidate,entry,trial_radius,trace
+    return None,None,radius*(.5**5),trace

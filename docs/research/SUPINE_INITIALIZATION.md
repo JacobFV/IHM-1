@@ -342,3 +342,10 @@ Evidence SHA-256:
 
 - `data/derived/constrained-supine-xovwbk2w/rejected_trial_diagnostic.json`: `ddf7dfc0303045cb28957f013cf2ca69e32ef176b25e5bce06386946a0275bdc`
 - `data/derived/constrained-supine-xovwbk2w/hip_range_source_audit.json`: `e222bbe2aa87e042c327bdaaffa8543f420d81a3334f0b65ff445b679192163e`
+
+
+## Opt-in recomputed local boxes: source preparation
+
+The solver now supports `--recompute-box --local-radius 0.0075` in `balanced-root` mode. This starts at the actual accepted maximum step in the retained trace. Each rejected trial halves the local box and recomputes the support-equality QP, rather than scaling the old direction; support correction is also restricted to that active box. At most six boxes and four evaluations per box are attempted, still under the overall 200-call/60-second cap. A successful box radius persists into the next iteration; this conservative version does not expand it. Exact source-coordinate bounds, material domains, all acceleration/support/gauge/constraint acceptance and copied-state semantics remain unchanged.
+
+The ordinary mode retains its prior defaults. Source fixtures verify shrinking after actual-objective rejection, recomputation of a bounded QP, correction staying inside the smaller box, source bounds, exact linear support equalities, unrelated-error propagation and unchanged static acceptance. The retained diagnostic still reproduces all five next accepted q exactly with the helper's default mode. No native comparison has run with this opt-in increment. The report records the box policy and hashes the numerical helper as well as the solver; native cache physics identities remain unchanged. A bounded comparison should resume exact `xovwbk2w/last_optimizer_iterate.json` and its 1836-response journal, with 12 new evaluations required to complete the accepted pose's Jacobian.
