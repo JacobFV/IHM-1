@@ -5,7 +5,7 @@ import numpy as np
 ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT))
 from ihm.assembly.source_skin import file_sha256
 from ihm.assembly.hair_dynamics import ElasticHairState
-from materialize_hair_residual_native import materialize
+from scripts.materialize_hair_residual_native import materialize
 
 
 def rigid_receipt(properties,state):
