@@ -85,6 +85,62 @@ class CutaneousTests(unittest.TestCase):
             model.restore(corrupted)
         self.assertEqual(b['time_s'], model.time_s)
 
+    def native_site(self):
+        native = sites()
+        native[0].pop('stiffness_pa_per_m')
+        native[0].update(mechanical_input='native_indentation',
+            material_identity={'manifest_sha256':'a'*64,'quadrature_index':3,'triangle_index':7},
+            indentation_basis='native confined-layer compression fixture',
+            area_basis='projected reference quadrature area')
+        return native
+
+    def test_native_indentation_bypasses_stiffness_and_preserves_identity(self):
+        from ihm.assembly.cutaneous_feedback import CutaneousFeedback
+        native = self.native_site()
+        model = CutaneousFeedback(ROOT, sites=native, recruitment_hz_per_response=.1)
+        sample = self.sample(model)
+        sample['contacts'][0].update(indentation_m=.00025,
+            material_identity=native[0]['material_identity'],
+            indentation_basis=native[0]['indentation_basis'])
+        result = model.step(.01, sample)
+        row = result['sites'][0]
+        self.assertEqual(row['indentation_um'], 250.)
+        self.assertEqual(row['pressure_pa'], 1000.)
+        self.assertEqual(row['material_identity'], native[0]['material_identity'])
+        self.assertEqual(row['mechanical_status'], 'native_modeled_indentation')
+        self.assertGreater(row['rapid_response'], 0.)
+        released = model.step(.01, {'time_s':model.time_s, 'contacts':[], 'skin_temperature_C':33.})
+        self.assertEqual(released['sites'][0]['indentation_um'], 0.)
+
+    def test_native_indentation_does_not_require_pressure_or_stiffness(self):
+        from ihm.assembly.cutaneous_feedback import CutaneousFeedback
+        native = self.native_site()
+        native[0]['contact_area_m2'] = None
+        model = CutaneousFeedback(ROOT, sites=native, recruitment_hz_per_response=.1)
+        sample = self.sample(model)
+        sample['contacts'][0].update(indentation_m=.00025,
+            material_identity=native[0]['material_identity'],
+            indentation_basis=native[0]['indentation_basis'])
+        result = model.step(.01, sample)
+        self.assertIsNone(result['sites'][0]['pressure_pa'])
+        self.assertEqual(result['sites'][0]['indentation_um'], 250.)
+        self.assertGreater(result['sites'][0]['rapid_response'], 0.)
+
+    def test_native_indentation_rejects_missing_or_mismatched_material_receipt(self):
+        from ihm.assembly.cutaneous_feedback import CutaneousFeedback
+        native = self.native_site()
+        model = CutaneousFeedback(ROOT, sites=native, recruitment_hz_per_response=.1)
+        for fields in ({}, {'indentation_m':-.1}, {'indentation_m':float('nan')},
+                       {'indentation_m':.0001,'material_identity':{'triangle_index':8}},
+                       {'indentation_m':.0001,'material_identity':native[0]['material_identity'],
+                        'indentation_basis':'invented basis'}):
+            before = model.checkpoint()
+            sample = self.sample(model)
+            sample['contacts'][0].update(fields)
+            with self.assertRaises(ValueError):
+                model.step(.01, sample)
+            self.assertEqual(before, model.checkpoint())
+
     def test_missing_temperature_is_not_a_reference_temperature_sample(self):
         model = self.make()
         model.step(.01, self.sample(model, force=0., temperature=35.))

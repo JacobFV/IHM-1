@@ -53,7 +53,9 @@ class _ThermalBackend:
 class CutaneousFeedback:
     """Material-site force and skin-temperature samples to causal sensory input.
 
-    Unknown contact area disables mechanical transduction and preserves raw force.
+    Unknown area disables force-to-pressure transduction and preserves raw force.
+    Direct native indentation bypasses foundation stiffness and requires a stable
+    material manifest/quadrature/triangle receipt plus explicit deformation basis.
     A temperature sample is a caller-supplied native skin temperature in degC,
     applied to each explicit site as a declared spatially uniform transfer prior.
     """
@@ -85,7 +87,25 @@ class CutaneousFeedback:
                 raise ValueError('Sensory region absent from canonical brain')
             area = site.get('contact_area_m2')
             site['contact_area_m2'] = None if area is None else _number(area, 'contact area', 1e-12, 10.)
-            site['stiffness_pa_per_m'] = _number(site.get('stiffness_pa_per_m'), 'foundation stiffness Pa/m', 1e-12, 1e15)
+            mode = site.setdefault('mechanical_input', 'force_foundation')
+            if mode not in ('force_foundation', 'native_indentation'):
+                raise ValueError('Unknown mechanical receptor input mode')
+            if mode == 'force_foundation':
+                site['stiffness_pa_per_m'] = _number(site.get('stiffness_pa_per_m'), 'foundation stiffness Pa/m', 1e-12, 1e15)
+            else:
+                if 'stiffness_pa_per_m' in site:
+                    raise ValueError('Direct native indentation must not impose another foundation stiffness')
+                identity = site.get('material_identity')
+                if not isinstance(identity, dict) or set(identity) != {'manifest_sha256', 'quadrature_index', 'triangle_index'}:
+                    raise ValueError('Native indentation requires stable manifest/quadrature/triangle identity')
+                digest = identity['manifest_sha256']
+                if not isinstance(digest, str) or len(digest) != 64 or any(c not in '0123456789abcdef' for c in digest):
+                    raise ValueError('Invalid native material manifest hash')
+                if any(type(identity[k]) is not int or identity[k] < 0 for k in ('quadrature_index', 'triangle_index')):
+                    raise ValueError('Invalid native quadrature/triangle index')
+                for field in ('indentation_basis', 'area_basis'):
+                    if not isinstance(site.get(field), str) or not site[field].strip():
+                        raise ValueError(f'Explicit native {field} required')
             site['reference_temperature_C'] = _number(site.get('reference_temperature_C'), 'reference temperature', -100., 100.)
             self.sites[key] = site
         backend = IBMBackend(self.root / 'data/derived/canonical/ibm-backend')
@@ -112,7 +132,7 @@ class CutaneousFeedback:
             'receptor_audit_sites': 'representative first site; all sites use same verified transfer and priors',
             'recruitment_hz_per_response': self.recruitment,
             'recruitment_basis': 'engineered absolute signed-response magnitude pooled into caller-assigned cortical populations; not measured recruitment',
-            'mechanical_basis': 'compression=max(0,-force dot outward normal); p=F/A; indentation=p/stiffness, explicit linear foundation prior',
+            'mechanical_basis': 'compression=max(0,-force dot outward normal); p=F/A; force_foundation uses explicit p/stiffness prior; native_indentation uses supplied modeled deformation directly with material receipt, no stiffness inversion',
             'thermal_basis': 'native scalar skin temperature transferred uniformly to supplied sites; reference subtraction is a caller prior; source LTI only, no absolute temperature tuning',
             'block_basis': 'engineering ablation: immediately reset blocked receptor state and purge delayed queue; not a physiological local anesthetic model',
             'refractory_model': 'none; source LTI adaptation only, no spike/refractory process',
@@ -137,6 +157,7 @@ class CutaneousFeedback:
             raise ValueError('Explicit contacts list required; empty means released')
         forces = {key: [0., 0., 0.] for key in self.sites}
         seen = set()
+        native_indentations = {key: 0. for key, site in self.sites.items() if site['mechanical_input'] == 'native_indentation'}
         for contact in contacts:
             if not isinstance(contact, dict) or contact.get('id') not in self.sites:
                 raise ValueError('Unknown contact material-site ID')
@@ -145,15 +166,26 @@ class CutaneousFeedback:
                 raise ValueError('Duplicate contact ID; aggregate physical forces explicitly')
             seen.add(key)
             forces[key] = _vector(contact.get('force_n'), 'contact force N')
+            site = self.sites[key]
+            if site['mechanical_input'] == 'native_indentation':
+                receipt = contact.get('material_identity')
+                if (not isinstance(receipt, dict) or receipt != site['material_identity']
+                        or any(type(receipt.get(k)) is not int for k in ('quadrature_index', 'triangle_index'))):
+                    raise ValueError('Native contact material identity differs from registered site')
+                if contact.get('indentation_basis') != site['indentation_basis']:
+                    raise ValueError('Native indentation provenance differs from registration')
+                native_indentations[key] = _number(contact.get('indentation_m'), 'native indentation m', 0., 1.)
+            elif 'indentation_m' in contact or 'material_identity' in contact:
+                raise ValueError('Native deformation supplied to force-foundation site')
             if 'point_m' in contact:
                 point = _vector(contact['point_m'], 'contact application point')
                 if not np.allclose(point, self.sites[key]['position_m'], atol=1e-9, rtol=0.):
                     raise ValueError('Contact point differs from registered material site')
-        return forces, temperature
+        return forces, temperature, native_indentations
 
     def step(self, dt_s, observation, *, sensory_blocks=()):
         dt = _number(dt_s, 'cutaneous interval', 1e-9, .1)
-        forces, temperature = self._observe(observation)
+        forces, temperature, native_indentations = self._observe(observation)
         if not isinstance(sensory_blocks, (list, tuple, set)) or any(not isinstance(k, str) or k not in self.sites for k in sensory_blocks):
             raise ValueError('Unknown sensory block site')
         blocks = set(sensory_blocks)
@@ -165,7 +197,9 @@ class CutaneousFeedback:
                 compression = max(0., -sum(f*n for f, n in zip(force, site['normal'])))
                 area = site['contact_area_m2']
                 pressure = None if area is None else compression / area
-                indentation = None if pressure is None else float(pressure_to_indentation_um(pressure, stiffness_pa_per_m=site['stiffness_pa_per_m']))
+                native = site['mechanical_input'] == 'native_indentation'
+                indentation = native_indentations[key] * 1e6 if native else (
+                    None if pressure is None else float(pressure_to_indentation_um(pressure, stiffness_pa_per_m=site['stiffness_pa_per_m'])))
                 delta = None if temperature is None else temperature - site['reference_temperature_C']
                 stimuli = {'rapid': indentation or 0., 'slow': indentation or 0., 'thermal': delta or 0.}
                 responses = {}
@@ -187,7 +221,11 @@ class CutaneousFeedback:
                     'normal_force_n': compression, 'contact_area_m2': area,
                     'pressure_pa': pressure, 'indentation_um': indentation,
                     'skin_temperature_C': temperature, 'temperature_change_C': delta,
-                    'mechanical_status': 'unknown_area_no_transduction' if area is None else 'explicit_foundation_prior',
+                    'mechanical_status': 'native_modeled_indentation' if native else (
+                        'unknown_area_no_transduction' if area is None else 'explicit_foundation_prior'),
+                    'material_identity': deepcopy(site.get('material_identity')),
+                    'indentation_basis': site.get('indentation_basis', 'explicit linear foundation prior'),
+                    'area_basis': site.get('area_basis', 'caller supplied contact area'),
                     'thermal_status': 'unavailable' if temperature is None else 'source_LTI_transient_with_reference_prior',
                     'rapid_response': responses['rapid'], 'slow_response': responses['slow'],
                     'thermal_response': responses['thermal'], 'sensory_input_hz': rate,
