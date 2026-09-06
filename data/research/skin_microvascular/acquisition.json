@@ -1,0 +1,33 @@
+{
+  "retrieved": "2026-09-06",
+  "sources": [
+    {
+      "path": "data/research/skin_microvascular/confocal_2010.html",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3046666/?pdf=0",
+      "bytes": 154092,
+      "sha256": "d709aded02a24f9e67b2e7bb8d85778fcd7553ab06a43dd0a2cabd66ebfb51e6",
+      "license": "No open reuse license identified; free-to-read source, copyright retained"
+    },
+    {
+      "path": "data/research/skin_microvascular/confocal_metadata.json",
+      "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:19513794%20AND%20SRC:MED&format=json&resultType=core",
+      "bytes": 6837,
+      "sha256": "da722680c9b56e78df3d23ff778ec2d3013d2de7f45c9b20d19993ee4fb33167",
+      "license": "No open reuse license identified; free-to-read source, copyright retained"
+    },
+    {
+      "path": "data/research/skin_microvascular/dermal_plexus_1976.json",
+      "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:1249441%20AND%20SRC:MED&format=json&resultType=core",
+      "bytes": 4658,
+      "sha256": "5fb5ae4ff089d858de6c67c85a8d9dcc3acba373ad0d420b52b3dcccc1cf2e5b",
+      "license": "Bibliographic metadata/abstract; publisher copyright, no open graph license identified"
+    }
+  ],
+  "failed_requests": [
+    {
+      "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC3046666/fullTextXML",
+      "result": "HTTP 404; complete public HTML held instead"
+    }
+  ],
+  "raw_graph_or_image_bytes_held": 0
+}

@@ -1,0 +1,88 @@
+{
+  "schema": "ihm.skin-microvascular-priors.v1",
+  "primary_receipts": [
+    {
+      "path": "data/research/skin_microvascular/confocal_2010.html",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3046666/?pdf=0",
+      "bytes": 154092,
+      "sha256": "d709aded02a24f9e67b2e7bb8d85778fcd7553ab06a43dd0a2cabd66ebfb51e6",
+      "license": "No open reuse license identified; free-to-read source, copyright retained"
+    },
+    {
+      "path": "data/research/skin_microvascular/confocal_metadata.json",
+      "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:19513794%20AND%20SRC:MED&format=json&resultType=core",
+      "bytes": 6837,
+      "sha256": "da722680c9b56e78df3d23ff778ec2d3013d2de7f45c9b20d19993ee4fb33167",
+      "license": "No open reuse license identified; free-to-read source, copyright retained"
+    },
+    {
+      "path": "data/research/skin_microvascular/dermal_plexus_1976.json",
+      "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:1249441%20AND%20SRC:MED&format=json&resultType=core",
+      "bytes": 4658,
+      "sha256": "5fb5ae4ff089d858de6c67c85a8d9dcc3acba373ad0d420b52b3dcccc1cf2e5b",
+      "license": "Bibliographic metadata/abstract; publisher copyright, no open graph license identified"
+    }
+  ],
+  "human_confocal": {
+    "source": "PMID19513794; PMC3046666; DOI10.1007/s10278-009-9219-3",
+    "species": "Homo sapiens",
+    "site": "middle volar forearm",
+    "specimen": "living intact healthy adult skin",
+    "group": "heating group before immersion, t0",
+    "n": 11,
+    "female": 5,
+    "male": 6,
+    "age_years_mean": 22.4,
+    "age_years_sd": 3.1,
+    "preparation": "in vivo reflectance confocal; no histological fixation or shrinkage correction",
+    "instrument": "Vivascope1500; 830 nm",
+    "lateral_resolution_um": 0.4,
+    "axial_resolution_um": 1.9,
+    "maximum_imaging_depth_um": 350,
+    "sampling": "EDJ; same two papillae in four fields for diameter; eight fields for density",
+    "density": {
+      "value": 7.04,
+      "sd": 0.62,
+      "units": "perfused capillary loops/mm2",
+      "range": null,
+      "uncertainty": "reported mean plus SD; no individual loop spatial distribution held"
+    },
+    "lumen_diameter": {
+      "value": 9.59,
+      "sd": 0.25,
+      "units": "um",
+      "range": null,
+      "uncertainty": "reported SD of averaged measurements, not individual vessel radius distribution"
+    },
+    "blood_cell_count_rate": {
+      "value": 61.09,
+      "sd": 3.21,
+      "units": "cells/min",
+      "used_as_volumetric_flow": false
+    }
+  },
+  "topology_basis": {
+    "source": "PMID1249441; DOI10.1111/1523-1747.ep12481678",
+    "species": "Homo sapiens",
+    "site": "normal forearm",
+    "preparation": "electron microscopy; 1 um plastic sections; ultrathin samples every 10-20 um over 450 um",
+    "scope": "arteriole through papillary horizontal capillary bed to venous connections",
+    "individual_graph_held": false
+  },
+  "transfer": {
+    "target": "engineered canonical lower-leg skin territories",
+    "same_site": false,
+    "measured_lower_leg_density": false,
+    "assumption": "explicit transfer of forearm functional perfused-loop density and average lumen diameter; not total vascular density"
+  },
+  "unidentified": [
+    "individual vessel graph",
+    "deep plexus geometry",
+    "local layer thickness",
+    "radius distribution",
+    "haematocrit-dependent rheology",
+    "arterial and venous macro connections",
+    "capillary exchange and solute transport",
+    "lymphatic network"
+  ]
+}
