@@ -123,13 +123,14 @@ normal deformation should be supplied directly to the receptor as
 foundation conversion again. Preserve native triangle force, known area, pressure,
 material/triangle ID, sample time, and deformation provenance alongside it.
 
-A future direct-indentation contact port should provide `id`, `force_n`,
-`indentation_m`, and `indentation_basis`, tied to the stable registered material
-site and physical coordinate frame. Native triangle area can support a pressure
-audit without becoming the input to a second deformation model. This payload is
-an integration proposal; the current contact port implements force/area/stiffness
-only. Moving supports and native endpoint field binding require agreement with the
-foundation owner.
+The direct-indentation port is implemented. Sites declare
+`mechanical_input='native_indentation'`, a manifest SHA256, quadrature and triangle
+identity, indentation basis and area basis. Each present contact supplies `id`,
+`force_n`, `indentation_m`, matching material identity and indentation basis.
+This mode rejects a second stiffness parameter. Native area supports a pressure
+audit without becoming an input to another deformation model. Eleven cutaneous
+fixtures cover both input modes and malformed or mismatched source identities.
+Moving supports and native endpoint field binding remain integration work.
 
 The controller integration is tested by
 `PYTHONPATH=. .venv/bin/python scripts/verify_sensorimotor.py`. The matched fixture
@@ -138,3 +139,23 @@ IBM receptor output to one controller, and blocks the other receptor. After fort
 10 ms exchanges the shared brain activity and actual controller motor excitation
 differ, while both brain and receptor clocks equal 0.4 s. The first exchange is
 identical, confirming that future receptor endpoints are not injected early.
+
+
+## Shared runtime exchange
+
+`EmbodiedRuntime(..., cutaneous=registered_receptor)` now checkpoints receptor
+state alongside mechanics and neural state. It requires an explicit
+`mechanical_state.cutaneous_contacts` list: absence is an error, while an empty
+list means released contact. It samples the accepted physical state at the start
+of the exchange and delivers the previously accepted receptor endpoint to the
+single shared brain step. New receptor endpoints become available next exchange.
+`skin_sensory_blocks` removes both queued site contributions and receptor state;
+pre-native failures restore receptor state with the other reversible owners.
+Frames retain the receptor output and source identity. Native skin temperature
+is used only when the corresponding observation exists.
+
+The runtime fixture executes the actual pinned receptor model and verifies this
+latency, block behavior, synchronized clocks and missing-contact rollback.
+The workspace factory does not yet enable receptors: native selected material
+contact observations and moving coordinate registration must be connected first.
+This interface does not claim an accepted whole-body contact/reflex trajectory.

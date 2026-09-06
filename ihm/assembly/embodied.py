@@ -131,10 +131,12 @@ class EmbodiedRuntime:
                 error.add_note(str(cleanup_error))
             raise
 
-    def __init__(self,plant,neural,native,exchange,respiratory_load,*,reference_identity=None):
+    def __init__(self,plant,neural,native,exchange,respiratory_load,*,reference_identity=None,cutaneous=None):
         self.plant,self.neural,self.native,self.exchange,self.respiratory_load=plant,neural,native,exchange,respiratory_load
         self.time_s=0.;self.sequence=0;self.failed=False;self.closed=False;self.next_excitation={};self.frame=None
         self.native_state=native.snapshot();self.mechanical_state=plant.snapshot()
+        self.cutaneous=cutaneous;self.cutaneous_state=None
+        if cutaneous is not None and abs(cutaneous.time_s)>1e-9:raise ValueError('Fresh cutaneous clock required')
         self.cleanup_owner=CleanupOwners(native,plant)
         self.intakes=IntakeSchedule(horizon_s=getattr(getattr(native,'config',None),'horizon_s',86400))
         import hashlib,json
@@ -167,7 +169,7 @@ class EmbodiedRuntime:
             except BaseException as error:self.cleanup_failures.append({'owner':label,'error':str(error)})
 
     def _validate(self,data):
-        if not isinstance(data,dict) or set(data)-{'seconds','forces','descending','sensory_blocks','motor_blocks','skin_compression_pa'}:
+        if not isinstance(data,dict) or set(data)-{'seconds','forces','descending','sensory_blocks','motor_blocks','skin_compression_pa','skin_sensory_blocks'}:
             raise ValueError('Unknown embodied input')
         dt=finite(data.get('seconds',.02),'embodied interval',.02,.02)
         forces=data.get('forces',[])
@@ -178,6 +180,8 @@ class EmbodiedRuntime:
                 if not isinstance(f[key],(list,tuple)) or len(f[key])!=3:raise ValueError('Expected spatial force/point vector')
                 for value in f[key]:finite(value,key,-1000 if key=='force_n' else -5,1000 if key=='force_n' else 5)
         if 'skin_compression_pa' in data:finite(data['skin_compression_pa'],'whole-skin pressure',0,5000)
+        blocks=data.get('skin_sensory_blocks',[])
+        if not isinstance(blocks,(list,tuple)) or any(not isinstance(k,str) or self.cutaneous is None or k not in self.cutaneous.sites for k in blocks):raise ValueError('Unknown skin sensory block')
         horizon=getattr(getattr(self.native,'config',None),'horizon_s',None)
         if horizon is not None and self.time_s+dt>horizon+1e-9:raise ValueError('Native horizon reached; no owners advanced')
         return dt,deepcopy(forces)
@@ -185,14 +189,29 @@ class EmbodiedRuntime:
     def step(self,data):
         if self.failed or self.closed:raise RuntimeError('Embodied runtime is no longer advancing')
         dt,forces=self._validate(data)
-        p_checkpoint=n_checkpoint=None;native_touched=False
+        p_checkpoint=n_checkpoint=c_checkpoint=None;native_touched=False
         try:
             p_checkpoint=self.plant.checkpoint();n_checkpoint=self.neural.checkpoint()
             v=self.native_state['values']
+            cutaneous=None;additional={}
+            if self.cutaneous is not None:
+                c_checkpoint=self.cutaneous.checkpoint()
+                contacts=self.mechanical_state.get('cutaneous_contacts')
+                if not isinstance(contacts,list):raise ValueError('Explicit mechanical cutaneous contacts required')
+                blocks=data.get('skin_sensory_blocks',())
+                # Previously accepted receptor endpoints feed this exchange.
+                # Immediate blocks also remove already queued site contributions.
+                for row in (self.cutaneous_state or {}).get('sites',[]):
+                    if row['id'] not in blocks:
+                        region=row['sensory_region']
+                        additional[region]=min(1000.,additional.get(region,0.)+row['sensory_input_hz'])
+                cutaneous=self.cutaneous.step(dt,{'time_s':self.time_s,'contacts':contacts,
+                    'skin_temperature_C':v.get('skin_temperature_c')},sensory_blocks=blocks)
+
             physiology={'mean_arterial_pressure_mmHg':v['mean_arterial_pressure_mmhg'],
                 'oxygen_saturation':v['oxygen_saturation'],'core_temperature_C':v['core_temperature_c']}
             neural=self.neural.step(dt,self.mechanical_state,descending=data.get('descending',{}),
-                sensory_blocks=data.get('sensory_blocks',()),motor_blocks=data.get('motor_blocks',()),physiology=physiology)
+                sensory_blocks=data.get('sensory_blocks',()),motor_blocks=data.get('motor_blocks',()),physiology=physiology,additional_sensory_inputs_hz=additional)
             # Neural output belongs to the next exchange interval. Current
             # motor blocks still suppress already-delivered excitations now.
             actuation={k:v for k,v in self.next_excitation.items() if k not in data.get('motor_blocks',())}
@@ -234,7 +253,7 @@ class EmbodiedRuntime:
             self.native_state=native;self.mechanical_state=mechanical;self.time_s=end;self.sequence+=1
             self.frame={'schema':'ihm.embodied-frame.v1','time_s':end,'sequence':self.sequence,
                 'entities':geometry['entities'],'skin_field':geometry['skin_field'],'respiration':geometry,'mechanics':mechanical,'neural':neural,'physiology':native,
-                'tissue_exchange':tissue,'respiratory_load':load,'intake_schedule':self.intakes.snapshot(),
+                'cutaneous':cutaneous,'tissue_exchange':tissue,'respiratory_load':load,'intake_schedule':self.intakes.snapshot(),
                 'coupling':{'exchange_interval_s':dt,'motor_exchange_latency_s':dt,
                     'positive_muscle_work_j':work,'native_extra_metabolic_demand_w':incremental_w,
                     'muscle_metabolic_reference_w':self.reference_metabolic_w,'interval_muscle_metabolic_w':metabolic_w,
@@ -243,6 +262,7 @@ class EmbodiedRuntime:
                     'storage_owners':{'articulation_muscle':'native mechanical plant','neural':'pinned IBM plus declared decoder/reflexes',
                         'blood_gas_nutrients_heat':'BioGears','tissue_views':'native-owned compartments, no duplicate storage'},
                     'rollback':'An uncertain native commit terminates this runtime; no serializer-exactness claim'}}
+            self.cutaneous_state=cutaneous
             result=deepcopy(self.frame)
             if hasattr(self.plant,'release'):self.plant.release(p_checkpoint)
             return result
@@ -253,6 +273,7 @@ class EmbodiedRuntime:
                 try:
                     if p_checkpoint is None or n_checkpoint is None:raise RuntimeError('Checkpoint acquisition failed')
                     self.plant.restore(p_checkpoint);self.neural.restore(n_checkpoint)
+                    if c_checkpoint is not None:self.cutaneous.restore(c_checkpoint)
                     if hasattr(self.plant,'release'):self.plant.release(p_checkpoint)
                 except BaseException:self._abort()
             raise

@@ -14,11 +14,11 @@ class Plant:
     def close(self):pass
 
 class Neural:
-    def __init__(self):self.t=0
+    def __init__(self):self.t=0;self.inputs=[]
     def checkpoint(self):return self.t
     def restore(self,state):self.t=state
     def step(self,dt,observation,**inputs):
-        assert observation['time_s']==self.t;self.t+=dt
+        assert observation['time_s']==self.t;self.t+=dt;self.inputs.append(deepcopy(inputs))
         return {'time_s':self.t,'motor_excitations':{'muscle':.5}}
 
 class Native:
@@ -51,6 +51,32 @@ class Exchange:
 
 class Tests(unittest.TestCase):
     def body(self):return EmbodiedRuntime(Plant(),Neural(),Native(),Exchange(),Load())
+    def test_cutaneous_receptor_endpoint_feeds_next_brain_exchange_and_blocks(self):
+        from pathlib import Path
+        from ihm.assembly.cutaneous_feedback import CutaneousFeedback
+        site={'id':'fixture','position_m':[0,0,0],'normal':[0,0,1],
+              'contact_area_m2':.001,'stiffness_pa_per_m':1e7,
+              'sensory_region':'brain-rh-postcentral','reference_temperature_C':33,
+              'support_basis':'synthetic runtime timing fixture'}
+        receptor=CutaneousFeedback(Path(__file__).resolve().parents[1],sites=[site],recruitment_hz_per_response=.1)
+        body=EmbodiedRuntime(Plant(),Neural(),Native(),Exchange(),Load(),cutaneous=receptor)
+        body.mechanical_state['cutaneous_contacts']=[{'id':'fixture','force_n':[0,0,-1]}]
+        first=body.step({})
+        self.assertEqual(body.neural.inputs[0]['additional_sensory_inputs_hz'],{})
+        self.assertGreater(first['cutaneous']['sensory_inputs_hz']['brain-rh-postcentral'],0)
+        body.mechanical_state['cutaneous_contacts']=[]
+        body.step({})
+        self.assertGreater(body.neural.inputs[1]['additional_sensory_inputs_hz']['brain-rh-postcentral'],0)
+        body.mechanical_state['cutaneous_contacts']=[]
+        body.step({'skin_sensory_blocks':['fixture']})
+        self.assertEqual(body.neural.inputs[2]['additional_sensory_inputs_hz'],{})
+        self.assertAlmostEqual(receptor.time_s,body.time_s)
+        before=receptor.checkpoint()
+        # Missing physical observation is unknown, never silently a release.
+        with self.assertRaisesRegex(ValueError,'cutaneous contacts'):body.step({})
+        self.assertEqual(before,receptor.checkpoint())
+        self.assertFalse(body.failed)
+
     def test_delayed_actuation_native_load_and_work(self):
         body=self.body();first=body.step({'forces':[{'id':'chest','force_n':[2,0,0],'point_m':[0,0,0]}]})
         self.assertEqual(body.plant.commands,[{}]);self.assertEqual(body.native.loads,[2])
