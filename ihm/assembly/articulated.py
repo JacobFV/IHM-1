@@ -85,6 +85,19 @@ class CanonicalRegistration:
                 'kind':'resultant_wrench_about_body_origin','frame':'canonical_current_world',
                 'scope':'Rigid-segment contact resultant; distribution onto deforming thorax/skin is unresolved; proxy area is not anatomical pressure area'})
         return records
+    def cutaneous_contacts(self,native):
+        surface=native.get('surface_foundation')
+        if surface is None:return None
+        result=[]
+        for point in surface['sensor_points']:
+            row=copy.deepcopy(point)
+            row['point_m']=(self.basis@np.array(point['point_source_m'])+self.global_map[:3,3]).tolist()
+            row['normal']=(self.basis@np.array(point['normal_source'])).tolist()
+            row['force_n']=(self.basis@np.array(point['force_n'])).tolist()
+            row['coordinate_frame']='canonical_current_world'
+            result.append(row)
+        return result
+
     def manifest(self):
         def plain(value):
             if isinstance(value,np.ndarray):return value.tolist()
@@ -96,13 +109,13 @@ class CanonicalRegistration:
             'scope':'One global ground frame preserves native joint and environment consistency. Canonical source meshes have fixed segment-local embeddings; their anatomical boundaries are not guaranteed to coincide with native joint locations. No anatomical registration precision is fabricated.'})
 
 class ArticulatedBodyPlant:
-    def __init__(self,root,output,*,environment='supine',target_mass_kg=None,augmented_registration=None,enable_garments=False):
+    def __init__(self,root,output,*,environment='supine',target_mass_kg=None,augmented_registration=None,enable_garments=False,surface_contact_manifest=None,surface_sensor_indices=()):
         self.root=Path(root).resolve();self.output=Path(output).resolve()
         if self.output.exists() or not self.output.is_relative_to(self.root):raise ValueError('Fresh owned articulated output required')
         path=self.root/'data/derived/canonical/mechanics.json';raw=path.read_bytes();payload=json.loads(raw)
         canonical_mass=sum(e['mass_kg'] for e in payload['entities']);target=canonical_mass if target_mass_kg is None else finite(target_mass_kg)
         self.output.mkdir(parents=True);(self.output/'canonical_mechanics.json').write_bytes(raw)
-        self.native=NativeMechanicalStream(self.root,self.output/'native',environment=environment,target_mass_kg=target,augmented_registration=augmented_registration)
+        self.native=NativeMechanicalStream(self.root,self.output/'native',environment=environment,target_mass_kg=target,augmented_registration=augmented_registration,surface_contact_manifest=surface_contact_manifest,surface_sensor_indices=surface_sensor_indices)
         try:
             self.registration=CanonicalRegistration(payload,self.native.snapshot());self.muscle_catalog=self.native.muscle_catalog or native_muscle_catalog(self.root)
             self.source_registration_manifest=self.registration.manifest();(self.output/'registration.json').write_text(json.dumps(self.source_registration_manifest,indent=2)+'\n')
@@ -136,6 +149,11 @@ class ArticulatedBodyPlant:
                 'limitations':['Canonical anatomical joint locations and surface continuity remain uncalibrated',*(['Garment partitioned face contact lacks CCD/self/edge/full containment validation'] if self.garments else ['Whole-garment feedback disabled for this plant']),'All-organ volumetric deformation/contact is not implemented by this registration']}
         if native['environment']=='supine':
             p=np.array([native['support_plane_source_x_m'],0.,0.]);frame['body_environment']['plane']={'point_m':(self.registration.basis@p+self.registration.global_map[:3,3]).tolist(),'normal':self.registration.basis[:,0].tolist(),'basis':'One native ideal plane shared by all contact proxies'}
+        contacts=self.registration.cutaneous_contacts(native)
+        if contacts is not None:
+            frame['cutaneous_contacts']=contacts
+            frame['body_environment']['surface_foundation']=copy.deepcopy(native['surface_foundation'])
+            frame['body_environment']['scope']='Retained skin quadrature with declared nonlinear material law; selected material sensors preserve source identity. Registration and bed material scope remain explicit in native receipts.'
         frame['gravity_m_s2']=(self.registration.basis@native['gravity_m_s2']).tolist()
         if self.garments is not None:frame['garment_mechanics']=self.garments.frame()
         return frame
