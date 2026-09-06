@@ -1,0 +1,38 @@
+{
+  "selected_unions": [
+    [
+      "left_lower_leg_anteromedial",
+      "left_lower_leg_anterolateral",
+      "left_lower_leg_posteromedial",
+      "left_lower_leg_posterolateral"
+    ],
+    [
+      "right_lower_leg_anteromedial",
+      "right_lower_leg_anterolateral",
+      "right_lower_leg_posteromedial",
+      "right_lower_leg_posterolateral"
+    ]
+  ],
+  "region_names": [
+    "engineered_left_lower_leg",
+    "engineered_right_lower_leg",
+    "engineered_exterior_complement"
+  ],
+  "priors": [
+    {
+      "thickness_m": 0.001,
+      "extracellular_fraction": 0.2,
+      "evidence": "Explicit uniform engineering weighting prior only; normalized to preserve full native Skin inventory; not measured tissue parameters"
+    },
+    {
+      "thickness_m": 0.001,
+      "extracellular_fraction": 0.2,
+      "evidence": "Explicit uniform engineering weighting prior only; normalized to preserve full native Skin inventory; not measured tissue parameters"
+    },
+    {
+      "thickness_m": 0.001,
+      "extracellular_fraction": 0.2,
+      "evidence": "Explicit uniform engineering weighting prior only; normalized to preserve full native Skin inventory; not measured tissue parameters"
+    }
+  ]
+}
