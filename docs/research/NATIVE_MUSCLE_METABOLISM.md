@@ -45,3 +45,16 @@ The probe returns total, basal and per-muscle power. The helper requires basal t
 The adapter owns energy accumulation. If using endpoint trapezoidal power quadrature, record that numerical approximation and checkpoint cumulative metabolic energy alongside state, excitation, loads and reference power. The probe operation is `value`, so it introduces no hidden energy integrator requiring independent rollback. Keep mechanical work and metabolic energy separate in telemetry; do not add active work to the metabolic total again.
 
 Required next native gates are zero-activation/reference behavior, positive isometric activation heat with zero fiber work, shortening and lengthening branches, per-muscle/total agreement, additional Thelen coverage, finite state, matched reference subtraction and checkpoint replay. No passing claim for those gates is made by this source-only implementation.
+
+## Subsequent native evidence
+
+The preceding source-only status describes the original wrapper checkpoint.
+The 92-muscle response/replay check later passed at
+`data/derived/articulated-acceptance-noo34jds`. Instrumented source-native
+execution at `data/derived/supine-support-tt0k8jes` demonstrated a tiny negative
+cancellation residual. The current wrapper preserves that raw value within a
+reported per-muscle FP tolerance; materially negative values remain errors.
+See EMBODIED_INTEGRATION.md for the exact bound and receipts. The current
+source card retains both historical and updated wrapper hashes. Signed
+incremental body coupling and the complete energetic validation matrix remain
+open; these short results do not establish support equilibrium.

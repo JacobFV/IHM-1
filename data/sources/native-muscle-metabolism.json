@@ -1,6 +1,6 @@
 {
   "id": "native-muscle-metabolism",
-  "status": "source_api_reviewed_not_yet_native_numerically_verified",
+  "status": "short_native_response_and_checkpoint_verified_roundoff_audited_full_coupling_incomplete",
   "primary_paper": {
     "doi": "10.1371/journal.pone.0150378",
     "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0150378",
@@ -30,7 +30,7 @@
     },
     {
       "path": "scripts/native_muscle_metabolism.h",
-      "sha256": "0eabf9a9268f2cd5e8a30a79c3c4e548a8d40cca8ff631e2838e980c3627763d"
+      "sha256": "5f461b32aee13640a6982c0469745d5d8597dc23287641d22e0058a0afead33d"
     }
   ],
   "defaults": {
@@ -42,5 +42,19 @@
     "whole_body_basal_enabled": false
   },
   "adds_body_inertia": false,
-  "requires_explicit_biogears_incremental_reference": true
+  "requires_explicit_biogears_incremental_reference": true,
+  "historical_wrapper_sha256": [
+    "0eabf9a9268f2cd5e8a30a79c3c4e548a8d40cca8ff631e2838e980c3627763d"
+  ],
+  "native_evidence": [
+    "data/derived/articulated-acceptance-noo34jds",
+    "data/derived/supine-support-tt0k8jes",
+    "data/derived/supine-support-5ma720yd"
+  ],
+  "remaining_limits": [
+    "Full isometric/shortening/lengthening validation matrix incomplete",
+    "Source generic parameter priors not individual calibration",
+    "Signed incremental physiological coupling unresolved",
+    "Supine equilibrium not established"
+  ]
 }
