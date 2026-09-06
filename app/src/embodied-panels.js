@@ -1,4 +1,4 @@
-import {LiveBodyHistory,signalInfo} from './embodied-live.js';
+import {LiveBodyHistory,signalInfo,skinPressureCapability} from './embodied-live.js';
 const $=id=>document.getElementById(id);
 const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text)n.textContent=text;if(cls)n.className=cls;return n;};
 const format=v=>Number.isFinite(v)?Number(v).toPrecision(5):'Unavailable';
@@ -23,13 +23,22 @@ export function mountEmbodiedPanels() {
  const muscleState=el('p','Actual muscle activation and force appear after initialization.','muted');
  const note=el('p','Inputs are held for the next live body tick. Paused bodies apply changes on resume.','muted');
  const release=el('button','Release all drives, blocks & pressure');release.type='button';
+ const pressureStatus=el('p',null,'muted');pressureStatus.setAttribute('role','status');
+ const pressureReset=el('button','Clear pending whole-skin pressure');pressureReset.type='button';
+ function syncPressure(){
+  const capability=skinPressureCapability(frame);pressure.disabled=capability.topology!=='whole';
+  pressureReset.disabled=inputs.pressure===0;
+  pressureStatus.textContent=capability.topology==='whole'?'Uniform native Skin compartment pressure; not local pressure beneath the cursor.':capability.message;
+  if(inputs.pressure!==0&&capability.topology!=='whole')pressureStatus.textContent+=` Pending ${inputs.pressure} Pa is preserved and blocks advance. Clear pending whole-skin pressure explicitly to continue.`;
+ }
+ pressureReset.onclick=()=>{inputs.pressure=0;pressure.value=0;syncPressure();note.textContent='Pending whole-skin pressure cleared. Other requested inputs are unchanged.';};
  motor.replaceChildren(search,select,row('Requested descending drive · 0–1',drive),row('Block selected sensory pathway',sensory),row('Block selected motor pathway',block),muscleState,
-  row('Whole-Skin compression · Pa',pressure),el('p','Uniform native Skin compartment pressure. This is a lumped input, not pressure beneath the cursor or a local skin patch.','muted'),release,note);
+  row('Whole-Skin compression · Pa',pressure),pressureStatus,pressureReset,release,note);
  const syncControls=()=>{const key=select.value;drive.value=inputs.drives[key]??0;sensory.checked=inputs.sensory.has(key);block.checked=inputs.motor.has(key);};
  const save=()=>{try{inputs.set(select.value,drive.value===''?NaN:Number(drive.value),sensory.checked,block.checked);note.textContent='Requested inputs updated · applied on the next live body tick.';}catch(error){note.textContent=error.message;syncControls();}};
  drive.onchange=save;sensory.onchange=save;block.onchange=save;select.onchange=()=>{syncControls();drawMuscle();};
- pressure.onchange=()=>{const p=pressure.value===''?NaN:Number(pressure.value);if(!Number.isFinite(p)||p<0||p>5000){pressure.value=inputs.pressure;note.textContent='Skin pressure must be between 0 and 5000 Pa.';}else{inputs.pressure=p;note.textContent='Whole-Skin pressure requested for the next live body tick.';}};
- release.onclick=()=>{const keys=[...inputs.keys];inputs.clear();inputs.bind(keys);syncControls();pressure.value=0;note.textContent='Release requested · muscle activation still decays through its native law.';};
+ pressure.onchange=()=>{if(skinPressureCapability(frame).topology!=='whole'){pressure.value=inputs.pressure;syncPressure();return;}const p=pressure.value===''?NaN:Number(pressure.value);if(!Number.isFinite(p)||p<0||p>5000){pressure.value=inputs.pressure;note.textContent='Skin pressure must be between 0 and 5000 Pa.';}else{inputs.pressure=p;note.textContent='Whole-Skin pressure requested for the next live body tick.';syncPressure();}};
+ release.onclick=()=>{const keys=[...inputs.keys];inputs.clear();inputs.bind(keys);syncControls();pressure.value=0;syncPressure();note.textContent='Release requested · muscle activation still decays through its native law.';};
  function options(){const current=select.value;select.replaceChildren();for(const key of [...inputs.keys].sort())if(key.toLowerCase().includes(search.value.trim().toLowerCase())){const o=el('option',key);o.value=key;select.append(o);}if([...select.options].some(o=>o.value===current))select.value=current;syncControls();drawMuscle();}
  search.oninput=options;
  function drawMuscle(){const m=frame?.mechanics?.muscles?.[select.value];muscleState.textContent=m?`${select.value} · activation ${format(m.activation)} · excitation ${format(m.excitation)} · tendon ${format(m.tendon_force_n)} N · fiber ${format(m.fiber_length_m)} m. ${m.sensor_basis||'Native muscle state'}`:'No matching live muscle selected.';}
@@ -51,13 +60,13 @@ export function mountEmbodiedPanels() {
   g.axis.textContent=`Live t ${s.time_s[0].toFixed(2)}–${s.time_s.at(-1).toFixed(2)} s · ${s.values.length} stored samples · range ${format(low)}–${format(high)} ${info.unit}`;
  }
  function disabled(value){for(const control of motor.querySelectorAll('input,select,button'))control.disabled=value;}
- disabled(true);
+ syncPressure();disabled(true);
  return {
   get inputs(){return inputs.snapshot();},
   update(owner,next){
    if(next?.schema!=='ihm.embodied-frame.v1'){this.clear();return;}
    if(history.owner&&history.owner!==owner)this.clear();
-   history.push(owner,next);frame=next;disabled(false);
+   history.push(owner,next);frame=next;disabled(false);syncPressure();
    const keys=Object.keys(next.physiology.values).sort(),sig=keys.join('|');
    if(signature!==sig){signature=sig;for(const g of graphs){const old=g.chooser.value;g.chooser.replaceChildren();for(const key of keys){const o=el('option',signalInfo(next,key).label);o.value=key;g.chooser.append(o);}g.chooser.value=keys.includes(old)?old:keys.includes(g.preferred)?g.preferred:keys[0]||'';}}
    const muscles=Object.keys(next.mechanics?.muscles||{}).sort(),ms=muscles.join('|');if(ms!==muscleSignature){muscleSignature=ms;inputs.bind(muscles);options();}
@@ -69,6 +78,6 @@ export function mountEmbodiedPanels() {
    drawMuscle();for(const g of graphs)drawGraph(g);
   },
   status(text){live.querySelector('.live-body-status').textContent=text;},
-  clear(){frame=null;history.clear();inputs.clear();signature='';muscleSignature='';lastDraw=-Infinity;select.replaceChildren();search.value='';drive.value='0';sensory.checked=false;block.checked=false;pressure.value='0';disabled(true);readouts.replaceChildren();live.querySelector('.live-body-status').textContent='No live body owner. Recorded experiments are separate.';for(const g of graphs){g.chooser.replaceChildren();g.value.textContent='Unavailable';g.plot.replaceChildren();g.axis.textContent='No live samples.';}},
+  clear(){frame=null;history.clear();inputs.clear();signature='';muscleSignature='';lastDraw=-Infinity;select.replaceChildren();search.value='';drive.value='0';sensory.checked=false;block.checked=false;pressure.value='0';syncPressure();disabled(true);readouts.replaceChildren();live.querySelector('.live-body-status').textContent='No live body owner. Recorded experiments are separate.';for(const g of graphs){g.chooser.replaceChildren();g.value.textContent='Unavailable';g.plot.replaceChildren();g.axis.textContent='No live samples.';}},
  };
 }
