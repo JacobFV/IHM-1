@@ -113,7 +113,10 @@ class Server(ThreadingHTTPServer):
             return self.manifest_data,self.structure_ids
     def server_close(self):
         super().server_close()
-        if hasattr(self,'jobs'):self.jobs.pool.shutdown(wait=False,cancel_futures=True)
+        try:
+            if hasattr(self,'embodied'):self.embodied.close()
+        finally:
+            if hasattr(self,'jobs'):self.jobs.pool.shutdown(wait=False,cancel_futures=True)
 
 def create_server(root=None,port=8765,host='127.0.0.1'):
     if host not in ('127.0.0.1','localhost','::1'):raise ValueError('Workbench binds loopback only')
@@ -147,6 +150,9 @@ def create_server(root=None,port=8765,host='127.0.0.1'):
             try:
                 derived=root/'data/derived'
                 if path=='/api/scene/catalog':return self._send(self.server.scenes.catalog())
+                if path=='/api/embodied/sessions':return self._send(self.server.embodied.list())
+                if re.fullmatch(r'/api/embodied/sessions/[a-f0-9]{32}',path):
+                    return self._send(self.server.embodied.command(path.rsplit('/',1)[1],'snapshot'))
                 if re.fullmatch(r'/api/scene/sessions/[a-f0-9]{32}',path):
                     return self._send(self.server.scenes.current(path.rsplit('/',1)[1]))
                 if path=='/api/manifest':return self._send(self.server.manifest()[0])
@@ -259,15 +265,21 @@ def create_server(root=None,port=8765,host='127.0.0.1'):
                 return self._send(file.read_bytes(),content_type=mimetypes.guess_type(file.name)[0] or 'application/octet-stream')
             except FileNotFoundError:return self._error('Required local artifact unavailable; run the corresponding build script',404)
             except (ValueError,KeyError,TypeError) as e:return self._error(str(e),400)
+            except (RuntimeError,TimeoutError,EOFError) as e:return self._error(str(e),503)
         def do_POST(self):
             if not self._authorized(post=True):return self._error('Only local workbench requests are accepted',403)
             scene_request=self.path=='/api/scene/sessions' or re.fullmatch(r'/api/scene/sessions/[a-f0-9]{32}/(step|close)',self.path)
-            if self.path not in ('/api/scenarios','/api/body/scenarios') and not scene_request:return self._error('Endpoint not found',404)
+            embodied_request=self.path=='/api/embodied/sessions' or re.fullmatch(r'/api/embodied/sessions/[a-f0-9]{32}/(step|close)',self.path)
+            if self.path not in ('/api/scenarios','/api/body/scenarios') and not scene_request and not embodied_request:return self._error('Endpoint not found',404)
             if self.headers.get('Content-Type','').split(';')[0]!='application/json':return self._error('Expected application/json',415)
             try:
                 length=int(self.headers.get('Content-Length','0'))
                 if not 0<length<=32768:raise ValueError('JSON request must be 1–32768 bytes')
                 data=json.loads(self.rfile.read(length),parse_constant=lambda v:(_ for _ in ()).throw(ValueError('Nonfinite JSON number')))
+                if embodied_request:
+                    if self.path=='/api/embodied/sessions':return self._send(self.server.embodied.create(data),201)
+                    parts=self.path.split('/')
+                    return self._send(self.server.embodied.command(parts[-2],parts[-1],data))
                 if scene_request:
                     if self.path=='/api/scene/sessions':return self._send(self.server.scenes.create(data),201)
                     parts=self.path.split('/')
@@ -276,9 +288,11 @@ def create_server(root=None,port=8765,host='127.0.0.1'):
                 return self._send(self.server.jobs.submit(data,canonical=self.path=='/api/body/scenarios'),202)
             except FileNotFoundError:return self._error('Required canonical/native artifact unavailable; build the body first',503)
             except (ValueError,TypeError,KeyError) as e:return self._error(str(e),400)
+            except (RuntimeError,TimeoutError,EOFError) as e:return self._error(str(e),503)
     server_class=type('IPv6Server',(Server,),{'address_family':socket.AF_INET6}) if host=='::1' else Server
     from ihm.assembly.interactive_scene import SceneSessions
-    server=server_class((host,port),Handler);server.root=root;server.jobs=Jobs(root);server.scenes=SceneSessions(root);server.manifest_lock=threading.Lock();return server
+    from ihm.app.embodied import EmbodiedSessions
+    server=server_class((host,port),Handler);server.root=root;server.jobs=Jobs(root);server.scenes=SceneSessions(root);server.embodied=EmbodiedSessions(root);server.manifest_lock=threading.Lock();return server
 
 def serve(root=None,port=8765):
     server=create_server(root,port)
