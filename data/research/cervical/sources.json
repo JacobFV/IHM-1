@@ -1,0 +1,135 @@
+{
+  "schema": "ihm.cervical-sources.v1",
+  "acquired_utc": "2026-09-06T04:06:45.030376+00:00",
+  "retained_files": [
+    {
+      "path": "data/research/cervical/HYOID_MIT_license.txt",
+      "bytes": 1043,
+      "sha256": "69bba748d661354576561c91e5318e6afc9589ac8a2fba767079dc80ad26bb18",
+      "origin": "extracted data-content attribute titled MIT Use Agreement from retained simtk_neckdynamics_downloads.html"
+    },
+    {
+      "path": "data/research/cervical/MASI_HMaleMuscle_HMaleMassDistr.osim",
+      "bytes": 631598,
+      "sha256": "191d1bfdd328273d644f5822d85457e5e8fefd5037459c17d7f24b27d8b2681a",
+      "origin": "https://ndownloader.figshare.com/files/6929198"
+    },
+    {
+      "path": "data/research/cervical/Mortensen2018_reference.osim",
+      "bytes": 494571,
+      "sha256": "f85b25349a0132938769c18a9f1e6c3049b6e1395c12ffb693e03f38e51acf0b",
+      "origin": "https://raw.githubusercontent.com/mjhmilla/kinematicPassengerModel/b0eb96127ca07dea0266764e837faeaa397092b5/models/reference/Mortensen2018.osim"
+    },
+    {
+      "path": "data/research/cervical/OpenSim_Body.cpp",
+      "bytes": 17729,
+      "sha256": "acaade97fa79fe248420b02624f3ceaf28b7cab6f3c3e61892689f9f57e263f6",
+      "origin": "already held data/raw/mechanics/opensim-core/OpenSim/Simulation/SimbodyEngine/Body.cpp"
+    },
+    {
+      "path": "data/research/cervical/OpenSim_Body.h",
+      "bytes": 9637,
+      "sha256": "0609c91f049337bf31cf7c8b10e3273eafbf73779f97859d3d1acca3807a8022",
+      "origin": "already held data/raw/mechanics/opensim-core/OpenSim/Simulation/SimbodyEngine/Body.h"
+    },
+    {
+      "path": "data/research/cervical/audit_sources.py",
+      "bytes": 7505,
+      "sha256": "9cd4ec0f00395690388776005b2d619920e59ca841b3fe8885ec48584b1b1227",
+      "origin": "local XML-only audit script"
+    },
+    {
+      "path": "data/research/cervical/figshare_masi_4249808.json",
+      "bytes": 5250,
+      "sha256": "c1486e5e5a39717c79338c43a812255cc5a2a22fcd412c5352a6f0cbef299101",
+      "origin": "https://api.figshare.com/v2/articles/4249808"
+    },
+    {
+      "path": "data/research/cervical/passenger_LICENSE.txt",
+      "bytes": 1065,
+      "sha256": "978a634b33edbd7f4768f214ed1e46c79bd87f9772414e3fb70a694e1bb54af6",
+      "origin": "https://raw.githubusercontent.com/mjhmilla/kinematicPassengerModel/b0eb96127ca07dea0266764e837faeaa397092b5/LICENSE"
+    },
+    {
+      "path": "data/research/cervical/passenger_README.md",
+      "bytes": 12033,
+      "sha256": "d03346006357e527606a697b6657a4e661a2ba3f94af08dec1e97f55cb6ed660",
+      "origin": "https://raw.githubusercontent.com/mjhmilla/kinematicPassengerModel/b0eb96127ca07dea0266764e837faeaa397092b5/README.md"
+    },
+    {
+      "path": "data/research/cervical/passenger_commit.json",
+      "bytes": 12091,
+      "sha256": "1d8934d3a9cb81adf696942daff254e07b60741815bb517c12720334ae88db51",
+      "origin": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/commits/main"
+    },
+    {
+      "path": "data/research/cervical/passenger_repository.json",
+      "bytes": 6404,
+      "sha256": "a428b21dd35ee28856b46a9a598f4729c8fbdd382fb713756cab7911b1ff627d",
+      "origin": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel"
+    },
+    {
+      "path": "data/research/cervical/passenger_tree.json",
+      "bytes": 17389,
+      "sha256": "c41ea0b80804fe49d04973109ae7e3f7b01697754006226592377c997ec144c7",
+      "origin": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/trees/b0eb96127ca07dea0266764e837faeaa397092b5?recursive=1"
+    },
+    {
+      "path": "data/research/cervical/simtk_hyoid_download_confirm.html",
+      "bytes": 218,
+      "sha256": "1d2cdbe9d5db3a0cc8eea119d7566acf140c77809ebdb165d55b9a87590f8c1f",
+      "origin": "https://simtk.org/frs/download_confirm.php/file/5851/HYOID_1.2_ScaledStrenght_UpdatedInertia.zip?group_id=1404"
+    },
+    {
+      "path": "data/research/cervical/simtk_neckdynamics_downloads.html",
+      "bytes": 44573,
+      "sha256": "497d3e289b0fe42635cd2449904ae91ea545257a5693f32c9155499d566fa290",
+      "origin": "https://simtk.org/frs/?group_id=1404"
+    },
+    {
+      "path": "data/research/cervical/simtk_neckdynamics_response.html",
+      "bytes": 41403,
+      "sha256": "5c066eb2d428795f153bf0debeb0e5dbebf125145897db470f65020c5f21ba21",
+      "origin": "https://simtk.org/projects/neckdynamics"
+    }
+  ],
+  "sources": [
+    {
+      "id": "masi",
+      "authority": "Original authors deposit, first-party actual model",
+      "doi": "10.6084/m9.figshare.4249808.v2",
+      "published_article": "https://doi.org/10.1371/journal.pone.0169329",
+      "model": "MASI_HMaleMuscle_HMaleMassDistr.osim",
+      "license": "MIT as declared in original Figshare metadata; original XML credits preserved",
+      "status": "Acquired unchanged; byte count and supplied/computed MD5 match; physical cervical inertia failure prevents unchanged dynamic promotion"
+    },
+    {
+      "id": "hyoid_primary",
+      "authority": "Jonathan Mortensen project metadata",
+      "url": "https://simtk.org/projects/neckdynamics",
+      "published_article": "https://doi.org/10.1371/journal.pone.0199912",
+      "latest_release": "HYOID Model 1.2, 2019-07-26, updated skull inertia",
+      "download_bytes": "172 MB per provider",
+      "license": "HYOID MIT; project explicitly says modified MASI models in the publication subfolder are CC BY-NC 3.0",
+      "status": "Metadata/license retained; original package not acquired: download confirmation redirects through JavaScript to login. No credentials, bypass, or bulk download used."
+    },
+    {
+      "id": "mortensen_reference_copy",
+      "authority": "Pinned public reference copy maintained in Matthew Millard kinematicPassengerModel; secondary copy of Mortensen model, not authenticated original release",
+      "repository_commit": "b0eb96127ca07dea0266764e837faeaa397092b5",
+      "repository_git_blob": "41fb3623066aff0f7ce9fc4f5c5f13ae07589fe1",
+      "model": "Mortensen2018_reference.osim",
+      "license": "Repository MIT notice retained (Copyright 2024 mjhmilla); HYOID primary MIT notice retained; model credits Jonathan Mortensen",
+      "status": "Acquired unchanged reference model only. Not the passenger model, not verified identical to 2019 original latest release. Physical cervical inertia failure remains."
+    }
+  ],
+  "unacquired": [
+    "Visual Geometry files referenced by both .osim files; native physics inputs above use fixed PathPoint paths, no WrapObject in either donor. Geometry is still needed for anatomical registration/visual validation.",
+    "HYOID 1.2 original172MB package behind account login."
+  ],
+  "held_fixture": {
+    "path": "data/raw/mechanics/opensim-core/OpenSim/Tools/tests/resources/Neck3dof_point_constraint.osim",
+    "status": "Five-muscle engine test fixture with placeholder attribution; excluded as anatomical donor."
+  },
+  "no_native_or_factory_changes": true
+}

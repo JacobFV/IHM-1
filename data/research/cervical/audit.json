@@ -1,0 +1,4864 @@
+{
+  "schema": "ihm.cervical-source-audit.v1",
+  "scope": "XML and provenance audit only; no native execution or accepted donor inertia",
+  "models": [
+    {
+      "identity": {
+        "path": "data/research/cervical/MASI_HMaleMuscle_HMaleMassDistr.osim",
+        "bytes": 631598,
+        "sha256": "191d1bfdd328273d644f5822d85457e5e8fefd5037459c17d7f24b27d8b2681a"
+      },
+      "xml_version": "30000",
+      "name": "MASI_HMaleMuscle",
+      "credits": "Dario Cazzola and Grant Trewartha, University of Bath, Department for Health.",
+      "publications": "List of publications related to model...",
+      "units": {
+        "length": "meters",
+        "force": "N",
+        "gravity_m_s2": [
+          0.0,
+          -9.80665,
+          0.0
+        ]
+      },
+      "body_count_including_ground": 35,
+      "forces_by_type": {
+        "Thelen2003Muscle": 78,
+        "CoordinateActuator": 23
+      },
+      "neck_head_bodies": [
+        {
+          "name": "cerv7",
+          "mass_kg": 0.584084674000695,
+          "mass_center_body_m": [
+            0.0312,
+            0.0019,
+            0.0
+          ],
+          "inertia": {
+            "tensor_kg_m2_xx_yy_zz_xy_xz_yz": [
+              0.02,
+              0.08,
+              0.02,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "principal_moments_kg_m2": [
+              0.02,
+              0.02,
+              0.08
+            ],
+            "positive_definite": true,
+            "physical_mass_distribution_possible": false,
+            "second_mass_moment_eigenvalues_kg_m2": [
+              -0.019999999999999997,
+              0.04000000000000001,
+              0.04000000000000001
+            ]
+          },
+          "joint": {
+            "name": "auxt1jnt",
+            "type": "CustomJoint",
+            "parent": "spine",
+            "frames": {
+              "location_in_parent": [
+                -0.0475,
+                0.5343,
+                0.0
+              ],
+              "orientation_in_parent": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "location": [
+                0.00684,
+                -0.005655,
+                0.0
+              ],
+              "orientation": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            "coordinates": [
+              {
+                "name": "pitch2",
+                "default": 1.1909727955108e-06,
+                "range_rad": [
+                  -0.575958653158,
+                  0.837758040957
+                ],
+                "locked": "false"
+              },
+              {
+                "name": "roll2",
+                "default": -7.41742501311171e-34,
+                "range_rad": [
+                  -0.575958653158,
+                  0.575958653158
+                ],
+                "locked": "false"
+              },
+              {
+                "name": "yaw2",
+                "default": -1.94073162038987e-33,
+                "range_rad": [
+                  -0.471238898038,
+                  0.471238898038
+                ],
+                "locked": "false"
+              }
+            ],
+            "axes": [
+              {
+                "name": "rotation1",
+                "coordinate": "pitch2",
+                "axis": [
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> -0.172788 0.172788</y>\n\t\t\t\t\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "rotation2",
+                "coordinate": "roll2",
+                "axis": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> -0.136136 0.136136</y>\n\t\t\t\t\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "rotation3",
+                "coordinate": "yaw2",
+                "axis": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> -0.109956 0.109956</y>\n\t\t\t\t\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation1",
+                "coordinate": null,
+                "axis": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation2",
+                "coordinate": null,
+                "axis": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation3",
+                "coordinate": null,
+                "axis": [
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              }
+            ]
+          }
+        },
+        {
+          "name": "cerv6",
+          "mass_kg": 0.507748855220406,
+          "mass_center_body_m": [
+            0.0312,
+            0.0019,
+            0.0
+          ],
+          "inertia": {
+            "tensor_kg_m2_xx_yy_zz_xy_xz_yz": [
+              0.02,
+              0.08,
+              0.02,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "principal_moments_kg_m2": [
+              0.02,
+              0.02,
+              0.08
+            ],
+            "positive_definite": true,
+            "physical_mass_distribution_possible": false,
+            "second_mass_moment_eigenvalues_kg_m2": [
+              -0.019999999999999997,
+              0.04000000000000001,
+              0.04000000000000001
+            ]
+          },
+          "joint": {
+            "name": "aux7jnt",
+            "type": "CustomJoint",
+            "parent": "cerv7",
+            "frames": {
+              "location_in_parent": [
+                0.013256,
+                0.01238,
+                0.0
+              ],
+              "orientation_in_parent": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "location": [
+                0.009419,
+                -0.004065,
+                0.0
+              ],
+              "orientation": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            "coordinates": [
+              {
+                "name": "aux7jnt_r3",
+                "default": 2.06683600846833e-07,
+                "range_rad": [
+                  -99999.9,
+                  99999.9
+                ],
+                "locked": "false"
+              },
+              {
+                "name": "aux7jnt_r1",
+                "default": 0.0,
+                "range_rad": [
+                  -99999.9,
+                  99999.9
+                ],
+                "locked": "false"
+              },
+              {
+                "name": "aux7jnt_r2",
+                "default": 0.0,
+                "range_rad": [
+                  -99999.9,
+                  99999.9
+                ],
+                "locked": "false"
+              }
+            ],
+            "axes": [
+              {
+                "name": "rotation1",
+                "coordinate": "aux7jnt_r3",
+                "axis": [
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<LinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<coefficients> 1 0</coefficients>\n\t\t\t\t\t\t\t\t\t\t</LinearFunction>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "rotation2",
+                "coordinate": "aux7jnt_r1",
+                "axis": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<LinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<coefficients> 1 0</coefficients>\n\t\t\t\t\t\t\t\t\t\t</LinearFunction>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "rotation3",
+                "coordinate": "aux7jnt_r2",
+                "axis": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<LinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<coefficients> 1 0</coefficients>\n\t\t\t\t\t\t\t\t\t\t</LinearFunction>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation1",
+                "coordinate": null,
+                "axis": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation2",
+                "coordinate": null,
+                "axis": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation3",
+                "coordinate": null,
+                "axis": [
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              }
+            ]
+          }
+        },
+        {
+          "name": "cerv5",
+          "mass_kg": 0.4291,
+          "mass_center_body_m": [
+            0.0312,
+            0.0019,
+            0.0
+          ],
+          "inertia": {
+            "tensor_kg_m2_xx_yy_zz_xy_xz_yz": [
+              0.02,
+              0.08,
+              0.02,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "principal_moments_kg_m2": [
+              0.02,
+              0.02,
+              0.08
+            ],
+            "positive_definite": true,
+            "physical_mass_distribution_possible": false,
+            "second_mass_moment_eigenvalues_kg_m2": [
+              -0.019999999999999997,
+              0.04000000000000001,
+              0.04000000000000001
+            ]
+          },
+          "joint": {
+            "name": "aux6jnt",
+            "type": "CustomJoint",
+            "parent": "cerv6",
+            "frames": {
+              "location_in_parent": [
+                0.00985,
+                0.00975,
+                0.0
+              ],
+              "orientation_in_parent": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "location": [
+                0.00567,
+                -0.00815,
+                0.0
+              ],
+              "orientation": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            "coordinates": [
+              {
+                "name": "aux6jnt_r3",
+                "default": 2.4315658147459e-07,
+                "range_rad": [
+                  -99999.9,
+                  99999.9
+                ],
+                "locked": "false"
+              },
+              {
+                "name": "aux6jnt_r1",
+                "default": 0.0,
+                "range_rad": [
+                  -99999.9,
+                  99999.9
+                ],
+                "locked": "false"
+              },
+              {
+                "name": "aux6jnt_r2",
+                "default": 0.0,
+                "range_rad": [
+                  -99999.9,
+                  99999.9
+                ],
+                "locked": "false"
+              }
+            ],
+            "axes": [
+              {
+                "name": "rotation1",
+                "coordinate": "aux6jnt_r3",
+                "axis": [
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<LinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<coefficients> 1 0</coefficients>\n\t\t\t\t\t\t\t\t\t\t</LinearFunction>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "rotation2",
+                "coordinate": "aux6jnt_r1",
+                "axis": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<LinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<coefficients> 1 0</coefficients>\n\t\t\t\t\t\t\t\t\t\t</LinearFunction>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "rotation3",
+                "coordinate": "aux6jnt_r2",
+                "axis": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<LinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<coefficients> 1 0</coefficients>\n\t\t\t\t\t\t\t\t\t\t</LinearFunction>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation1",
+                "coordinate": null,
+                "axis": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation2",
+                "coordinate": null,
+                "axis": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation3",
+                "coordinate": null,
+                "axis": [
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              }
+            ]
+          }
+        },
+        {
+          "name": "cerv4",
+          "mass_kg": 0.423316813,
+          "mass_center_body_m": [
+            0.0312,
+            0.0019,
+            0.0
+          ],
+          "inertia": {
+            "tensor_kg_m2_xx_yy_zz_xy_xz_yz": [
+              0.02,
+              0.08,
+              0.02,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "principal_moments_kg_m2": [
+              0.02,
+              0.02,
+              0.08
+            ],
+            "positive_definite": true,
+            "physical_mass_distribution_possible": false,
+            "second_mass_moment_eigenvalues_kg_m2": [
+              -0.019999999999999997,
+              0.04000000000000001,
+              0.04000000000000001
+            ]
+          },
+          "joint": {
+            "name": "aux5jnt",
+            "type": "CustomJoint",
+            "parent": "cerv5",
+            "frames": {
+              "location_in_parent": [
+                0.00843,
+                0.00745,
+                0.0
+              ],
+              "orientation_in_parent": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "location": [
+                0.00502,
+                -0.01172,
+                0.0
+              ],
+              "orientation": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            "coordinates": [
+              {
+                "name": "aux5jnt_r3",
+                "default": 2.4315658147459e-07,
+                "range_rad": [
+                  -99999.9,
+                  99999.9
+                ],
+                "locked": "false"
+              },
+              {
+                "name": "aux5jnt_r1",
+                "default": 0.0,
+                "range_rad": [
+                  -99999.9,
+                  99999.9
+                ],
+                "locked": "false"
+              },
+              {
+                "name": "aux5jnt_r2",
+                "default": 0.0,
+                "range_rad": [
+                  -99999.9,
+                  99999.9
+                ],
+                "locked": "false"
+              }
+            ],
+            "axes": [
+              {
+                "name": "rotation1",
+                "coordinate": "aux5jnt_r3",
+                "axis": [
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<LinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<coefficients> 1 0</coefficients>\n\t\t\t\t\t\t\t\t\t\t</LinearFunction>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "rotation2",
+                "coordinate": "aux5jnt_r1",
+                "axis": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<LinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<coefficients> 1 0</coefficients>\n\t\t\t\t\t\t\t\t\t\t</LinearFunction>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "rotation3",
+                "coordinate": "aux5jnt_r2",
+                "axis": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<LinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<coefficients> 1 0</coefficients>\n\t\t\t\t\t\t\t\t\t\t</LinearFunction>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation1",
+                "coordinate": null,
+                "axis": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation2",
+                "coordinate": null,
+                "axis": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation3",
+                "coordinate": null,
+                "axis": [
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              }
+            ]
+          }
+        },
+        {
+          "name": "cerv3",
+          "mass_kg": 0.419847003,
+          "mass_center_body_m": [
+            0.0312,
+            0.0019,
+            0.0
+          ],
+          "inertia": {
+            "tensor_kg_m2_xx_yy_zz_xy_xz_yz": [
+              0.02,
+              0.08,
+              0.02,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "principal_moments_kg_m2": [
+              0.02,
+              0.02,
+              0.08
+            ],
+            "positive_definite": true,
+            "physical_mass_distribution_possible": false,
+            "second_mass_moment_eigenvalues_kg_m2": [
+              -0.019999999999999997,
+              0.04000000000000001,
+              0.04000000000000001
+            ]
+          },
+          "joint": {
+            "name": "aux4jnt",
+            "type": "CustomJoint",
+            "parent": "cerv4",
+            "frames": {
+              "location_in_parent": [
+                0.00732,
+                0.00638,
+                0.0
+              ],
+              "orientation_in_parent": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "location": [
+                0.00471,
+                -0.00902,
+                0.0
+              ],
+              "orientation": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            "coordinates": [
+              {
+                "name": "aux4jnt_r3",
+                "default": 1.8236743611982e-07,
+                "range_rad": [
+                  -99999.9,
+                  99999.9
+                ],
+                "locked": "false"
+              },
+              {
+                "name": "aux4jnt_r1",
+                "default": 0.0,
+                "range_rad": [
+                  -99999.9,
+                  99999.9
+                ],
+                "locked": "false"
+              },
+              {
+                "name": "aux4jnt_r2",
+                "default": 0.0,
+                "range_rad": [
+                  -99999.9,
+                  99999.9
+                ],
+                "locked": "false"
+              }
+            ],
+            "axes": [
+              {
+                "name": "rotation1",
+                "coordinate": "aux4jnt_r3",
+                "axis": [
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<LinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<coefficients> 1 0</coefficients>\n\t\t\t\t\t\t\t\t\t\t</LinearFunction>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "rotation2",
+                "coordinate": "aux4jnt_r1",
+                "axis": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<LinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<coefficients> 1 0</coefficients>\n\t\t\t\t\t\t\t\t\t\t</LinearFunction>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "rotation3",
+                "coordinate": "aux4jnt_r2",
+                "axis": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<LinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<coefficients> 1 0</coefficients>\n\t\t\t\t\t\t\t\t\t\t</LinearFunction>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation1",
+                "coordinate": null,
+                "axis": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation2",
+                "coordinate": null,
+                "axis": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation3",
+                "coordinate": null,
+                "axis": [
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              }
+            ]
+          }
+        },
+        {
+          "name": "cerv2",
+          "mass_kg": 0.587554484,
+          "mass_center_body_m": [
+            0.0312,
+            0.0019,
+            0.0
+          ],
+          "inertia": {
+            "tensor_kg_m2_xx_yy_zz_xy_xz_yz": [
+              0.02,
+              0.08,
+              0.02,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "principal_moments_kg_m2": [
+              0.02,
+              0.02,
+              0.08
+            ],
+            "positive_definite": true,
+            "physical_mass_distribution_possible": false,
+            "second_mass_moment_eigenvalues_kg_m2": [
+              -0.019999999999999997,
+              0.04000000000000001,
+              0.04000000000000001
+            ]
+          },
+          "joint": {
+            "name": "aux3jnt",
+            "type": "CustomJoint",
+            "parent": "cerv3",
+            "frames": {
+              "location_in_parent": [
+                0.00525,
+                0.00506,
+                0.0
+              ],
+              "orientation_in_parent": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "location": [
+                0.00543,
+                -0.01123,
+                0.0
+              ],
+              "orientation": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            "coordinates": [
+              {
+                "name": "aux3jnt_r3",
+                "default": 1.21578290737295e-07,
+                "range_rad": [
+                  -99999.9,
+                  99999.9
+                ],
+                "locked": "false"
+              },
+              {
+                "name": "aux3jnt_r1",
+                "default": 0.0,
+                "range_rad": [
+                  -99999.9,
+                  99999.9
+                ],
+                "locked": "false"
+              },
+              {
+                "name": "aux3jnt_r2",
+                "default": 0.0,
+                "range_rad": [
+                  -99999.9,
+                  99999.9
+                ],
+                "locked": "false"
+              }
+            ],
+            "axes": [
+              {
+                "name": "rotation1",
+                "coordinate": "aux3jnt_r3",
+                "axis": [
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<LinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<coefficients> 1 0</coefficients>\n\t\t\t\t\t\t\t\t\t\t</LinearFunction>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "rotation2",
+                "coordinate": "aux3jnt_r1",
+                "axis": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<LinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<coefficients> 1 0</coefficients>\n\t\t\t\t\t\t\t\t\t\t</LinearFunction>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "rotation3",
+                "coordinate": "aux3jnt_r2",
+                "axis": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<LinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<coefficients> 1 0</coefficients>\n\t\t\t\t\t\t\t\t\t\t</LinearFunction>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation1",
+                "coordinate": null,
+                "axis": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation2",
+                "coordinate": null,
+                "axis": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation3",
+                "coordinate": null,
+                "axis": [
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              }
+            ]
+          }
+        },
+        {
+          "name": "cerv1",
+          "mass_kg": 0.467267739,
+          "mass_center_body_m": [
+            0.0312,
+            0.0019,
+            0.0
+          ],
+          "inertia": {
+            "tensor_kg_m2_xx_yy_zz_xy_xz_yz": [
+              0.02,
+              0.08,
+              0.02,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "principal_moments_kg_m2": [
+              0.02,
+              0.02,
+              0.08
+            ],
+            "positive_definite": true,
+            "physical_mass_distribution_possible": false,
+            "second_mass_moment_eigenvalues_kg_m2": [
+              -0.019999999999999997,
+              0.04000000000000001,
+              0.04000000000000001
+            ]
+          },
+          "joint": {
+            "name": "aux2jnt",
+            "type": "CustomJoint",
+            "parent": "cerv2",
+            "frames": {
+              "location_in_parent": [
+                0.00689,
+                0.02128,
+                0.0
+              ],
+              "orientation_in_parent": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "location": [
+                0.04245,
+                0.00352,
+                0.0
+              ],
+              "orientation": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            "coordinates": [
+              {
+                "name": "pitch1",
+                "default": 1.57201132872903e-06,
+                "range_rad": [
+                  -0.279252680319,
+                  0.418879020479
+                ],
+                "locked": "false"
+              },
+              {
+                "name": "roll1",
+                "default": -1.88940466950217e-33,
+                "range_rad": [
+                  -0.10471975512,
+                  0.10471975512
+                ],
+                "locked": "false"
+              },
+              {
+                "name": "yaw1",
+                "default": 1.27484214121148e-34,
+                "range_rad": [
+                  -0.663225115758,
+                  0.663225115758
+                ],
+                "locked": "false"
+              }
+            ],
+            "axes": [
+              {
+                "name": "rotation1",
+                "coordinate": "pitch1",
+                "axis": [
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> -0.774926 0.774926</y>\n\t\t\t\t\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "rotation2",
+                "coordinate": "roll1",
+                "axis": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> -0.872665 0.872665</y>\n\t\t\t\t\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "rotation3",
+                "coordinate": "yaw1",
+                "axis": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> -1.5516 1.5516</y>\n\t\t\t\t\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation1",
+                "coordinate": null,
+                "axis": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation2",
+                "coordinate": null,
+                "axis": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation3",
+                "coordinate": null,
+                "axis": [
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              }
+            ]
+          }
+        },
+        {
+          "name": "skull",
+          "mass_kg": 3.8,
+          "mass_center_body_m": [
+            0.0,
+            0.0676,
+            0.0
+          ],
+          "inertia": {
+            "tensor_kg_m2_xx_yy_zz_xy_xz_yz": [
+              0.0263498,
+              0.00809938,
+              0.028416,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "principal_moments_kg_m2": [
+              0.00809938,
+              0.0263498,
+              0.028416
+            ],
+            "positive_definite": true,
+            "physical_mass_distribution_possible": true,
+            "second_mass_moment_eigenvalues_kg_m2": [
+              0.003016589999999996,
+              0.005082789999999997,
+              0.023333209999999997
+            ]
+          },
+          "joint": {
+            "name": "aux1jnt",
+            "type": "CustomJoint",
+            "parent": "cerv1",
+            "frames": {
+              "location_in_parent": [
+                0.04335,
+                0.01492,
+                0.0
+              ],
+              "orientation_in_parent": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "location": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "orientation": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            "coordinates": [
+              {
+                "name": "aux1jnt_r3",
+                "default": 8.42468890427384e-07,
+                "range_rad": [
+                  -99999.9,
+                  99999.9
+                ],
+                "locked": "false"
+              },
+              {
+                "name": "aux1jnt_r1",
+                "default": 0.0,
+                "range_rad": [
+                  -99999.9,
+                  99999.9
+                ],
+                "locked": "false"
+              },
+              {
+                "name": "aux1jnt_r2",
+                "default": 0.0,
+                "range_rad": [
+                  -99999.9,
+                  99999.9
+                ],
+                "locked": "false"
+              }
+            ],
+            "axes": [
+              {
+                "name": "rotation1",
+                "coordinate": "aux1jnt_r3",
+                "axis": [
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<LinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<coefficients> 1 0</coefficients>\n\t\t\t\t\t\t\t\t\t\t</LinearFunction>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "rotation2",
+                "coordinate": "aux1jnt_r1",
+                "axis": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<LinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<coefficients> 1 0</coefficients>\n\t\t\t\t\t\t\t\t\t\t</LinearFunction>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "rotation3",
+                "coordinate": "aux1jnt_r2",
+                "axis": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<LinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<coefficients> 1 0</coefficients>\n\t\t\t\t\t\t\t\t\t\t</LinearFunction>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation1",
+                "coordinate": null,
+                "axis": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation2",
+                "coordinate": null,
+                "axis": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation3",
+                "coordinate": null,
+                "axis": [
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              }
+            ]
+          }
+        },
+        {
+          "name": "jaw",
+          "mass_kg": 0.2,
+          "mass_center_body_m": [
+            0.0,
+            0.05,
+            0.0
+          ],
+          "inertia": {
+            "tensor_kg_m2_xx_yy_zz_xy_xz_yz": [
+              0.04,
+              0.02,
+              0.04,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "principal_moments_kg_m2": [
+              0.02,
+              0.04,
+              0.04
+            ],
+            "positive_definite": true,
+            "physical_mass_distribution_possible": true,
+            "second_mass_moment_eigenvalues_kg_m2": [
+              0.010000000000000002,
+              0.010000000000000002,
+              0.030000000000000002
+            ]
+          },
+          "joint": {
+            "name": "jawjnt",
+            "type": "WeldJoint",
+            "parent": "skull",
+            "frames": {
+              "location_in_parent": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "orientation_in_parent": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "location": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "orientation": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            "coordinates": [],
+            "axes": []
+          }
+        }
+      ],
+      "neck_head_mass_kg": 7.418919568221101,
+      "neck_coordinate_count": 24,
+      "neck_couplers": [
+        {
+          "name": "aux7jnt_r1_con",
+          "independent": "roll2",
+          "dependent": "aux7jnt_r1",
+          "function_xml": "<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t<y> -0.23911 0.23911</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>"
+        },
+        {
+          "name": "aux7jnt_r2_con",
+          "independent": "yaw2",
+          "dependent": "aux7jnt_r2",
+          "function_xml": "<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t<y> -0.328122 0.328122</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>"
+        },
+        {
+          "name": "aux7jnt_r3_con",
+          "independent": "pitch2",
+          "dependent": "aux7jnt_r3",
+          "function_xml": "<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t<y> -0.326377 0.326377</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>"
+        },
+        {
+          "name": "aux6jnt_r1_con",
+          "independent": "roll2",
+          "dependent": "aux6jnt_r1",
+          "function_xml": "<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t<y> -0.274017 0.274017</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>"
+        },
+        {
+          "name": "aux6jnt_r2_con",
+          "independent": "yaw2",
+          "dependent": "aux6jnt_r2",
+          "function_xml": "<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t<y> -0.382227 0.382227</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>"
+        },
+        {
+          "name": "aux6jnt_r3_con",
+          "independent": "pitch2",
+          "dependent": "aux6jnt_r3",
+          "function_xml": "<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t<y> -0.383972 0.383972</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>"
+        },
+        {
+          "name": "aux5jnt_r1_con",
+          "independent": "roll2",
+          "dependent": "aux5jnt_r1",
+          "function_xml": "<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t<y> -0.376991 0.376991</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>"
+        },
+        {
+          "name": "aux5jnt_r2_con",
+          "independent": "yaw2",
+          "dependent": "aux5jnt_r2",
+          "function_xml": "<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t<y> -0.382227 0.382227</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>"
+        },
+        {
+          "name": "aux5jnt_r3_con",
+          "independent": "pitch2",
+          "dependent": "aux5jnt_r3",
+          "function_xml": "<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t<y> -0.383972 0.383972</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>"
+        },
+        {
+          "name": "aux4jnt_r1_con",
+          "independent": "roll2",
+          "dependent": "aux4jnt_r1",
+          "function_xml": "<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t<y> -0.376991 0.376991</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>"
+        },
+        {
+          "name": "aux4jnt_r2_con",
+          "independent": "yaw2",
+          "dependent": "aux4jnt_r2",
+          "function_xml": "<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t<y> -0.382227 0.382227</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>"
+        },
+        {
+          "name": "aux4jnt_r3_con",
+          "independent": "pitch2",
+          "dependent": "aux4jnt_r3",
+          "function_xml": "<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t<y> -0.287979 0.287979</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>"
+        },
+        {
+          "name": "aux3jnt_r1_con",
+          "independent": "roll2",
+          "dependent": "aux3jnt_r1",
+          "function_xml": "<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t<y> -0.342085 0.342085</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>"
+        },
+        {
+          "name": "aux3jnt_r2_con",
+          "independent": "yaw2",
+          "dependent": "aux3jnt_r2",
+          "function_xml": "<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t<y> -0.164061 0.164061</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>"
+        },
+        {
+          "name": "aux3jnt_r3_con",
+          "independent": "pitch2",
+          "dependent": "aux3jnt_r3",
+          "function_xml": "<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t<y> -0.191986 0.191986</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>"
+        },
+        {
+          "name": "aux1jnt_r1_con",
+          "independent": "roll1",
+          "dependent": "aux1jnt_r1",
+          "function_xml": "<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t<y> -0.872665 0.872665</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>"
+        },
+        {
+          "name": "aux1jnt_r2_con",
+          "independent": "yaw1",
+          "dependent": "aux1jnt_r2",
+          "function_xml": "<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t<y> -0.193732 0.193732</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>"
+        },
+        {
+          "name": "aux1jnt_r3_con",
+          "independent": "pitch1",
+          "dependent": "aux1jnt_r3",
+          "function_xml": "<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t<y> -0.970403 0.970403</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>"
+        }
+      ],
+      "neck_independent_coordinates": [
+        "pitch2",
+        "roll2",
+        "yaw2",
+        "pitch1",
+        "roll1",
+        "yaw1"
+      ],
+      "muscles": [
+        {
+          "name": "stern_mast",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 96.53,
+          "optimal_fiber_length_m": 0.108,
+          "tendon_slack_length_m": 0.056123,
+          "path_bodies": [
+            "torso",
+            "skull"
+          ]
+        },
+        {
+          "name": "stern_mast_l",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 96.53,
+          "optimal_fiber_length_m": 0.108,
+          "tendon_slack_length_m": 0.056123,
+          "path_bodies": [
+            "torso",
+            "skull"
+          ]
+        },
+        {
+          "name": "cleid_mast",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 48.265,
+          "optimal_fiber_length_m": 0.108,
+          "tendon_slack_length_m": 0.035198,
+          "path_bodies": [
+            "rclavicle",
+            "skull"
+          ]
+        },
+        {
+          "name": "cleid_mast_l",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 48.265,
+          "optimal_fiber_length_m": 0.108,
+          "tendon_slack_length_m": 0.035198,
+          "path_bodies": [
+            "lclavicle",
+            "skull"
+          ]
+        },
+        {
+          "name": "cleid_occ",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 48.265,
+          "optimal_fiber_length_m": 0.108,
+          "tendon_slack_length_m": 0.069467,
+          "path_bodies": [
+            "rclavicle",
+            "skull"
+          ]
+        },
+        {
+          "name": "cleid_occ_l",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 48.265,
+          "optimal_fiber_length_m": 0.108,
+          "tendon_slack_length_m": 0.069467,
+          "path_bodies": [
+            "lclavicle",
+            "skull"
+          ]
+        },
+        {
+          "name": "scalenus_ant",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 72.03,
+          "optimal_fiber_length_m": 0.042,
+          "tendon_slack_length_m": 0.053421,
+          "path_bodies": [
+            "torso",
+            "cerv4"
+          ]
+        },
+        {
+          "name": "scalenus_ant_l",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 72.03,
+          "optimal_fiber_length_m": 0.042,
+          "tendon_slack_length_m": 0.053421,
+          "path_bodies": [
+            "torso",
+            "cerv4"
+          ]
+        },
+        {
+          "name": "scalenus_med",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 108.15,
+          "optimal_fiber_length_m": 0.05,
+          "tendon_slack_length_m": 0.061508,
+          "path_bodies": [
+            "torso",
+            "cerv3"
+          ]
+        },
+        {
+          "name": "scalenus_med_l",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 108.15,
+          "optimal_fiber_length_m": 0.05,
+          "tendon_slack_length_m": 0.061508,
+          "path_bodies": [
+            "torso",
+            "cerv3"
+          ]
+        },
+        {
+          "name": "scalenus_post",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 82.425,
+          "optimal_fiber_length_m": 0.062,
+          "tendon_slack_length_m": 0.072845,
+          "path_bodies": [
+            "torso",
+            "cerv5"
+          ]
+        },
+        {
+          "name": "scalenus_post_l",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 82.425,
+          "optimal_fiber_length_m": 0.062,
+          "tendon_slack_length_m": 0.072845,
+          "path_bodies": [
+            "torso",
+            "cerv5"
+          ]
+        },
+        {
+          "name": "long_cap_sklc4",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 46.648,
+          "optimal_fiber_length_m": 0.038,
+          "tendon_slack_length_m": 0.041297,
+          "path_bodies": [
+            "cerv4",
+            "cerv3",
+            "cerv2",
+            "cerv1",
+            "skull"
+          ]
+        },
+        {
+          "name": "long_cap_sklc4_l",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 46.648,
+          "optimal_fiber_length_m": 0.038,
+          "tendon_slack_length_m": 0.041297,
+          "path_bodies": [
+            "cerv4",
+            "cerv3",
+            "cerv2",
+            "cerv1",
+            "skull"
+          ]
+        },
+        {
+          "name": "long_col_c1thx",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 13.398,
+          "optimal_fiber_length_m": 0.08913,
+          "tendon_slack_length_m": 0.087519,
+          "path_bodies": [
+            "spine",
+            "cerv7",
+            "cerv6",
+            "cerv5",
+            "cerv4",
+            "cerv3",
+            "cerv2",
+            "cerv1"
+          ]
+        },
+        {
+          "name": "long_col_c1thx_l",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 13.398,
+          "optimal_fiber_length_m": 0.08913,
+          "tendon_slack_length_m": 0.087519,
+          "path_bodies": [
+            "spine",
+            "cerv7",
+            "cerv6",
+            "cerv5",
+            "cerv4",
+            "cerv3",
+            "cerv2",
+            "cerv1"
+          ]
+        },
+        {
+          "name": "long_col_c1c5",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 13.398,
+          "optimal_fiber_length_m": 0.03592,
+          "tendon_slack_length_m": 0.035239,
+          "path_bodies": [
+            "cerv5",
+            "cerv4",
+            "cerv2",
+            "cerv1"
+          ]
+        },
+        {
+          "name": "long_col_c1c5_l",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 13.398,
+          "optimal_fiber_length_m": 0.03592,
+          "tendon_slack_length_m": 0.035239,
+          "path_bodies": [
+            "cerv5",
+            "cerv4",
+            "cerv2",
+            "cerv1"
+          ]
+        },
+        {
+          "name": "long_col_c5thx",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 13.398,
+          "optimal_fiber_length_m": 0.05758,
+          "tendon_slack_length_m": 0.054794,
+          "path_bodies": [
+            "spine",
+            "spine",
+            "spine",
+            "spine",
+            "spine",
+            "cerv7",
+            "cerv6",
+            "cerv5"
+          ]
+        },
+        {
+          "name": "long_col_c5thx_l",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 13.398,
+          "optimal_fiber_length_m": 0.05758,
+          "tendon_slack_length_m": 0.054794,
+          "path_bodies": [
+            "spine",
+            "spine",
+            "spine",
+            "spine",
+            "spine",
+            "cerv7",
+            "cerv6",
+            "cerv5"
+          ]
+        },
+        {
+          "name": "trap_cl",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 108.64,
+          "optimal_fiber_length_m": 0.084,
+          "tendon_slack_length_m": 0.119222,
+          "path_bodies": [
+            "rclavicle",
+            "skull"
+          ]
+        },
+        {
+          "name": "trap_cl_l",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 108.64,
+          "optimal_fiber_length_m": 0.084,
+          "tendon_slack_length_m": 0.119222,
+          "path_bodies": [
+            "lclavicle",
+            "skull"
+          ]
+        },
+        {
+          "name": "trap_acr",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 527.73,
+          "optimal_fiber_length_m": 0.092,
+          "tendon_slack_length_m": 0.076582,
+          "path_bodies": [
+            "rscapula",
+            "cerv7"
+          ]
+        },
+        {
+          "name": "trap_acr_l",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 527.73,
+          "optimal_fiber_length_m": 0.092,
+          "tendon_slack_length_m": 0.076582,
+          "path_bodies": [
+            "lscapula",
+            "cerv7"
+          ]
+        },
+        {
+          "name": "splen_cap_sklc6",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 74.265,
+          "optimal_fiber_length_m": 0.095,
+          "tendon_slack_length_m": 0.026013,
+          "path_bodies": [
+            "cerv6",
+            "skull"
+          ]
+        },
+        {
+          "name": "splen_cap_sklc6_l",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 74.265,
+          "optimal_fiber_length_m": 0.095,
+          "tendon_slack_length_m": 0.026013,
+          "path_bodies": [
+            "cerv6",
+            "skull"
+          ]
+        },
+        {
+          "name": "splen_cap_sklthx",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 74.265,
+          "optimal_fiber_length_m": 0.095,
+          "tendon_slack_length_m": 0.081861,
+          "path_bodies": [
+            "spine",
+            "skull"
+          ]
+        },
+        {
+          "name": "splen_cap_sklthx_l",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 74.265,
+          "optimal_fiber_length_m": 0.095,
+          "tendon_slack_length_m": 0.081861,
+          "path_bodies": [
+            "spine",
+            "skull"
+          ]
+        },
+        {
+          "name": "splen_cerv_c3thx",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 74.265,
+          "optimal_fiber_length_m": 0.095,
+          "tendon_slack_length_m": 0.108438,
+          "path_bodies": [
+            "spine",
+            "cerv3"
+          ]
+        },
+        {
+          "name": "splen_cerv_c3thx_l",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 74.265,
+          "optimal_fiber_length_m": 0.095,
+          "tendon_slack_length_m": 0.108438,
+          "path_bodies": [
+            "spine",
+            "cerv3"
+          ]
+        },
+        {
+          "name": "semi_cap_sklc5",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 96.075,
+          "optimal_fiber_length_m": 0.068,
+          "tendon_slack_length_m": 0.046562,
+          "path_bodies": [
+            "cerv5",
+            "skull"
+          ]
+        },
+        {
+          "name": "semi_cap_sklc5_l",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 96.075,
+          "optimal_fiber_length_m": 0.068,
+          "tendon_slack_length_m": 0.046562,
+          "path_bodies": [
+            "cerv5",
+            "skull"
+          ]
+        },
+        {
+          "name": "semi_cap_sklthx",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 96.075,
+          "optimal_fiber_length_m": 0.068,
+          "tendon_slack_length_m": 0.06889,
+          "path_bodies": [
+            "spine",
+            "skull"
+          ]
+        },
+        {
+          "name": "semi_cap_sklthx_l",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 96.075,
+          "optimal_fiber_length_m": 0.068,
+          "tendon_slack_length_m": 0.06889,
+          "path_bodies": [
+            "spine",
+            "skull"
+          ]
+        },
+        {
+          "name": "semi_cerv_c3thx",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 96.075,
+          "optimal_fiber_length_m": 0.068,
+          "tendon_slack_length_m": 0.027374,
+          "path_bodies": [
+            "spine",
+            "cerv3"
+          ]
+        },
+        {
+          "name": "semi_cerv_c3thx_l",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 96.075,
+          "optimal_fiber_length_m": 0.068,
+          "tendon_slack_length_m": 0.027374,
+          "path_bodies": [
+            "spine",
+            "cerv3"
+          ]
+        },
+        {
+          "name": "levator_scap",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 114.45,
+          "optimal_fiber_length_m": 0.113,
+          "tendon_slack_length_m": 0.021875,
+          "path_bodies": [
+            "rscapula",
+            "cerv2"
+          ]
+        },
+        {
+          "name": "levator_scap_l",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 114.45,
+          "optimal_fiber_length_m": 0.113,
+          "tendon_slack_length_m": 0.021875,
+          "path_bodies": [
+            "lscapula",
+            "cerv2"
+          ]
+        },
+        {
+          "name": "longissi_cap_sklc6",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 46.77,
+          "optimal_fiber_length_m": 0.07185,
+          "tendon_slack_length_m": 0.023946,
+          "path_bodies": [
+            "cerv6",
+            "skull"
+          ]
+        },
+        {
+          "name": "longissi_cap_sklc6_l",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 46.77,
+          "optimal_fiber_length_m": 0.07185,
+          "tendon_slack_length_m": 0.023946,
+          "path_bodies": [
+            "cerv6",
+            "skull"
+          ]
+        },
+        {
+          "name": "longissi_cerv_c4thx",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 30.075,
+          "optimal_fiber_length_m": 0.131813,
+          "tendon_slack_length_m": 0.042329,
+          "path_bodies": [
+            "spine",
+            "spine",
+            "spine",
+            "spine",
+            "cerv4"
+          ]
+        },
+        {
+          "name": "longissi_cerv_c4thx_l",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 30.075,
+          "optimal_fiber_length_m": 0.131813,
+          "tendon_slack_length_m": 0.042329,
+          "path_bodies": [
+            "spine",
+            "spine",
+            "spine",
+            "spine",
+            "cerv4"
+          ]
+        },
+        {
+          "name": "iliocost_cerv_c5rib",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 30.075,
+          "optimal_fiber_length_m": 0.080895,
+          "tendon_slack_length_m": 0.025706,
+          "path_bodies": [
+            "spine",
+            "spine",
+            "cerv5"
+          ]
+        },
+        {
+          "name": "iliocost_cerv_c5rib_l",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 30.075,
+          "optimal_fiber_length_m": 0.080895,
+          "tendon_slack_length_m": 0.025706,
+          "path_bodies": [
+            "spine",
+            "spine",
+            "cerv5"
+          ]
+        },
+        {
+          "name": "rectcap_post_maj",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 48.93,
+          "optimal_fiber_length_m": 0.037,
+          "tendon_slack_length_m": 0.022832,
+          "path_bodies": [
+            "cerv2",
+            "skull"
+          ]
+        },
+        {
+          "name": "rectcap_post_maj_l",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 48.93,
+          "optimal_fiber_length_m": 0.037,
+          "tendon_slack_length_m": 0.022832,
+          "path_bodies": [
+            "cerv2",
+            "skull"
+          ]
+        },
+        {
+          "name": "rectcap_post_min",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 26.88,
+          "optimal_fiber_length_m": 0.019,
+          "tendon_slack_length_m": 0.016897,
+          "path_bodies": [
+            "cerv1",
+            "skull"
+          ]
+        },
+        {
+          "name": "rectcap_post_min_l",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 26.88,
+          "optimal_fiber_length_m": 0.019,
+          "tendon_slack_length_m": 0.016897,
+          "path_bodies": [
+            "cerv1",
+            "skull"
+          ]
+        },
+        {
+          "name": "obl_cap_sup",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 54.7575,
+          "optimal_fiber_length_m": 0.025,
+          "tendon_slack_length_m": 0.020417,
+          "path_bodies": [
+            "cerv1",
+            "skull"
+          ]
+        },
+        {
+          "name": "obl_cap_sup_l",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 54.7575,
+          "optimal_fiber_length_m": 0.025,
+          "tendon_slack_length_m": 0.020417,
+          "path_bodies": [
+            "cerv1",
+            "skull"
+          ]
+        },
+        {
+          "name": "obl_cap_inf",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 67.935,
+          "optimal_fiber_length_m": 0.038,
+          "tendon_slack_length_m": 0.015607,
+          "path_bodies": [
+            "cerv2",
+            "cerv1"
+          ]
+        },
+        {
+          "name": "obl_cap_inf_l",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 67.935,
+          "optimal_fiber_length_m": 0.038,
+          "tendon_slack_length_m": 0.015607,
+          "path_bodies": [
+            "cerv2",
+            "cerv1"
+          ]
+        },
+        {
+          "name": "supmult-C4/5-C2",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 21.21,
+          "optimal_fiber_length_m": 0.024,
+          "tendon_slack_length_m": 0.0215,
+          "path_bodies": [
+            "cerv2",
+            "cerv5"
+          ]
+        },
+        {
+          "name": "supmult-C4/5-C2_l",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 21.21,
+          "optimal_fiber_length_m": 0.024,
+          "tendon_slack_length_m": 0.0215,
+          "path_bodies": [
+            "cerv2",
+            "cerv5"
+          ]
+        },
+        {
+          "name": "supmult-C5/6-C2",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 33.27,
+          "optimal_fiber_length_m": 0.0245,
+          "tendon_slack_length_m": 0.0286,
+          "path_bodies": [
+            "cerv2",
+            "cerv6"
+          ]
+        },
+        {
+          "name": "supmult-C5/6-C2_l",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 33.27,
+          "optimal_fiber_length_m": 0.0245,
+          "tendon_slack_length_m": 0.0286,
+          "path_bodies": [
+            "cerv2",
+            "cerv6"
+          ]
+        },
+        {
+          "name": "supmult-C6/7-C2",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 28.185,
+          "optimal_fiber_length_m": 0.0273,
+          "tendon_slack_length_m": 0.0322,
+          "path_bodies": [
+            "cerv2",
+            "cerv7"
+          ]
+        },
+        {
+          "name": "supmult-C6/7-C2_l",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 28.185,
+          "optimal_fiber_length_m": 0.0273,
+          "tendon_slack_length_m": 0.0322,
+          "path_bodies": [
+            "cerv2",
+            "cerv7"
+          ]
+        },
+        {
+          "name": "supmult-T1-C4",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 96.075,
+          "optimal_fiber_length_m": 0.068,
+          "tendon_slack_length_m": 0.02737,
+          "path_bodies": [
+            "cerv4",
+            "spine"
+          ]
+        },
+        {
+          "name": "supmult-T1-C4_l",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 96.075,
+          "optimal_fiber_length_m": 0.068,
+          "tendon_slack_length_m": 0.02737,
+          "path_bodies": [
+            "cerv4",
+            "spine"
+          ]
+        },
+        {
+          "name": "supmult-T1-C5",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 96.075,
+          "optimal_fiber_length_m": 0.068,
+          "tendon_slack_length_m": 0.02737,
+          "path_bodies": [
+            "cerv5",
+            "spine"
+          ]
+        },
+        {
+          "name": "supmult-T1-C5_l",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 96.075,
+          "optimal_fiber_length_m": 0.068,
+          "tendon_slack_length_m": 0.02737,
+          "path_bodies": [
+            "cerv5",
+            "spine"
+          ]
+        },
+        {
+          "name": "supmult-T2-C6",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 96.075,
+          "optimal_fiber_length_m": 0.068,
+          "tendon_slack_length_m": 0.02737,
+          "path_bodies": [
+            "cerv6",
+            "spine"
+          ]
+        },
+        {
+          "name": "supmult-T2-C6_l",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 96.075,
+          "optimal_fiber_length_m": 0.068,
+          "tendon_slack_length_m": 0.02737,
+          "path_bodies": [
+            "cerv6",
+            "spine"
+          ]
+        },
+        {
+          "name": "deepmult-C4/5-C2",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 10.725,
+          "optimal_fiber_length_m": 0.0203,
+          "tendon_slack_length_m": 0.0152,
+          "path_bodies": [
+            "cerv2",
+            "cerv5"
+          ]
+        },
+        {
+          "name": "deepmult-C4/5-C2_l",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 10.725,
+          "optimal_fiber_length_m": 0.0203,
+          "tendon_slack_length_m": 0.0152,
+          "path_bodies": [
+            "cerv2",
+            "cerv5"
+          ]
+        },
+        {
+          "name": "deepmult-C5/6-C3",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 18.81,
+          "optimal_fiber_length_m": 0.0185,
+          "tendon_slack_length_m": 0.017,
+          "path_bodies": [
+            "cerv3",
+            "cerv6"
+          ]
+        },
+        {
+          "name": "deepmult-C5/6-C3_l",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 18.81,
+          "optimal_fiber_length_m": 0.0185,
+          "tendon_slack_length_m": 0.017,
+          "path_bodies": [
+            "cerv3",
+            "cerv6"
+          ]
+        },
+        {
+          "name": "deepmult-C6/7-C4",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 27.465,
+          "optimal_fiber_length_m": 0.017,
+          "tendon_slack_length_m": 0.0174,
+          "path_bodies": [
+            "cerv4",
+            "cerv7"
+          ]
+        },
+        {
+          "name": "deepmult-C6/7-C4_l",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 27.465,
+          "optimal_fiber_length_m": 0.017,
+          "tendon_slack_length_m": 0.0174,
+          "path_bodies": [
+            "cerv4",
+            "cerv7"
+          ]
+        },
+        {
+          "name": "deepmult-T1-C5",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 96.075,
+          "optimal_fiber_length_m": 0.068,
+          "tendon_slack_length_m": 0.02737,
+          "path_bodies": [
+            "cerv5",
+            "spine"
+          ]
+        },
+        {
+          "name": "deepmult-T1-C5_l",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 96.075,
+          "optimal_fiber_length_m": 0.068,
+          "tendon_slack_length_m": 0.02737,
+          "path_bodies": [
+            "cerv5",
+            "spine"
+          ]
+        },
+        {
+          "name": "deepmult-T1-C6",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 96.075,
+          "optimal_fiber_length_m": 0.068,
+          "tendon_slack_length_m": 0.02737,
+          "path_bodies": [
+            "cerv6",
+            "spine"
+          ]
+        },
+        {
+          "name": "deepmult-T1-C6_l",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 96.075,
+          "optimal_fiber_length_m": 0.068,
+          "tendon_slack_length_m": 0.02737,
+          "path_bodies": [
+            "cerv6",
+            "spine"
+          ]
+        },
+        {
+          "name": "deepmult-T2-C7",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 96.075,
+          "optimal_fiber_length_m": 0.068,
+          "tendon_slack_length_m": 0.02737,
+          "path_bodies": [
+            "cerv7",
+            "spine"
+          ]
+        },
+        {
+          "name": "deepmult-T2-C7_l",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 96.075,
+          "optimal_fiber_length_m": 0.068,
+          "tendon_slack_length_m": 0.02737,
+          "path_bodies": [
+            "cerv7",
+            "spine"
+          ]
+        },
+        {
+          "name": "deepmult-T2-T1",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 96.075,
+          "optimal_fiber_length_m": 0.068,
+          "tendon_slack_length_m": 0.02737,
+          "path_bodies": [
+            "spine",
+            "spine"
+          ]
+        },
+        {
+          "name": "deepmult-T2-T1_l",
+          "type": "Thelen2003Muscle",
+          "max_isometric_force_n": 96.075,
+          "optimal_fiber_length_m": 0.068,
+          "tendon_slack_length_m": 0.02737,
+          "path_bodies": [
+            "spine",
+            "spine"
+          ]
+        }
+      ],
+      "muscle_path_body_dependencies": [
+        "cerv1",
+        "cerv2",
+        "cerv3",
+        "cerv4",
+        "cerv5",
+        "cerv6",
+        "cerv7",
+        "lclavicle",
+        "lscapula",
+        "rclavicle",
+        "rscapula",
+        "skull",
+        "spine",
+        "torso"
+      ],
+      "bushings": [],
+      "visual_geometry_not_acquired": [
+        "bofoot.vtp",
+        "capitate_lvs.vtp",
+        "capitate_rvs.vtp",
+        "cerv1.vtp",
+        "cerv2.vtp",
+        "cerv3.vtp",
+        "cerv4.vtp",
+        "cerv5.vtp",
+        "cerv6.vtp",
+        "femur_r.vtp",
+        "fibula_r.vtp",
+        "foot.vtp",
+        "hamate_lvs.vtp",
+        "hamate_rvs.vtp",
+        "humerus_lv.vtp",
+        "humerus_rv.vtp",
+        "index_distal_lcs.vtp",
+        "index_distal_rcs.vtp",
+        "index_medial_lcs.vtp",
+        "index_medial_rcs.vtp",
+        "index_proximal_lcs.vtp",
+        "index_proximal_rcs.vtp",
+        "jaw.vtp",
+        "l_bofoot.vtp",
+        "l_femur.vtp",
+        "l_fibula.vtp",
+        "l_foot.vtp",
+        "l_pelvis.vtp",
+        "l_talus.vtp",
+        "l_tibia.vtp",
+        "lclavicle.vtp",
+        "little_distal_lcs.vtp",
+        "little_distal_rcs.vtp",
+        "little_medial_lcs.vtp",
+        "little_medial_rcs.vtp",
+        "little_proximal_lcs.vtp",
+        "little_proximal_rcs.vtp",
+        "lscapula.vtp",
+        "lunate_lvs.vtp",
+        "lunate_rvs.vtp",
+        "metacarpal1_lcs.vtp",
+        "metacarpal1_rcs.vtp",
+        "metacarpal2_lvs.vtp",
+        "metacarpal2_rvs.vtp",
+        "metacarpal3_lvs.vtp",
+        "metacarpal3_rvs.vtp",
+        "metacarpal4_lvs.vtp",
+        "metacarpal4_rvs.vtp",
+        "metacarpal5_lvs.vtp",
+        "metacarpal5_rvs.vtp",
+        "middle_distal_lcs.vtp",
+        "middle_distal_rcs.vtp",
+        "middle_medial_lcs.vtp",
+        "middle_medial_rcs.vtp",
+        "middle_proximal_lcs.vtp",
+        "middle_proximal_rcs.vtp",
+        "pelvis.vtp",
+        "pisiform_lvs.vtp",
+        "pisiform_rvs.vtp",
+        "radius_lv.vtp",
+        "radius_rv.vtp",
+        "rclavicle.vtp",
+        "ribcage.vtp",
+        "ring_distal_lcs.vtp",
+        "ring_distal_rcs.vtp",
+        "ring_medial_lcs.vtp",
+        "ring_medial_rcs.vtp",
+        "ring_proximal_lcs.vtp",
+        "ring_proximal_rcs.vtp",
+        "rotatedcerv7.vtp",
+        "rscapula.vtp",
+        "sacrum.vtp",
+        "scaphoid_lvs.vtp",
+        "scaphoid_rvs.vtp",
+        "skull.vtp",
+        "talus.vtp",
+        "thumb_distal_lcs.vtp",
+        "thumb_distal_rcs.vtp",
+        "thumb_proximal_lcs.vtp",
+        "thumb_proximal_rcs.vtp",
+        "tibia_r.vtp",
+        "tlspine.vtp",
+        "trapezium_lvs.vtp",
+        "trapezium_rvs.vtp",
+        "trapezoid_lvs.vtp",
+        "trapezoid_rvs.vtp",
+        "triquetrum_lvs.vtp",
+        "triquetrum_rvs.vtp",
+        "ulna_lv.vtp",
+        "ulna_rv.vtp"
+      ],
+      "physical_inertia_failures": [
+        "cerv7",
+        "cerv6",
+        "cerv5",
+        "cerv4",
+        "cerv3",
+        "cerv2",
+        "cerv1"
+      ]
+    },
+    {
+      "identity": {
+        "path": "data/research/cervical/Mortensen2018_reference.osim",
+        "bytes": 494571,
+        "sha256": "f85b25349a0132938769c18a9f1e6c3049b6e1395c12ffb693e03f38e51acf0b"
+      },
+      "xml_version": "30000",
+      "name": "HYOID_Scaled",
+      "credits": "Jonathan Mortensen, University of Utah, Department of Mechanical Engineering",
+      "publications": "The inclusion of hyoid muscles improve moment generating capacity and dynamic simulations in musculoskeletal models of the head and neck, PLOS ONE, 2018",
+      "units": {
+        "length": "meters",
+        "force": "N",
+        "gravity_m_s2": [
+          0.0,
+          -9.80665,
+          0.0
+        ]
+      },
+      "body_count_including_ground": 16,
+      "forces_by_type": {
+        "PointActuator": 1,
+        "TorqueActuator": 1,
+        "Millard2012EquilibriumMuscle": 72,
+        "BushingForce": 8
+      },
+      "neck_head_bodies": [
+        {
+          "name": "cerv7",
+          "mass_kg": 0.584084674000695,
+          "mass_center_body_m": [
+            -0.0002,
+            0.0071,
+            0.0
+          ],
+          "inertia": {
+            "tensor_kg_m2_xx_yy_zz_xy_xz_yz": [
+              0.02,
+              0.08,
+              0.02,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "principal_moments_kg_m2": [
+              0.02,
+              0.02,
+              0.08
+            ],
+            "positive_definite": true,
+            "physical_mass_distribution_possible": false,
+            "second_mass_moment_eigenvalues_kg_m2": [
+              -0.019999999999999997,
+              0.04000000000000001,
+              0.04000000000000001
+            ]
+          },
+          "joint": {
+            "name": "auxt1jnt",
+            "type": "CustomJoint",
+            "parent": "spine",
+            "frames": {
+              "location_in_parent": [
+                -0.0475,
+                0.3613,
+                0.0
+              ],
+              "orientation_in_parent": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "location": [
+                0.00684,
+                -0.005655,
+                0.0
+              ],
+              "orientation": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            "coordinates": [
+              {
+                "name": "pitch2",
+                "default": 1.19195223573577e-06,
+                "range_rad": [
+                  -0.575958653158,
+                  0.837758040957
+                ],
+                "locked": "false"
+              },
+              {
+                "name": "roll2",
+                "default": -7.41742501311171e-34,
+                "range_rad": [
+                  -0.575958653158,
+                  0.575958653158
+                ],
+                "locked": "false"
+              },
+              {
+                "name": "yaw2",
+                "default": -1.94073162038987e-33,
+                "range_rad": [
+                  -0.471238898038,
+                  0.471238898038
+                ],
+                "locked": "false"
+              }
+            ],
+            "axes": [
+              {
+                "name": "rotation1",
+                "coordinate": "pitch2",
+                "axis": [
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> -0.172788 0.172788</y>\n\t\t\t\t\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "rotation2",
+                "coordinate": "roll2",
+                "axis": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> -0.136136 0.136136</y>\n\t\t\t\t\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "rotation3",
+                "coordinate": "yaw2",
+                "axis": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> -0.109956 0.109956</y>\n\t\t\t\t\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation1",
+                "coordinate": null,
+                "axis": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation2",
+                "coordinate": null,
+                "axis": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation3",
+                "coordinate": null,
+                "axis": [
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              }
+            ]
+          }
+        },
+        {
+          "name": "cerv6",
+          "mass_kg": 0.507748855220406,
+          "mass_center_body_m": [
+            0.0002,
+            0.0064,
+            0.0
+          ],
+          "inertia": {
+            "tensor_kg_m2_xx_yy_zz_xy_xz_yz": [
+              0.02,
+              0.08,
+              0.02,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "principal_moments_kg_m2": [
+              0.02,
+              0.02,
+              0.08
+            ],
+            "positive_definite": true,
+            "physical_mass_distribution_possible": false,
+            "second_mass_moment_eigenvalues_kg_m2": [
+              -0.019999999999999997,
+              0.04000000000000001,
+              0.04000000000000001
+            ]
+          },
+          "joint": {
+            "name": "aux7jnt",
+            "type": "CustomJoint",
+            "parent": "cerv7",
+            "frames": {
+              "location_in_parent": [
+                0.013256,
+                0.01238,
+                0.0
+              ],
+              "orientation_in_parent": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "location": [
+                0.009419,
+                -0.004065,
+                0.0
+              ],
+              "orientation": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            "coordinates": [
+              {
+                "name": "aux7jnt_r3",
+                "default": 2.22895266139609e-07,
+                "range_rad": [
+                  -99999.9,
+                  99999.9
+                ],
+                "locked": "false"
+              },
+              {
+                "name": "aux7jnt_r1",
+                "default": 0.0,
+                "range_rad": [
+                  -99999.9,
+                  99999.9
+                ],
+                "locked": "false"
+              },
+              {
+                "name": "aux7jnt_r2",
+                "default": 0.0,
+                "range_rad": [
+                  -99999.9,
+                  99999.9
+                ],
+                "locked": "false"
+              }
+            ],
+            "axes": [
+              {
+                "name": "rotation1",
+                "coordinate": "aux7jnt_r3",
+                "axis": [
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<LinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<coefficients> 1 0</coefficients>\n\t\t\t\t\t\t\t\t\t\t</LinearFunction>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "rotation2",
+                "coordinate": "aux7jnt_r1",
+                "axis": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<LinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<coefficients> 1 0</coefficients>\n\t\t\t\t\t\t\t\t\t\t</LinearFunction>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "rotation3",
+                "coordinate": "aux7jnt_r2",
+                "axis": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<LinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<coefficients> 1 0</coefficients>\n\t\t\t\t\t\t\t\t\t\t</LinearFunction>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation1",
+                "coordinate": null,
+                "axis": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation2",
+                "coordinate": null,
+                "axis": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation3",
+                "coordinate": null,
+                "axis": [
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              }
+            ]
+          }
+        },
+        {
+          "name": "cerv5",
+          "mass_kg": 0.4291,
+          "mass_center_body_m": [
+            0.0001,
+            0.0063,
+            0.0
+          ],
+          "inertia": {
+            "tensor_kg_m2_xx_yy_zz_xy_xz_yz": [
+              0.02,
+              0.08,
+              0.02,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "principal_moments_kg_m2": [
+              0.02,
+              0.02,
+              0.08
+            ],
+            "positive_definite": true,
+            "physical_mass_distribution_possible": false,
+            "second_mass_moment_eigenvalues_kg_m2": [
+              -0.019999999999999997,
+              0.04000000000000001,
+              0.04000000000000001
+            ]
+          },
+          "joint": {
+            "name": "aux6jnt",
+            "type": "CustomJoint",
+            "parent": "cerv6",
+            "frames": {
+              "location_in_parent": [
+                0.00985,
+                0.00975,
+                0.0
+              ],
+              "orientation_in_parent": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "location": [
+                0.00567,
+                -0.00815,
+                0.0
+              ],
+              "orientation": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            "coordinates": [
+              {
+                "name": "aux6jnt_r3",
+                "default": 2.62229082107135e-07,
+                "range_rad": [
+                  -99999.9,
+                  99999.9
+                ],
+                "locked": "false"
+              },
+              {
+                "name": "aux6jnt_r1",
+                "default": 0.0,
+                "range_rad": [
+                  -99999.9,
+                  99999.9
+                ],
+                "locked": "false"
+              },
+              {
+                "name": "aux6jnt_r2",
+                "default": 0.0,
+                "range_rad": [
+                  -99999.9,
+                  99999.9
+                ],
+                "locked": "false"
+              }
+            ],
+            "axes": [
+              {
+                "name": "rotation1",
+                "coordinate": "aux6jnt_r3",
+                "axis": [
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<LinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<coefficients> 1 0</coefficients>\n\t\t\t\t\t\t\t\t\t\t</LinearFunction>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "rotation2",
+                "coordinate": "aux6jnt_r1",
+                "axis": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<LinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<coefficients> 1 0</coefficients>\n\t\t\t\t\t\t\t\t\t\t</LinearFunction>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "rotation3",
+                "coordinate": "aux6jnt_r2",
+                "axis": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<LinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<coefficients> 1 0</coefficients>\n\t\t\t\t\t\t\t\t\t\t</LinearFunction>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation1",
+                "coordinate": null,
+                "axis": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation2",
+                "coordinate": null,
+                "axis": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation3",
+                "coordinate": null,
+                "axis": [
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              }
+            ]
+          }
+        },
+        {
+          "name": "cerv4",
+          "mass_kg": 0.423316813,
+          "mass_center_body_m": [
+            -0.0003,
+            0.0067,
+            0.0
+          ],
+          "inertia": {
+            "tensor_kg_m2_xx_yy_zz_xy_xz_yz": [
+              0.02,
+              0.08,
+              0.02,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "principal_moments_kg_m2": [
+              0.02,
+              0.02,
+              0.08
+            ],
+            "positive_definite": true,
+            "physical_mass_distribution_possible": false,
+            "second_mass_moment_eigenvalues_kg_m2": [
+              -0.019999999999999997,
+              0.04000000000000001,
+              0.04000000000000001
+            ]
+          },
+          "joint": {
+            "name": "aux5jnt",
+            "type": "CustomJoint",
+            "parent": "cerv5",
+            "frames": {
+              "location_in_parent": [
+                0.00843,
+                0.00745,
+                0.0
+              ],
+              "orientation_in_parent": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "location": [
+                0.00502,
+                -0.01172,
+                0.0
+              ],
+              "orientation": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            "coordinates": [
+              {
+                "name": "aux5jnt_r3",
+                "default": 2.62229082107135e-07,
+                "range_rad": [
+                  -99999.9,
+                  99999.9
+                ],
+                "locked": "false"
+              },
+              {
+                "name": "aux5jnt_r1",
+                "default": 0.0,
+                "range_rad": [
+                  -99999.9,
+                  99999.9
+                ],
+                "locked": "false"
+              },
+              {
+                "name": "aux5jnt_r2",
+                "default": 0.0,
+                "range_rad": [
+                  -99999.9,
+                  99999.9
+                ],
+                "locked": "false"
+              }
+            ],
+            "axes": [
+              {
+                "name": "rotation1",
+                "coordinate": "aux5jnt_r3",
+                "axis": [
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<LinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<coefficients> 1 0</coefficients>\n\t\t\t\t\t\t\t\t\t\t</LinearFunction>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "rotation2",
+                "coordinate": "aux5jnt_r1",
+                "axis": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<LinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<coefficients> 1 0</coefficients>\n\t\t\t\t\t\t\t\t\t\t</LinearFunction>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "rotation3",
+                "coordinate": "aux5jnt_r2",
+                "axis": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<LinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<coefficients> 1 0</coefficients>\n\t\t\t\t\t\t\t\t\t\t</LinearFunction>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation1",
+                "coordinate": null,
+                "axis": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation2",
+                "coordinate": null,
+                "axis": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation3",
+                "coordinate": null,
+                "axis": [
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              }
+            ]
+          }
+        },
+        {
+          "name": "cerv3",
+          "mass_kg": 0.419847003,
+          "mass_center_body_m": [
+            -0.0008,
+            0.0071,
+            0.0
+          ],
+          "inertia": {
+            "tensor_kg_m2_xx_yy_zz_xy_xz_yz": [
+              0.02,
+              0.08,
+              0.02,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "principal_moments_kg_m2": [
+              0.02,
+              0.02,
+              0.08
+            ],
+            "positive_definite": true,
+            "physical_mass_distribution_possible": false,
+            "second_mass_moment_eigenvalues_kg_m2": [
+              -0.019999999999999997,
+              0.04000000000000001,
+              0.04000000000000001
+            ]
+          },
+          "joint": {
+            "name": "aux4jnt",
+            "type": "CustomJoint",
+            "parent": "cerv4",
+            "frames": {
+              "location_in_parent": [
+                0.00732,
+                0.00638,
+                0.0
+              ],
+              "orientation_in_parent": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "location": [
+                0.00471,
+                -0.00902,
+                0.0
+              ],
+              "orientation": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            "coordinates": [
+              {
+                "name": "aux4jnt_r3",
+                "default": 1.96671811580351e-07,
+                "range_rad": [
+                  -99999.9,
+                  99999.9
+                ],
+                "locked": "false"
+              },
+              {
+                "name": "aux4jnt_r1",
+                "default": 0.0,
+                "range_rad": [
+                  -99999.9,
+                  99999.9
+                ],
+                "locked": "false"
+              },
+              {
+                "name": "aux4jnt_r2",
+                "default": 0.0,
+                "range_rad": [
+                  -99999.9,
+                  99999.9
+                ],
+                "locked": "false"
+              }
+            ],
+            "axes": [
+              {
+                "name": "rotation1",
+                "coordinate": "aux4jnt_r3",
+                "axis": [
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<LinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<coefficients> 1 0</coefficients>\n\t\t\t\t\t\t\t\t\t\t</LinearFunction>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "rotation2",
+                "coordinate": "aux4jnt_r1",
+                "axis": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<LinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<coefficients> 1 0</coefficients>\n\t\t\t\t\t\t\t\t\t\t</LinearFunction>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "rotation3",
+                "coordinate": "aux4jnt_r2",
+                "axis": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<LinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<coefficients> 1 0</coefficients>\n\t\t\t\t\t\t\t\t\t\t</LinearFunction>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation1",
+                "coordinate": null,
+                "axis": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation2",
+                "coordinate": null,
+                "axis": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation3",
+                "coordinate": null,
+                "axis": [
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              }
+            ]
+          }
+        },
+        {
+          "name": "cerv2",
+          "mass_kg": 0.587554484,
+          "mass_center_body_m": [
+            -0.001,
+            0.0059,
+            0.0
+          ],
+          "inertia": {
+            "tensor_kg_m2_xx_yy_zz_xy_xz_yz": [
+              0.02,
+              0.08,
+              0.02,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "principal_moments_kg_m2": [
+              0.02,
+              0.02,
+              0.08
+            ],
+            "positive_definite": true,
+            "physical_mass_distribution_possible": false,
+            "second_mass_moment_eigenvalues_kg_m2": [
+              -0.019999999999999997,
+              0.04000000000000001,
+              0.04000000000000001
+            ]
+          },
+          "joint": {
+            "name": "aux3jnt",
+            "type": "CustomJoint",
+            "parent": "cerv3",
+            "frames": {
+              "location_in_parent": [
+                0.00525,
+                0.00506,
+                0.0
+              ],
+              "orientation_in_parent": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "location": [
+                0.00543,
+                -0.01123,
+                0.0
+              ],
+              "orientation": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            "coordinates": [
+              {
+                "name": "aux3jnt_r3",
+                "default": 1.31114541053568e-07,
+                "range_rad": [
+                  -99999.9,
+                  99999.9
+                ],
+                "locked": "false"
+              },
+              {
+                "name": "aux3jnt_r1",
+                "default": 0.0,
+                "range_rad": [
+                  -99999.9,
+                  99999.9
+                ],
+                "locked": "false"
+              },
+              {
+                "name": "aux3jnt_r2",
+                "default": 0.0,
+                "range_rad": [
+                  -99999.9,
+                  99999.9
+                ],
+                "locked": "false"
+              }
+            ],
+            "axes": [
+              {
+                "name": "rotation1",
+                "coordinate": "aux3jnt_r3",
+                "axis": [
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<LinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<coefficients> 1 0</coefficients>\n\t\t\t\t\t\t\t\t\t\t</LinearFunction>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "rotation2",
+                "coordinate": "aux3jnt_r1",
+                "axis": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<LinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<coefficients> 1 0</coefficients>\n\t\t\t\t\t\t\t\t\t\t</LinearFunction>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "rotation3",
+                "coordinate": "aux3jnt_r2",
+                "axis": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<LinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<coefficients> 1 0</coefficients>\n\t\t\t\t\t\t\t\t\t\t</LinearFunction>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation1",
+                "coordinate": null,
+                "axis": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation2",
+                "coordinate": null,
+                "axis": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation3",
+                "coordinate": null,
+                "axis": [
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              }
+            ]
+          }
+        },
+        {
+          "name": "cerv1",
+          "mass_kg": 0.467267739,
+          "mass_center_body_m": [
+            0.0312,
+            0.0019,
+            0.0
+          ],
+          "inertia": {
+            "tensor_kg_m2_xx_yy_zz_xy_xz_yz": [
+              0.02,
+              0.08,
+              0.02,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "principal_moments_kg_m2": [
+              0.02,
+              0.02,
+              0.08
+            ],
+            "positive_definite": true,
+            "physical_mass_distribution_possible": false,
+            "second_mass_moment_eigenvalues_kg_m2": [
+              -0.019999999999999997,
+              0.04000000000000001,
+              0.04000000000000001
+            ]
+          },
+          "joint": {
+            "name": "aux2jnt",
+            "type": "CustomJoint",
+            "parent": "cerv2",
+            "frames": {
+              "location_in_parent": [
+                0.00689,
+                0.02128,
+                0.0
+              ],
+              "orientation_in_parent": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "location": [
+                0.04245,
+                0.00352,
+                0.0
+              ],
+              "orientation": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            "coordinates": [
+              {
+                "name": "pitch1",
+                "default": 1.57416137518302e-06,
+                "range_rad": [
+                  -0.279252680319,
+                  0.418879020479
+                ],
+                "locked": "false"
+              },
+              {
+                "name": "roll1",
+                "default": -1.88940466950217e-33,
+                "range_rad": [
+                  -0.10471975512,
+                  0.10471975512
+                ],
+                "locked": "false"
+              },
+              {
+                "name": "yaw1",
+                "default": 1.27484214121148e-34,
+                "range_rad": [
+                  -0.663225115758,
+                  0.663225115758
+                ],
+                "locked": "false"
+              }
+            ],
+            "axes": [
+              {
+                "name": "rotation1",
+                "coordinate": "pitch1",
+                "axis": [
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> -0.774926 0.774926</y>\n\t\t\t\t\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "rotation2",
+                "coordinate": "roll1",
+                "axis": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> -0.872665 0.872665</y>\n\t\t\t\t\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "rotation3",
+                "coordinate": "yaw1",
+                "axis": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> -1.5516 1.5516</y>\n\t\t\t\t\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation1",
+                "coordinate": null,
+                "axis": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation2",
+                "coordinate": null,
+                "axis": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation3",
+                "coordinate": null,
+                "axis": [
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              }
+            ]
+          }
+        },
+        {
+          "name": "skull",
+          "mass_kg": 3.8,
+          "mass_center_body_m": [
+            0.0,
+            0.0676,
+            0.0
+          ],
+          "inertia": {
+            "tensor_kg_m2_xx_yy_zz_xy_xz_yz": [
+              0.0263498,
+              0.00809938,
+              0.028416,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "principal_moments_kg_m2": [
+              0.00809938,
+              0.0263498,
+              0.028416
+            ],
+            "positive_definite": true,
+            "physical_mass_distribution_possible": true,
+            "second_mass_moment_eigenvalues_kg_m2": [
+              0.003016589999999996,
+              0.005082789999999997,
+              0.023333209999999997
+            ]
+          },
+          "joint": {
+            "name": "aux1jnt",
+            "type": "CustomJoint",
+            "parent": "cerv1",
+            "frames": {
+              "location_in_parent": [
+                0.04335,
+                0.01492,
+                0.0
+              ],
+              "orientation_in_parent": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "location": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "orientation": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            "coordinates": [
+              {
+                "name": "aux1jnt_r3",
+                "default": 8.75233291594014e-07,
+                "range_rad": [
+                  -99999.9,
+                  99999.9
+                ],
+                "locked": "false"
+              },
+              {
+                "name": "aux1jnt_r1",
+                "default": 0.0,
+                "range_rad": [
+                  -99999.9,
+                  99999.9
+                ],
+                "locked": "false"
+              },
+              {
+                "name": "aux1jnt_r2",
+                "default": 0.0,
+                "range_rad": [
+                  -99999.9,
+                  99999.9
+                ],
+                "locked": "false"
+              }
+            ],
+            "axes": [
+              {
+                "name": "rotation1",
+                "coordinate": "aux1jnt_r3",
+                "axis": [
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<LinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<coefficients> 1 0</coefficients>\n\t\t\t\t\t\t\t\t\t\t</LinearFunction>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "rotation2",
+                "coordinate": "aux1jnt_r1",
+                "axis": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<LinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<coefficients> 1 0</coefficients>\n\t\t\t\t\t\t\t\t\t\t</LinearFunction>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "rotation3",
+                "coordinate": "aux1jnt_r2",
+                "axis": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<LinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<coefficients> 1 0</coefficients>\n\t\t\t\t\t\t\t\t\t\t</LinearFunction>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation1",
+                "coordinate": null,
+                "axis": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation2",
+                "coordinate": null,
+                "axis": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              },
+              {
+                "name": "translation3",
+                "coordinate": null,
+                "axis": [
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                "function_xml": "<function>\n\t\t\t\t\t\t\t\t\t\t<Constant>\n\t\t\t\t\t\t\t\t\t\t\t<value>0</value>\n\t\t\t\t\t\t\t\t\t\t</Constant>\n\t\t\t\t\t\t\t\t\t</function>"
+              }
+            ]
+          }
+        },
+        {
+          "name": "jaw",
+          "mass_kg": 0.2,
+          "mass_center_body_m": [
+            0.0,
+            0.05,
+            0.0
+          ],
+          "inertia": {
+            "tensor_kg_m2_xx_yy_zz_xy_xz_yz": [
+              0.04,
+              0.02,
+              0.04,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "principal_moments_kg_m2": [
+              0.02,
+              0.04,
+              0.04
+            ],
+            "positive_definite": true,
+            "physical_mass_distribution_possible": true,
+            "second_mass_moment_eigenvalues_kg_m2": [
+              0.010000000000000002,
+              0.010000000000000002,
+              0.030000000000000002
+            ]
+          },
+          "joint": {
+            "name": "jawjnt",
+            "type": "WeldJoint",
+            "parent": "skull",
+            "frames": {
+              "location_in_parent": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "orientation_in_parent": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "location": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "orientation": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            "coordinates": [],
+            "axes": []
+          }
+        }
+      ],
+      "neck_head_mass_kg": 7.418919568221101,
+      "neck_coordinate_count": 24,
+      "neck_couplers": [
+        {
+          "name": "aux7jnt_r1_con",
+          "independent": "roll2",
+          "dependent": "aux7jnt_r1",
+          "function_xml": "<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t<y> -0.23911 0.23911</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>"
+        },
+        {
+          "name": "aux7jnt_r2_con",
+          "independent": "yaw2",
+          "dependent": "aux7jnt_r2",
+          "function_xml": "<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t<y> -0.328122 0.328122</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>"
+        },
+        {
+          "name": "aux7jnt_r3_con",
+          "independent": "pitch2",
+          "dependent": "aux7jnt_r3",
+          "function_xml": "<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t<y> -0.326377 0.326377</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>"
+        },
+        {
+          "name": "aux6jnt_r1_con",
+          "independent": "roll2",
+          "dependent": "aux6jnt_r1",
+          "function_xml": "<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t<y> -0.274017 0.274017</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>"
+        },
+        {
+          "name": "aux6jnt_r2_con",
+          "independent": "yaw2",
+          "dependent": "aux6jnt_r2",
+          "function_xml": "<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t<y> -0.382227 0.382227</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>"
+        },
+        {
+          "name": "aux6jnt_r3_con",
+          "independent": "pitch2",
+          "dependent": "aux6jnt_r3",
+          "function_xml": "<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t<y> -0.383972 0.383972</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>"
+        },
+        {
+          "name": "aux5jnt_r1_con",
+          "independent": "roll2",
+          "dependent": "aux5jnt_r1",
+          "function_xml": "<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t<y> -0.376991 0.376991</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>"
+        },
+        {
+          "name": "aux5jnt_r2_con",
+          "independent": "yaw2",
+          "dependent": "aux5jnt_r2",
+          "function_xml": "<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t<y> -0.382227 0.382227</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>"
+        },
+        {
+          "name": "aux5jnt_r3_con",
+          "independent": "pitch2",
+          "dependent": "aux5jnt_r3",
+          "function_xml": "<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t<y> -0.383972 0.383972</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>"
+        },
+        {
+          "name": "aux4jnt_r1_con",
+          "independent": "roll2",
+          "dependent": "aux4jnt_r1",
+          "function_xml": "<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t<y> -0.376991 0.376991</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>"
+        },
+        {
+          "name": "aux4jnt_r2_con",
+          "independent": "yaw2",
+          "dependent": "aux4jnt_r2",
+          "function_xml": "<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t<y> -0.382227 0.382227</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>"
+        },
+        {
+          "name": "aux4jnt_r3_con",
+          "independent": "pitch2",
+          "dependent": "aux4jnt_r3",
+          "function_xml": "<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t<y> -0.287979 0.287979</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>"
+        },
+        {
+          "name": "aux3jnt_r1_con",
+          "independent": "roll2",
+          "dependent": "aux3jnt_r1",
+          "function_xml": "<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t<y> -0.342085 0.342085</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>"
+        },
+        {
+          "name": "aux3jnt_r2_con",
+          "independent": "yaw2",
+          "dependent": "aux3jnt_r2",
+          "function_xml": "<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t<y> -0.164061 0.164061</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>"
+        },
+        {
+          "name": "aux3jnt_r3_con",
+          "independent": "pitch2",
+          "dependent": "aux3jnt_r3",
+          "function_xml": "<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t<y> -0.191986 0.191986</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>"
+        },
+        {
+          "name": "aux1jnt_r1_con",
+          "independent": "roll1",
+          "dependent": "aux1jnt_r1",
+          "function_xml": "<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t<y> -0.872665 0.872665</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>"
+        },
+        {
+          "name": "aux1jnt_r2_con",
+          "independent": "yaw1",
+          "dependent": "aux1jnt_r2",
+          "function_xml": "<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t<y> -0.193732 0.193732</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>"
+        },
+        {
+          "name": "aux1jnt_r3_con",
+          "independent": "pitch1",
+          "dependent": "aux1jnt_r3",
+          "function_xml": "<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> -1.74533 1.74533</x>\n\t\t\t\t\t\t\t<y> -0.970403 0.970403</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>"
+        }
+      ],
+      "neck_independent_coordinates": [
+        "pitch2",
+        "roll2",
+        "yaw2",
+        "pitch1",
+        "roll1",
+        "yaw1"
+      ],
+      "muscles": [
+        {
+          "name": "digastric_post",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 109.62,
+          "optimal_fiber_length_m": 0.0205,
+          "tendon_slack_length_m": 0.034134,
+          "path_bodies": [
+            "skull",
+            "cerv3"
+          ]
+        },
+        {
+          "name": "digastric_ant",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 109.62,
+          "optimal_fiber_length_m": 0.0142,
+          "tendon_slack_length_m": 0.005,
+          "path_bodies": [
+            "skull",
+            "cerv1"
+          ]
+        },
+        {
+          "name": "Geniohyoid",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 91.665,
+          "optimal_fiber_length_m": 0.0343,
+          "tendon_slack_length_m": 0.00542,
+          "path_bodies": [
+            "cerv1",
+            "skull"
+          ]
+        },
+        {
+          "name": "Mylohyoid_Post",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 50.085,
+          "optimal_fiber_length_m": 0.0282,
+          "tendon_slack_length_m": 0.014013387,
+          "path_bodies": [
+            "cerv1",
+            "skull"
+          ]
+        },
+        {
+          "name": "Mylohyoid_Ant",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 150.255,
+          "optimal_fiber_length_m": 0.02,
+          "tendon_slack_length_m": 0.00274,
+          "path_bodies": [
+            "cerv1",
+            "skull"
+          ]
+        },
+        {
+          "name": "Stylohyoid_Lat",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 18.41785714,
+          "optimal_fiber_length_m": 0.0182,
+          "tendon_slack_length_m": 0.04955,
+          "path_bodies": [
+            "skull",
+            "cerv1"
+          ]
+        },
+        {
+          "name": "Stylohyoid_Med",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 18.41785714,
+          "optimal_fiber_length_m": 0.0182,
+          "tendon_slack_length_m": 0.04362451,
+          "path_bodies": [
+            "skull",
+            "cerv1"
+          ]
+        },
+        {
+          "name": "Sterno_hyoid",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 54.81,
+          "optimal_fiber_length_m": 0.0742,
+          "tendon_slack_length_m": 0.0318,
+          "path_bodies": [
+            "cerv3",
+            "ribcage"
+          ]
+        },
+        {
+          "name": "SternoThyroid",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 61.425,
+          "optimal_fiber_length_m": 0.06195,
+          "tendon_slack_length_m": 0.02655,
+          "path_bodies": [
+            "cerv3",
+            "ribcage"
+          ]
+        },
+        {
+          "name": "Omo_hyoid",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 70.875,
+          "optimal_fiber_length_m": 0.04585,
+          "tendon_slack_length_m": 0.01965,
+          "path_bodies": [
+            "cerv3",
+            "ribcage"
+          ]
+        },
+        {
+          "name": "digastric_post_L",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 109.62,
+          "optimal_fiber_length_m": 0.0205,
+          "tendon_slack_length_m": 0.034134,
+          "path_bodies": [
+            "skull",
+            "cerv3"
+          ]
+        },
+        {
+          "name": "digastric_ant_L",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 109.62,
+          "optimal_fiber_length_m": 0.0142,
+          "tendon_slack_length_m": 0.005,
+          "path_bodies": [
+            "skull",
+            "cerv1"
+          ]
+        },
+        {
+          "name": "Geniohyoid_L",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 91.665,
+          "optimal_fiber_length_m": 0.0343,
+          "tendon_slack_length_m": 0.00542,
+          "path_bodies": [
+            "cerv1",
+            "skull"
+          ]
+        },
+        {
+          "name": "Mylohyoid_Post_L",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 50.085,
+          "optimal_fiber_length_m": 0.0282,
+          "tendon_slack_length_m": 0.014013387,
+          "path_bodies": [
+            "cerv1",
+            "skull"
+          ]
+        },
+        {
+          "name": "Mylohyoid_Ant_L",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 150.255,
+          "optimal_fiber_length_m": 0.02,
+          "tendon_slack_length_m": 0.00274,
+          "path_bodies": [
+            "cerv1",
+            "skull"
+          ]
+        },
+        {
+          "name": "Stylohyoid_Lat_L",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 18.41785714,
+          "optimal_fiber_length_m": 0.0182,
+          "tendon_slack_length_m": 0.04955,
+          "path_bodies": [
+            "skull",
+            "cerv1"
+          ]
+        },
+        {
+          "name": "Stylohyoid_Med_L",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 18.41785714,
+          "optimal_fiber_length_m": 0.0182,
+          "tendon_slack_length_m": 0.04362451,
+          "path_bodies": [
+            "skull",
+            "cerv1"
+          ]
+        },
+        {
+          "name": "Sterno_hyoid_L",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 54.81,
+          "optimal_fiber_length_m": 0.0742,
+          "tendon_slack_length_m": 0.0318,
+          "path_bodies": [
+            "cerv3",
+            "ribcage"
+          ]
+        },
+        {
+          "name": "SternoThyroid_L",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 61.425,
+          "optimal_fiber_length_m": 0.06195,
+          "tendon_slack_length_m": 0.02655,
+          "path_bodies": [
+            "cerv3",
+            "ribcage"
+          ]
+        },
+        {
+          "name": "Omo_hyoid_L",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 70.875,
+          "optimal_fiber_length_m": 0.04585,
+          "tendon_slack_length_m": 0.01965,
+          "path_bodies": [
+            "cerv3",
+            "ribcage"
+          ]
+        },
+        {
+          "name": "stern_mast",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 186.165,
+          "optimal_fiber_length_m": 0.108,
+          "tendon_slack_length_m": 0.056123,
+          "path_bodies": [
+            "ribcage",
+            "skull"
+          ]
+        },
+        {
+          "name": "stern_mast_L",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 186.165,
+          "optimal_fiber_length_m": 0.108,
+          "tendon_slack_length_m": 0.056123,
+          "path_bodies": [
+            "ribcage",
+            "skull"
+          ]
+        },
+        {
+          "name": "cleid_mast",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 93.0825,
+          "optimal_fiber_length_m": 0.108,
+          "tendon_slack_length_m": 0.035198,
+          "path_bodies": [
+            "rclavicle",
+            "skull"
+          ]
+        },
+        {
+          "name": "cleid_mast_L",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 93.0825,
+          "optimal_fiber_length_m": 0.108,
+          "tendon_slack_length_m": 0.035198,
+          "path_bodies": [
+            "lclavicle",
+            "skull"
+          ]
+        },
+        {
+          "name": "cleid_occ",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 93.0825,
+          "optimal_fiber_length_m": 0.108,
+          "tendon_slack_length_m": 0.069467,
+          "path_bodies": [
+            "rclavicle",
+            "skull"
+          ]
+        },
+        {
+          "name": "cleid_occ_L",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 93.0825,
+          "optimal_fiber_length_m": 0.108,
+          "tendon_slack_length_m": 0.069467,
+          "path_bodies": [
+            "lclavicle",
+            "skull"
+          ]
+        },
+        {
+          "name": "scalenus_ant",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 138.915,
+          "optimal_fiber_length_m": 0.042,
+          "tendon_slack_length_m": 0.053421,
+          "path_bodies": [
+            "ribcage",
+            "cerv4"
+          ]
+        },
+        {
+          "name": "scalenus_ant_L",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 138.915,
+          "optimal_fiber_length_m": 0.042,
+          "tendon_slack_length_m": 0.053421,
+          "path_bodies": [
+            "ribcage",
+            "cerv4"
+          ]
+        },
+        {
+          "name": "scalenus_med",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 100.94,
+          "optimal_fiber_length_m": 0.05,
+          "tendon_slack_length_m": 0.061508,
+          "path_bodies": [
+            "ribcage",
+            "cerv3"
+          ]
+        },
+        {
+          "name": "scalenus_med_L",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 100.94,
+          "optimal_fiber_length_m": 0.05,
+          "tendon_slack_length_m": 0.061508,
+          "path_bodies": [
+            "ribcage",
+            "cerv3"
+          ]
+        },
+        {
+          "name": "scalenus_post",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 76.93,
+          "optimal_fiber_length_m": 0.062,
+          "tendon_slack_length_m": 0.072845,
+          "path_bodies": [
+            "ribcage",
+            "cerv5"
+          ]
+        },
+        {
+          "name": "scalenus_post_L",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 76.93,
+          "optimal_fiber_length_m": 0.062,
+          "tendon_slack_length_m": 0.072845,
+          "path_bodies": [
+            "ribcage",
+            "cerv5"
+          ]
+        },
+        {
+          "name": "long_cap_sklc4",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 89.964,
+          "optimal_fiber_length_m": 0.038,
+          "tendon_slack_length_m": 0.041297,
+          "path_bodies": [
+            "cerv4",
+            "cerv3",
+            "cerv2",
+            "cerv1",
+            "skull"
+          ]
+        },
+        {
+          "name": "long_cap_sklc4_L",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 89.964,
+          "optimal_fiber_length_m": 0.038,
+          "tendon_slack_length_m": 0.041297,
+          "path_bodies": [
+            "cerv4",
+            "cerv3",
+            "cerv2",
+            "cerv1",
+            "skull"
+          ]
+        },
+        {
+          "name": "long_col_c1thx",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 32.319,
+          "optimal_fiber_length_m": 0.08913,
+          "tendon_slack_length_m": 0.087519,
+          "path_bodies": [
+            "spine",
+            "cerv7",
+            "cerv6",
+            "cerv5",
+            "cerv4",
+            "cerv3",
+            "cerv2",
+            "cerv1"
+          ]
+        },
+        {
+          "name": "long_col_c1thx_L",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 32.319,
+          "optimal_fiber_length_m": 0.08913,
+          "tendon_slack_length_m": 0.087519,
+          "path_bodies": [
+            "spine",
+            "cerv7",
+            "cerv6",
+            "cerv5",
+            "cerv4",
+            "cerv3",
+            "cerv2",
+            "cerv1"
+          ]
+        },
+        {
+          "name": "long_col_c1c5",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 32.319,
+          "optimal_fiber_length_m": 0.03592,
+          "tendon_slack_length_m": 0.035239,
+          "path_bodies": [
+            "cerv5",
+            "cerv4",
+            "cerv2",
+            "cerv1"
+          ]
+        },
+        {
+          "name": "long_col_c1c5_L",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 32.319,
+          "optimal_fiber_length_m": 0.03592,
+          "tendon_slack_length_m": 0.035239,
+          "path_bodies": [
+            "cerv5",
+            "cerv4",
+            "cerv2",
+            "cerv1"
+          ]
+        },
+        {
+          "name": "long_col_c5thx",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 32.319,
+          "optimal_fiber_length_m": 0.05758,
+          "tendon_slack_length_m": 0.054794,
+          "path_bodies": [
+            "spine",
+            "spine",
+            "spine",
+            "spine",
+            "spine",
+            "cerv7",
+            "cerv6",
+            "cerv5"
+          ]
+        },
+        {
+          "name": "long_col_c5thx_L",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 32.319,
+          "optimal_fiber_length_m": 0.05758,
+          "tendon_slack_length_m": 0.054794,
+          "path_bodies": [
+            "spine",
+            "spine",
+            "spine",
+            "spine",
+            "spine",
+            "cerv7",
+            "cerv6",
+            "cerv5"
+          ]
+        },
+        {
+          "name": "trap_cl",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 108.64,
+          "optimal_fiber_length_m": 0.084,
+          "tendon_slack_length_m": 0.119222,
+          "path_bodies": [
+            "rclavicle",
+            "skull"
+          ]
+        },
+        {
+          "name": "trap_cl_L",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 108.64,
+          "optimal_fiber_length_m": 0.084,
+          "tendon_slack_length_m": 0.119222,
+          "path_bodies": [
+            "lclavicle",
+            "skull"
+          ]
+        },
+        {
+          "name": "trap_acr",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 527.73,
+          "optimal_fiber_length_m": 0.092,
+          "tendon_slack_length_m": 0.076582,
+          "path_bodies": [
+            "rscapula",
+            "cerv7"
+          ]
+        },
+        {
+          "name": "trap_acr_L",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 527.73,
+          "optimal_fiber_length_m": 0.092,
+          "tendon_slack_length_m": 0.076582,
+          "path_bodies": [
+            "lscapula",
+            "cerv7"
+          ]
+        },
+        {
+          "name": "splen_cap_sklc6",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 69.314,
+          "optimal_fiber_length_m": 0.095,
+          "tendon_slack_length_m": 0.026013,
+          "path_bodies": [
+            "cerv6",
+            "skull"
+          ]
+        },
+        {
+          "name": "splen_cap_sklc6_L",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 69.314,
+          "optimal_fiber_length_m": 0.095,
+          "tendon_slack_length_m": 0.026013,
+          "path_bodies": [
+            "cerv6",
+            "skull"
+          ]
+        },
+        {
+          "name": "splen_cap_sklthx",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 69.314,
+          "optimal_fiber_length_m": 0.095,
+          "tendon_slack_length_m": 0.081861,
+          "path_bodies": [
+            "spine",
+            "skull"
+          ]
+        },
+        {
+          "name": "splen_cap_sklthx_L",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 69.314,
+          "optimal_fiber_length_m": 0.095,
+          "tendon_slack_length_m": 0.081861,
+          "path_bodies": [
+            "spine",
+            "skull"
+          ]
+        },
+        {
+          "name": "splen_cerv_c3thx",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 69.314,
+          "optimal_fiber_length_m": 0.095,
+          "tendon_slack_length_m": 0.108438,
+          "path_bodies": [
+            "spine",
+            "cerv3"
+          ]
+        },
+        {
+          "name": "splen_cerv_c3thx_L",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 69.314,
+          "optimal_fiber_length_m": 0.095,
+          "tendon_slack_length_m": 0.108438,
+          "path_bodies": [
+            "spine",
+            "cerv3"
+          ]
+        },
+        {
+          "name": "semi_cap_sklc5",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 89.67,
+          "optimal_fiber_length_m": 0.068,
+          "tendon_slack_length_m": 0.046562,
+          "path_bodies": [
+            "cerv5",
+            "skull"
+          ]
+        },
+        {
+          "name": "semi_cap_sklc5_L",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 89.67,
+          "optimal_fiber_length_m": 0.068,
+          "tendon_slack_length_m": 0.046562,
+          "path_bodies": [
+            "cerv5",
+            "skull"
+          ]
+        },
+        {
+          "name": "semi_cap_sklthx",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 89.67,
+          "optimal_fiber_length_m": 0.068,
+          "tendon_slack_length_m": 0.06889,
+          "path_bodies": [
+            "spine",
+            "skull"
+          ]
+        },
+        {
+          "name": "semi_cap_sklthx_L",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 89.67,
+          "optimal_fiber_length_m": 0.068,
+          "tendon_slack_length_m": 0.06889,
+          "path_bodies": [
+            "spine",
+            "skull"
+          ]
+        },
+        {
+          "name": "semi_cerv_c3thx",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 89.67,
+          "optimal_fiber_length_m": 0.068,
+          "tendon_slack_length_m": 0.027374,
+          "path_bodies": [
+            "spine",
+            "cerv3"
+          ]
+        },
+        {
+          "name": "semi_cerv_c3thx_L",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 89.67,
+          "optimal_fiber_length_m": 0.068,
+          "tendon_slack_length_m": 0.027374,
+          "path_bodies": [
+            "spine",
+            "cerv3"
+          ]
+        },
+        {
+          "name": "levator_scap",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 106.82,
+          "optimal_fiber_length_m": 0.113,
+          "tendon_slack_length_m": 0.021875,
+          "path_bodies": [
+            "rscapula",
+            "cerv2"
+          ]
+        },
+        {
+          "name": "levator_scap_L",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 106.82,
+          "optimal_fiber_length_m": 0.113,
+          "tendon_slack_length_m": 0.021875,
+          "path_bodies": [
+            "lscapula",
+            "cerv2"
+          ]
+        },
+        {
+          "name": "longissi_cap_sklc6",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 43.652,
+          "optimal_fiber_length_m": 0.07185,
+          "tendon_slack_length_m": 0.023946,
+          "path_bodies": [
+            "cerv6",
+            "skull"
+          ]
+        },
+        {
+          "name": "longissi_cap_sklc6_L",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 43.652,
+          "optimal_fiber_length_m": 0.07185,
+          "tendon_slack_length_m": 0.023946,
+          "path_bodies": [
+            "cerv6",
+            "skull"
+          ]
+        },
+        {
+          "name": "longissi_cerv_c4thx",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 28.07,
+          "optimal_fiber_length_m": 0.131813,
+          "tendon_slack_length_m": 0.042329,
+          "path_bodies": [
+            "spine",
+            "spine",
+            "spine",
+            "spine",
+            "cerv4"
+          ]
+        },
+        {
+          "name": "longissi_cerv_c4thx_L",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 28.07,
+          "optimal_fiber_length_m": 0.131813,
+          "tendon_slack_length_m": 0.042329,
+          "path_bodies": [
+            "spine",
+            "spine",
+            "spine",
+            "spine",
+            "cerv4"
+          ]
+        },
+        {
+          "name": "iliocost_cerv_c5rib",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 28.07,
+          "optimal_fiber_length_m": 0.080895,
+          "tendon_slack_length_m": 0.025706,
+          "path_bodies": [
+            "spine",
+            "spine",
+            "cerv5"
+          ]
+        },
+        {
+          "name": "iliocost_cerv_c5rib_L",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 28.07,
+          "optimal_fiber_length_m": 0.080895,
+          "tendon_slack_length_m": 0.025706,
+          "path_bodies": [
+            "spine",
+            "spine",
+            "cerv5"
+          ]
+        },
+        {
+          "name": "rectcap_post_maj",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 45.668,
+          "optimal_fiber_length_m": 0.037,
+          "tendon_slack_length_m": 0.022832,
+          "path_bodies": [
+            "cerv2",
+            "skull"
+          ]
+        },
+        {
+          "name": "rectcap_post_maj_L",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 45.668,
+          "optimal_fiber_length_m": 0.037,
+          "tendon_slack_length_m": 0.022832,
+          "path_bodies": [
+            "cerv2",
+            "skull"
+          ]
+        },
+        {
+          "name": "rectcap_post_min",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 25.088,
+          "optimal_fiber_length_m": 0.019,
+          "tendon_slack_length_m": 0.016897,
+          "path_bodies": [
+            "cerv1",
+            "skull"
+          ]
+        },
+        {
+          "name": "rectcap_post_min_L",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 25.088,
+          "optimal_fiber_length_m": 0.019,
+          "tendon_slack_length_m": 0.016897,
+          "path_bodies": [
+            "cerv1",
+            "skull"
+          ]
+        },
+        {
+          "name": "obl_cap_sup",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 51.107,
+          "optimal_fiber_length_m": 0.025,
+          "tendon_slack_length_m": 0.020417,
+          "path_bodies": [
+            "cerv1",
+            "skull"
+          ]
+        },
+        {
+          "name": "obl_cap_sup_L",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 51.107,
+          "optimal_fiber_length_m": 0.025,
+          "tendon_slack_length_m": 0.020417,
+          "path_bodies": [
+            "cerv1",
+            "skull"
+          ]
+        },
+        {
+          "name": "obl_cap_inf",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 63.406,
+          "optimal_fiber_length_m": 0.038,
+          "tendon_slack_length_m": 0.015607,
+          "path_bodies": [
+            "cerv2",
+            "cerv1"
+          ]
+        },
+        {
+          "name": "obl_cap_inf_L",
+          "type": "Millard2012EquilibriumMuscle",
+          "max_isometric_force_n": 63.406,
+          "optimal_fiber_length_m": 0.038,
+          "tendon_slack_length_m": 0.015607,
+          "path_bodies": [
+            "cerv2",
+            "cerv1"
+          ]
+        }
+      ],
+      "muscle_path_body_dependencies": [
+        "cerv1",
+        "cerv2",
+        "cerv3",
+        "cerv4",
+        "cerv5",
+        "cerv6",
+        "cerv7",
+        "lclavicle",
+        "lscapula",
+        "rclavicle",
+        "ribcage",
+        "rscapula",
+        "skull",
+        "spine"
+      ],
+      "bushings": [
+        {
+          "isDisabled": "false",
+          "body_1": "spine",
+          "body_2": "cerv7",
+          "location_body_1": "0 0 0",
+          "orientation_body_1": "0 0 0",
+          "location_body_2": "0 0 0",
+          "orientation_body_2": "0 0 0",
+          "rotational_stiffness": "27.5 13.75 27.5",
+          "translational_stiffness": "0 0 0",
+          "rotational_damping": "2.75 1.375 2.75",
+          "translational_damping": "0 0 0",
+          "name": "Spine_C7_Bushing"
+        },
+        {
+          "isDisabled": "false",
+          "body_1": "cerv7",
+          "body_2": "cerv6",
+          "location_body_1": "0 0 0",
+          "orientation_body_1": "0 0 0",
+          "location_body_2": "0 0 0",
+          "orientation_body_2": "0 0 0",
+          "rotational_stiffness": "27.5 13.75 27.5",
+          "translational_stiffness": "0 0 0",
+          "rotational_damping": "2.75 1.375 2.75",
+          "translational_damping": "0 0 0",
+          "name": "C7_C6_Bushing"
+        },
+        {
+          "isDisabled": "false",
+          "body_1": "cerv6",
+          "body_2": "cerv5",
+          "location_body_1": "0 0 0",
+          "orientation_body_1": "0 0 0",
+          "location_body_2": "0 0 0",
+          "orientation_body_2": "0 0 0",
+          "rotational_stiffness": "27.5 13.75 27.5",
+          "translational_stiffness": "0 0 0",
+          "rotational_damping": "2.75 1.375 2.75",
+          "translational_damping": "0 0 0",
+          "name": "C6_C5_Bushing"
+        },
+        {
+          "isDisabled": "false",
+          "body_1": "cerv5",
+          "body_2": "cerv4",
+          "location_body_1": "0 0 0",
+          "orientation_body_1": "0 0 0",
+          "location_body_2": "0 0 0",
+          "orientation_body_2": "0 0 0",
+          "rotational_stiffness": "23.2 11.6 23.2",
+          "translational_stiffness": "0 0 0",
+          "rotational_damping": "2.32 1.16 2.32",
+          "translational_damping": "0 0 0",
+          "name": "C5_C4_Bushing"
+        },
+        {
+          "isDisabled": "false",
+          "body_1": "cerv4",
+          "body_2": "cerv3",
+          "location_body_1": "0 0 0",
+          "orientation_body_1": "0 0 0",
+          "location_body_2": "0 0 0",
+          "orientation_body_2": "0 0 0",
+          "rotational_stiffness": "23.2 11.6 23.2",
+          "translational_stiffness": "0 0 0",
+          "rotational_damping": "2.32 1.16 2.32",
+          "translational_damping": "0 0 0",
+          "name": "C4_C3_Bushing"
+        },
+        {
+          "isDisabled": "false",
+          "body_1": "cerv3",
+          "body_2": "cerv2",
+          "location_body_1": "0 0 0",
+          "orientation_body_1": "0 0 0",
+          "location_body_2": "0 0 0",
+          "orientation_body_2": "0 0 0",
+          "rotational_stiffness": "7.8 3.9 7.8",
+          "translational_stiffness": "0 0 0",
+          "rotational_damping": "0.78 0.39 0.78",
+          "translational_damping": "0 0 0",
+          "name": "C3_C2_Bushing"
+        },
+        {
+          "isDisabled": "false",
+          "body_1": "cerv2",
+          "body_2": "cerv1",
+          "location_body_1": "0 0 0",
+          "orientation_body_1": "0 0 0",
+          "location_body_2": "0 0 0",
+          "orientation_body_2": "0 0 0",
+          "rotational_stiffness": "7.8 3.9 7.8",
+          "translational_stiffness": "0 0 0",
+          "rotational_damping": "0.78 0.39 0.78",
+          "translational_damping": "0 0 0",
+          "name": "C2_C1_Bushing"
+        },
+        {
+          "isDisabled": "false",
+          "body_1": "cerv1",
+          "body_2": "skull",
+          "location_body_1": "0 0 0",
+          "orientation_body_1": "0 0 0",
+          "location_body_2": "0 0 0",
+          "orientation_body_2": "0 0 0",
+          "rotational_stiffness": "7.8 3.9 7.8",
+          "translational_stiffness": "0 0 0",
+          "rotational_damping": "0.78 0.39 0.78",
+          "translational_damping": "0 0 0",
+          "name": "C1_skull_Bushing"
+        }
+      ],
+      "visual_geometry_not_acquired": [
+        "cerv1.vtp",
+        "cerv2.vtp",
+        "cerv3.vtp",
+        "cerv4.vtp",
+        "cerv5.vtp",
+        "cerv6.vtp",
+        "jaw.vtp",
+        "lclavicle.vtp",
+        "lscapula.vtp",
+        "rclavicle.vtp",
+        "ribcage.vtp",
+        "rotatedcerv7.vtp",
+        "rscapula.vtp",
+        "skull.vtp",
+        "tlspine.vtp"
+      ],
+      "physical_inertia_failures": [
+        "cerv7",
+        "cerv6",
+        "cerv5",
+        "cerv4",
+        "cerv3",
+        "cerv2",
+        "cerv1"
+      ]
+    }
+  ],
+  "target": {
+    "identity": {
+      "path": "data/derived/mechanics/whole_body_arm26_v2/subject_with_arms.osim",
+      "bytes": 484175,
+      "sha256": "e697dc40b2939f5edbc2879bcbd7e5954ffbabbb234032c403d57f5c39ea3810"
+    },
+    "body_count": 22,
+    "torso_mass_kg": 30.3832390808,
+    "torso_mass_center_m": [
+      -0.03,
+      0.32,
+      0.0
+    ],
+    "torso_inertia": {
+      "tensor_kg_m2_xx_yy_zz_xy_xz_yz": [
+        1.669987476,
+        0.8556633016,
+        1.6211733287,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "principal_moments_kg_m2": [
+        0.8556633016,
+        1.6211733287,
+        1.669987476
+      ],
+      "positive_definite": true,
+      "physical_mass_distribution_possible": true,
+      "second_mass_moment_eigenvalues_kg_m2": [
+        0.40342457715000024,
+        0.45223872445000013,
+        1.2177487515500003
+      ]
+    }
+  },
+  "opensim_invalid_inertia_handler": {
+    "identity": {
+      "path": "data/raw/mechanics/opensim-core/OpenSim/Simulation/SimbodyEngine/Body.cpp",
+      "bytes": 17729,
+      "sha256": "acaade97fa79fe248420b02624f3ceaf28b7cab6f3c3e61892689f9f57e263f6"
+    },
+    "lines": "146-163",
+    "action": "Catches invalid inertia, logs warning/error, substitutes spherical inertia",
+    "cervical_fallback_diagonal_kg_m2": 0.04898979485566357
+  }
+}

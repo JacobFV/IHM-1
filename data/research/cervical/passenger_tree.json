@@ -1,0 +1,441 @@
+{
+  "sha": "b0eb96127ca07dea0266764e837faeaa397092b5",
+  "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/trees/b0eb96127ca07dea0266764e837faeaa397092b5",
+  "tree": [
+    {
+      "path": ".gitignore",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "2e97ab899c5ac1725530dd61db76650fff422f04",
+      "size": 7,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/2e97ab899c5ac1725530dd61db76650fff422f04"
+    },
+    {
+      "path": "LICENSE",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "91f77107a49ed3b43aaa302425815623b2307edd",
+      "size": 1065,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/91f77107a49ed3b43aaa302425815623b2307edd"
+    },
+    {
+      "path": "OpenSimConfigurationFiles",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "1e761fa1cbf8f5adf9963102bb90ef1f0223796f",
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/trees/1e761fa1cbf8f5adf9963102bb90ef1f0223796f"
+    },
+    {
+      "path": "OpenSimConfigurationFiles/IK_Setup.xml",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "f53afd6394bf9ad7c3976e9709ee7bb1e610da2f",
+      "size": 14041,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/f53afd6394bf9ad7c3976e9709ee7bb1e610da2f"
+    },
+    {
+      "path": "OpenSimConfigurationFiles/Scale_Setup.xml",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "302410863f0fd7a08ac22d10ccd836e0c6e6f765",
+      "size": 17201,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/302410863f0fd7a08ac22d10ccd836e0c6e6f765"
+    },
+    {
+      "path": "README.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "868b4c4b2a4ad95db7c2222fba9447fee6302f46",
+      "size": 12033,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/868b4c4b2a4ad95db7c2222fba9447fee6302f46"
+    },
+    {
+      "path": "models",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "e545897ec1d8771d4dc46f2af659391eb5a8526f",
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/trees/e545897ec1d8771d4dc46f2af659391eb5a8526f"
+    },
+    {
+      "path": "models/Geometry",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "dd5d1d4cc22cce7b95749e16036a8d56bff14b5f",
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/trees/dd5d1d4cc22cce7b95749e16036a8d56bff14b5f"
+    },
+    {
+      "path": "models/Geometry/cerv1.vtp",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "e7ad02fb22d2efa21a37122e9cba8fe69c903bde",
+      "size": 30763,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/e7ad02fb22d2efa21a37122e9cba8fe69c903bde"
+    },
+    {
+      "path": "models/Geometry/cerv2.vtp",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "6e725255863e75f17f4359b6dc46bc174ad8ed3a",
+      "size": 15062,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/6e725255863e75f17f4359b6dc46bc174ad8ed3a"
+    },
+    {
+      "path": "models/Geometry/cerv3.vtp",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "b049f241d208d5a607481bce87ef0dabafe2abd6",
+      "size": 15062,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/b049f241d208d5a607481bce87ef0dabafe2abd6"
+    },
+    {
+      "path": "models/Geometry/cerv4.vtp",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "087efe68c3662fd09ac49899a0aa3a383e6ac70b",
+      "size": 15062,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/087efe68c3662fd09ac49899a0aa3a383e6ac70b"
+    },
+    {
+      "path": "models/Geometry/cerv5.vtp",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "4f619a790c7dc305f5af80e522ba50a5f46ede67",
+      "size": 15062,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/4f619a790c7dc305f5af80e522ba50a5f46ede67"
+    },
+    {
+      "path": "models/Geometry/cerv6.vtp",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "e37eadff24ac7d3e004087c5f7ac5b25c6ce68e5",
+      "size": 15058,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/e37eadff24ac7d3e004087c5f7ac5b25c6ce68e5"
+    },
+    {
+      "path": "models/Geometry/jaw.vtp",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "ad29edce14bfc38d13209b9c1fd41d817b5fc050",
+      "size": 148663,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/ad29edce14bfc38d13209b9c1fd41d817b5fc050"
+    },
+    {
+      "path": "models/Geometry/lclavicle.vtp",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "83538315fd4003331630264d49941ccdd2f437f1",
+      "size": 19724,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/83538315fd4003331630264d49941ccdd2f437f1"
+    },
+    {
+      "path": "models/Geometry/lscapula.vtp",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "f9267efbea342ef20a9e5315d3669b6e10463816",
+      "size": 74109,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/f9267efbea342ef20a9e5315d3669b6e10463816"
+    },
+    {
+      "path": "models/Geometry/rclavicle.vtp",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "6ce35c26d534dc59ffbc62b49259d222161a4a79",
+      "size": 19724,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/6ce35c26d534dc59ffbc62b49259d222161a4a79"
+    },
+    {
+      "path": "models/Geometry/ribcage.vtp",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "9ed103214501b1c9e9e690592fedfbdec6200dbf",
+      "size": 280042,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/9ed103214501b1c9e9e690592fedfbdec6200dbf"
+    },
+    {
+      "path": "models/Geometry/rotatedcerv7.vtp",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "f8084a7580682291b5f2435fb7136c58f1cfe373",
+      "size": 15032,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/f8084a7580682291b5f2435fb7136c58f1cfe373"
+    },
+    {
+      "path": "models/Geometry/rscapula.vtp",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "0ca0d658182a4770c1e332f2e7f83b61ea8f2536",
+      "size": 74109,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/0ca0d658182a4770c1e332f2e7f83b61ea8f2536"
+    },
+    {
+      "path": "models/Geometry/skull.vtp",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "5e4d5eff7a15e6e96e50a4c050ae95377f978745",
+      "size": 337565,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/5e4d5eff7a15e6e96e50a4c050ae95377f978745"
+    },
+    {
+      "path": "models/Geometry/tlspine.vtp",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "18e9d3603cdf3f4ce28b92a0765a84aa2b8a7a96",
+      "size": 520692,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/18e9d3603cdf3f4ce28b92a0765a84aa2b8a7a96"
+    },
+    {
+      "path": "models/media",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "698476a39287f0cc6448e59ac8270079fde441e2",
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/trees/698476a39287f0cc6448e59ac8270079fde441e2"
+    },
+    {
+      "path": "models/media/Christophy2012.dae",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7497b759852c548499ea71f9aa301f6b8baca644",
+      "size": 700793,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/7497b759852c548499ea71f9aa301f6b8baca644"
+    },
+    {
+      "path": "models/media/Mortensen.dae",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "de0b6e677b47a136f3d5608b73debf8e00ac875c",
+      "size": 1326684,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/de0b6e677b47a136f3d5608b73debf8e00ac875c"
+    },
+    {
+      "path": "models/media/fig_passengerModel.xcf",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ecf86034662a19a728985bfe5180de103f55c60c",
+      "size": 235837,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/ecf86034662a19a728985bfe5180de103f55c60c"
+    },
+    {
+      "path": "models/media/passengerModel.dae",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b4830bcf4b6b75312271c32f836162b1f7ef2c5e",
+      "size": 1420974,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/b4830bcf4b6b75312271c32f836162b1f7ef2c5e"
+    },
+    {
+      "path": "models/media/passengerModelMuscles.dae",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fc22fe0c074153afe5fbbcc2e5f6cb7e057820cc",
+      "size": 1420974,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/fc22fe0c074153afe5fbbcc2e5f6cb7e057820cc"
+    },
+    {
+      "path": "models/media/passengerModel_Christophy_Mortensen.blend",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a2193974a2a312538b792bc4e849d1f9a423ca2f",
+      "size": 31245764,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/a2193974a2a312538b792bc4e849d1f9a423ca2f"
+    },
+    {
+      "path": "models/media/passengerModel_Christophy_Mortensen.blend1",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e53cff5853f8efa58d72940be9c3a9029dd827bf",
+      "size": 15366712,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/e53cff5853f8efa58d72940be9c3a9029dd827bf"
+    },
+    {
+      "path": "models/media/passengerModel_Christophy_Mortensen.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b6c32ca604dbe25b1e26ed7f7955996207cd04cc",
+      "size": 1398934,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/b6c32ca604dbe25b1e26ed7f7955996207cd04cc"
+    },
+    {
+      "path": "models/passengerModel.osim",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "111a2f04b438e18a8e262be9fe3ee27a9cbbf92f",
+      "size": 272032,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/111a2f04b438e18a8e262be9fe3ee27a9cbbf92f"
+    },
+    {
+      "path": "models/passengerModelMuscles.osim",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "39a7e878e1b46c430871b79c76ce9e6888c9f3d6",
+      "size": 770566,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/39a7e878e1b46c430871b79c76ce9e6888c9f3d6"
+    },
+    {
+      "path": "models/reference",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "20b6c1d5cbb7aa9b52191244d8af094fc17b366f",
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/trees/20b6c1d5cbb7aa9b52191244d8af094fc17b366f"
+    },
+    {
+      "path": "models/reference/Christophy2012_axialRotationUpd_skeletonOnly.osim",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5784fa38396c5176f5e438e1c4188e22a4e4b7fa",
+      "size": 77490,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/5784fa38396c5176f5e438e1c4188e22a4e4b7fa"
+    },
+    {
+      "path": "models/reference/Geometry",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "dd5d1d4cc22cce7b95749e16036a8d56bff14b5f",
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/trees/dd5d1d4cc22cce7b95749e16036a8d56bff14b5f"
+    },
+    {
+      "path": "models/reference/Geometry/cerv1.vtp",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "e7ad02fb22d2efa21a37122e9cba8fe69c903bde",
+      "size": 30763,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/e7ad02fb22d2efa21a37122e9cba8fe69c903bde"
+    },
+    {
+      "path": "models/reference/Geometry/cerv2.vtp",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "6e725255863e75f17f4359b6dc46bc174ad8ed3a",
+      "size": 15062,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/6e725255863e75f17f4359b6dc46bc174ad8ed3a"
+    },
+    {
+      "path": "models/reference/Geometry/cerv3.vtp",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "b049f241d208d5a607481bce87ef0dabafe2abd6",
+      "size": 15062,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/b049f241d208d5a607481bce87ef0dabafe2abd6"
+    },
+    {
+      "path": "models/reference/Geometry/cerv4.vtp",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "087efe68c3662fd09ac49899a0aa3a383e6ac70b",
+      "size": 15062,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/087efe68c3662fd09ac49899a0aa3a383e6ac70b"
+    },
+    {
+      "path": "models/reference/Geometry/cerv5.vtp",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "4f619a790c7dc305f5af80e522ba50a5f46ede67",
+      "size": 15062,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/4f619a790c7dc305f5af80e522ba50a5f46ede67"
+    },
+    {
+      "path": "models/reference/Geometry/cerv6.vtp",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "e37eadff24ac7d3e004087c5f7ac5b25c6ce68e5",
+      "size": 15058,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/e37eadff24ac7d3e004087c5f7ac5b25c6ce68e5"
+    },
+    {
+      "path": "models/reference/Geometry/jaw.vtp",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "ad29edce14bfc38d13209b9c1fd41d817b5fc050",
+      "size": 148663,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/ad29edce14bfc38d13209b9c1fd41d817b5fc050"
+    },
+    {
+      "path": "models/reference/Geometry/lclavicle.vtp",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "83538315fd4003331630264d49941ccdd2f437f1",
+      "size": 19724,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/83538315fd4003331630264d49941ccdd2f437f1"
+    },
+    {
+      "path": "models/reference/Geometry/lscapula.vtp",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "f9267efbea342ef20a9e5315d3669b6e10463816",
+      "size": 74109,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/f9267efbea342ef20a9e5315d3669b6e10463816"
+    },
+    {
+      "path": "models/reference/Geometry/rclavicle.vtp",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "6ce35c26d534dc59ffbc62b49259d222161a4a79",
+      "size": 19724,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/6ce35c26d534dc59ffbc62b49259d222161a4a79"
+    },
+    {
+      "path": "models/reference/Geometry/ribcage.vtp",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "9ed103214501b1c9e9e690592fedfbdec6200dbf",
+      "size": 280042,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/9ed103214501b1c9e9e690592fedfbdec6200dbf"
+    },
+    {
+      "path": "models/reference/Geometry/rotatedcerv7.vtp",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "f8084a7580682291b5f2435fb7136c58f1cfe373",
+      "size": 15032,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/f8084a7580682291b5f2435fb7136c58f1cfe373"
+    },
+    {
+      "path": "models/reference/Geometry/rscapula.vtp",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "0ca0d658182a4770c1e332f2e7f83b61ea8f2536",
+      "size": 74109,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/0ca0d658182a4770c1e332f2e7f83b61ea8f2536"
+    },
+    {
+      "path": "models/reference/Geometry/skull.vtp",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "5e4d5eff7a15e6e96e50a4c050ae95377f978745",
+      "size": 337565,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/5e4d5eff7a15e6e96e50a4c050ae95377f978745"
+    },
+    {
+      "path": "models/reference/Geometry/tlspine.vtp",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "18e9d3603cdf3f4ce28b92a0765a84aa2b8a7a96",
+      "size": 520692,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/18e9d3603cdf3f4ce28b92a0765a84aa2b8a7a96"
+    },
+    {
+      "path": "models/reference/Mortensen2018.osim",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "41fb3623066aff0f7ce9fc4f5c5f13ae07589fe1",
+      "size": 494571,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/41fb3623066aff0f7ce9fc4f5c5f13ae07589fe1"
+    },
+    {
+      "path": "models/reference/VasavadaLiDelp1998_rangeOfMotion.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1d1e96d7e97b5f02321ca5bb35345b19e0566325",
+      "size": 406,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/1d1e96d7e97b5f02321ca5bb35345b19e0566325"
+    },
+    {
+      "path": "passengerModelMuscles.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c0f8c9b67fa8e729541e42401a6d61721cb811ed",
+      "size": 151804,
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/blobs/c0f8c9b67fa8e729541e42401a6d61721cb811ed"
+    }
+  ],
+  "truncated": false
+}

@@ -1,0 +1,101 @@
+{
+  "sha": "b0eb96127ca07dea0266764e837faeaa397092b5",
+  "node_id": "C_kwDOMqj2v9oAKGIwZWI5NjEyN2NhMDdkZWEwMjY2NzY0ZTgzN2ZhZWFhMzk3MDkyYjU",
+  "commit": {
+    "author": {
+      "name": "mjhmilla",
+      "email": "millard.matthew@gmail.com",
+      "date": "2026-04-10T07:59:14Z"
+    },
+    "committer": {
+      "name": "mjhmilla",
+      "email": "millard.matthew@gmail.com",
+      "date": "2026-04-10T07:59:14Z"
+    },
+    "message": "minor reformatting of the notes in the README.md file",
+    "tree": {
+      "sha": "8d4f713482e01aea4e62b203adfbdcc2f7d82bd5",
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/trees/8d4f713482e01aea4e62b203adfbdcc2f7d82bd5"
+    },
+    "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/git/commits/b0eb96127ca07dea0266764e837faeaa397092b5",
+    "comment_count": 0,
+    "verification": {
+      "verified": false,
+      "reason": "unsigned",
+      "signature": null,
+      "payload": null,
+      "verified_at": null
+    }
+  },
+  "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/commits/b0eb96127ca07dea0266764e837faeaa397092b5",
+  "html_url": "https://github.com/mjhmilla/kinematicPassengerModel/commit/b0eb96127ca07dea0266764e837faeaa397092b5",
+  "comments_url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/commits/b0eb96127ca07dea0266764e837faeaa397092b5/comments",
+  "author": {
+    "login": "mjhmilla",
+    "id": 4612980,
+    "node_id": "MDQ6VXNlcjQ2MTI5ODA=",
+    "avatar_url": "https://avatars.githubusercontent.com/u/4612980?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/mjhmilla",
+    "html_url": "https://github.com/mjhmilla",
+    "followers_url": "https://api.github.com/users/mjhmilla/followers",
+    "following_url": "https://api.github.com/users/mjhmilla/following{/other_user}",
+    "gists_url": "https://api.github.com/users/mjhmilla/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/mjhmilla/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/mjhmilla/subscriptions",
+    "organizations_url": "https://api.github.com/users/mjhmilla/orgs",
+    "repos_url": "https://api.github.com/users/mjhmilla/repos",
+    "events_url": "https://api.github.com/users/mjhmilla/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/mjhmilla/received_events",
+    "type": "User",
+    "user_view_type": "public",
+    "site_admin": false
+  },
+  "committer": {
+    "login": "mjhmilla",
+    "id": 4612980,
+    "node_id": "MDQ6VXNlcjQ2MTI5ODA=",
+    "avatar_url": "https://avatars.githubusercontent.com/u/4612980?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/mjhmilla",
+    "html_url": "https://github.com/mjhmilla",
+    "followers_url": "https://api.github.com/users/mjhmilla/followers",
+    "following_url": "https://api.github.com/users/mjhmilla/following{/other_user}",
+    "gists_url": "https://api.github.com/users/mjhmilla/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/mjhmilla/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/mjhmilla/subscriptions",
+    "organizations_url": "https://api.github.com/users/mjhmilla/orgs",
+    "repos_url": "https://api.github.com/users/mjhmilla/repos",
+    "events_url": "https://api.github.com/users/mjhmilla/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/mjhmilla/received_events",
+    "type": "User",
+    "user_view_type": "public",
+    "site_admin": false
+  },
+  "parents": [
+    {
+      "sha": "fd6f3d8e3e3f7760b357ee19ef2d3efbbe09089b",
+      "url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/commits/fd6f3d8e3e3f7760b357ee19ef2d3efbbe09089b",
+      "html_url": "https://github.com/mjhmilla/kinematicPassengerModel/commit/fd6f3d8e3e3f7760b357ee19ef2d3efbbe09089b"
+    }
+  ],
+  "stats": {
+    "total": 25,
+    "additions": 13,
+    "deletions": 12
+  },
+  "files": [
+    {
+      "sha": "868b4c4b2a4ad95db7c2222fba9447fee6302f46",
+      "filename": "README.md",
+      "status": "modified",
+      "additions": 13,
+      "deletions": 12,
+      "changes": 25,
+      "blob_url": "https://github.com/mjhmilla/kinematicPassengerModel/blob/b0eb96127ca07dea0266764e837faeaa397092b5/README.md",
+      "raw_url": "https://github.com/mjhmilla/kinematicPassengerModel/raw/b0eb96127ca07dea0266764e837faeaa397092b5/README.md",
+      "contents_url": "https://api.github.com/repos/mjhmilla/kinematicPassengerModel/contents/README.md?ref=b0eb96127ca07dea0266764e837faeaa397092b5",
+      "patch": "@@ -6,25 +6,26 @@ This repository contains the working OpenSim (https://simtk.org/projects/opensim\n \n # Note\n \n- - 2026/04/09\n-       The attachment points for longissi_cerv_c4thx_L are 3-4 mm too low on the passengerModel: it passes through the transverse process of T8. This happened because the Christophy et al. and Mortensen et al. models have different locations for the torso frame relative to the ribcage, because the Christophy et al. model has a lumbar spine, and the Mortensen et al. model has one large lumped torso segment. To attach the muscles to the same location on the torso, we had to calculate the offset between the torso frames of both models and add this to the attachement point locations of the muscles that attach to the torso. To do this, the passengerModel should first be scaled to have the same height as the Mortensen model, then the offset can be calculated and applied to the few muscles that attach to the torso. Instead, we did not scale the passengerModel before applying the offset, and so, an offset appropriate for the 1803.4 mm tall Mortensen et al. model was applied to the 1700 mm tall passenger model. This offset is a bit too big.\n+2026/04/09\n \n- - 2026/04/10\n+The attachment points for longissi_cerv_c4thx_L are 3-4 mm too low on the passengerModel: it passes through the transverse process of T8. This happened because the Christophy et al. and Mortensen et al. models have different locations for the torso frame relative to the ribcage, because the Christophy et al. model has a lumbar spine, and the Mortensen et al. model has one large lumped torso segment. To attach the muscles to the same location on the torso, we had to calculate the offset between the torso frames of both models and add this to the attachement point locations of the muscles that attach to the torso. To do this, the passengerModel should first be scaled to have the same height as the Mortensen model, then the offset can be calculated and applied to the few muscles that attach to the torso. Instead, we did not scale the passengerModel before applying the offset, and so, an offset appropriate for the 1803.4 mm tall Mortensen et al. model was applied to the 1700 mm tall passenger model. This offset is a bit too big.\n \n-       When I manually merged the Christophy et al. model (1700 mm tall) with the Mortensen et al. model (1803.4 mm tall) I changed the scale factors of the meshes, and the scale applied to the translation parts of the custom joints. I failed to update the PhysicalOffsetFrame's translation field, the optimal fiber length and tendon slack length. This means the following:\n+ 2026/04/10\n \n-       - The passengerModel's neck joint centers, optimal fiber lengths, and tendon slack lengths come from Mortensen et al. and were not scaled. That means these measures are sized for someone 1803.4 mm tall, but attached to the 1700 mm tall passenger model. Not good. The errors will be on the order of  6% (1803.4/1700-1).\n+When I manually merged the Christophy et al. model (1700 mm tall) with the Mortensen et al. model (1803.4 mm tall) I changed the scale factors of the meshes, and the scale applied to the translation parts of the custom joints. I failed to update the PhysicalOffsetFrame's translation field, the optimal fiber length and tendon slack length. This means the following:\n \n-       - The passengerModel's torso mass comes from Christophy et al. They don't mention the mass explicitly, but say that they started with the Arnold 2010. The Arnold 2010 paper mentions they got the height from Gordon et al. Gordon et al. on page 193 has a list of height (stature) for the people that they looked at. A 1700 mm height would be just below a 25th percentile male. On page 225 the masses of the participants is listed: the 25th percentile male is 75.60 kg (166.67 lbs). The mass of the Mortensen et al. model is 79.54 kg (175 lbs).\n+ -  The passengerModel's neck joint centers, optimal fiber lengths, and tendon slack lengths come from Mortensen et al. and were not scaled. That means these measures are sized for someone 1803.4 mm tall, but attached to the 1700 mm tall passenger model. Not good. The errors will be on the order of  6% (1803.4/1700-1).\n \n-       That means that the masses and inertia's of the passengerModel's torso is consistent with someone who's 75.6 kg and 1700 mm tall, while the head and neck have inertias that are consistent with someone who is 79.54 kg and 1803.4mm tall. Not good. The mass errors will be on the order of 5.2% (79.54/75.6-1), while the inertia errors will be on the order of 17.9% ( (1.8*1.8*79.54)/(1.7*1.7*75.6) ).\n+ -  The passengerModel's torso mass comes from Christophy et al. They don't mention the mass explicitly, but say that they started with the Arnold 2010. The Arnold 2010 paper mentions they got the height from Gordon et al. Gordon et al. on page 193 has a list of height (stature) for the people that they looked at. A 1700 mm height would be just below a 25th percentile male. On page 225 the masses of the participants is listed: the 25th percentile male is 75.60 kg (166.67 lbs). The mass of the Mortensen et al. model is 79.54 kg (175 lbs).\n+\n+ - That means that the masses and inertia's of the passengerModel's torso are consistent with someone who's 75.6 kg and 1700 mm tall, while the head and neck have inertias that are consistent with someone who is 79.54 kg and 1803.4mm tall. Not good. The mass errors will be on the order of 5.2% (79.54/75.6-1), while the inertia errors will be on the order of 17.9% ( (1.8*1.8*79.54)/(1.7*1.7*75.6) ).\n        \n-       - If I had the time, I would do the following:\n+If I had the time, I would do the following:\n \n-              1. Scale the Christophy et al.'s size by 1803.4/1700, and mass by 79.54/75.60 to bring it to a size that is appropriate for the Mortensen et al. model. I'd use the version of the Christophy model that just contains the skeleton: models/reference/Christophy2012_axialRotationUpd_skeletonOnly\n-              2. Manually merge the scaled Christophy et al. model with the Mortensen et al. model. This step currently has to be done manually by editing the XML.\n-              3. Calculate the difference in the vectors from the torso frame to the T1 frame. This difference, or offset, needs to be applied to all of the points that the neck muscles attach to.\n-              4. Pose the Mortensen model and the new passengerModel with the same generalized coordinates. Since both models are the same height now (1803.4 mm), if everything went well, all of the lengths of the muscles should match identically.\n+ 1. Scale the Christophy et al.'s size by 1803.4/1700, and mass by 79.54/75.60 to bring it to a size that is appropriate for the Mortensen et al. model. I'd use the version of the Christophy model that just contains the skeleton: models/reference/Christophy2012_axialRotationUpd_skeletonOnly\n+ 2. Manually merge the scaled Christophy et al. model with the Mortensen et al. model. This step currently has to be done manually by editing the XML.\n+ 3. Calculate the difference in the vectors from the torso frame to the T1 frame. This difference, or offset, needs to be applied to all of the points that the neck muscles attach to.\n+ 4. Pose the Mortensen model and the new passengerModel with the same generalized coordinates. Since both models are the same height now (1803.4 mm), if everything went well, all of the lengths of the muscles should match identically.\n \n # Model Description\n "
+    }
+  ]
+}
