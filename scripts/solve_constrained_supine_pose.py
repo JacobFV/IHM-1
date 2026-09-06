@@ -39,7 +39,7 @@ def static_converged(entry):
             ('constraint_position_error','constraint_velocity_error','constraint_acceleration_error')))
 
 
-def run(seed_path,material,resume_path=None,resume_cache=None,mode='constrained',frozen_stream=None):
+def run(seed_path,material,resume_path=None,resume_cache=None,mode='constrained',frozen_stream=None,equivalence_receipt=None):
     if frozen_stream is None:
         from ihm.native.mechanical_stream import NativeMechanicalStream
     else:
@@ -70,6 +70,14 @@ def run(seed_path,material,resume_path=None,resume_cache=None,mode='constrained'
                 maximum_evaluations=200,maximum_wall_s=60,mode=mode,objective=('all mobility accelerations divided by 1 rad/s^2 or 1 m/s^2, no inertia weighting' if mode in ('acceleration-root','balanced-root') else 'udot^T M udot/(mass*g^2), cross-checked against -r dot udot; no cost floor'),
                 toe_seed=('exact resumed coordinates retained for cache reuse' if resume_cache is not None else 'held passive law neutral0 on resume; pure ankle damping has no preferred static angle so retained ankle q'),held_gauge_coordinates={n:seed[n] for n in gauges},
                 scope='Native generalized-force static solve with explicit support force/pitch/roll balance; unchanged forward acceptance remains mandatory')
+    if frozen_stream is not None:
+        if equivalence_receipt is None:raise ValueError('Frozen continuation requires numerical-equivalence receipt')
+        equivalence=json.loads(equivalence_receipt.read_text())
+        if not equivalence.get('passed') or not equivalence.get('archive_intact') or not equivalence.get('continuing_state_unchanged') or equivalence.get('assembly_accuracy')!=1e-10:
+            raise ValueError('Unaccepted frozen numerical-equivalence receipt')
+        if equivalence['source_sha256'].get(str(frozen_stream.resolve()))!=hashlib.sha256(frozen_stream.read_bytes()).hexdigest():raise ValueError('Frozen equivalence archive differs')
+        report['frozen_numerical_equivalence']=dict(receipt=str(equivalence_receipt),sha256=hashlib.sha256(equivalence_receipt.read_bytes()).hexdigest(),
+            scope=equivalence['comparison_basis'],limitation=equivalence['limitation'],strict_generic_failure_retained='data/derived/frozen-static-acceptance-57u8erpr/report.json')
     def write(name,value):(output/name).write_text(json.dumps(value,indent=2,allow_nan=False)+'\n')
     def deadline(signum,stack):
         if stream is not None and stream.process.poll() is None:stream.process.kill()
@@ -224,6 +232,6 @@ def run(seed_path,material,resume_path=None,resume_cache=None,mode='constrained'
 
 
 if __name__=='__main__':
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--run-native',action='store_true');parser.add_argument('--seed',type=Path);parser.add_argument('--resume',type=Path);parser.add_argument('--resume-cache',type=Path);parser.add_argument('--frozen-stream',type=Path);parser.add_argument('--mode',choices=('constrained','acceleration-root','balanced-root'),default='constrained');parser.add_argument('--material',choices=('MM','HM'),default='MM');args=parser.parse_args()
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--run-native',action='store_true');parser.add_argument('--seed',type=Path);parser.add_argument('--resume',type=Path);parser.add_argument('--resume-cache',type=Path);parser.add_argument('--frozen-stream',type=Path);parser.add_argument('--equivalence-receipt',type=Path);parser.add_argument('--mode',choices=('constrained','acceleration-root','balanced-root'),default='constrained');parser.add_argument('--material',choices=('MM','HM'),default='MM');args=parser.parse_args()
     if not args.run_native or args.seed is None:raise SystemExit('Coordinated --run-native slot and --seed required')
-    run(args.seed.resolve(),args.material,None if args.resume is None else args.resume.resolve(),None if args.resume_cache is None else args.resume_cache.resolve(),args.mode,None if args.frozen_stream is None else args.frozen_stream.resolve())
+    run(args.seed.resolve(),args.material,None if args.resume is None else args.resume.resolve(),None if args.resume_cache is None else args.resume_cache.resolve(),args.mode,None if args.frozen_stream is None else args.frozen_stream.resolve(),None if args.equivalence_receipt is None else args.equivalence_receipt.resolve())
