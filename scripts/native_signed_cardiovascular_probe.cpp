@@ -21,7 +21,9 @@ int main(int argc,char** argv){try{
   values["exercise_map_target_mmhg"]=bg.GetEnergy().GetExerciseMeanArterialPressureDelta(PressureUnit::mmHg);
   for(const auto& name:{"Aorta1ToMuscle1","Muscle1ToMuscle2","Muscle2ToVenaCava"}){
    auto* path=bg.GetCircuits().GetActiveCardiovascularCircuit().GetPath(name);if(!path)throw std::runtime_error("missing muscle path probe");
-   if(path->HasResistance())values[std::string("resistance.")+name]=path->GetResistance(FlowResistanceUnit::mmHg_s_Per_mL);
+   values[std::string("has_resistance.")+name]=path->HasResistance()?1:0;
+   values[std::string("has_cardiovascular_region.")+name]=path->HasCardiovascularRegion()?1:0;
+   values[std::string("resistance.")+name]=path->HasResistance()?path->GetResistance(FlowResistanceUnit::mmHg_s_Per_mL):std::numeric_limits<double>::quiet_NaN();
    values[std::string("flow.")+name]=path->GetFlow(VolumePerTimeUnit::mL_Per_s);
   }
   std::cout<<std::setprecision(17)<<"IHM\t{\"step\":"<<i+1<<",\"delta_m_w\":"<<r.delta_m_W<<",\"reader_count\":"<<r.effective_reader_count[0]<<",\"reader_w\":"<<r.effective_reader_W[0]<<",\"heat_count\":"<<r.heat_count<<",\"tissue_count\":"<<r.tissue_count<<",\"unmet_kcal\":"<<r.unmet_muscle_kcal<<",\"values\":{";

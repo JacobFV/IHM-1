@@ -137,3 +137,19 @@ flow and omits an invented resistor; `falsification.json` explicitly records
 resistance as unavailable. Early compile/resource/probe assumptions are retained
 in q81sp5u6, pm4ongn3 and gqnu4i5n audit directories. These were fixture failures,
 not evidence of a physical response.
+
+## Region-repaired causal experiment
+
+The isolated existing-field repair and exact structural migration described in `CARDIOVASCULAR_REGION_IO_REPAIR.md` enabled a second experiment. Receipt `data/derived/audits/signed-cardiovascular-native-43up9zvr` passed all twelve three-step sessions in 5.704 seconds, maximum child RSS 529952 KiB. All variants loaded the same exact migrated state. The baseline library was `whole_body_integrity_cardio_region_io_v2`; the reader and prior composites reused its verified Circuit object while preserving their respective Cardiovascular objects. No default library changed.
+
+Inactive and zero-demand physical outputs matched that repaired baseline exactly. Reader-only physical outputs matched baseline for every tested mode. The experimental prior now acted on nonempty regional resistance caches, with this first-step response at background and basal demand 82.18220139584905 W:
+
+| Signed demand | Muscle inlet resistance (mmHg s/mL) | Muscle inlet flow (mL/s) |
+| --- | --- | --- |
+| Reader-only comparison | 3.9306332346934525 | 11.035582415437485 |
+| Prior, +0.01 W | 3.9304282643728268 | 11.036152196052049 |
+| Prior, −0.01 W | 3.9308382210481807 | 11.035012649327571 |
+
+Both muscle and other regional resistance sums changed in the expected direction. At the following two zero-demand steps, the normalized multiplier was exactly one and each local pre/post resistance sum was identical. This establishes release of the added local modifier; it does not imply erasing the preceding circulatory state perturbation. The signed interval recorded one cardiovascular reader, one heat consumer, and one tissue consumer; measured unmet muscle energy was zero in these tiny perturbations. The probe explicitly reports resistance availability, null for a flow-only path's unavailable resistance, and whether region metadata exists.
+
+This demonstrates a causal native resistance and flow response for the transferred exercise prior, not its physiological calibration. The magnitude, longer dynamics, wider positive/negative range, and coupled muscle supply limits remain unvalidated. Structural region reconstruction does not recover other missing physiological history, including the independently identified nervous, GI, and tissue private-state omissions. This experiment does not justify production promotion or a complete whole-body restart claim.

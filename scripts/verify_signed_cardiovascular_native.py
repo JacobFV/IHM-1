@@ -7,7 +7,7 @@ RUNTIME=ROOT/'data/runtime/physiology'
 def sha(p):return hashlib.sha256(Path(p).read_bytes()).hexdigest()
 def dump(p,v):p.write_text(json.dumps(v,indent=2,allow_nan=False)+'\n')
 def main():
- p=argparse.ArgumentParser();p.add_argument('--reader',required=True);p.add_argument('--prior',required=True);p.add_argument('--run',action='store_true');p.add_argument('--probe-build',type=Path);a=p.parse_args()
+ p=argparse.ArgumentParser();p.add_argument('--reader',required=True);p.add_argument('--prior',required=True);p.add_argument('--run',action='store_true');p.add_argument('--probe-build',type=Path);p.add_argument('--baseline',default='whole_body_integrity_gi_absorption');p.add_argument('--state-overlay',type=Path);a=p.parse_args()
  if not a.run:raise SystemExit('Explicit coordinated compile/run slot required')
  out=Path(tempfile.mkdtemp(prefix='signed-cardiovascular-native-',dir=ROOT/'data/derived/audits'));started=time.monotonic();build=a.probe_build.resolve() if a.probe_build else out/'build';
  if not a.probe_build:build.mkdir()
@@ -17,7 +17,7 @@ def main():
   if a.probe_build:assert sha(build/n)==frozen[ROOT/'scripts'/n]
   else:shutil.copyfile(ROOT/'scripts'/n,build/n)
  frozen[Path(__file__).resolve()]=sha(__file__)
- donor=ROOT/'data/raw/physiology/biogears';enginebuild=RUNTIME/'biogears-build';libs=enginebuild/'outputs/Release/lib';sysroot=RUNTIME/'sysroot';parent=RUNTIME/'variants/whole_body_integrity_gi_absorption'
+ donor=ROOT/'data/raw/physiology/biogears';enginebuild=RUNTIME/'biogears-build';libs=enginebuild/'outputs/Release/lib';sysroot=RUNTIME/'sysroot';parent=RUNTIME/'variants'/a.baseline
  command=['prlimit','--as=4294967296','--','nice','-n','10','c++','-std=c++20','-O1',str(build/names[0])]
  for path in (donor/'projects/biogears/libBiogears/include',donor/'projects/biogears-common/include',sysroot/'usr/include',sysroot/'usr/include/eigen3',enginebuild/'projects/biogears/generated/Release'):command+=['-I',str(path)]
  binary=build/'probe';command+=['-L',str(parent),'-L',str(libs),f'-Wl,-rpath,{parent}:{libs}','-l:libbiogears.so.8.0.0','-lbiogears_cdm','-ldl','-o',str(binary)]
@@ -26,7 +26,11 @@ def main():
   dump(build/'command.json',command)
   with (build/'compile.log').open('w') as log:subprocess.run(command,stdout=log,stderr=subprocess.STDOUT,check=True,env=env,timeout=120)
  frozen[binary]=sha(binary)
- reference=json.loads((ROOT/'data/derived/systemic/exertion_v3/exercise/native/manifest.json').read_text());state=Path(reference['configuration']['state_path']);assert sha(state)==reference['state_sha256'];shutil.copyfile(state,out/'initial.xml')
+ reference=json.loads((ROOT/'data/derived/systemic/exertion_v3/exercise/native/manifest.json').read_text());state=Path(reference['configuration']['state_path']);assert sha(state)==reference['state_sha256']
+ if a.state_overlay:
+  overlay=a.state_overlay.resolve();migration=json.loads((overlay/'manifest.json').read_text());assert migration['legacy_state_sha256']==reference['state_sha256'];state=overlay/'region_metadata.xml';assert sha(state)==migration['migrated_state_sha256'];assert migration['all_nonmetadata_bytes_preserved'];frozen[overlay/'manifest.json']=sha(overlay/'manifest.json');frozen[state]=sha(state)
+  assert json.loads((parent/'manifest.json').read_text())['schema']=='ihm.cardiovascular-region-io-variant.v1'
+ shutil.copyfile(state,out/'initial.xml')
  data={}
  for label,variant in [('baseline',parent),('reader',RUNTIME/'variants'/a.reader),('prior',RUNTIME/'variants'/a.prior)]:
   selected=json.loads((variant/'manifest.json').read_text());assert sha(variant/'libbiogears.so.8.0.0')==selected['library_sha256'];assert sha(build/'native_signed_muscle_port.h')==selected['header_sha256'];frozen[variant/'manifest.json']=sha(variant/'manifest.json');frozen[variant/'libbiogears.so.8.0.0']=selected['library_sha256']
