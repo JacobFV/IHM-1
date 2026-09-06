@@ -203,3 +203,19 @@ Evidence SHA-256:
 - `data/derived/constrained-supine-n7sam99n/last_optimizer_iterate.json`: `6eb55dcd00ca94af0bb74900444f263835f20589114ac17f7612db7ca1672f6d`
 - `data/derived/constrained-supine-n7sam99n/candidates.jsonl`: `40e5e7a5beac75aa2f353f677f4a41500eedfddeb1e83ce986d7a9733c3b41d9`
 - `data/derived/constrained-supine-n7sam99n/mass_registration_comparison.json`: `130282afa2102c73f203ecc46abbe341148eed2cd5059d20d1cf500d41fd948c`
+
+
+## Second support-constrained continuation
+
+`constrained-supine-xojr73kr` reached 200 new calls in 39.614 s, recovering 636 responses with 13 cache hits. Six accepted support-filtered iterates reduced objective 176,914 → 139,079 → 118,265 → 82,782 → 50,859 → 24,560.32. The last accepted pose has maximum acceleration 100.1283 rad/s² (ankles −100.1283/−95.2348), followed by hip rotation −33.02 and hip flexion −28.54 rad/s². Its support is 761.38311 N against 761.37571 N weight, with normalized normal/pitch/roll residuals −9.72135e−6, −2.04386e−5, 1.22535e−5 and held heading −1.03357e−6. Skin compression is 1.60369 mm and bed deflection 94.87180 mm. It remains far above the unchanged acceleration acceptance threshold; no forward run or reference promotion followed.
+
+The slightly lower best-supported objective 24,560.22 is a finite-difference sample, while the last accepted iterate has objective 24,560.32 and ten of its 29 Jacobian samples cached. A continuation should use the actual accepted iterate, requiring 19 new calls to finish that Jacobian. The journal now retains 836 successful responses.
+
+This run exposed a cache-efficiency issue: the generic interior-origin helper nudged the near-bound right knee by 9.975e−13, losing the five expected initial exact samples. No physics effect is claimed from this tiny displacement. The constrained local QP does not require TRF's strict-interior initialization, so `balanced-root` now validates and preserves accepted q exactly, including source-bound values. A source fixture checks exact near-bound preservation; all local/source bounds and support/constraint acceptance remain unchanged. No native rerun has yet tested this source increment.
+
+Evidence SHA-256:
+
+- `data/derived/constrained-supine-xojr73kr/report.json`: `81048c7b9395a2760bc215b72aedf3846d3da149cd3d92da0b6b50f56422bd2b`
+- `data/derived/constrained-supine-xojr73kr/last_optimizer_iterate.json`: `cfbcd5fa1611f169ed38d60c25dd7e69b6839daffab236f2ab3431162a00e8c6`
+- `data/derived/constrained-supine-xojr73kr/best_supported_candidate.json`: `50aceb319f1d4ec275464ff434dfbb6bda15e006186ccbf515324119ca96ae7b`
+- `data/derived/constrained-supine-xojr73kr/candidates.jsonl`: `e7237cdc0f43ab8a1b22067530f6ccb55deb05775b5f8527eda7f670dbca1fef`
