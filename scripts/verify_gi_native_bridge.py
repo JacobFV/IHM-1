@@ -37,6 +37,11 @@ def main():
     try:prepare(bad,[0]*3,1,condition)
     except ValueError:pass
     else:raise AssertionError('unowned current accepted')
+    for key,value in [('epoch',True),('epoch',-1),('current_ledger_owner',7),('current_ledger_owner','   ')]:
+        bad=dict(snap);bad[key]=value
+        try:prepare(bad,[0]*3,0,condition)
+        except ValueError:pass
+        else:raise AssertionError('invalid epoch/current owner accepted')
     print('PASS: bridge shared donor conservation, snapshot stale guard, distinct owners, no double SI absorption, explicit charge gap')
 
 if __name__=='__main__':main()

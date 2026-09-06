@@ -1,0 +1,28 @@
+# Actual native complete-substance lumen transit fixture
+
+The new `scripts/native_gi_lumen_transit.h` writer operates on references to four native CDM leaf liquid compartments: SI, colon, rectum and an explicitly external cumulative fecal collection. It stores no parallel physiological inventory. The source enumerates the union of every substance quantity across the four owners and requires a valid mass for each owner/species before transfer. It never selects only convenient nutrients. Missing or unknown masses fail instead of disappearing from the payload.
+
+`native_gi_lumen_transit_probe.cpp` loads the pinned native substance directory and creates four isolated CDM fixtures, initializing **all 61 loaded substances** with known synthetic masses. These are real native scalar/compartment methods, not a Python mirror, but they are not preexisting patient SI stores. No patient is initialized or advanced. A production caller must supply the authoritative existing SI and newly serialized colon/rectum owners.
+
+The actual receipt is `data/derived/audits/native-gi-transit-wa7gdgfl/report.json`: passed; 10 mL initial carrier ends in the explicit fecal collection; all 61 substance totals remain conserved across partial transfer and subsequent full transfers. Initial empty downstream donors cannot move newly received fluid further in the same call. Dry residue remains in its owner. Aliased owner references are rejected. The helper also rejects mapped nodes and parent compartments, preventing an accidental current-volume mutation through an unimplemented circuit adapter. Not every rejection branch is covered by the current probe.
+
+The compile took 1.80 s and 533,748 KiB peak RSS; native CDM execution took 0.05 s and 40,624 KiB. Limits were one process, 1 GiB, 90 s and thread-count environment variables of one, launched at nice 10. Source/header/library/binary hashes and commands are retained in the receipt; `ldd.txt` identifies the selected GI variant. Its library SHA256 is `9792d857c47a5907f571a03495fe9f4f1144f114afd72c0451869e1a7049588b`. The earlier missing-`cassert` compile failure is retained at `native-gi-transit-fip5w88s`; no failure receipt was overwritten.
+
+## Water and body-mass convention
+
+Native `SENutrition.cpp::GetWeight` adds water mL numerically as grams, separately from nutrient/electrolyte mass. Therefore the fixture supplies **1 g/mL carrier-water density**, giving 10 g carrier water at its fecal boundary. This is a native meal bookkeeping convention, not a claim that physical water density is temperature independent. `GeneralMath::CalculateWaterDensity` separately exposes a temperature-dependent density model; switching conventions requires an explicit matched initialization/body-mass ledger decision.
+
+A future patient-weight fecal debit must include carrier-water mass plus physically disjoint solute/solid mass once. The test's 61 independently initialized substance quantities are bookkeeping tracers, not a physically realizable mixture. Native species such as total hemoglobin and bound forms may overlap in mass representation; **do not blindly sum all 61 into patient weight**. Species conservation and total material mass require distinct ledgers until representation overlap is resolved. Internal lumen transfer changes no patient weight. External fecal output is the only body-mass boundary here.
+
+## Source patch preparation and activation boundary
+
+1. In `BioGears::SetupGastrointestinal`, retain the existing `SmallIntestineC1`/`SmallIntestineChyme` owner. Add explicit colon/rectum lumen nodes, scalar serialization, and external fecal ledger. Initialize added contents once with source or engineered-prior provenance. Do not repurpose large-intestine blood as a lumen.
+2. Register all active native substance quantities consistently for every new lumen. Ensure late activation of a drug/substance updates the union before any transaction. The existing per-drug CAT arrays have independent owners and must not be copied into aqueous mass a second time.
+3. Place transit planning after `AbsorbNutrients` in GI PreProcess. That method already changes mass and SI `NextVolume`; use a consistent prospective volume snapshot, not current volume paired with updated mass. Shared-donor wall/transit priority must be explicit. Existing SI absorption remains untouched by this transit-only increment.
+4. The next isolated native fixture must map nodes and prove which circuit layer commits volume. Choose one implementation: manual paired `NextVolume` updates with no transporting circuit flow, or circuit-owned transport with paired solutes handled exactly once. Never retain both. Reset unused flow sources every step. The present helper intentionally refuses this mapped case until that contract is tested.
+5. Persist cumulative fecal volume and per-substance mass. Add a consumed-step/epoch guard and precommit snapshot validation inside the native mutation boundary. Current code validates inputs before mutations but is not a rollback-capable native transaction if downstream `Balance` throws.
+6. Keep colon wall uptake disabled in this patch. Lumen advection transfers existing charge with its species; it does not need invented compensating ions. The empirical wall component still requires explicit bicarbonate/H/current ownership.
+
+The bridge Python epoch validation was also tightened to exact nonnegative integers (excluding booleans), and current-ledger ownership now requires a nonempty string. Its contract remains `native_commit_ready=False`.
+
+Reproduce the CDM fixture only with a heavy-slot grant using `nice -n 10 .venv/bin/python scripts/verify_native_gi_lumen_transit.py`. The lightweight bridge regression is `.venv/bin/python scripts/verify_gi_native_bridge.py`.
