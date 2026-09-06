@@ -120,3 +120,6 @@ Evidence SHA-256:
 - `data/derived/constrained-supine-_ha29yc1/candidates.jsonl`: `0a15f965da71144a267e20430d62a60e538be46e7be1d836aad2d44284872309`
 - `data/derived/constrained-supine-_ha29yc1/optimizer_iterates.jsonl`: `0fa358e459a5e095e5d1eaa7795a82ce8a78c14ef8fa6b30bb678cbd224845d8`
 - `data/derived/constrained-supine-_ha29yc1/jacobian_analysis.json`: `03dc04bcfac710192b1685a49fb1ac3eec1fac203a8a0d9b31c62ca6d553b799`
+
+
+`diagnose_static_root_steps.py` reconstructs the first Jacobian from record hashes and compares six-call linear-surrogate solves without native execution. With the original requested origin, TRF reproduces the actual first step (8.45179e−5) and leaves residual norm 2635.90. Using the already interior-adjusted origin, TRF instead takes a 0.18964 first step and reaches surrogate norm 18.37. Dogbox takes a 0.03 first step from either origin but reaches only surrogate norm 586.89. These large predicted coordinate moves are unverified against nonlinear contact/material domains; the comparison identifies an initialization sensitivity, not a replacement accepted pose. The solver itself remains unchanged pending review of bounded local-step handling.
