@@ -141,6 +141,10 @@ reject oversized requests; they do not reduce the source strand population.
 
 Required before anatomical live enablement:
 
+Exact source factory preparation and the current retained inertia audit are
+documented in [HAIR_SOURCE_FACTORY.md](HAIR_SOURCE_FACTORY.md). Its anatomical
+owner binding and native debit remain unselected.
+
 - Join attachment `sample_ids` to population `ids` and retained `face_index`;
   current view attachments contain triangle coordinates and source SHA but
   omit source face/node indices. Verify source bytes/hash and tangent rules;
@@ -148,9 +152,11 @@ Required before anatomical live enablement:
   verifies barycentric root reconstruction and fixed owner indices, but does
   not itself verify anatomical source provenance.
 - Provide source-bound material vertex owners and a physically justified
-  inertial policy. Native canonical hair proxies already contribute mass;
-  added physical guide masses must be reconciled explicitly. Do not subtract
-  an entire proxy or multiply guide masses by rendered-population counts.
+  inertial policy. Canonical hair proxy masses are descriptive metadata;
+  Articulated uses patient-scaled native segment inertia exclusively. Added
+  guide inertia must be explicitly partitioned from the actual native owner,
+  preserving its mass, first moment and full tensor on recombination. Do not
+  subtract proxy masses or multiply guides by rendered-population counts.
 - Attach the Python owner explicitly to an authoritative native session, and
   bridge its JSON-ready state/receipt to the viewer. `frame()` currently marks
   `viewer_synchronized: false`. The JavaScript worker has no reaction sink and

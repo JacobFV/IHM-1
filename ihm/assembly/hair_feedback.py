@@ -3,8 +3,9 @@
 The caller supplies source vertices, topology and fixed registered owners.
 Only single-owner rigid follicle triangles are supported. Native loads use the
 same full-wrench contract as GarmentFeedback. No new body inertia is created.
-Hair inertia is additional to the supplied native model: a source-bound factory
-must reconcile existing anatomical hair proxy mass before live enablement.
+Hair inertia is additional to the supplied native model. Canonical hair proxy
+mass is descriptive, not a separately integrated native mass. A source-bound
+factory must explicitly partition actual native segment inertia before enabling.
 """
 import copy
 import numpy as np
