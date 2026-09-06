@@ -66,3 +66,62 @@ Repeat the smallest already failing articulated command with identical held mode
 If the measured negative is a roundoff-sized recombination residue, justify a tolerance against the scale of the contributing heat/work terms and the floating-point operations, retain raw and accepted power separately, and bound the resulting energy-ledger correction. Preserve rejection for materially negative or nonfinite total, and for nonpositive mass. Require a native regression at the original failing state and aggregate/per-muscle energy closure before adopting such a tolerance. An arbitrary fixed clamp, disabling `forbid_negative_total_power`, or interpreting negative total as ordinary signed mechanical work is not supported by this source diagnosis.
 
 If the measured value is materially negative, inspect the actual loaded source/build, per-muscle label mapping, enabled terms and input state before altering acceptance rules. The current observations do not license a metabolic calibration or a claim that the articulated physiology is valid.
+
+## Follow-up: instrumented native value and bounded residual rule
+
+The coordinating native run subsequently reported diagnostic build `build-l2gezl04`, receipt `data/derived/supine-support-tt0k8jes/report.json`, and an actual failing `ehl_l` sample. Direct inspection of that receipt confirms last successful time 0.005 s, failed stage target 0.02 s, and these native diagnostic values:
+
+| Field | Value |
+| --- | --- |
+| Total metabolic power, W | −9.4635567759726085e−17 |
+| Analysis mass, kg | 0.10655017692467443 |
+| Active fiber force, N | 3.6009271834261525 |
+| Fiber velocity, m/s | 0.16601119770192224 |
+| Activation and excitation | 0.01 each |
+
+These values isolate the negative-total predicate with a positive mass. Independently recomputing the adapter's signed work gives **−0.597794234557985 W**; `total−work` gives heat **0.5977942345579849 W**. The total is about 0.713 binary64 epsilon times the heat/work scale, consistent with the source recombination mechanism. AMdot and Sdot at this actual native event were not separately observed here, so the synthetic algebra example above must not be relabeled as those actual reaction terms.
+
+A proposed acceptance bound, preserving the raw native output, is:
+
+```text
+scale_W = max(abs(signed_work_W), abs(raw_total_W − signed_work_W),
+              analysis_mass_kg * 1 W/kg)
+tolerance_W = 32 * binary64_epsilon * scale_W
+accept only finite raw_total_W >= −tolerance_W and finite analysis_mass_kg > 0
+```
+
+The mass factor supplies the native minimum-heat scale with correct units; it is not a universal 1 W absolute tolerance. The factor 32 is a conservative numerical operation margin around the source's correction/recombination, not a physiological parameter. It should be validated against retained native regression cases and tightened if evidence permits. For this sample the bound is **4.247583508444457e−15 W**, about 45 times the observed residual. A −1e−6 W result at the same mass/work scale remains rejected.
+
+Do not overwrite or clamp the raw per-muscle total. Add explicit audit count and signed sum for accepted negative residuals, along with each residual's numerical bound; preserve the raw aggregate/per-muscle sum ledger. If energy is accumulated over time, quantify the corresponding residual contribution using the same integration ownership. Finite checks and the positive-mass requirement remain unconditional. The tolerance addresses a numerical-domain predicate; it does not validate the muscle model or whole-body physiological coupling.
+
+A source-order binary64 regression was executed as a small pure Python check. It follows the original AM/S/W correction, minimum-heat step and final mass multiplication. With AM=.1, S=.1 and W=−100.1 W/kg, and the positive mass above, the original source-order algebra yields **−1.5141690841556174e−15 W**: the original exact-sign predicate fails, while the bounded residual predicate accepts. Six additional predicate checks passed: accept the measured native residual, reject −1e−6 W at its scale, accept zero, reject zero mass, reject NaN and reject negative infinity. This verifies the proposed acceptance algebra, not a changed native executable. The regression intentionally leaves the total untouched:
+
+```python
+import math, sys
+
+def accept(total, mass, work):
+    if not all(map(math.isfinite, [total, mass, work])) or mass <= 0:
+        return False
+    scale = max(abs(work), abs(total - work), mass * 1.0)
+    return total >= -32 * sys.float_info.epsilon * scale
+
+am, short, wkg = .1, .1, -100.1
+before = am + short + wkg
+if before < 0:
+    short -= before
+heat = am + short
+if heat < 1.0:
+    heat = 1.0
+mass = .10655017692467443
+raw_total = (heat + wkg) * mass
+assert raw_total < 0 and accept(raw_total, mass, wkg * mass)
+assert accept(-9.4635567759726085e-17, mass,
+              -3.6009271834261525 * .16601119770192224)
+assert not accept(-1e-6, mass, -.597794234557985)
+assert accept(0., mass, -.597794234557985)
+assert not accept(raw_total, 0., wkg * mass)
+assert not accept(float('nan'), mass, wkg * mass)
+assert not accept(float('-inf'), mass, wkg * mass)
+```
+
+The coordinating implementation subsequently selected the more conservative bound `64 * epsilon * max(1 W, abs(work_W), mass_kg * 1 W/kg)` and exposed per-muscle tolerances while preserving raw totals. That implemented policy is distinct from the narrower, mass-scaled 32-epsilon recommendation above. The coordinator reports that it removed this guard failure and exposed the next independent signed-demand interface failure. This document does not independently claim full native regression completion for that later implementation.
