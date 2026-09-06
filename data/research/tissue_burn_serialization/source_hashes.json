@@ -1,0 +1,12 @@
+{
+  "source_sha256": {
+    "tissue": "5557f75fe19946ea680b054bf1549b7bb331a518ab36f03d9b8fcde578a0e389",
+    "io": "31106e2fc683a2b7490b2ebd06e024d826b0278bdde17a4c6ff426dfb3e506cc",
+    "schema": "4e3034ed066240f85e5fb9decb6142ac4ea276d0ec43a633a98f4f18d3fbc36c"
+  },
+  "source_paths": {
+    "tissue": "projects/biogears/libBiogears/src/engine/Systems/Tissue.cpp",
+    "io": "projects/biogears/libBiogears/src/io/biogears/BioGearsPhysiology.cpp",
+    "schema": "share/xsd/biogears/BioGearsPhysiology.xsd"
+  }
+}

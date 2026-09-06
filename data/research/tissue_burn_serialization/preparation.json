@@ -1,0 +1,19 @@
+{
+  "schema": "ihm.tissue-burn-source-repair.v1",
+  "compiled": false,
+  "schema_generated": false,
+  "native_roundtrip_verified": false,
+  "source_sha256": {
+    "tissue": "5557f75fe19946ea680b054bf1549b7bb331a518ab36f03d9b8fcde578a0e389",
+    "io": "31106e2fc683a2b7490b2ebd06e024d826b0278bdde17a4c6ff426dfb3e506cc",
+    "schema": "4e3034ed066240f85e5fb9decb6142ac4ea276d0ec43a633a98f4f18d3fbc36c"
+  },
+  "patched_sha256": {
+    "tissue": "879358e8b8c61de264d412d090be226cc3d5927707c5f479d6157fb0b0acca81",
+    "io": "51631dcdcf18412dd9a2f7544d46850ca0c8e60c5da62b9d102c8bbb1d0ea34f",
+    "schema": "5717147f32945a9a922b98940641804540702c5db097e8252fe0d6fd379e97dd"
+  },
+  "owner_contract": "All 12 Tissue histories exact; missing legacy payload fails; fresh Initialize starts zero; no inferred restoration",
+  "build_constraint": "Schema change requires matched dependent CDM/core regeneration and rebuild; never mix objects generated against sleep-only or original schema",
+  "helper_sha256": "f11d120a6f81998358bff5c57e5030556f61907a7d6c3e6c02b7e93b79830053"
+}
