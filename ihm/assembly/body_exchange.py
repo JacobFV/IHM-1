@@ -31,7 +31,7 @@ class NativeTissueExchange:
 
  @classmethod
  def from_workspace(cls,root,reference_snapshot,native_identity,organs=ORGANS):
-  """Allocate held cutaneous graph lumen against an explicit native reference.
+  """Allocate synthetic cutaneous graph lumen against an explicit native reference.
 
   Lumen/reference vascular volume is a geometric allocation assumption, not a
   measured mapping of terminal capillaries into native lumped blood regions.
@@ -60,7 +60,7 @@ class NativeTissueExchange:
     if length<=0:raise ValueError('Zero-length microvascular edge')
     volumes.append(math.pi*r*r*length)
    lumen=math.fsum(volumes)
-   rows.append({'id':unit['id'],'fraction':lumen*1e6/reference_volume,'territory':unit['territory'],'material_attachment':deepcopy(attachment),'source_geometry_sha256':expected,'geometry':{'positions_m':deepcopy(positions),'edges':deepcopy(edges),'radius_m':list(radii),'edge_volume_fractions':[v/lumen for v in volumes]},'evidence_kind':'source_derived_graph_with_inferred_native_territory_allocation','reference_lumen_volume_m3':lumen,'reference_native_vascular_volume_ml':reference_volume,'reference_time_s':reference_snapshot['time_s']})
+   rows.append({'id':unit['id'],'fraction':lumen*1e6/reference_volume,'territory':unit['territory'],'material_attachment':deepcopy(attachment),'source_geometry_sha256':expected,'geometry':{'positions_m':deepcopy(positions),'edges':deepcopy(edges),'radius_m':list(radii),'edge_volume_fractions':[v/lumen for v in volumes]},'evidence_kind':'synthetic_graph_with_inferred_native_territory_allocation','reference_lumen_volume_m3':lumen,'reference_native_vascular_volume_ml':reference_volume,'reference_time_s':reference_snapshot['time_s']})
   identity=deepcopy(native_identity)
   if not identity:raise ValueError('Explicit native identity receipt is required')
   from .body_microstructure import anatomical_supports
@@ -116,7 +116,7 @@ class NativeTissueExchange:
   return {'schema':'native_tissue_exchange_v1','time_s':time,'native_identity':deepcopy(self.native_identity),'source_hashes':dict(self.source_hashes),'native_compartments':compartments,'native_circuit':{k:v for k,v in values.items() if k.startswith(('tissue.path.','tissue.node.','tissue.compression.'))},'partitions':regions,'fluid_transfers':transfers,'internal_volume_rate_ml_per_s':rates,'solute_fluxes':[],'whole_body_mass_closure_claimed':False,'thermal_boundary_c':{'core':values.get('tissue.core_temperature_c'),'skin':values.get('tissue.skin_temperature_c')},'feedback_owner':'Native Tissue oncotic/osmotic laws, cardiovascular fluid solve and Diffusion albumin/solute transport','limitations':['Spatial regions are conservative views, not new blood/lymph stores.','Snapshot flow incidence is not integrated mass transfer or complete dV/dt.','Gas masses are named native free-substance pools, not total hemoglobin-bound oxygen/carbon.','Native Skin is one lumped compartment; source graph pressures and terminal vessel correspondence are unresolved.','No solute flux is reconstructed from post-step concentration: native reactions, capping and transport order matter.']}
 
  def project_networks(self,observation):
-  """Return source graph states as subdivisions of existing observed partitions."""
+  """Return synthetic graph states as subdivisions of existing observed partitions."""
   owners={r['id']:r for r in observation['partitions']};networks=[]
   for organ,rows in self.partitions.items():
    for row in rows:

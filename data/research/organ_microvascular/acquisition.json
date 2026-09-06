@@ -1,0 +1,57 @@
+{
+  "derma_zenodo_record.json": {
+    "url": "https://zenodo.org/api/records/15088516",
+    "http_status": 200,
+    "bytes": 7504,
+    "sha256": "9431a955c00c94d065ce79826c0fc5863662c65c4a0dd9aa414bf10c0b922772",
+    "acquired_utc": "2026-09-06T02:50:11.142781+00:00"
+  },
+  "derma_article.xml": {
+    "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC12375021/fullTextXML",
+    "http_status": 200,
+    "bytes": 103738,
+    "sha256": "95ab4a6119ca5e26ad05207065d58695f43732be07654bcfff06985da8d86b03",
+    "acquired_utc": "2026-09-06T02:50:12.741303+00:00"
+  },
+  "muscle_article.xml": {
+    "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC5566646/fullTextXML",
+    "http_status": 200,
+    "bytes": 160919,
+    "sha256": "2b8f61d28aeb5480a6846b772217e60c39a9743a19a87bce81b56b344e5bbf71",
+    "acquired_utc": "2026-09-06T02:50:13.955166+00:00"
+  },
+  "lung_article.xml": {
+    "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7311688/fullTextXML",
+    "error": "HTTP Error 404: Not Found",
+    "acquired": false
+  },
+  "liver_article.xml": {
+    "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC6899159/fullTextXML",
+    "http_status": 200,
+    "bytes": 207380,
+    "sha256": "848dfba9cca470dd31bd152d2a8eb01c4d732b6cf5b0a852427bbd82bf9852d3",
+    "acquired_utc": "2026-09-06T02:50:15.915821+00:00"
+  },
+  "DERMA-OCTA.xlsx": {
+    "url": "https://zenodo.org/api/records/15088516/files/DERMA-OCTA.xlsx/content",
+    "http_status": 200,
+    "bytes": 21572,
+    "sha256": "f890f4454746c8914446b53c166c83639cf2fccedaedea79183d9292d6e623e8",
+    "acquired_utc": "2026-09-06T02:50:59.956520+00:00",
+    "publisher_md5_verified": true
+  },
+  "lung_article.html": {
+    "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7311688/",
+    "http_status": 200,
+    "bytes": 261150,
+    "sha256": "5d44275ff4d3b512a6eab0249d61fb310994089c8112697a8422a64a2287c2dc",
+    "acquired_utc": "2026-09-06T02:51:00.463759+00:00"
+  },
+  "liver_publisher.html": {
+    "url": "https://www.nature.com/articles/s41591-019-0660-7",
+    "http_status": 200,
+    "bytes": 481008,
+    "sha256": "71bb02257cd6431180d19d0e11d4849cfabedb8a957a3994398297ed65875f16",
+    "acquired_utc": "2026-09-06T02:51:03.081001+00:00"
+  }
+}

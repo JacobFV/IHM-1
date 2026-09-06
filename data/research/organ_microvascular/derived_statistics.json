@@ -1,0 +1,324 @@
+{
+  "schema": "organ_microvascular_primary_evidence_v1",
+  "derma": {
+    "scans": 330,
+    "subjects": 75,
+    "healthy_scans": 51,
+    "healthy_subjects": 15,
+    "healthy_locations": {
+      "leg": 33,
+      "arm": 18
+    },
+    "disease_scan_counts": {
+      "HEALTHY": 51,
+      "CVI-C6": 22,
+      "CVI-C0": 26,
+      "CVI-C4a": 36,
+      "CVI-C3": 60,
+      "CVI-C2": 46,
+      "CVI-C4b": 17,
+      "CVI-C4c": 26,
+      "CVI-C6r": 9,
+      "CVI-C5": 6,
+      "CVI-C1": 12,
+      "Seborrheic keratosis": 1,
+      "Morbus Bowen": 4,
+      "Actinic keratosis": 4,
+      "Systemic sclerosis": 3,
+      "Squamous cell carcinoma": 3,
+      "Basal cell carcinoma": 4
+    },
+    "metadata_only": true,
+    "images_acquired": false,
+    "listed_files": [
+      {
+        "name": "Contrast - 2D.zip",
+        "bytes": 455489478,
+        "publisher_checksum": "md5:bfcbfa1ab3f9983c6522614c03d67379",
+        "held": false
+      },
+      {
+        "name": "Norm - 2D.zip",
+        "bytes": 580970253,
+        "publisher_checksum": "md5:a35f328c8a261607834ef8a63052161f",
+        "held": false
+      },
+      {
+        "name": "Proj_art - 2D.zip",
+        "bytes": 591805764,
+        "publisher_checksum": "md5:dbf9f4f3ef97ee876c2b86e1bfc77e94",
+        "held": false
+      },
+      {
+        "name": "Proj_art - 3D.zip",
+        "bytes": 1700041063,
+        "publisher_checksum": "md5:581107fd19ef419ac5850e2f87745612",
+        "held": false
+      },
+      {
+        "name": "Morph_angio - 2D.zip",
+        "bytes": 582613731,
+        "publisher_checksum": "md5:e3d53440a3e821bf0d84c81136cdf86d",
+        "held": false
+      },
+      {
+        "name": "Norm - 3D.zip",
+        "bytes": 2128148458,
+        "publisher_checksum": "md5:4cafe4b91e2aca6966ea4b5d37f8afc6",
+        "held": false
+      },
+      {
+        "name": "Morph_angio - 3D.zip",
+        "bytes": 2199539770,
+        "publisher_checksum": "md5:3277d40b9b0e4bb13d4f59bccda6ca40",
+        "held": false
+      },
+      {
+        "name": "Frangi - 2D.zip",
+        "bytes": 242628558,
+        "publisher_checksum": "md5:9d33f5d109442d4ee34fc98541c1977c",
+        "held": false
+      },
+      {
+        "name": "Frangi - 3D.zip",
+        "bytes": 1069563437,
+        "publisher_checksum": "md5:9e3d8f5cf75cb8f5057729b41cf7b5b3",
+        "held": false
+      },
+      {
+        "name": "Manual segmentations - 2D.zip",
+        "bytes": 12026407,
+        "publisher_checksum": "md5:53f685507b34753a6160d15e3481af53",
+        "held": false
+      },
+      {
+        "name": "Manual segmentations - 3D.zip",
+        "bytes": 227118191,
+        "publisher_checksum": "md5:4f64b07ec45ca2191065cd1245fd5eb4",
+        "held": false
+      },
+      {
+        "name": "Contrast - 3D.zip",
+        "bytes": 4977565511,
+        "publisher_checksum": "md5:9c86af3e7da068d482b2965d64e0df6d",
+        "held": false
+      },
+      {
+        "name": "DERMA-OCTA codes.zip",
+        "bytes": 2132207260,
+        "publisher_checksum": "md5:c414da178afa8cd34695ed808f0d9b40",
+        "held": false
+      },
+      {
+        "name": "DERMA-OCTA.xlsx",
+        "bytes": 21572,
+        "publisher_checksum": "md5:c751b8214b110d7696879fb4af6473d3",
+        "held": true
+      }
+    ],
+    "listed_total_bytes": 16899739453
+  },
+  "muscle_table3_rows": [
+    [
+      "",
+      "Young",
+      "Old",
+      "Effects (P‐values)",
+      "Interactions (P‐values)"
+    ],
+    [
+      "",
+      "Men, N = 13",
+      "Women, N = 5",
+      "Men, N = 22",
+      "Women, N = 6",
+      "Age",
+      "Sex",
+      "AS"
+    ],
+    [
+      "CD (cap·mm−2)",
+      "331 ± 94",
+      "340 ± 120",
+      "286 ± 78",
+      "312 ± 139",
+      "0.284",
+      "0.606",
+      "0.795"
+    ],
+    [
+      "C/F ratio",
+      "1.74 ± 0.57",
+      "1.44 ± 0.69",
+      "1.46 ± 0.41",
+      "1.08 ± 0.38",
+      "0.073",
+      "0.054",
+      "0.806"
+    ],
+    [
+      "DOM (μm2)",
+      "3233 ± 1252",
+      "3149 ± 855",
+      "3667 ± 969",
+      "3434 ± 963",
+      "0.341",
+      "0.674",
+      "0.843"
+    ],
+    [
+      "LogDSD",
+      "0.171 ± 0.022",
+      "0.166 ± 0.016",
+      "0.172 ± 0.018",
+      "0.158 ± 0.019",
+      "0.533",
+      "0.145",
+      "0.446"
+    ]
+  ],
+  "muscle_statistic": "mean +/- SD, human vastus lateralis cross sections; Table 3 n totals 46, recruited cohort 47",
+  "lung_table2_present_study": [
+    [
+      "Measurements (Per Lung)",
+      "Present Study"
+    ],
+    [
+      "Subjects, n",
+      "13"
+    ],
+    [
+      "Study type",
+      "Micro-CT"
+    ],
+    [
+      "Specimen inflation",
+      "Air"
+    ],
+    [
+      "Sample preparation",
+      "Frozen"
+    ],
+    [
+      "Age",
+      "57 ± 16 yr"
+    ],
+    [
+      "Smoking history",
+      "6 Nonsmokers, 5 ex-smokers, 2 NA"
+    ],
+    [
+      "Lung volume, mL",
+      "2,883 ± 721"
+    ],
+    [
+      "Vv(par/lung), %",
+      "87 ± 3"
+    ],
+    [
+      "Terminal bronchiole no.",
+      "7,697 ± 2,910"
+    ],
+    [
+      "Transitional bronchiole no.",
+      "14,956 ± 6,664"
+    ],
+    [
+      "Lm, µm",
+      "348 ± 45"
+    ],
+    [
+      "Sv(alv/lung), 1/cm",
+      "266 ± 41"
+    ],
+    [
+      "S(alv,lung), m2",
+      "67 ± 20"
+    ],
+    [
+      "τ(alvsep), µm",
+      "12 ± 3"
+    ],
+    [
+      "τ(alv,tissue), µm",
+      "—"
+    ],
+    [
+      "Vv(alv/par), %",
+      "71 ± 3"
+    ],
+    [
+      "Vv(duct/par), %",
+      "13 ± 4"
+    ],
+    [
+      "Vv(tissue/par), %",
+      "16 ± 4"
+    ],
+    [
+      "Nv, 1/mm3",
+      "42 ± 12"
+    ],
+    [
+      "N(alv), 106",
+      "106 ± 41"
+    ],
+    [
+      "V(alv), mL",
+      "1,790 ± 531"
+    ],
+    [
+      "ν̄N(alv), 106 μm3",
+      "18 ± 7"
+    ]
+  ],
+  "lung_scope": "13 single donor lungs, mean +/- SD; alveolar/septal statistics, not capillary diameters",
+  "prior_held_files": [
+    {
+      "path": "ihm/assembly/body_microstructure.py",
+      "bytes": 2630,
+      "sha256": "98a7290d240a2e423978a972640d3cfeb39516b6012089b88aeaa2d265e98cb4"
+    },
+    {
+      "path": "ihm/assembly/body_exchange.py",
+      "bytes": 12828,
+      "sha256": "29b9f6456e614875d71f937c60ee8ece4c890421a62f556fdc197b3c8d615204"
+    },
+    {
+      "path": "scripts/build_body_details.py",
+      "bytes": 12074,
+      "sha256": "3138f2117bc70c264bf778a97711c62f339b350858ab86fbdb4ab3010d13b36c"
+    },
+    {
+      "path": "data/derived/canonical/microvascular.json",
+      "bytes": 181082,
+      "sha256": "bced04a8686b928207eb1add90be5a6a928b56f69be34b2991cb023a67176bd7"
+    },
+    {
+      "path": "data/derived/microstructure/kidney/example_graph.npz",
+      "bytes": 157005,
+      "sha256": "79d92faca1582062f3e4fdc86ef15d6e4b746e079f16c965e486f0b0d8c9fc6c"
+    },
+    {
+      "path": "data/derived/microstructure/kidney/statistics.json",
+      "bytes": 19607,
+      "sha256": "aa2f00b1098524f47a1159a3b603379cd667e05bbd81757a7911d82527fc8fb3"
+    },
+    {
+      "path": "data/raw/microstructure/kidney/Test.am",
+      "bytes": 1808656,
+      "sha256": "349544f1070225529bfa4631231258baa896641f18afd4a62d5ddfcf3fbb0277"
+    },
+    {
+      "path": "data/raw/microstructure/kidney/Test2.am",
+      "bytes": 1811389,
+      "sha256": "6073c2cce231a848f9da7add0151832002dc3b31d717f0f6d558c7ac7d0248ae"
+    },
+    {
+      "path": "data/raw/microstructure/kidney/segmentation_19685382/slab_manifest.json",
+      "bytes": 25975,
+      "sha256": "02d8f126abcb08f3bea4c0300545d71f56360556774143a2a1ebc846c1093fdf"
+    }
+  ],
+  "new_downloaded_bytes": 1243271
+}

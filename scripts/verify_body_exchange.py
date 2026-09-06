@@ -57,7 +57,9 @@ def retained(directory):
    if mass is not None:max_mass=max(max_mass,abs(math.fsum(r['mass_g'][sub] for r in regions)-mass))
  assert max_volume<1e-10 and max_mass<1e-12
  for network in networks:
-  parent=next(r for r in view['partitions'] if r['id']==network['id']+'.vascular');assert abs(math.fsum(network['edge_volume_ml'])-parent['volume_ml'])<1e-12
+  parent=next(r for r in view['partitions'] if r['id']==network['id']+'.vascular')
+  assert parent['evidence_kind']=='synthetic_graph_with_inferred_native_territory_allocation'
+  assert abs(math.fsum(network['edge_volume_ml'])-parent['volume_ml'])<1e-12
  ionic=native_skin_ionic_boundary(view)
  out=Path(tempfile.mkdtemp(prefix='body-exchange-',dir=ROOT/'data/derived/audits'))
  report={'passed':True,'native_record':str(directory.relative_to(ROOT)),'native_receipts_sha256':hashlib.sha256((directory/'receipts.jsonl').read_bytes()).hexdigest(),'source_hashes':model.source_hashes,'time_s':view['time_s'],'native_owners':len(view['native_compartments']),'runtime_partitions':len(view['partitions']),'on_demand_source_surface_partitions':len(surfaces),'source_fine_networks':len(networks),'max_partition_volume_residual_ml':max_volume,'max_partition_mass_residual_g':max_mass,'selected_internal_flow_incidence_residual_ml_per_s':math.fsum(view['internal_volume_rate_ml_per_s'].values()),'maximum_native_mass_concentration_residual_g':max(abs(r) for c in view['native_compartments'].values() for r in c['mass_concentration_residual_g'].values() if r is not None),'skin_ionic_boundary':ionic,'unlocalized_organs':[o for o,rs in model.partitions.items() if any(r['evidence_kind']=='unlocalized_native_owner' for r in rs)],'scope':'Read-only actual native snapshot materialization; no new native run, compression validation or integrated solute ledger claim'}

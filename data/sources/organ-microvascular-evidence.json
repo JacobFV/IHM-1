@@ -1,0 +1,37 @@
+{
+  "id": "organ-microvascular-evidence",
+  "schema_version": 1,
+  "scope": "human skin, skeletal muscle, lung, kidney and liver; brain excluded",
+  "status": "primary_metadata_and_tables_acquired_no_new_vessel_graphs",
+  "new_downloaded_bytes": 1243271,
+  "acquisition_receipt": "data/research/organ_microvascular/acquisition.json",
+  "derived_statistics": "data/research/organ_microvascular/derived_statistics.json",
+  "report": "docs/research/ORGAN_MICROVASCULAR_EVIDENCE.md",
+  "runtime_physiology_changed": false,
+  "source_files": [
+    {
+      "path": "data/research/organ_microvascular/acquisition.json",
+      "bytes": 2233,
+      "sha256": "7efb4c09afdc0b502dde3dd79329b087ef2118236693e2a96d31fc74d99af702"
+    },
+    {
+      "path": "data/research/organ_microvascular/derived_statistics.json",
+      "bytes": 7443,
+      "sha256": "171fafcdea6fbb3a51375172146028cdf92da49ebe4cbed6f5ce6953af835ad2"
+    },
+    {
+      "path": "data/research/organ_microvascular/derive_evidence.py",
+      "bytes": 4209,
+      "sha256": "4393b418f702e3895d27b51ffb17dd1b6f4bef9b2a84798d9c51eefe06cd5af7"
+    }
+  ],
+  "critical_caveats": [
+    "Canonical forearm graph is synthetic, corrected runtime evidence label.",
+    "DERMA article says 74 subjects / 76 healthy scans; held workbook yields 75 IDs / 51 literal HEALTHY scans; discrepancy unresolved.",
+    "DERMA data CC-BY-NC-4.0 differs from article CC-BY-NC-ND-4.0.",
+    "Muscle measurements are cross-sectional numerical density, not a 3D graph.",
+    "Lung present-study measurements are alveolar and per single lung, not capillary-surface measurements.",
+    "Kidney reduced arterial example thickness semantics and graph license remain unresolved.",
+    "No numerical human liver sinusoid curve or raw graph acquired."
+  ]
+}
