@@ -110,3 +110,22 @@ failed. Retain the exact pending request, distinguish protocol failure from a
 physical model rejection, replay the smallest failing case, and preserve source
 identity before resuming cached work. This incident is separate from the earlier
 resource-contention evidence.
+
+## Repeated small native-build failures (2026-09-06)
+
+Three independent new BioGears probes hit the same inherited header defect:
+`SEScalarQuantity.inl` uses `assert` without making its declaration available.
+New probe translation units must include `<cassert>` **before** BioGears or
+local wrapper headers. This is a source-build dependency, not a memory failure;
+do not enable `-fpermissive` to bypass it. Retained examples include
+`data/derived/audits/native-gi-transit-fip5w88s` and
+`data/derived/audits/signed-cardiovascular-native-q81sp5u6/build/compile.log`.
+The corrected GI fixture completed in 0.05 seconds after a 1.80-second compile.
+
+When creating another native probe, check the existing accepted probe's header
+order, library lineage and resource wrapper before spending the shared compile
+slot. Keep the failed build receipt, fix only the diagnosed source issue, and
+retry the bounded fixture. Likewise, OpenSim overloaded constructors require
+explicit `std::string`/set construction; a raw `char*` selected the wrong overload
+in the first lumbar fixture build. These compiler failures never advanced a
+patient or froze the host and must not be conflated with the resource incident.
