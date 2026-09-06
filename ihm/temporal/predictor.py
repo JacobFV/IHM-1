@@ -46,6 +46,8 @@ def fit_predictor(values, dt_s, *, rank=8, train_fraction=.75, ridge=1e-5, max_g
     Holdout is an uninterrupted forecast initialized at the last training sample.
     Rank, center, scale and all coefficients use training samples only.
     No mechanism or intervention response is identified by this empirical fit.
+    Relative constant detection preserves unit scaling while variance remains
+    representable in float64; underflowed variance cannot resolve dynamics.
     """
     y=np.asarray(values,float)
     if y.ndim!=2 or len(y)<12 or y.shape[1]<1 or not np.isfinite(y).all():
@@ -55,7 +57,8 @@ def fit_predictor(values, dt_s, *, rank=8, train_fraction=.75, ridge=1e-5, max_g
     n=int(len(y)*train_fraction)
     if n<4: raise ValueError('insufficient training samples')
     train=y[:n]; center=train.mean(0); scale=train.std(0)
-    scale=np.where(scale>np.maximum(abs(center),1)*1e-12,scale,1.)
+    constant=scale<=np.max(abs(train),axis=0)*1e-12
+    scale=np.where(constant,1.,scale)
     x=(train-center)/scale
     _,sing,vt=np.linalg.svd(x,full_matrices=False)
     tol=sing[0]*max(x.shape)*np.finfo(float).eps if sing[0]>0 else 0
@@ -78,5 +81,5 @@ def fit_predictor(values, dt_s, *, rank=8, train_fraction=.75, ridge=1e-5, max_g
         train_one_step_rmse=rmse(train[1:],train_hat),holdout_rmse=rmse(y[n:],hold),
         holdout_persistence_rmse=rmse(y[n:],np.broadcast_to(train[-1],y[n:].shape)),
         holdout_normalized_rmse=(np.sqrt(np.mean((y[n:]-hold)**2,axis=0))/scale).tolist(),
-        constant_training_variables=np.flatnonzero(train.std(0)<=np.maximum(abs(center),1)*1e-12).tolist())
+        constant_training_variables=np.flatnonzero(constant).tolist())
     return model

@@ -53,7 +53,9 @@ def _run(path, root, run_id, source_kind, units=None, sampling_rate_hz=None, *, 
         label=match[1] if match else name
         unit=(units or {}).get(name,match[2] if match else 'dimensionless')
         spec=spectral_estimate(y[:,i],fs,nperseg=nperseg)
-        std=float(y[:,i].std()); threshold=max(1,abs(float(y[:,i].mean())))*1e-12
+        # A fixed absolute floor would erase oscillations solely because their
+        # physical unit is small. Variance must still be representable in float64.
+        std=float(y[:,i].std()); threshold=float(np.max(abs(y[:,i])))*1e-12
         peak=int(np.argmax(spec['psd'][1:]))+1
         variables.append(dict(id=label,label=label,unit=unit,psd_unit=f'({unit})^2/Hz',
             mean=float(y[:,i].mean()),variance=std**2,constant=std<=threshold,

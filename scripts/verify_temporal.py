@@ -35,6 +35,13 @@ def main():
     other=fit_predictor(changed,.1,rank=2,train_fraction=.7,ridge=1e-10)
     np.testing.assert_allclose(m.transition,other.transition)
     np.testing.assert_allclose(m.center,other.center)
+    # A change of physical unit must not erase a resolved oscillation or change
+    # the standardized predictor. These amplitudes remain far above underflow.
+    for amplitude in [1e-13, 1e3]:
+        scaled=fit_predictor(y*amplitude,.1,rank=2,train_fraction=.7,ridge=1e-10)
+        assert scaled.diagnostics['constant_training_variables']==[]
+        np.testing.assert_allclose(scaled.forecast(y[349]*amplitude,150)/amplitude,
+                                   m.forecast(y[349],150),rtol=1e-8,atol=1e-10)
     deficient=fit_predictor(np.column_stack([y[:,0],2*y[:,0],np.ones(500)]),.1)
     assert deficient.diagnostics['data_rank'] == 1
     for args in [(x,0),([1,np.nan],10)]:
@@ -46,6 +53,17 @@ def main():
     else: raise AssertionError('duplicate times accepted')
     from ihm.temporal.atlas import _read, _run
     from tempfile import TemporaryDirectory
+    with TemporaryDirectory() as directory:
+        root=Path(directory);path=root/'units.csv';clock=np.arange(400)/10
+        wave=np.sin(2*np.pi*.5*clock)
+        np.savetxt(path,np.column_stack([clock,wave,wave*1e-13,np.zeros(400),np.full(400,.1)]),
+                   delimiter=',',header='Time(s),Large(V),Small(V),Zero(V),Constant(V)',comments='')
+        run=_run(path,root,'analytic_units','analytic_fixture')
+        assert [v['constant'] for v in run['variables']]==[False,False,True,True]
+        np.testing.assert_allclose([v['dominant_frequency_hz'] for v in run['variables'][:2]],[.5,.5])
+        assert [v['dominant_frequency_hz'] for v in run['variables'][2:]]==[None,None]
+        assert run['predictor']['model']['diagnostics']['constant_training_variables']==[2,3]
+        json.dumps(run,allow_nan=False)
     with TemporaryDirectory() as directory:
         path=Path(directory)/'rounded.csv'
         path.write_text('Time [s],RESP\n100.00,1\n100.01,2\n100.02,3\n100.02,4\n')
@@ -62,6 +80,6 @@ def main():
         np.testing.assert_allclose(run['variables'][0]['dominant_frequency_hz'],1/300)
         assert run['laplace']['sigma_per_s']==[0.,1/3600,1/600,1/60]
         json.dumps(run,allow_nan=False)
-    print('temporal: analytic Laplace, clock origin, PSD power, coherence, resolvent, stable forecast, serialization, no leakage, deficient rank and validation PASS')
+    print('temporal: analytic Laplace, clock origin, PSD power, coherence, resolvent, stable forecast, unit scaling, serialization, no leakage, deficient rank and validation PASS')
 
 if __name__=='__main__': main()
