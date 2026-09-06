@@ -81,3 +81,34 @@ Evidence SHA-256:
 - `data/derived/native-effective-potential-_livswt7/report.json`: `eed0fa36f75131ed8d71673a76453a23ebedac8d04bdfd4cc9c51fcd2bd2aa3e`
 - `data/derived/native-effective-potential-_livswt7/observations.jsonl`: `b179b815e1fa9ca8265d56a7749cdff5cdb1caa14008a301812faa045b13e612`
 - `data/derived/native-effective-potential-_livswt7/failure_attribution.json`: `fe99de385312521b37e98f131a5381b6e46a192805dcc481f56a3cb361b01a56`
+
+### Targeted wrap gate preparation
+
+The next diagnostic uses the unchanged attested `effective-potential-build-3a9juno_`
+executable. It evaluates the original requested seed and both signs of 1e-3,
+1e-4 and 1e-5 rad changes in all eight arm flexion/adduction/rotation and elbow
+coordinates, then repeats the exact requested seed: 50 copied-state calls,
+45 s process-group deadline, 4 GiB limit, single thread and nice 10. No trajectory
+or optimization is authorized by this fixture. Every raw response and pending
+request is retained; actual assembled coordinate changes are used in virtual
+work. Endpoint-average moment arms distinguish ordinary first-order secant
+error from a discrepancy that persists as the step shrinks. Sided continuity
+is evidence about a branch, not an explicit wrap-branch identifier.
+
+`GeometryPath.cpp`'s 0.0005 m outer wrapping iteration stop cannot explain these
+single-wrap paths: source `maxIterations` is one when there is one wrap object.
+BIClong uses `WrapEllipsoid`, whose hybrid algorithm blends axial and sampled
+fan constructions. BRA uses `WrapCylinder`; its stored wrap length is the
+spiral length computed from radial angle and axial separation. Native moment
+arms use `MomentArmSolver`, rather than finite differences of stored length.
+Neither a discontinuity nor a conservative gradient is assumed from these
+source observations alone.
+
+`scripts/effective_passive_energy_observation.py` exposes raw native passive
+energy, the exact source-derived Thelen normalization correction, and their
+sum, with model and retained source hashes. It leaves native getters, force
+laws and physiological ledgers untouched. Millard observations have a zero
+correction. This observation interface can be reused in independent energy
+closure diagnostics without claiming that the corrected numerical merit has
+passed the complete native virtual-work gate. Its fixture checks the analytic
+passive-force derivative and preservation of all 98 original observations.
