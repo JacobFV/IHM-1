@@ -141,6 +141,8 @@ inline std::string evaluate(OpenSim::Model& model, const SimTK::State& continuin
     out << ",\"maximum_penetration_m\":"; number(out,penetration);
     if(foundation){const auto result=foundation->sample(candidate);
         out<<",\"surface_foundation\":{\"elastic_energy_j\":";number(out,result.energy);
+        out<<",\"skin_elastic_energy_j\":";number(out,result.skin_energy);out<<",\"bed_elastic_energy_j\":";number(out,result.bed_energy);
+        out<<",\"maximum_bed_indentation_m\":";number(out,result.maximum_bed_indentation);out<<",\"maximum_total_approach_m\":";number(out,result.maximum_total_approach);
         out<<",\"bed_force_n\":";array(out,-result.force);out<<",\"bed_moment_about_source_origin_nm\":";array(out,result.bed_moment);out<<'}';}
     out << ",\"accepted_equilibrium\":false,\"scope\":\"Static candidate only; requires sustained forward verification and explicit new reference initialization\"}";
     return out.str();

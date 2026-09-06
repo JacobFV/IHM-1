@@ -6,12 +6,15 @@ ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT))
 from ihm.assembly.supine_contact import foundation
 
 
-def run(manifest_path):
+def run(manifest_path,bed_material=None):
     from ihm.native.mechanical_stream import NativeMechanicalStream
     manifest_path=manifest_path.resolve();manifest=json.loads(manifest_path.read_text())
+    from ihm.assembly.bed_compression import load_bed,bed_foundation
+    bed=None if bed_material is None else load_bed(ROOT,bed_material)
+    contact_law=foundation if bed is None else lambda *args:bed_foundation(*args,bed)
     data=np.load(ROOT/manifest['arrays_path']);names=manifest['bodies'];owners=data['body_indices']
     output=Path(tempfile.mkdtemp(prefix='native-surface-foundation-',dir=ROOT/'data/derived'));started=time.monotonic();stream=None
-    report=dict(passed=False,dt_s=.002,wall_budget_s=60,scope='Controlled contact implementation fixture; no equilibrium or mattress calibration acceptance')
+    report=dict(passed=False,bed_material=bed_material,dt_s=.002,wall_budget_s=60,scope='Controlled contact implementation fixture; no equilibrium or mattress calibration acceptance')
     def write(name,value):(output/name).write_text(json.dumps(value,indent=2,allow_nan=False)+'\n')
     def deadline(signum,stack):
         if stream is not None and stream.process.poll() is None:stream.process.kill()
@@ -22,7 +25,8 @@ def run(manifest_path):
             stream=NativeMechanicalStream(ROOT,output/variant,environment='supine',target_mass_kg=77.6122029,
                  augmented_registration='data/derived/mechanics/whole_body_arm26_v2/registration.json',
                  surface_contact_manifest=manifest_path if variant=='surface' else None,
-                 surface_sensor_indices=[int(np.argmin(data['reference_points_source_m'][:,0]))] if variant=='surface' else [])
+                 surface_sensor_indices=[int(np.argmin(data['reference_points_source_m'][:,0]))] if variant=='surface' else [],
+                 bed_material=bed_material if variant=='surface' else None)
             initial=stream.snapshot();write(variant+'_initial.json',initial)
             if variant=='surface':
                 assert initial['contact_model']=='retained_skin_foundation'
@@ -31,11 +35,11 @@ def run(manifest_path):
                 assert sensors[0]['normal_source']==[-1,0,0] and sensors[0]['bed_indentation_m']==0
                 assert all(c['geometry_type']=='retained_skin_foundation' for c in initial['contacts'])
                 checkpoint=stream.checkpoint()
-                evaluated=stream._request('evaluate_static_pose 1 pelvis_tx -0.001')
+                evaluated=stream._request('evaluate_static_pose 1 pelvis_tx '+('-0.001' if bed is None else '-0.05'))
                 write('static_translation.json',evaluated)
                 reference=np.array(data['reference_points_source_m']);actual_shift=evaluated['coordinates']['pelvis_tx']['value']-initial['coordinates']['pelvis_tx']['value'];reference[:,0]+=actual_shift
                 origins=np.array([initial['bodies'][name]['transform_ground'] for name in names])[:,:3,3];origins[:,0]+=actual_shift
-                expected=foundation(reference,np.zeros_like(reference),data['area_m2'],owners,origins,manifest['plane_source_x_m'],manifest['material'])
+                expected=contact_law(reference,np.zeros_like(reference),data['area_m2'],owners,origins,manifest['plane_source_x_m'],manifest['material'])
                 assert np.allclose(evaluated['contact_force_n'],expected['body_forces_n'].sum(0),rtol=1e-8,atol=1e-8), f"Static force native={evaluated['contact_force_n']} Python={expected['body_forces_n'].sum(0).tolist()}"
                 assert np.isclose(evaluated['surface_foundation']['elastic_energy_j'],expected['elastic_energy_j'],rtol=1e-8,atol=1e-10), f"Static energy native={evaluated['surface_foundation']['elastic_energy_j']} Python={expected['elastic_energy_j']}"
                 write('static_translation.json',evaluated)
@@ -50,7 +54,7 @@ def run(manifest_path):
                     points[selected]=offset+transform[:3,3]
                     velocities[selected]=np.array(body['origin_velocity_m_s'])+np.cross(body['angular_velocity_rad_s'],offset)
                     origins.append(transform[:3,3])
-                expected=foundation(points,velocities,data['area_m2'],owners,np.array(origins),manifest['plane_source_x_m'],manifest['material'])
+                expected=contact_law(points,velocities,data['area_m2'],owners,np.array(origins),manifest['plane_source_x_m'],manifest['material'])
                 assert np.allclose(frame['contact_force_n'],expected['body_forces_n'].sum(0),rtol=1e-7,atol=1e-8)
                 assert np.allclose(frame['surface_foundation']['bed_moment_about_source_origin_nm'],expected['bed_moment_about_source_origin_nm'],rtol=1e-7,atol=1e-8)
                 assert frame['surface_foundation']['dissipative_power_w']<=1e-8
@@ -70,6 +74,6 @@ def run(manifest_path):
 
 
 if __name__=='__main__':
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--run-native',action='store_true');parser.add_argument('--manifest',type=Path);args=parser.parse_args()
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--run-native',action='store_true');parser.add_argument('--manifest',type=Path);parser.add_argument('--bed-material',choices=('SM','MM','HM'));args=parser.parse_args()
     if not args.run_native or args.manifest is None:raise SystemExit('Coordinated --run-native slot and --manifest required')
-    raise SystemExit(run(args.manifest))
+    raise SystemExit(run(args.manifest,args.bed_material))

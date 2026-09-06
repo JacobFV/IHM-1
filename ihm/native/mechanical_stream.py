@@ -14,7 +14,7 @@ def vec(value):
     return x
 
 class NativeMechanicalStream:
-    def __init__(self,root,output,*,environment='supine',target_mass_kg,augmented_registration=None,surface_contact_manifest=None,surface_sensor_indices=()):
+    def __init__(self,root,output,*,environment='supine',target_mass_kg,augmented_registration=None,surface_contact_manifest=None,surface_sensor_indices=(),bed_material=None):
         self.root=Path(root).resolve();self.output=Path(output).resolve()
         if self.output.exists() or not self.output.is_relative_to(self.root):raise ValueError('Fresh owned native output directory required')
         if environment not in ('free','supine','upright') or finite(target_mass_kg)<=0:raise ValueError('Invalid native environment or mass')
@@ -55,6 +55,12 @@ class NativeMechanicalStream:
             with np.load(self.root/surface_manifest['arrays_path']) as arrays:
                 for index in selected:self.surface_sensor_identity[index]={'manifest_sha256':hashlib.sha256(surface_bytes).hexdigest(),'quadrature_index':index,'triangle_index':int(arrays['face_indices'][index])}
         elif surface_sensor_indices:raise ValueError('Skin sensor selection requires surface contact manifest')
+        bed=None
+        if bed_material is not None:
+            if surface_manifest is None:raise ValueError('Measured bed requires explicit surface foundation')
+            from ihm.assembly.bed_compression import load_bed
+            bed=load_bed(self.root,bed_material)
+            bed['implementation_sha256']=sha(self.root/'ihm/assembly/bed_compression.py')
         self.output.mkdir(parents=True);source=self.output/'inputs';source.mkdir()
         original=self.root/'data/raw/mechanics/opensim-core/OpenSim/Examples/Moco/example3DWalking';inputs={}
         for name in SOURCE_FILES:
@@ -69,6 +75,11 @@ class NativeMechanicalStream:
             inputs['supine_surface_foundation.txt']=hashlib.sha256(surface_input).hexdigest()
             sensor_bytes=(' '.join(map(str,[len(self.surface_sensor_identity),*self.surface_sensor_identity]))+'\n').encode()
             (source/'surface_sensor_indices.txt').write_bytes(sensor_bytes);inputs['surface_sensor_indices.txt']=hashlib.sha256(sensor_bytes).hexdigest()
+        if bed is not None:
+            lines=[' '.join(map(str,['IHM_BED_COMPRESSION_V1',bed['material'],bed['thickness_m'],len(bed['strain'])]))]
+            lines.extend(' '.join(map(str,pair)) for pair in zip(bed['strain'],bed['pressure_pa']))
+            bed_bytes=('\n'.join(lines)+'\n').encode();(source/'bed_compression.txt').write_bytes(bed_bytes)
+            (source/'bed_material_identity.json').write_text(json.dumps(bed,indent=2)+'\n');inputs['bed_compression.txt']=hashlib.sha256(bed_bytes).hexdigest()
         runtime=self.root/'data/runtime/opensim';libdirs=[runtime/'install/opensim/lib',runtime/'install/simbody/lib']+[runtime/'sysroot/usr/lib/aarch64-linux-gnu'/p for p in ('lapack','blas','')]
         env=dict(os.environ,OPENBLAS_NUM_THREADS='1',OMP_NUM_THREADS='1',LD_LIBRARY_PATH=':'.join(map(str,libdirs)))
         limiter=shutil.which('prlimit')
@@ -77,7 +88,7 @@ class NativeMechanicalStream:
         command=[limiter,'--as=4294967296','--','nice','-n','10',*engine_command]
         self.identity=uuid.uuid4().hex;self.lock=threading.RLock();self.closed=False;self.tokens=set();self.log=(self.output/'engine.log').open('w')
         execution={'schema':'ihm.native-mechanical-stream.v1','command':command,'engine_command':engine_command,'address_space_limit_bytes':4294967296,'source_sha256':inputs,'build':manifest,'target_mass_kg':target_mass_kg,
-                   'surface_contact_manifest':surface_manifest,'augmented_registration':augmentation,'checkpoint_scope':'Complete in-process SimTK State, excitation/load commands and work accumulators; native process must remain alive. Call release(checkpoint) after accepted intervals.',
+                   'bed_material':bed,'surface_contact_manifest':surface_manifest,'augmented_registration':augmentation,'checkpoint_scope':'Complete in-process SimTK State, excitation/load commands and work accumulators; native process must remain alive. Call release(checkpoint) after accepted intervals.',
                    'support_scope':('Retained posterior skin quadrature with prior-based confined neo-Hookean layers; rigid plane, uncalibrated mattress.' if surface_manifest is not None else 'Supine unilateral engineering posterior spheres from source COM and inertia ellipsoid approximation; source foot contact parameters transferred, not calibrated mattress.'),
                    'external_work_scope':'Endpoint trapezoidal point-force power; not exact integration or metabolic energy'}
         (self.output/'execution.json').write_text(json.dumps(execution,indent=2)+'\n')

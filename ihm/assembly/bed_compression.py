@@ -12,7 +12,10 @@ import numpy as np
 
 def load_bed(root, material):
     directory=Path(root)/'data/research/bed_material';manifest_path=directory/'manifest.json'
-    manifest=json.loads(manifest_path.read_text());table=directory/manifest['digitization']['path']
+    manifest=json.loads(manifest_path.read_text())
+    for record in manifest['sources']:
+        if hashlib.sha256((directory/record['path']).read_bytes()).hexdigest()!=record['sha256']:raise ValueError('Primary bed evidence identity mismatch')
+    table=directory/manifest['digitization']['path']
     digest=hashlib.sha256(table.read_bytes()).hexdigest()
     if digest!=manifest['derived_files'][table.name]['sha256']:raise ValueError('Bed curve identity mismatch')
     rows=[r for r in csv.DictReader(table.open()) if r['material']==material]
@@ -75,3 +78,23 @@ def maximum_approach(skin,bed):
     # every measured strain interval; do not delete plateau rows.
     bed_strain=float(np.interp(pressure,bed['pressure_pa'],bed['strain']))
     return float((lo+hi)/2+bed['thickness_m']*bed_strain)
+
+
+def bed_foundation(points,velocities,areas,body_indices,body_origins,plane_x_m,skin,bed):
+    """Conservative series normal force plus explicitly transferred slip friction."""
+    points=np.asarray(points,float);velocities=np.asarray(velocities,float);areas=np.asarray(areas,float)
+    indices=np.asarray(body_indices,int);origins=np.asarray(body_origins,float)
+    approach=np.maximum(0.,plane_x_m-points[:,0]);response=series_response(approach,skin,bed)
+    normal=areas*response['pressure_pa'];tangent=velocities[:,1:];speed=np.linalg.norm(tangent,axis=1)
+    coefficient=skin['dynamic_friction']*np.tanh(speed/skin['transition_velocity_m_s'])+skin['viscous_friction']*speed
+    force=np.zeros_like(points);force[:,0]=normal;force[:,1:]=-normal[:,None]*coefficient[:,None]*tangent/np.maximum(speed[:,None],1e-30)
+    body_forces=np.zeros_like(origins);body_moments=np.zeros_like(origins)
+    np.add.at(body_forces,indices,force);np.add.at(body_moments,indices,np.cross(points-origins[indices],force))
+    return dict(point_forces_n=force,body_forces_n=body_forces,body_moments_nm=body_moments,
+                bed_force_n=-force.sum(0),bed_moment_about_source_origin_nm=-np.cross(points,force).sum(0),
+                elastic_energy_j=float(np.dot(areas,response['total_energy_j_m2'])),
+                skin_elastic_energy_j=float(np.dot(areas,response['skin_energy_j_m2'])),bed_elastic_energy_j=float(np.dot(areas,response['bed_energy_j_m2'])),
+                power_to_body_w=float(np.sum(force*velocities)),dissipative_power_w=float(np.sum(force[:,1:]*tangent)),
+                maximum_penetration_m=float(response['skin_indentation_m'].max(initial=0)),
+                maximum_bed_indentation_m=float(response['bed_indentation_m'].max(initial=0)),
+                contacting_points=int(np.sum(approach>0)),response=response)
