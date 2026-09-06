@@ -11,9 +11,9 @@ from scripts.verify_hair_residual_native import validate,rigid_receipt
 
 
 class CandidateStream(NativeMechanicalStream):
-    def __init__(self,output,identity):
+    def __init__(self,output,identity,*,build_path=None):
         self.output=output;output.mkdir();self.lock=threading.RLock();self.closed=False;self.tokens=set();self.identity=uuid.uuid4().hex;self.surface_sensor_identity={};self._buffer=b''
-        runtime=ROOT/'data/runtime/opensim';pointer=json.loads((ROOT/'data/runtime/mechanical-stream/latest.json').read_bytes());build=ROOT/pointer['build'];manifest=json.loads((build/'manifest.json').read_bytes());exe=build/'native_mechanical_stream'
+        runtime=ROOT/'data/runtime/opensim';pointer=json.loads((ROOT/'data/runtime/mechanical-stream/latest.json').read_bytes());build=ROOT/pointer['build'] if build_path is None else Path(build_path).resolve();manifest=json.loads((build/'manifest.json').read_bytes());exe=build/'native_mechanical_stream'
         if file_sha256(exe)!=manifest['files'][str(exe.relative_to(ROOT))]:raise ValueError('Native binary hash mismatch')
         self.binary_sha256=file_sha256(exe);self.log=(output/'engine.log').open('w')
         paths=[runtime/'install/opensim/lib',runtime/'install/simbody/lib',*[runtime/'sysroot/usr/lib/aarch64-linux-gnu'/x for x in ('lapack','blas','')]]
