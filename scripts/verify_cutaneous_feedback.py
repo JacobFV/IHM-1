@@ -112,6 +112,42 @@ class CutaneousTests(unittest.TestCase):
         released = model.step(.01, {'time_s':model.time_s, 'contacts':[], 'skin_temperature_C':33.})
         self.assertEqual(released['sites'][0]['indentation_um'], 0.)
 
+    def test_native_moving_site_uses_current_normal_and_keeps_reference_prior(self):
+        from ihm.assembly.cutaneous_feedback import CutaneousFeedback
+        native = self.native_site()
+        model = CutaneousFeedback(ROOT, sites=native, recruitment_hz_per_response=.1)
+        sample = self.sample(model)
+        sample['contacts'][0].update(indentation_m=.00025,
+            material_identity=native[0]['material_identity'],
+            indentation_basis=native[0]['indentation_basis'],
+            point_m=[1., 2., 3.], normal=[1., 0., 0.], force_n=[-2., 0., 0.])
+        result = model.step(.01, sample)
+        row = result['sites'][0]
+        self.assertEqual(row['normal_force_n'], 2.)
+        self.assertEqual(row['pressure_pa'], 2000.)
+        self.assertEqual(row['position_m'], [1., 2., 3.])
+        self.assertEqual(row['outward_normal'], [1., 0., 0.])
+        self.assertEqual(row['reference_position_m'], [0., 0., 0.])
+        self.assertEqual(row['position_basis'], 'current native material point; source receptor support remains reference prior')
+        self.assertEqual(model.audit['receptors']['rapid']['sites_m'], [[0., 0., 0.]])
+        self.assertEqual(model.sites[native[0]['id']]['position_m'], [0., 0., 0.])
+
+    def test_native_moving_site_rejects_partial_or_invalid_geometry(self):
+        from ihm.assembly.cutaneous_feedback import CutaneousFeedback
+        native = self.native_site()
+        model = CutaneousFeedback(ROOT, sites=native, recruitment_hz_per_response=.1)
+        for geometry in ({'point_m':[1., 0., 0.]}, {'normal':[1., 0., 0.]},
+                         {'point_m':[1., 0., 0.], 'normal':[2., 0., 0.]},
+                         {'point_m':[float('nan'), 0., 0.], 'normal':[1., 0., 0.]}):
+            sample = self.sample(model)
+            sample['contacts'][0].update(indentation_m=.0001,
+                material_identity=native[0]['material_identity'],
+                indentation_basis=native[0]['indentation_basis'], **geometry)
+            before = model.checkpoint()
+            with self.assertRaises(ValueError):
+                model.step(.01, sample)
+            self.assertEqual(before, model.checkpoint())
+
     def test_native_indentation_does_not_require_pressure_or_stiffness(self):
         from ihm.assembly.cutaneous_feedback import CutaneousFeedback
         native = self.native_site()

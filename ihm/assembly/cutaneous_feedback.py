@@ -130,6 +130,7 @@ class CutaneousFeedback:
             'sites': list(deepcopy(self.sites).values()),
             'receptors': {kind: deepcopy(m.audit) for kind, m in first.items()},
             'receptor_audit_sites': 'representative first site; all sites use same verified transfer and priors',
+            'moving_support_basis': 'native contacts may carry current point/outward normal together; source LTI support remains registered reference spatial prior, no spatial receptor rematerialization',
             'recruitment_hz_per_response': self.recruitment,
             'recruitment_basis': 'engineered absolute signed-response magnitude pooled into caller-assigned cortical populations; not measured recruitment',
             'mechanical_basis': 'compression=max(0,-force dot outward normal); p=F/A; force_foundation uses explicit p/stiffness prior; native_indentation uses supplied modeled deformation directly with material receipt, no stiffness inversion',
@@ -157,6 +158,8 @@ class CutaneousFeedback:
             raise ValueError('Explicit contacts list required; empty means released')
         forces = {key: [0., 0., 0.] for key in self.sites}
         seen = set()
+        geometry = {key: {'point_m': list(site['position_m']), 'normal': list(site['normal']),
+                          'moving': False} for key, site in self.sites.items()}
         native_indentations = {key: 0. for key, site in self.sites.items() if site['mechanical_input'] == 'native_indentation'}
         for contact in contacts:
             if not isinstance(contact, dict) or contact.get('id') not in self.sites:
@@ -175,17 +178,27 @@ class CutaneousFeedback:
                 if contact.get('indentation_basis') != site['indentation_basis']:
                     raise ValueError('Native indentation provenance differs from registration')
                 native_indentations[key] = _number(contact.get('indentation_m'), 'native indentation m', 0., 1.)
+                if ('point_m' in contact) != ('normal' in contact):
+                    raise ValueError('Current native point and outward normal must be supplied together')
+                if 'point_m' in contact:
+                    point = _vector(contact['point_m'], 'current native point')
+                    normal = _vector(contact['normal'], 'current outward surface normal')
+                    if not math.isclose(math.sqrt(sum(v*v for v in normal)), 1., rel_tol=1e-6, abs_tol=1e-6):
+                        raise ValueError('Current native outward normal must be a unit vector')
+                    geometry[key] = {'point_m': point, 'normal': normal, 'moving': True}
             elif 'indentation_m' in contact or 'material_identity' in contact:
                 raise ValueError('Native deformation supplied to force-foundation site')
-            if 'point_m' in contact:
+            if site['mechanical_input'] == 'force_foundation' and 'normal' in contact:
+                raise ValueError('Static foundation does not accept a moving normal')
+            if site['mechanical_input'] == 'force_foundation' and 'point_m' in contact:
                 point = _vector(contact['point_m'], 'contact application point')
                 if not np.allclose(point, self.sites[key]['position_m'], atol=1e-9, rtol=0.):
                     raise ValueError('Contact point differs from registered material site')
-        return forces, temperature, native_indentations
+        return forces, temperature, native_indentations, geometry
 
     def step(self, dt_s, observation, *, sensory_blocks=()):
         dt = _number(dt_s, 'cutaneous interval', 1e-9, .1)
-        forces, temperature, native_indentations = self._observe(observation)
+        forces, temperature, native_indentations, geometry = self._observe(observation)
         if not isinstance(sensory_blocks, (list, tuple, set)) or any(not isinstance(k, str) or k not in self.sites for k in sensory_blocks):
             raise ValueError('Unknown sensory block site')
         blocks = set(sensory_blocks)
@@ -194,7 +207,8 @@ class CutaneousFeedback:
             rows, inputs = [], {}
             for key, site in self.sites.items():
                 force = forces[key]
-                compression = max(0., -sum(f*n for f, n in zip(force, site['normal'])))
+                current = geometry[key]
+                compression = max(0., -sum(f*n for f, n in zip(force, current['normal'])))
                 area = site['contact_area_m2']
                 pressure = None if area is None else compression / area
                 native = site['mechanical_input'] == 'native_indentation'
@@ -217,7 +231,10 @@ class CutaneousFeedback:
                     inputs[region] = min(1000., inputs.get(region, 0.) + rate)
                 rows.append({'id': key, 'sample_time_s': self.time_s,
                     'response_time_s': self.time_s + dt, 'delay_s': self.delay_s,
-                    'force_n': force, 'position_m': site['position_m'], 'outward_normal': site['normal'],
+                    'force_n': force, 'position_m': current['point_m'], 'outward_normal': current['normal'],
+                    'reference_position_m': list(site['position_m']),
+                    'reference_outward_normal': list(site['normal']),
+                    'position_basis': 'current native material point; source receptor support remains reference prior' if current['moving'] else 'registered reference material point',
                     'normal_force_n': compression, 'contact_area_m2': area,
                     'pressure_pa': pressure, 'indentation_um': indentation,
                     'skin_temperature_C': temperature, 'temperature_change_C': delta,
