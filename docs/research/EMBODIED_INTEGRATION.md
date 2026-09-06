@@ -156,3 +156,10 @@ explicit accepted/uncertain receipts. Nineteen small runtime/actor/HTTP checks
 passed for this integration; native whole-body intake acceptance is still gated
 on a viable mechanical/physiological initial state. Intake mass changes do not
 yet update the mechanical segment inertia distribution.
+
+Whole-engine adapter smoke `data/derived/audits/signed-coupled-k9bxch69` passed
+six signed 20 ms steps (0.12 s total) with exact nonboundary-port equality for
+disabled versus zero, positive/negative/return boundaries, eccentric heat, and
+one acknowledged native water intake consumed by the following step. Wall time
+was 1.963 s; caller peak RSS 587276 KiB. These boundary inputs were explicit
+small fixture values, not the incompatible mechanical resting reference.

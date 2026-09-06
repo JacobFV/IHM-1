@@ -15,9 +15,9 @@ Configuration follow-up: the installed Codex CLI 0.153.4 loads the documented
 `agents.max_concurrent_threads_per_session = 16` setting successfully (`codex
 doctor --json`, config.load=ok). The user config was backed up to
 `/home/brandonin/.codex/config.toml.bak`; a high-effort bounded `chore` role was
-added at `/home/brandonin/.codex/agents/chore.toml`. This does not demonstrate
-hot-reconfiguration of this already-running session: its exposed capacity
-remains four total slots until the host supplies a different limit. Do not
+added at `/home/brandonin/.codex/agents/chore.toml`. At configuration time the old session still exposed four total slots.
+After the requested restart, the host explicitly exposed 17 total slots;
+that capacity is now confirmed. Do not
 bypass that limit with extra CLI sessions. Current official guidance is
 https://learn.chatgpt.com/docs/agent-configuration/subagents.
 
@@ -54,14 +54,24 @@ Freeze native source/header inputs from compilation through verification. Before
 restarting after interruption, check surviving owned processes and existing
 receipts. See [the incident note](INCIDENT_2026-09-05_RESOURCE_CONTENTION.md).
 
-## Current wave
+## Continuing implementation wave
 
-| Owner | Bounded deliverable | Writes | Resource lane |
-| --- | --- | --- | --- |
-| Root | Coordination, runtime integration and acceptance decisions | Workflow document; root runtime/API files | Light until mechanical slot returns |
-| clothing | Compile and verify 92-muscle mechanics/metabolic adapter | Existing owned mechanical adapter files and receipts | Exclusive heavy slot; sequential build then tiny test |
-| gi_integrity | Discriminating next experiments for retained GI failures | GI_FAILURE_NEXT_EXPERIMENT.md | Read-only evidence review |
-| locomotion_implementation | Adversarial runtime/API/UI integration review | EMBODIED_ACCEPTANCE_REVIEW.md | Read-only review and bounded small checks |
+| Owner | Current bounded responsibility | Resource lane |
+| --- | --- | --- |
+| Root | Shared runtime, signed adapter, live intake/API integration, integration acceptance | Heavy queue coordinator |
+| GI transport | Corrected native shared-donor variant and linked conservation fixtures (completed) | Released |
+| Signed native port | Muscle-only chemical/heat/work variant and native local ledgers (completed) | Released |
+| Mechanical energy ledger | Signed work/heat/reference checkpoints and projection (completed) | Released |
+| Support equilibrium | Anatomical surface foundation and constrained supported initialization | Source work; request native slot |
+| Intake scheduler / live wiring | Scheduler and live monitor/controller integration (completed) | No production viewer promotion yet |
+| Neural coverage | Actual cutaneous operator to shared controller integration | Bounded operator fixtures |
+| Vascular evidence | Explicit human-muscle geometry/radius/flow materializations | Bounded graph fixtures |
+
+The same workers can receive subsequent bounded implementation work. Completed
+local checks do not close whole-body objectives. The signed adapter's small
+boundary smoke passed, but actual mechanical reference coupling and supine
+support remain unresolved. The prior static optimizer found an unsupported
+free-fall candidate; it was rejected, not promoted.
 
 After each handoff, root reads the evidence, resolves interface issues, and queues
 the smallest integrated check. The next ready tasks should come from mechanics,
