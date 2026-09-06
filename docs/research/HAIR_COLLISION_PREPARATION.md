@@ -15,3 +15,11 @@ Prepared scripts pass parsing and the existing one-owner source fixture. Native 
 ## Actual bounded pose feasibility
 
 The isolated observer compiled in 12.97 s with 1,228,880 KiB peak RSS. The copied-state native pose query then passed in 1.82 s with 94,844 KiB peak RSS. `data/research/hair_hand_pose_acceptance.json` retains the exact source face, scalp sample, solved coordinate values, all queries, build identities and limits. Final center error was 8.48e-11 m and normal error 1.76e-10. A final native observation verified unchanged continuing body transforms, coordinates and time. Both children exited and the shared slot was released. No collision or trajectory was advanced. The solved pose remains an engineered test initial condition, not a whole-body clearance or muscle-strain certificate.
+
+## Declared collision initial condition
+
+`scripts/verify_hair_collision_native.py` prepares the accepted pose as a fresh test initial condition before native muscle equilibration. It derives a local hand-center Jacobian from the five retained native finite-difference pose queries, solves a 0.2 m/s approach velocity, and rejects rank deficiency or coordinate speeds exceeding 5 rad/s. Residual native masses/COMs/tensors remain unchanged. The initial positive face-interior gap must reproduce 10 micrometers in the actually initialized native state.
+
+The exact exterior hand face 10888 is added to the contact patch, giving 95 sparse faces. Light tests verify that this adds no guide mass and changes no guide node position. Two 0.1 ms intervals with at most eight reaction iterations are proposed under a 45 s wall and 1 GiB native address-space cap. No collision result is claimed until actual contact count and nonzero source contact impulse are observed. Other body contacts and muscle strain remain unassessed; the hand-near-scalp setup is not claimed to be a valid whole-body pose.
+
+The observer retains raw native muscle passive PE and adds only the source-derived Thelen correction to total mechanical energy. It reports corrected mechanical change minus signed active-fiber work as unexplained, without attributing the remainder to an invented heat term. Failures retain accepted partial interval receipts and the final native clock. This fixture does not enable a live model.

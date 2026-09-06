@@ -13,7 +13,7 @@ class HairReferenceRegistration:
         return {name:self.global_map@np.asarray(state['bodies'][name]['transform_ground'])@np.asarray(b['canonical_reference_to_body_local']) for name,b in self.records.items()}
 
 
-def coupled_candidate(partition,base,registration,snapshot):
+def coupled_candidate(partition,base,registration,snapshot,*,additional_contact_faces=()):
     reg=HairReferenceRegistration(base,registration);nodes={};faces={};owners={};positions=[];offsets=[0];radii=[];follicles=[];beta=[];guide_owners=[];samples=[];material=None
     evidence={r['source_node_index']:r['owner'] for r in partition['ownership']['node_evidence']}
     for name,group in partition['groups'].items():
@@ -30,6 +30,16 @@ def coupled_candidate(partition,base,registration,snapshot):
             faces[source]=mapped
         for i,(a,b) in enumerate(zip(strands['strand_offsets'][:-1],strands['strand_offsets'][1:])):
             positions.extend(x[a:b].tolist());offsets.append(len(positions));radii.append(strands['radius_m'][i]);follicles.append(prepared['source_face_indices'][i]);beta.append(prepared['barycentric'][i]);guide_owners.append(prepared['guide_owner_names'][i]);samples.append((name,prepared['sample_ids'][i]))
+    if len(additional_contact_faces)>8:raise ValueError('At most8explicit contact faces')
+    for face in additional_contact_faces:
+        body=face['owner']
+        if body not in reg.bodies or len(face['source_node_indices'])!=3:raise ValueError('Exact registered contact triangle required')
+        for source,point in zip(face['source_node_indices'],face['positions_m']):
+            if source in nodes and (nodes[source]!=point or owners[source]!=reg.bodies.index(body)):raise ValueError('Additional face changes exact source node or owner')
+            nodes[source]=point;owners[source]=reg.bodies.index(body)
+        source=face['source_face_index']
+        if source in faces and faces[source]!=face['source_node_indices']:raise ValueError('Additional face changes exact topology')
+        faces[source]=face['source_node_indices']
     ids=sorted(nodes);index={n:i for i,n in enumerate(ids)};faceids=sorted(faces);tri=np.array([[index[n] for n in faces[f]] for f in faceids]);surface=np.array([nodes[n] for n in ids])
     hair=ElasticHairState({**material,'centerlines_m':positions,'strand_offsets':offsets,'radius_m':radii},max_substep_s=1e-4)
     feedback=HairFeedback(hair,surface,tri,np.array([owners[n] for n in ids]),reg,np.array([faceids.index(f) for f in follicles]),beta,
