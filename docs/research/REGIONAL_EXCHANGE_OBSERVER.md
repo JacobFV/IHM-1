@@ -71,3 +71,20 @@ missing-port cases. No new native run is required. Fixture SHA-256 identities:
 | initial.json | cb37d4e4f5460d48e2938a374ab5a92148890559f7070482926732b2903e0b4d |
 | loaded.json | fea8f66846d3a12f1d7cea48cecd1a6ff935f3220248c6528887b5d4efccd922 |
 | released.json | a80f276241564280e431cde0436ba71a8794683e08a17486740f734f38e80337 |
+
+## Shared body exchange integration
+
+`NativeTissueExchange.observe` now incorporates the regional observer when the
+native snapshot actually contains the installed regional circuit. The original
+Skin extracellular entry remains a non-owning aggregate; its three children
+are the inventory owners. The selected fluid incidence uses the actual regional
+paths, including a separate external sweat boundary, and excludes the detached
+legacy paths. Spatial projections retain unregistered region identities rather
+than inventing anatomical territories. Existing lumped snapshots retain their
+previous behavior. Loaded observer source is included in embodied run receipts.
+
+Validation: `python -m unittest scripts.verify_body_exchange
+scripts.verify_regional_exchange scripts.verify_embodied_runtime` passed 23 tests,
+including the retained actual regional native snapshot. This validates observer
+accounting and compatibility, not whole-body equilibrium or regional anatomical
+calibration.

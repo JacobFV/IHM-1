@@ -13,6 +13,21 @@ def snapshot():
  for path,q in [('SkinE1ToSkinE2',.3),('SkinE3ToSkinI',.1),('SkinE3ToSkinL1',.2),('LymphToVenaCava',.2),('SkinSweating',0.)]:v['tissue.path.'+path+'.flow_ml_per_s']=q
  return {'time_s':1.,'elapsed_s':1.,'values':v}
 class Checks(unittest.TestCase):
+ def test_actual_regional_snapshot_keeps_parent_nonowning(self):
+  import json,math
+  path=ROOT/'data/derived/audits/regional-python-vvdedt24/released.json'
+  if not path.exists():self.skipTest('Retained regional native acceptance snapshot unavailable')
+  snapshot=json.loads(path.read_text())
+  view=NativeTissueExchange(organs=('Skin',),native_identity={'fixture':'regional-python-vvdedt24'}).observe(snapshot)
+  parent=view['native_compartments']['Skin.extracellular']
+  self.assertFalse(parent['independent_store'])
+  children=[view['native_compartments']['Skin.'+name+'.extracellular'] for name in ('region_a','region_b','residual')]
+  self.assertTrue(all(row['independent_store'] for row in children))
+  self.assertAlmostEqual(math.fsum(row['volume_ml'] for row in children),parent['volume_ml'],places=9)
+  self.assertNotIn('Skin.extracellular',view['internal_volume_rate_ml_per_s'])
+  self.assertFalse(any(row['native_path'] in ('SkinE1ToSkinE2','SkinE3ToSkinI','SkinE3ToSkinL1') for row in view['fluid_transfers']))
+  self.assertTrue(view['regional_skin']['available'])
+
  def test_partition_exact_no_extra_native_store(self):
   x=NativeTissueExchange(organs=('Skin',),partitions={'Skin':[{'id':'patch','fraction':.2}]});s=snapshot();d=x.observe(s)
   for pool in ('vascular','extracellular','intracellular'):
@@ -50,7 +65,7 @@ def retained(directory):
  model=NativeTissueExchange.from_workspace(ROOT,first,identity);view=model.observe(last);networks=model.project_networks(view);surfaces=model.project_anatomical_supports(view)
  max_volume=max_mass=0.
  for owner,quantity in view['native_compartments'].items():
-  if owner in ('Lymph','VenaCava'):continue
+  if owner in ('Lymph','VenaCava') or not quantity.get('independent_store',True):continue
   regions=[r for r in view['partitions'] if r['owner']==owner]
   max_volume=max(max_volume,abs(math.fsum(r['volume_ml'] for r in regions)-quantity['volume_ml']))
   for sub,mass in quantity['mass_g'].items():
@@ -62,7 +77,7 @@ def retained(directory):
   assert abs(math.fsum(network['edge_volume_ml'])-parent['volume_ml'])<1e-12
  ionic=native_skin_ionic_boundary(view)
  out=Path(tempfile.mkdtemp(prefix='body-exchange-',dir=ROOT/'data/derived/audits'))
- report={'passed':True,'native_record':str(directory.relative_to(ROOT)),'native_receipts_sha256':hashlib.sha256((directory/'receipts.jsonl').read_bytes()).hexdigest(),'source_hashes':model.source_hashes,'time_s':view['time_s'],'native_owners':len(view['native_compartments']),'runtime_partitions':len(view['partitions']),'on_demand_source_surface_partitions':len(surfaces),'source_fine_networks':len(networks),'max_partition_volume_residual_ml':max_volume,'max_partition_mass_residual_g':max_mass,'selected_internal_flow_incidence_residual_ml_per_s':math.fsum(view['internal_volume_rate_ml_per_s'].values()),'maximum_native_mass_concentration_residual_g':max(abs(r) for c in view['native_compartments'].values() for r in c['mass_concentration_residual_g'].values() if r is not None),'skin_ionic_boundary':ionic,'unlocalized_organs':[o for o,rs in model.partitions.items() if any(r['evidence_kind']=='unlocalized_native_owner' for r in rs)],'scope':'Read-only actual native snapshot materialization; no new native run, compression validation or integrated solute ledger claim'}
+ report={'passed':True,'native_record':str(directory.relative_to(ROOT)),'native_receipts_sha256':hashlib.sha256((directory/'receipts.jsonl').read_bytes()).hexdigest(),'source_hashes':model.source_hashes,'time_s':view['time_s'],'native_owners':sum(c.get('independent_store',True) for c in view['native_compartments'].values()),'aggregate_views':sum(not c.get('independent_store',True) for c in view['native_compartments'].values()),'runtime_partitions':len(view['partitions']),'on_demand_source_surface_partitions':len(surfaces),'source_fine_networks':len(networks),'max_partition_volume_residual_ml':max_volume,'max_partition_mass_residual_g':max_mass,'selected_internal_flow_incidence_residual_ml_per_s':math.fsum(view['internal_volume_rate_ml_per_s'].values()),'maximum_native_mass_concentration_residual_g':max(abs(r) for c in view['native_compartments'].values() for r in c['mass_concentration_residual_g'].values() if r is not None),'skin_ionic_boundary':ionic,'unlocalized_organs':[o for o,rs in model.partitions.items() if any(r['evidence_kind']=='unlocalized_native_owner' for r in rs)],'scope':'Read-only actual native snapshot materialization; no new native run, compression validation or integrated solute ledger claim'}
  (out/'verification.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report,indent=2));print(out)
 if __name__=='__main__':
  if len(sys.argv)==3 and sys.argv[1]=='--retained':retained(sys.argv[2])

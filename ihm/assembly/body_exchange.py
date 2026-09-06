@@ -7,6 +7,7 @@ partition an observed native quantity; they never add a second reservoir.
 from copy import deepcopy
 import hashlib,json,math
 from pathlib import Path
+from .regional_exchange import observe_regional_skin
 
 ORGANS=('Fat','Bone','Brain','Gut','LeftKidney','RightKidney','Liver','LeftLung','RightLung','Muscle','Myocardium','Skin','Spleen')
 SUBSTANCES=('Albumin','Glucose','Oxygen','CarbonDioxide','Sodium','Potassium','Chloride')
@@ -41,7 +42,7 @@ class NativeTissueExchange:
   micro=json.loads(micro_path.read_text());anatomy=json.loads(anatomy_path.read_text());entities={e['id']:e for e in anatomy['entities']};rows=[]
   reference_volume=number(reference_snapshot['values'].get('tissue.Skin.vascular.volume_ml'),'reference Skin vascular volume',True)
   if reference_volume<=0:raise ValueError('Positive reference vascular volume needed for allocation')
-  hashes={str(p.relative_to(root)):digest(p) for p in [micro_path,anatomy_path,Path(__file__),root/'scripts/native_tissue_ports.h',root/'scripts/native_tissue_compression.h']}
+  hashes={str(p.relative_to(root)):digest(p) for p in [micro_path,anatomy_path,Path(__file__),root/'scripts/native_tissue_ports.h',root/'scripts/native_tissue_compression.h',root/'ihm/assembly/regional_exchange.py']}
   for unit in micro['units']:
    if 'forearm skin' not in unit['territory']:raise ValueError('Unregistered microvascular territory')
    attachment=unit['material_attachment'];entity=entities[attachment['entity_id']]
@@ -76,6 +77,7 @@ class NativeTissueExchange:
 
  def observe(self,snapshot):
   time=number(snapshot.get('time_s'),'time',True);values=snapshot.get('values',{});compartments={}
+  regional=observe_regional_skin(snapshot,native_identity=self.native_identity,source_hashes=self.source_hashes) if 'Skin' in self.organs else {'available':False}
   owners=[o+'.'+p for o in self.organs for p in POOLS]+['Lymph','VenaCava']
   for owner in owners:
    prefix='tissue.'+owner;volume=number(values.get(prefix+'.volume_ml'),prefix+'.volume_ml',True);mass={};concentration={};consistency={};ionic={};partial={}
@@ -89,23 +91,31 @@ class NativeTissueExchange:
    if pressure is not None:number(pressure,prefix+'.pressure_mmhg')
    for label,v in [*ionic.items(),*partial.items()]:
     if v is not None:number(v,label,True)
-   compartments[owner]={'native_owner':owner,'volume_ml':volume,'pressure_mmhg':pressure,'mass_g':mass,'concentration_g_per_l':concentration,'mass_concentration_residual_g':consistency,'ionic_molarity_mmol_per_l':ionic,'gas_partial_pressure_mmhg':partial}
+   compartments[owner]={'native_owner':owner,'independent_store':True,'accounting_owner':True,'volume_ml':volume,'pressure_mmhg':pressure,'mass_g':mass,'concentration_g_per_l':concentration,'mass_concentration_residual_g':consistency,'ionic_molarity_mmol_per_l':ionic,'gas_partial_pressure_mmhg':partial}
   transfers=[];rates={o:0. for o in owners}
   def transfer(path,source,target):
    q=number(values.get('tissue.path.'+path+'.flow_ml_per_s'),path+' flow');transfers.append({'native_path':path,'source':source,'target':target,'flow_ml_per_s':q,'kind':'observed_native_fluid_flow'})
    if source in rates:rates[source]-=q
    if target in rates:rates[target]+=q
   for organ in self.organs:
+   if organ=='Skin' and regional['available']:continue
    transfer(organ+'E1To'+organ+'E2',organ+'.vascular',organ+'.extracellular')
    transfer(organ+'E3To'+organ+'I',organ+'.extracellular',organ+'.intracellular')
    transfer(organ+'E3To'+organ+'L1',organ+'.extracellular','Lymph')
   transfer('LymphToVenaCava','Lymph','VenaCava')
+  if regional['available']:
+   compartments['Skin.extracellular'].update(regional['aggregate_views']['Skin.extracellular'])
+   compartments.update(regional['native_compartments'])
+   rates.pop('Skin.extracellular')
+   for owner,rate in regional['internal_volume_rate_ml_per_s'].items():rates[owner]=rates.get(owner,0.)+rate
+   transfers.extend(regional['fluid_transfers'])
   # This is a selected incidence ledger, not dV/dt of the whole native system:
   # vascular perfusion, unselected organs, sweat, renal output and GI input exist.
   regions=[]
   for organ in self.organs:
    rows=self.partitions.get(organ,[])
    for pool in POOLS:
+    if organ=='Skin' and pool=='extracellular' and regional['available']:continue
     owner=organ+'.'+pool;parent=compartments[owner];used_volume=[];used_mass={s:[] for s in SUBSTANCES}
     for row in rows:
      fraction=row['fraction'];volume=parent['volume_ml']*fraction;mass={s:None if parent['mass_g'][s] is None else parent['mass_g'][s]*fraction for s in SUBSTANCES};used_volume.append(volume)
@@ -113,7 +123,18 @@ class NativeTissueExchange:
       if mass[sub] is not None:used_mass[sub].append(mass[sub])
      regions.append({'id':row['id']+'.'+pool,'owner':owner,'fraction':fraction,'volume_ml':volume,'mass_g':mass,'independent_store':False,'material_attachment':deepcopy(row.get('material_attachment')),'evidence_kind':row.get('evidence_kind'),'allocation_measure':row.get('allocation_measure','reference geometric lumen fraction')})
     regions.append({'id':organ+'.unresolved_remainder.'+pool,'owner':owner,'fraction':1.-math.fsum(r['fraction'] for r in rows),'volume_ml':parent['volume_ml']-math.fsum(used_volume),'mass_g':{s:None if parent['mass_g'][s] is None else parent['mass_g'][s]-math.fsum(used_mass[s]) for s in SUBSTANCES},'independent_store':False,'material_attachment':None})
-  return {'schema':'native_tissue_exchange_v1','time_s':time,'native_identity':deepcopy(self.native_identity),'source_hashes':dict(self.source_hashes),'native_compartments':compartments,'native_circuit':{k:v for k,v in values.items() if k.startswith(('tissue.path.','tissue.node.','tissue.compression.'))},'partitions':regions,'fluid_transfers':transfers,'internal_volume_rate_ml_per_s':rates,'solute_fluxes':[],'whole_body_mass_closure_claimed':False,'thermal_boundary_c':{'core':values.get('tissue.core_temperature_c'),'skin':values.get('tissue.skin_temperature_c')},'feedback_owner':'Native Tissue oncotic/osmotic laws, cardiovascular fluid solve and Diffusion albumin/solute transport','limitations':['Spatial regions are conservative views, not new blood/lymph stores.','Snapshot flow incidence is not integrated mass transfer or complete dV/dt.','Gas masses are named native free-substance pools, not total hemoglobin-bound oxygen/carbon.','Native Skin is one lumped compartment; source graph pressures and terminal vessel correspondence are unresolved.','No solute flux is reconstructed from post-step concentration: native reactions, capping and transport order matter.']}
+  if regional['available']:
+   for owner,row in regional['native_compartments'].items():
+    regions.append({'id':owner+'.unregistered_native_region','owner':owner,'fraction':1.,
+     'volume_ml':row['volume_ml'],'mass_g':deepcopy(row['mass_g']),'independent_store':False,
+     'material_attachment':None,'evidence_kind':'native_regional_inventory_without_anatomical_registration'})
+  result={'schema':'native_tissue_exchange_v1','time_s':time,'native_identity':deepcopy(self.native_identity),'source_hashes':dict(self.source_hashes),'native_compartments':compartments,'native_circuit':{k:v for k,v in values.items() if k.startswith(('tissue.path.','tissue.node.','tissue.compression.'))},'partitions':regions,'fluid_transfers':transfers,'internal_volume_rate_ml_per_s':rates,'solute_fluxes':[],'whole_body_mass_closure_claimed':False,'thermal_boundary_c':{'core':values.get('tissue.core_temperature_c'),'skin':values.get('tissue.skin_temperature_c')},'feedback_owner':'Native Tissue oncotic/osmotic laws, cardiovascular fluid solve and Diffusion albumin/solute transport','limitations':['Spatial regions are conservative views, not new blood/lymph stores.','Snapshot flow incidence is not integrated mass transfer or complete dV/dt.','Gas masses are named native free-substance pools, not total hemoglobin-bound oxygen/carbon.','Native Skin is one lumped compartment; source graph pressures and terminal vessel correspondence are unresolved.','No solute flux is reconstructed from post-step concentration: native reactions, capping and transport order matter.']}
+  result['regional_skin']=regional
+  if regional['available']:
+   result['native_circuit'].update(regional['native_circuit'])
+   result['external_volume_rate_ml_per_s']=regional['external_volume_rate_ml_per_s']
+   result['limitations'][3]='Native Skin extracellular regions own disjoint inventories; anatomical territories and terminal vessel correspondence remain unresolved.'
+  return result
 
  def project_networks(self,observation):
   """Return synthetic graph states as subdivisions of existing observed partitions."""
