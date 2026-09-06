@@ -39,6 +39,7 @@ def prepare(out, full_sources=True):
         for name,body in fixed.items():
             path=out/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_text(body)
     patch=''.join(''.join(difflib.unified_diff(original[n].splitlines(True),fixed[n].splitlines(True),fromfile='a/'+n,tofile='b/'+n)) for n in FILES)
+    patch=''.join('\n' if line==' \n' else line for line in patch.splitlines(True))
     (out/'repair.patch').write_text(patch)
     (out/'source_hashes.json').write_text(json.dumps({n:hashlib.sha256((BASE/n).read_bytes()).hexdigest() for n in FILES},indent=2)+'\n')
     return out/'repair.patch'

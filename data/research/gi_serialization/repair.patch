@@ -18,7 +18,7 @@
 +++ b/src/io/cdm/Physiology.cpp
 @@ -438,16 +438,17 @@
    }
- 
+
    void Physiology::Marshall(const SEDrugTransitState& in, CDM::DrugTransitStateData& out) {
 +    out.LumenDissolvedMasses().clear(); out.LumenSolidMasses().clear(); out.EnterocyteMasses().clear();
      for (auto tdMass : in.m_LumenDissolvedMasses) {
@@ -44,7 +44,7 @@
 -      io::Property::Marshall(*in.m_TotalMassMetabolized, out.MassExcreted());
 +      io::Property::Marshall(*in.m_TotalMassExcreted, out.MassExcreted());
      }
- 
+
      out.Substance(in.m_Substance->GetName());
 --- a/src/cdm/system/physiology/SEGastrointestinalSystem.cpp
 +++ b/src/cdm/system/physiology/SEGastrointestinalSystem.cpp
@@ -54,7 +54,7 @@
  **************************************************************************************/
 +#include <memory>
  #include <biogears/cdm/system/physiology/SEGastrointestinalSystem.h>
- 
+
  #include <biogears/cdm/properties/SEScalarMass.h>
 @@ -47,6 +48,8 @@
  //-------------------------------------------------------------------------------
