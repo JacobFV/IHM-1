@@ -21,7 +21,7 @@ def native_field_metadata(values):
         ('molarity_mmol_per_l','mmol/L'),('concentration_g_per_l','g/L'),('ml_per_min','mL/min'),
         ('ml_per_s','mL/s'),('l_per_min','L/min'),('l_per_s','L/s'),('pmol_per_min','pmol/min'),
         ('per_min','1/min'),('mmhg','mmHg'),('cmh2o','cmH2O'),('_pa','Pa'),('_ml','mL'),
-        ('_kcal','kcal'),('_mg','mg'),('_g','g'),('_w','W'),('_j','J'),('_c','degC'),('_mv','mV')]
+        ('_kcal','kcal'),('_mg','mg'),('_g','g'),('_w','W'),('_j','J'),('_c','degC'),('_mv','mV'),('_v','V')]
     result={}
     for name in values:
         unit=next((u for suffix,u in suffixes if name.endswith(suffix)),None)
