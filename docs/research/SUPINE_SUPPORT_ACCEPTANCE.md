@@ -44,3 +44,22 @@ The stopped native metabolism guard is a separate blocker requiring diagnosis be
 - `samples.json`: `5c81bdf52653cd06c760cdd15feb0ca9e83e6f8b984bcfa604cb321ed44f6402`
 - `initial_native.json`: `6e2b9bb9b68c4a8b02a6b83a0f3e1137a7989bdb097762326e3109fefa48ae39`
 - `plant/native/execution.json`: `858addb1c17250ebeabef7c939dd782930539fbb76ef51a2a7911c6a9dd95a87`
+
+## Authorized native result after roundoff-guard repair — 2026-09-05
+
+A separately authorized run used native `build-xz0ktmvi` and the unchanged diagnostic (harness SHA-256 `68d4dbfc044f667ab269be954a54546c0b82134f3ea8a721afac465c9ab4fc79`). Its observations are retained at `data/derived/supine-support-5ma720yd`. The native metabolism guard no longer blocked this trajectory. No contact/solver coefficient changes were made for this run.
+
+The diagnostic stopped at **0.200 s simulated time**, after **10.002 wall seconds** and **41 samples**, under the predeclared `kinetic_growth` stop criterion. Stage endpoints 0.02 and 0.1 s completed; the stage targeting 0.3 s stopped early. All three checkpoint restores matched and all checkpoints were released. The owned native process was reaped; no mechanical stream remained running afterward.
+
+At the final sample, support was **1.30135 weights**, static imbalance and COM acceleration were **0.30631 weights / g**, independent interval COM acceleration was **0.28925 g**, kinetic energy was **0.52370 J/kg**, COM speed was **0.74783 m/s**, and maximum segment angular speed was **11.85677 rad/s**. Proxy penetration was **14.853 mm** (sampled maximum **17.466 mm**). Constraint error remained **8.88e-16** and the dynamic momentum audit **4.73e-16 weights**. Static support acceptance fails despite excellent numerical force-accounting and constraint residuals.
+
+The report's `diverged` status means the predeclared growth stop was crossed: final energy exceeded 0.1 J/kg and four times the floored zero-energy initial value over a complete 0.2-second window. **It does not prove unbounded solver instability.** Energy peaked at 0.68337 J/kg before decreasing to the final value; the supported body could still be undergoing a physical contact transient. The run neither reaches the earliest convergence time of 0.4 s nor establishes the later trajectory. A later continuation would require a separately justified protocol and resource decision; it is not silently authorized by this failed acceptance.
+
+Evidence SHA-256 values:
+
+- `report.json`: `784e5e3302813fd25ba51f2cdf24072494ad86f1e0374e088fbba94ced88a6a6`
+- `checkpoint_receipts.json`: `fe4910aa0e62d5ae1e9fe0f5222484a7e113dfe236fd9438fdba9bf78349e7ca`
+- `samples.json`: `f7a1dcc8db03b2dc5dcc0f48b37222358719df01926cf6ca72e7d3165fbc9727`
+- `initial_native.json`: `46c9170377fe16ff9c9d71bfd27e63e04a596286070b20436ccc65dd793202dc`
+- `stage_0.3_native.json`: `ed826470f3e22b162caad31d33d0a7d4a0c98d5efdfda390da982daa4a9da653`
+- `plant/native/execution.json`: `4d8eda1c3733c2eef39bba5d97cdc6eb9080a007b004f16e3db6d59ebc1b0db7`
