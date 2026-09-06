@@ -132,3 +132,21 @@ The next acceleration-root implementation replaces the implicit TRF initial radi
 On the retained first-Jacobian surrogate, six such bounded steps reduce acceleration norm from 2654.38 to 117.36, with first-step norm 1078.86 and maximum coordinate step exactly 0.03 throughout. This supports testing the computational repair; it does not verify nonlinear force balance. The near-bound source fixture confirms progress on a free coordinate while another is constrained, and enforces both source and local bounds.
 
 Cache recovery now distinguishes optimizer metadata from native evaluation identity. An explicit native-response migration may change only the recorded Python solver/journal hashes; native input/build/dependency hashes, material, mass, environment, mode, coordinate order/bounds, held gauges and surface manifest must remain identical. The old and new full identities are retained in `cache_recovery.json`. Record hashes are checked and complete native responses preserved; this does not restore optimizer state. An offline recovery from `_ha29yc1` verified all 200 records and 29/29 exact initial-Jacobian cache hits when starting from `last_optimizer_iterate.json`. Therefore the next native trial can spend its budget on new poses rather than repeat that Jacobian.
+
+
+## Repaired local-Newton native outcome and protocol diagnosis
+
+`constrained-supine-vmmvo7v_` recovered 200 prior native responses, used 40 cache hits, and recorded 149 new responses in 29.441 s before a malformed protocol response stopped execution. Five accepted local iterations reduced the acceleration objective from 6,946,224.10 to 481,747.64; maximum acceleration fell from 1499.73 to 458.45 rad/s². The best candidate's ankles remained −458.45/−453.13 rad/s² and elbows 80.75/79.32 rad/s². Normal support excess was 0.305509 weight, normalized pitch residual 0.143883, roll −0.00505436 and heading gauge 0.000208222; translation gauges remained near machine zero. Maximum skin compression was 1.855 mm and bed deflection 109.736 mm. No new supported equilibrium was achieved.
+
+The command dispatch had streamed `@IHM ` before calling the static evaluator. A diagnostic log or thrown physical error could therefore corrupt framing. Commit `ac4ddcd` computes the complete response before writing its prefix; an isolated compiled fixture using the actual dispatch fragment reproduced the previous JSON failure with a logging evaluator and passed after the fix, including the throwing case. The solver now retains the pending coordinate request before evaluation, and retains bounded JSON error payload/position or physical error text on failure.
+
+The original malformed line was not retained, so its exact bytes cannot be reconstructed. The complete successful-response journal did allow deterministic reconstruction of the first unavailable request: iteration 5, full local Newton trial. One authorized replay under rebuilt native `build-mptn9l8d` produced a clean rejection: **“equal-pressure skin/bed solution exceeds retained domains”**. Receipt `pending-static-pose-rssrue1z` completed in 0.302 s, verified unchanged continuing state and advanced no physical time. This distinguishes a verified domain failure from the protocol defect that hid it. The failed trial remains rejected. No forward run or reference promotion occurred.
+
+Evidence SHA-256:
+
+- `data/derived/constrained-supine-vmmvo7v_/report.json`: `8e640758e69d5544a895d40c44c7b65551e1d631db9ed3450121a6c67f34ac1a`
+- `data/derived/constrained-supine-vmmvo7v_/best_candidate.json`: `ffe723a78f6522a46a614ffe5d75fb56657bc0c390ae44b7dc4b95fc01dd8712`
+- `data/derived/constrained-supine-vmmvo7v_/candidates.jsonl`: `d8bff3732bba2ed040731a03a65a33788def21456a8664e85f9e2c930d6a039e`
+- `data/derived/constrained-supine-vmmvo7v_/reconstructed_pending_request.json`: `2936fb69f27127e50f8cff8b59605ecf0ef749c2b890d92cecb976b0f2e33501`
+- `data/derived/pending-static-pose-rssrue1z/report.json`: `731e5d9969bdb0dbeed539e293e2b148771b5bb0d49773e2f083a0b2581a7eba`
+- `data/derived/pending-static-pose-rssrue1z/request.json`: `2936fb69f27127e50f8cff8b59605ecf0ef749c2b890d92cecb976b0f2e33501`
