@@ -1,0 +1,78 @@
+{
+  "reference": "https://doi.org/10.1371/journal.pone.0219198",
+  "authors": "Abe et al.",
+  "year": 2019,
+  "license": "CC BY 4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0/",
+  "accessed_date": "2026-09-05",
+  "acquisition_urls": [
+    "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC6620005/fullTextXML",
+    "https://journals.plos.org/plosone/article/file?type=supplementary&id=10.1371/journal.pone.0219198.s006"
+  ],
+  "raw_files": [
+    {
+      "path": "data/research/skin_epithelial/abe-2019.xml",
+      "bytes": 65994,
+      "sha256": "217642d115f41c05292905c7ee327cff96a69fb41ca473f4354b602a87416477"
+    },
+    {
+      "path": "data/research/skin_epithelial/abe-2019-s1.xlsx",
+      "bytes": 16241,
+      "sha256": "59fefc0043295258efae8dbdeef618a7632898d77f5001c68e4743b4ac462827"
+    }
+  ],
+  "participant_count": 1,
+  "preparation": "human_posterior_forearm_one_adult_female_Abe2019_S4",
+  "rows": [
+    {
+      "tape_strips": 0,
+      "reported_tep_mV": -10.122183,
+      "tewl_g_m2_h": 8.51,
+      "value_v": 0.010122183,
+      "quantity": "tep_magnitude",
+      "preparation": "human_posterior_forearm_one_adult_female_Abe2019_S4",
+      "source_id": "https://doi.org/10.1371/journal.pone.0219198",
+      "source_cells": "Sheet1!C48:E48",
+      "sign_status": "Magnitude only: negative S4 worksheet values; text gives basal-positive porcine convention, human wiring polarity unresolved"
+    },
+    {
+      "tape_strips": 1,
+      "reported_tep_mV": -9.557791,
+      "tewl_g_m2_h": 8.69,
+      "value_v": 0.009557791,
+      "quantity": "tep_magnitude",
+      "preparation": "human_posterior_forearm_one_adult_female_Abe2019_S4",
+      "source_id": "https://doi.org/10.1371/journal.pone.0219198",
+      "source_cells": "Sheet1!C49:E49",
+      "sign_status": "Magnitude only: negative S4 worksheet values; text gives basal-positive porcine convention, human wiring polarity unresolved"
+    },
+    {
+      "tape_strips": 4,
+      "reported_tep_mV": -9.364351,
+      "tewl_g_m2_h": 10.8,
+      "value_v": 0.009364351,
+      "quantity": "tep_magnitude",
+      "preparation": "human_posterior_forearm_one_adult_female_Abe2019_S4",
+      "source_id": "https://doi.org/10.1371/journal.pone.0219198",
+      "source_cells": "Sheet1!C50:E50",
+      "sign_status": "Magnitude only: negative S4 worksheet values; text gives basal-positive porcine convention, human wiring polarity unresolved"
+    },
+    {
+      "tape_strips": 7,
+      "reported_tep_mV": -8.76441,
+      "tewl_g_m2_h": 13.18,
+      "value_v": 0.00876441,
+      "quantity": "tep_magnitude",
+      "preparation": "human_posterior_forearm_one_adult_female_Abe2019_S4",
+      "source_id": "https://doi.org/10.1371/journal.pone.0219198",
+      "source_cells": "Sheet1!C51:E51",
+      "sign_status": "Magnitude only: negative S4 worksheet values; text gives basal-positive porcine convention, human wiring polarity unresolved"
+    }
+  ],
+  "limitations": [
+    "Only four supplied human states (0,1,4,7 strips); protocol mentions 10 but no corresponding worksheet row; missing is not imputed.",
+    "Remaining workbook experiments are porcine, excluded from human extraction.",
+    "No human current, capacitance, ionic concentration or millisecond transient data in this worksheet.",
+    "TEP measurement sign unresolved for human supplement: condition magnitude only, declare model polarity separately."
+  ]
+}
