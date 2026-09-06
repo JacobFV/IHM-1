@@ -1,0 +1,332 @@
+{
+  "schema": "lymph_partition_design_v1",
+  "activation_allowed": false,
+  "geometry_sha256": "e724b62e6fc21764a0cf79c1874e96b9852755dc420711360a02d0b7afd93d05",
+  "coordinate_frame": "bodyparts3d-display-m",
+  "territories": [
+    {
+      "id": "left_lower_leg_anteromedial",
+      "side": "left",
+      "pathway_group": "anteromedial",
+      "evidence_source": "pmid-31746690",
+      "status": "unregistered_annotation_slot",
+      "triangle_ids": null,
+      "annotation_receipt": null,
+      "initial_volume_weight": null,
+      "thickness_m": null,
+      "extracellular_fraction": null,
+      "native_owner": null,
+      "first_destination": {
+        "reported_basin": "inguinal",
+        "canonical_semantic_candidates": [
+          {
+            "id": "body-za-365c258f6dba8500",
+            "name": "left intermediate deep inguinal node"
+          },
+          {
+            "id": "body-za-b0eb8cb383d918b1",
+            "name": "left proximal deep inguinal node"
+          },
+          {
+            "id": "body-za-7084a7439281b4b4",
+            "name": "left inferior superficial inguinal nodes"
+          },
+          {
+            "id": "body-za-7b8ebc9c08244f29",
+            "name": "left superolateral superficial inguinal nodes"
+          },
+          {
+            "id": "body-za-c567b44cb8c4b44b",
+            "name": "left superomedial superficial inguinal nodes"
+          }
+        ],
+        "accepted_entity_id": null,
+        "subsequent_chain": null,
+        "shared_destination_constraint": "left_am_pm_shared"
+      }
+    },
+    {
+      "id": "left_lower_leg_anterolateral",
+      "side": "left",
+      "pathway_group": "anterolateral",
+      "evidence_source": "pmid-31746690",
+      "status": "unregistered_annotation_slot",
+      "triangle_ids": null,
+      "annotation_receipt": null,
+      "initial_volume_weight": null,
+      "thickness_m": null,
+      "extracellular_fraction": null,
+      "native_owner": null,
+      "first_destination": {
+        "reported_basin": "inguinal",
+        "canonical_semantic_candidates": [
+          {
+            "id": "body-za-365c258f6dba8500",
+            "name": "left intermediate deep inguinal node"
+          },
+          {
+            "id": "body-za-b0eb8cb383d918b1",
+            "name": "left proximal deep inguinal node"
+          },
+          {
+            "id": "body-za-7084a7439281b4b4",
+            "name": "left inferior superficial inguinal nodes"
+          },
+          {
+            "id": "body-za-7b8ebc9c08244f29",
+            "name": "left superolateral superficial inguinal nodes"
+          },
+          {
+            "id": "body-za-c567b44cb8c4b44b",
+            "name": "left superomedial superficial inguinal nodes"
+          }
+        ],
+        "accepted_entity_id": null,
+        "subsequent_chain": null,
+        "shared_destination_constraint": null
+      }
+    },
+    {
+      "id": "left_lower_leg_posteromedial",
+      "side": "left",
+      "pathway_group": "posteromedial",
+      "evidence_source": "pmid-31746690",
+      "status": "unregistered_annotation_slot",
+      "triangle_ids": null,
+      "annotation_receipt": null,
+      "initial_volume_weight": null,
+      "thickness_m": null,
+      "extracellular_fraction": null,
+      "native_owner": null,
+      "first_destination": {
+        "reported_basin": "inguinal",
+        "canonical_semantic_candidates": [
+          {
+            "id": "body-za-365c258f6dba8500",
+            "name": "left intermediate deep inguinal node"
+          },
+          {
+            "id": "body-za-b0eb8cb383d918b1",
+            "name": "left proximal deep inguinal node"
+          },
+          {
+            "id": "body-za-7084a7439281b4b4",
+            "name": "left inferior superficial inguinal nodes"
+          },
+          {
+            "id": "body-za-7b8ebc9c08244f29",
+            "name": "left superolateral superficial inguinal nodes"
+          },
+          {
+            "id": "body-za-c567b44cb8c4b44b",
+            "name": "left superomedial superficial inguinal nodes"
+          }
+        ],
+        "accepted_entity_id": null,
+        "subsequent_chain": null,
+        "shared_destination_constraint": "left_am_pm_shared"
+      }
+    },
+    {
+      "id": "left_lower_leg_posterolateral",
+      "side": "left",
+      "pathway_group": "posterolateral",
+      "evidence_source": "pmid-31746690",
+      "status": "unregistered_annotation_slot",
+      "triangle_ids": null,
+      "annotation_receipt": null,
+      "initial_volume_weight": null,
+      "thickness_m": null,
+      "extracellular_fraction": null,
+      "native_owner": null,
+      "first_destination": {
+        "reported_basin": "popliteal",
+        "canonical_semantic_candidates": [
+          {
+            "id": "body-za-be020dafab2edb51",
+            "name": "left deep popliteal nodes"
+          },
+          {
+            "id": "body-za-82961a1c3e30c9b8",
+            "name": "left superficial popliteal nodes"
+          }
+        ],
+        "accepted_entity_id": null,
+        "subsequent_chain": null,
+        "shared_destination_constraint": null
+      }
+    },
+    {
+      "id": "right_lower_leg_anteromedial",
+      "side": "right",
+      "pathway_group": "anteromedial",
+      "evidence_source": "pmid-31746690",
+      "status": "unregistered_annotation_slot",
+      "triangle_ids": null,
+      "annotation_receipt": null,
+      "initial_volume_weight": null,
+      "thickness_m": null,
+      "extracellular_fraction": null,
+      "native_owner": null,
+      "first_destination": {
+        "reported_basin": "inguinal",
+        "canonical_semantic_candidates": [
+          {
+            "id": "body-za-68371e69bd1a9fe3",
+            "name": "right intermediate deep inguinal node"
+          },
+          {
+            "id": "body-za-2d807193db4e09b2",
+            "name": "right proximal deep inguinal node"
+          },
+          {
+            "id": "body-za-d5c8aab7e176d4e6",
+            "name": "right inferior superficial inguinal nodes"
+          },
+          {
+            "id": "body-za-344de6ca0f86f5bf",
+            "name": "right superolateral superficial inguinal nodes"
+          },
+          {
+            "id": "body-za-32f33961725a6380",
+            "name": "right superomedial superficial inguinal nodes"
+          }
+        ],
+        "accepted_entity_id": null,
+        "subsequent_chain": null,
+        "shared_destination_constraint": "right_am_pm_shared"
+      }
+    },
+    {
+      "id": "right_lower_leg_anterolateral",
+      "side": "right",
+      "pathway_group": "anterolateral",
+      "evidence_source": "pmid-31746690",
+      "status": "unregistered_annotation_slot",
+      "triangle_ids": null,
+      "annotation_receipt": null,
+      "initial_volume_weight": null,
+      "thickness_m": null,
+      "extracellular_fraction": null,
+      "native_owner": null,
+      "first_destination": {
+        "reported_basin": "inguinal",
+        "canonical_semantic_candidates": [
+          {
+            "id": "body-za-68371e69bd1a9fe3",
+            "name": "right intermediate deep inguinal node"
+          },
+          {
+            "id": "body-za-2d807193db4e09b2",
+            "name": "right proximal deep inguinal node"
+          },
+          {
+            "id": "body-za-d5c8aab7e176d4e6",
+            "name": "right inferior superficial inguinal nodes"
+          },
+          {
+            "id": "body-za-344de6ca0f86f5bf",
+            "name": "right superolateral superficial inguinal nodes"
+          },
+          {
+            "id": "body-za-32f33961725a6380",
+            "name": "right superomedial superficial inguinal nodes"
+          }
+        ],
+        "accepted_entity_id": null,
+        "subsequent_chain": null,
+        "shared_destination_constraint": null
+      }
+    },
+    {
+      "id": "right_lower_leg_posteromedial",
+      "side": "right",
+      "pathway_group": "posteromedial",
+      "evidence_source": "pmid-31746690",
+      "status": "unregistered_annotation_slot",
+      "triangle_ids": null,
+      "annotation_receipt": null,
+      "initial_volume_weight": null,
+      "thickness_m": null,
+      "extracellular_fraction": null,
+      "native_owner": null,
+      "first_destination": {
+        "reported_basin": "inguinal",
+        "canonical_semantic_candidates": [
+          {
+            "id": "body-za-68371e69bd1a9fe3",
+            "name": "right intermediate deep inguinal node"
+          },
+          {
+            "id": "body-za-2d807193db4e09b2",
+            "name": "right proximal deep inguinal node"
+          },
+          {
+            "id": "body-za-d5c8aab7e176d4e6",
+            "name": "right inferior superficial inguinal nodes"
+          },
+          {
+            "id": "body-za-344de6ca0f86f5bf",
+            "name": "right superolateral superficial inguinal nodes"
+          },
+          {
+            "id": "body-za-32f33961725a6380",
+            "name": "right superomedial superficial inguinal nodes"
+          }
+        ],
+        "accepted_entity_id": null,
+        "subsequent_chain": null,
+        "shared_destination_constraint": "right_am_pm_shared"
+      }
+    },
+    {
+      "id": "right_lower_leg_posterolateral",
+      "side": "right",
+      "pathway_group": "posterolateral",
+      "evidence_source": "pmid-31746690",
+      "status": "unregistered_annotation_slot",
+      "triangle_ids": null,
+      "annotation_receipt": null,
+      "initial_volume_weight": null,
+      "thickness_m": null,
+      "extracellular_fraction": null,
+      "native_owner": null,
+      "first_destination": {
+        "reported_basin": "popliteal",
+        "canonical_semantic_candidates": [
+          {
+            "id": "body-za-006f6a6d33be165a",
+            "name": "right deep popliteal nodes"
+          },
+          {
+            "id": "body-za-47f04bcf4148215e",
+            "name": "right superficial popliteal nodes"
+          }
+        ],
+        "accepted_entity_id": null,
+        "subsequent_chain": null,
+        "shared_destination_constraint": null
+      }
+    }
+  ],
+  "unresolved_complement": "all source skin triangles until validated annotations exist",
+  "installed_native_regions": {
+    "region_a": "unregistered_engineering_0.2",
+    "region_b": "unregistered_engineering_0.3",
+    "residual": "unregistered_engineering_0.5"
+  },
+  "mapping_to_installed_native_regions": null,
+  "material_assignment_rule": "one source triangle or uniquely refined subtriangle per material owner",
+  "node_assignment_rule": "one receiving node store per validated source identity, shared by multiple incoming territories",
+  "force_reduction": "sum supplied normal_force_n / entire territory area_m2; source-only engineering average",
+  "native_extension_parameters_unidentified": [
+    "region_volume_and_compliance_weights",
+    "regional_pressure_transmission",
+    "directed_node_identity_crosswalk",
+    "node_volumes",
+    "node_compliances",
+    "edge_resistances",
+    "valve_laws",
+    "protein_transport"
+  ]
+}

@@ -1,0 +1,69 @@
+[
+  {
+    "id": "17440362",
+    "url": "https://pubmed.ncbi.nlm.nih.gov/17440362/",
+    "final_url": "https://pubmed.ncbi.nlm.nih.gov/17440362/",
+    "status": 203,
+    "content_type": "text/html; charset=utf-8",
+    "path": "data/research/lymph_registration/sources/17440362.html",
+    "bytes": 5565,
+    "sha256": "6102888e6f99b1f17d129cc8f006ef0c18fce09976ea69f12d89328209dea8d7",
+    "retrieved_utc": "2026-09-06T06:02:53.602166+00:00",
+    "license": "Publisher copyright; public abstract availability does not establish open reuse rights",
+    "scope": "HTTP203 cookie challenge; retained failed acquisition, not article evidence",
+    "acquired_article_content": false
+  },
+  {
+    "id": "18349641",
+    "url": "https://pubmed.ncbi.nlm.nih.gov/18349641/",
+    "final_url": "https://pubmed.ncbi.nlm.nih.gov/18349641/",
+    "status": 203,
+    "content_type": "text/html; charset=utf-8",
+    "path": "data/research/lymph_registration/sources/18349641.html",
+    "bytes": 5565,
+    "sha256": "a9f62238a4ac270cba4ef8e91446729e3dbf4e5ef5aa645b9eda43dfc5cdcef8",
+    "retrieved_utc": "2026-09-06T06:02:53.810792+00:00",
+    "license": "Publisher copyright; public abstract availability does not establish open reuse rights",
+    "scope": "HTTP203 cookie challenge; retained failed acquisition, not article evidence",
+    "acquired_article_content": false
+  },
+  {
+    "id": "31746690",
+    "url": "https://pubmed.ncbi.nlm.nih.gov/31746690/",
+    "final_url": "https://pubmed.ncbi.nlm.nih.gov/31746690/",
+    "status": 203,
+    "content_type": "text/html; charset=utf-8",
+    "path": "data/research/lymph_registration/sources/31746690.html",
+    "bytes": 5565,
+    "sha256": "68ed191b45f445dd1cb6a66ef173f38f26e30c8f89358b1d0ac640ed07004e02",
+    "retrieved_utc": "2026-09-06T06:02:54.102288+00:00",
+    "license": "Publisher copyright; public abstract availability does not establish open reuse rights",
+    "scope": "HTTP203 cookie challenge; retained failed acquisition, not article evidence",
+    "acquired_article_content": false
+  },
+  {
+    "id": "35939638",
+    "url": "https://pubmed.ncbi.nlm.nih.gov/35939638/",
+    "final_url": "https://pubmed.ncbi.nlm.nih.gov/35939638/",
+    "status": 203,
+    "content_type": "text/html; charset=utf-8",
+    "path": "data/research/lymph_registration/sources/35939638.html",
+    "bytes": 5565,
+    "sha256": "6f8fc9c648db5c5ebf1b20bf6023b294d3ea8efeeba0fa41b2cd52aec8b2aedd",
+    "retrieved_utc": "2026-09-06T06:02:54.399393+00:00",
+    "license": "Publisher copyright; public abstract availability does not establish open reuse rights",
+    "scope": "HTTP203 cookie challenge; retained failed acquisition, not article evidence",
+    "acquired_article_content": false
+  },
+  {
+    "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:17440362%20OR%20EXT_ID:18349641%20OR%20EXT_ID:31746690%20OR%20EXT_ID:35939638&format=json&resultType=core&pageSize=4",
+    "status": 200,
+    "path": "data/research/lymph_registration/sources/europepmc-primary-metadata.json",
+    "bytes": 30501,
+    "sha256": "984fee4ccda682abd70c98142734476b8752afb60968b614fafd01b104a7bbdd",
+    "retrieved_utc": "2026-09-06T06:03:23.186108+00:00",
+    "acquired_article_content": true,
+    "scope": "Europe PMC bibliographic metadata and primary-paper abstracts; no fulltext/images",
+    "license": "Publisher abstract copyright retained; no open reuse license asserted"
+  }
+]

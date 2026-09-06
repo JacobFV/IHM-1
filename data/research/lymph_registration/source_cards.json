@@ -1,0 +1,94 @@
+{
+  "schema": "lymph_territory_sources_v1",
+  "sources": [
+    {
+      "id": "pmid-35939638",
+      "title": "Superficial and Functional Lymphatic Anatomy of the Upper Extremity.",
+      "doi": "10.1097/prs.0000000000009555",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/35939638/",
+      "evidence_kind": "primary_human_anatomical_study",
+      "retained_content": "sources/europepmc-primary-metadata.json",
+      "fulltext_acquired": false,
+      "image_or_mask_bytes_acquired": false,
+      "open_access_flag_in_metadata": "N",
+      "license": "No open reuse license established; publisher copyright applies to article/abstract/images",
+      "scope": "Retrospective preoperative ICG imaging in breast-cancer patients without clinical/objective lymphedema",
+      "supports": [
+        "Median, radial and ulnar forearm pathways had variable connections to medial/lateral upper-arm pathways."
+      ],
+      "does_not_support": [
+        "Mutually exclusive forearm territories from channel names alone",
+        "Connection frequency as a flow fraction or hydraulic conductance",
+        "Population without cancer or subject-specific canonical anatomy"
+      ]
+    },
+    {
+      "id": "pmid-31746690",
+      "title": "Lower-Limb Lymphatic Drainage Pathways and Lymph Nodes: A CT Lymphangiography Cadaver Study.",
+      "doi": "10.1148/radiol.2019191169",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/31746690/",
+      "evidence_kind": "primary_human_anatomical_study",
+      "retained_content": "sources/europepmc-primary-metadata.json",
+      "fulltext_acquired": false,
+      "image_or_mask_bytes_acquired": false,
+      "open_access_flag_in_metadata": "N",
+      "license": "No open reuse license established; publisher copyright applies to article/abstract/images",
+      "scope": "130 lower limbs from 83 fresh cadavers; 19 foot injection sites followed by CT lymphangiography",
+      "supports": [
+        "Four lower-leg pathway groups: anteromedial, anterolateral, posteromedial, posterolateral.",
+        "Posterolateral pathways reached popliteal nodes; other groups reached inguinal nodes.",
+        "Anteromedial and posteromedial shared destination nodes; anterolateral reached different inguinal nodes."
+      ],
+      "does_not_support": [
+        "Four equal-area or equal-volume skin compartments",
+        "A continuous registered watershed surface",
+        "Distinct node mass ownership for groups sharing a destination"
+      ]
+    },
+    {
+      "id": "pmid-18349641",
+      "title": "Superficial lymphatic system of the upper torso: preliminary radiographic results in human cadavers.",
+      "doi": "10.1097/01.prs.0000302511.21140.36",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/18349641/",
+      "evidence_kind": "primary_human_anatomical_study",
+      "retained_content": "sources/europepmc-primary-metadata.json",
+      "fulltext_acquired": false,
+      "image_or_mask_bytes_acquired": false,
+      "open_access_flag_in_metadata": "N",
+      "license": "No open reuse license established; publisher copyright applies to article/abstract/images",
+      "scope": "Nine cadavers; upper-torso radiography/dissection with breast cross-sections",
+      "supports": [
+        "Midaxillary line separated anterior and posterior drainage territories in this sample.",
+        "Anterior drainage reached external mammary or axillary-vein nodes; posterior drainage reached scapular nodes."
+      ],
+      "does_not_support": [
+        "Generic whole-body watershed coordinates",
+        "Exact mapping to authored canonical node objects"
+      ]
+    },
+    {
+      "id": "pmid-17440362",
+      "title": "The lymphatic territories of the upper limb: anatomical study and clinical implications.",
+      "doi": "10.1097/01.prs.0000246516.64780.61",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/17440362/",
+      "evidence_kind": "primary_human_anatomical_study",
+      "retained_content": "sources/europepmc-primary-metadata.json",
+      "fulltext_acquired": false,
+      "image_or_mask_bytes_acquired": false,
+      "open_access_flag_in_metadata": "N",
+      "license": "No open reuse license established; publisher copyright applies to article/abstract/images",
+      "scope": "14 cadaver upper limbs from 10 cadavers; radiopaque injection and dissection",
+      "supports": [
+        "Most observed upper-limb channels reached one main axillary node; some posterior-forearm channels bypassed it.",
+        "No superficial/deep communicating vessels were identified in this study."
+      ],
+      "does_not_support": [
+        "A universal posterior-forearm mesh mask",
+        "Absence of communication in every person or disease state"
+      ]
+    }
+  ],
+  "model_graph_card": "data/sources/published-lymphatic-network.json",
+  "retained_publisher_license_receipt": "data/raw/lymphatic/provenance.json",
+  "acquisition_note": "Direct PubMed HTTP203 cookie challenge bytes retained as failed retrievals; successful metadata mirror identifies the primary papers and abstracts. No diagrams digitized."
+}
