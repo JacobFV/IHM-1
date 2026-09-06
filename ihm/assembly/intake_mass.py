@@ -104,3 +104,95 @@ def consumed_intake_delta(previous,current):
         'interval_start_tick':last['interval_start_tick'],'interval_end_tick':last['interval_end_tick'],
         'mechanical_transfer_applied':False,
         'basis':'Observed native consumption; mass uses retained SENutrition convention'}
+
+
+class IntakeMassBridge:
+    """Opt-in endpoint transfer from a fresh consumed-intake owner to one plant.
+
+    The declared ingestion velocity is a co-moving assumption at the registered
+    station. This is not measured swallowing momentum. Capacity is the native
+    port's validated 0.5 kg total payload; no implicit splitting or excretion.
+    """
+    def __init__(self,plant,initial_intake,*,body,station_m,registration_identity,incoming_velocity_basis):
+        import hashlib,json
+        epoch,count,_,_,_=_envelope(initial_intake)
+        if count!=0:raise ValueError('Intake bridge requires fresh zero-count native owner')
+        if body!='torso':raise ValueError('Only validated torso intake target supported')
+        if not isinstance(registration_identity,str) or not registration_identity:
+            raise ValueError('Explicit intake station registration identity required')
+        if incoming_velocity_basis!='co_moving_at_ingestion_assumption':
+            raise ValueError('Explicit co-moving ingestion assumption required')
+        self.station=self._vector(station_m)
+        self.plant=plant;self.body=body;self.registration_identity=registration_identity
+        self.incoming_velocity_basis=incoming_velocity_basis
+        self.previous=deepcopy(initial_intake);self.failed=False;self.pending=None;self.last=None
+        state=plant.snapshot();mass=state.get('mass_transfer',{})
+        if mass.get('enabled') is not True or mass.get('last_sequence')!=0 or mass.get('owned_payload_mass_kg')!=0:
+            raise ValueError('Fresh enabled mechanical mass owner required')
+        self.reference=mass.get('reference_id')
+        if not isinstance(self.reference,str) or not self.reference:raise ValueError('Mechanical mass reference required')
+        self.owner='intake-'+hashlib.sha256(json.dumps([epoch,self.reference,body,self.station,registration_identity]).encode()).hexdigest()
+        self.sequence=0;self.applied_mass=0.
+
+    @staticmethod
+    def _vector(value):
+        if not isinstance(value,(list,tuple)) or len(value)!=3 or any(isinstance(v,bool) or not isinstance(v,(int,float)) or not math.isfinite(v) for v in value):
+            raise ValueError('Finite source-frame vector required')
+        return [float(v) for v in value]
+
+    def apply(self,current):
+        if self.failed:raise RuntimeError('Intake mass bridge failed; no replay permitted')
+        boundary=consumed_intake_delta(self.previous,current)
+        if boundary is None:
+            self.previous=deepcopy(current)
+            return None
+        self.pending=deepcopy(boundary)
+        try:return self._apply_boundary(current,boundary)
+        except BaseException:
+            self.failed=True
+            raise
+
+    def _apply_boundary(self,current,boundary):
+        state=self.plant.snapshot();mass=state.get('mass_transfer',{})
+        if mass.get('enabled') is not True or mass.get('reference_id')!=self.reference or mass.get('last_sequence')!=self.sequence:
+            raise ValueError('Mechanical intake owner or sequence changed')
+        _equal(_number(mass.get('owned_payload_mass_kg'),'mechanical payload'),self.applied_mass,'mechanical payload owner')
+        if self.applied_mass+boundary['mass_kg']>.5:
+            raise ValueError('Consumed intake exceeds validated 0.5 kg mechanical payload capacity')
+        if not math.isclose(_number(state.get('time_s'),'mechanical time'),boundary['interval_end_tick']*.02,rel_tol=0,abs_tol=1e-8):
+            raise ValueError('Mechanical intake endpoint clock mismatch')
+        point=self.plant.body_point(body=self.body,station_m=self.station)
+        if point.get('kind')!='body_point' or point.get('body')!=self.body or self._vector(point.get('station_m'))!=self.station:
+            raise ValueError('Mechanical point query site changed')
+        if point.get('time_s')!=state['time_s']:raise ValueError('Mechanical point query clock changed')
+        velocity=self._vector(point.get('velocity_source_m_s'))
+        if boundary['mass_kg']>0:
+            result=self.plant.transfer_mass(sequence=self.sequence+1,owner=self.owner,body=self.body,
+                delta_mass_kg=boundary['mass_kg'],station_m=self.station,velocity_source_m_s=velocity)
+            observed=result.get('mass_transfer',{});receipt=observed.get('last_receipt',{})
+            if observed.get('enabled') is not True or observed.get('reference_id')!=self.reference or observed.get('last_sequence')!=self.sequence+1:
+                raise ValueError('Mechanical intake acknowledgment identity mismatch')
+            if receipt.get('sequence')!=self.sequence+1 or receipt.get('owner')!=self.owner or receipt.get('body')!=self.body:
+                raise ValueError('Mechanical intake acknowledgment owner mismatch')
+            owners=observed.get('owners',{});owner=owners.get(self.owner,{}) if isinstance(owners,dict) else {}
+            if owner.get('body')!=self.body or self._vector(owner.get('station_m'))!=self.station:
+                raise ValueError('Mechanical intake acknowledgment site mismatch')
+            _equal(_number(owner.get('mass_kg'),'owner inventory'),self.applied_mass+boundary['mass_kg'],'owner inventory')
+            _equal(_number(receipt.get('delta_mass_kg'),'acknowledged mass'),boundary['mass_kg'],'acknowledged boundary')
+            _equal(_number(observed.get('owned_payload_mass_kg'),'acknowledged payload'),self.applied_mass+boundary['mass_kg'],'acknowledged payload')
+            if result.get('time_s')!=state['time_s']:raise ValueError('Mass transfer unexpectedly advanced time')
+            self.sequence+=1;self.applied_mass+=boundary['mass_kg']
+        else:receipt=None
+        report={**boundary,'mechanical_transfer_applied':boundary['mass_kg']>0,'boundary_accounted':True,'mechanical_reference_id':self.reference,
+            'mechanical_owner':self.owner,'mechanical_receipt':deepcopy(receipt),
+            'registration_identity':self.registration_identity,'station_source_m':list(self.station),
+            'incoming_velocity_basis':self.incoming_velocity_basis,'incoming_velocity_source_m_s':velocity}
+        self.previous=deepcopy(current);self.last=deepcopy(report);self.pending=None
+        return report
+
+    def snapshot(self):
+        return {'schema':'ihm.intake-mass-bridge.v1','failed':self.failed,
+            'mechanical_reference_id':self.reference,'mechanical_sequence':self.sequence,
+            'applied_mass_kg':self.applied_mass,'last_boundary':deepcopy(self.last),
+            'pending_boundary':deepcopy(self.pending),'capacity_kg':.5,
+            'checkpoint_scope':'Observation only; cannot resume or rewind native consumption'}

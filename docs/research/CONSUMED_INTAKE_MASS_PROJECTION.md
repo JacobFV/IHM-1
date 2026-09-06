@@ -27,3 +27,31 @@ meals, malformed identity/count/component increments and clock rejection. These
 are contract tests; actual adapter envelope acceptance is recorded separately
 when the native receipt implementation runs. No mechanical/native integration
 claim follows from the parser tests.
+
+## Endpoint mechanical bridge
+
+`IntakeMassBridge` binds a fresh zero-count native intake owner to a fresh,
+explicitly enabled mechanical mass owner. Its target torso station and
+registration identity must be supplied. It queries that exact station's native
+source-frame velocity and records the explicit co-moving-at-ingestion assumption.
+This is not measured swallowing momentum. Transfer occurs at the matching
+mechanical interval endpoint without advancing time or revising muscle energy.
+
+It validates mechanical epoch, sequence, enabled state, individual owner/site
+inventory, cumulative mass and returned boundary mass before recording success.
+The validated native port range is at most 0.5 kg of added payload in total;
+the bridge does not split larger intakes or infer excretion. A zero-mass native
+consumption advances boundary accounting without issuing a mechanical impulse.
+
+An already-consumed boundary is retained before mechanical preflight. Any
+subsequent failure is terminal for this bridge, including capacity, clock or
+point-query failure. Uncertain mass commands are never retried. Snapshots retain
+pending and acknowledged boundary identities but are not native checkpoints.
+The surrounding whole-body owner must abort if physiology has consumed intake
+that mechanics cannot account for.
+
+Contract tests use the actual production port shape with a finite fake owner.
+Review counterexamples cover wrong point/site velocity and missing/disabled
+owner acknowledgment; both reject. Actual native coupled acceptance and embodied
+factory activation remain required before this bridge can be claimed as live
+whole-body intake feedback.
