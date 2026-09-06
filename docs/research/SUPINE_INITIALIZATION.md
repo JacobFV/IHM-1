@@ -388,3 +388,10 @@ The new read-only diagnostic verifies journal hashes, inventories all passive co
 Evidence SHA-256:
 
 - `data/derived/constrained-supine-f58do2qb/coupled_residual_diagnostic.json`: `5952cea78c525d55dc1381a7422a4a0af6e7edc6ac9745cc382b98a706d8d494`
+
+
+## Source audit refinements and topology boundary
+
+The 12 arm26 muscles listed above do not imply absence of shoulder actuation: TRIlong, BIClong and BICshort on each side originate on the torso and cross the shoulder; the other six are elbow-only. Dedicated shoulder muscle coverage remains limited, and this is distinct from no shoulder-crossing muscle paths.
+
+The subsequent [skin topology audit](SUPINE_SURFACE_TOPOLOGY_AUDIT.md) finds no inner-shell samples in the frozen quadrature but one tiny seam sample whose exterior-only replacement lies 119 mm deeper. Historical frozen physics remains preserved; future geometry replacement requires a fresh input/cache boundary and explicit treatment of that unresolved ray. No further static solve followed this finding. The future builder now preserves explicit shell thickness across exterior-area layer-volume migration, with legacy inference permitted only under a named explicit basis.

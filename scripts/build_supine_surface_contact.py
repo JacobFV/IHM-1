@@ -18,6 +18,24 @@ from ihm.assembly.supine_contact import posterior_envelope,foundation
 def sha(path):return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
+def layer_thickness(entity,surface_area,legacy_basis=None):
+    shell=entity.get('shell') or {}
+    if 'thickness_m' in shell:
+        thickness=float(shell['thickness_m'])
+        basis=dict(method='explicit_shell_thickness',prior_source=shell.get('prior_source'),shell=shell,
+                   physical_surface_support=entity.get('physical_surface_support'))
+    else:
+        if entity.get('physical_surface_support') is not None:
+            raise ValueError('Physical-support layer requires explicit shell thickness')
+        if legacy_basis!='legacy_raw_full_skin_area_volume_ratio':
+            raise ValueError('Legacy layer requires explicit legacy_raw_full_skin_area_volume_ratio basis')
+        if not np.isfinite(surface_area) or surface_area<=0:raise ValueError('Invalid legacy surface area')
+        thickness=float(entity['volume_m3'])/surface_area
+        basis=dict(method=legacy_basis,warning='Legacy volume inferred from full raw skin area; not valid for exterior-area-regenerated layers',surface_area_m2=surface_area)
+    if not np.isfinite(thickness) or thickness<=0:raise ValueError('Finite positive shell thickness required')
+    return thickness,basis
+
+
 def fixtures():
     vertices=np.array([[0,0,0],[0,.02,0],[0,.02,.02],[0,0,.02],[.001,0,0],[.001,.02,0],[.001,.02,.02],[.001,0,.02]])
     faces=np.array([[0,1,2],[0,2,3],[4,5,6],[4,6,7]])
@@ -44,7 +62,7 @@ def fixtures():
          'projected area','equal/opposite force and moment','force is negative energy gradient','dissipative work','no tension','compression domain rejection'])
 
 
-def build():
+def build(legacy_thickness_basis=None):
     started=time.monotonic()
     mechanics_path=ROOT/'data/derived/canonical/mechanics.json';mechanics=json.loads(mechanics_path.read_text())
     skin=next(e for e in mechanics['entities'] if e['role']=='skin')
@@ -72,7 +90,8 @@ def build():
     layers=[]
     for entity in mechanics['entities']:
         if entity['role']=='skin_layer':
-            layers.append(dict(id=entity['id'],thickness_m=entity['volume_m3']/surface_area,
+            thickness,basis=layer_thickness(entity,surface_area,legacy_thickness_basis)
+            layers.append(dict(id=entity['id'],thickness_m=thickness,thickness_basis=basis,
                                young_modulus=entity['material']['young_modulus'],poisson_ratio=entity['material']['poisson_ratio']))
     parameters={(layer['young_modulus']['value'],layer['poisson_ratio']['value']) for layer in layers}
     if len(parameters)!=1:raise ValueError('Series law requires identical held layer material; no silent effective averaging')
@@ -121,6 +140,6 @@ def build():
 
 
 if __name__=='__main__':
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--fixture-check',action='store_true');args=parser.parse_args()
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--fixture-check',action='store_true');parser.add_argument('--legacy-thickness-basis',choices=['legacy_raw_full_skin_area_volume_ratio']);args=parser.parse_args()
     if args.fixture_check:print(json.dumps(fixtures(),indent=2))
-    else:build()
+    else:build(args.legacy_thickness_basis)
