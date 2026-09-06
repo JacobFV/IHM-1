@@ -51,6 +51,13 @@ int main(int argc, char** argv) {
       observations["coupling.effective_heat_w"]=last_port.effective_heat_W;
       observations["coupling.muscle_heat_count"]=last_port.heat_count;
       observations["coupling.muscle_tissue_count"]=last_port.tissue_count;
+      const std::array<std::string,4> readers={"cardiovascular","endocrine","nervous_metabolic_fraction","nervous_tmr"};
+      for(std::size_t i=0;i<readers.size();++i) {
+        const auto key="coupling.effective_reader_"+readers[i];
+        observations[key+"_count"]=last_port.effective_reader_count[i];
+        // A skipped consumer has no observed demand; zero watts would imply a measurement.
+        if(last_port.effective_reader_count[i])observations[key+"_w"]=last_port.effective_reader_W[i];
+      }
     }
     if(bg->compression)for(const auto& [k,v]:bg->compression->ports())observations[k]=v;
     for(const auto& [key,value]:observations) {
@@ -92,7 +99,7 @@ int main(int argc, char** argv) {
     }
     else if(op=="step") {
       long count=0;
-      if(!(input>>count) || count<1 || count>horizon-ticks || (input>>extra)) ok=false;
+      if(!fixed_reference.empty() || !(input>>count) || count<1 || count>horizon-ticks || (input>>extra)) ok=false;
       else for(long i=0;i<count;++i) { if(!bg->AdvanceModelTime()) return 8; ++ticks; }
     } else if(op=="respiratory_load" || op=="skin_compression") {
       double value;

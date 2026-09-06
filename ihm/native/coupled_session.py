@@ -43,6 +43,11 @@ class SignedCoupledNativeSession(CoupledNativeSession):
         if config.engine_variant!='whole_body_integrity_signed_muscle_v2':raise ValueError('Signed adapter requires the matching source variant')
         super().__init__(config,output_dir,timeout_s)
 
+    def step(self,seconds):
+        if hasattr(self,'_metabolic_reference'):
+            raise ValueError('Use signed_step for every interval after metabolic reference binding')
+        return super().step(seconds)
+
     def signed_step(self,reference_id,delta_m_w,delta_h_w,delta_w_w):
         import re
         if not isinstance(reference_id,str) or not re.fullmatch('[a-f0-9]{64}',reference_id):raise ValueError('SHA256 metabolic reference required')
