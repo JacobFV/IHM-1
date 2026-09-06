@@ -350,3 +350,46 @@ arm path/source-registration effects before spending another solve chunk.
 The separately demonstrated native wrap force/path mismatch is relevant
 background, but these solver results alone do not prove it causes the current
 stagnation; candidate wrap corrections remain separate unpromoted physics.
+
+### Directional derivative diagnosis and corrected model
+
+`support-physical-root-xgpiykt1/derivative_diagnosis.json`, reproduced by
+`scripts/diagnose_physical_metric_derivatives.py`, identifies a concrete cause
+of the late prediction failure. For `a(q)=-MInv(q)r(q)`, the derivative is
+`da/dq=-MInv dr/dq-(dMInv/dq)r`. The second term was omitted from the previous
+local model. It is only0.783% of the full Jacobian in global norm, yet dominates
+some chosen directions. Adding the observed mass derivative reduces relative
+Jacobian error to1.5951e-6 (remaining finite-product/finite-difference terms).
+
+For the retained.00375 step, frozen-mass acceleration prediction error is1.02037,
+versus0.10503 using the full observed Jacobian. At.000234375 it is0.07938 versus
+0.0008744. The full Jacobian correctly predicts larger rejected steps increase
+cost (for.00375:40.4029 ->41.0016, actual41.1593). Thus the observed ratio collapse
+cannot be assigned to wrap errors or muscle coverage without first fixing this
+known derivative omission.
+
+Recomputed hard-support QPs using the full observed Jacobian predict decreases
+at all five tested boxes. At.00375 the predicted cost is39.78845 instead of an
+increase; smaller boxes predict39.9964/40.1197/40.2001/40.2587. Active-manifold
+stationarity norms are below2.9e-7 in the conditioned QP, with linear support
+errors below1e-8 and no active source-ROM bounds. This supports a derivative
+correction before blaming the bounded linear solver. These are offline
+predictions at the retained pre-final point, not new native acceptance.
+
+Shoulder force attribution at the final point closes to below6e-15 Nm:
+all shoulder muscle moment comes from TRIlong, BIClong and BICshort per side.
+For right adduction, muscle torque is+2.67090 Nm, gravity+1.12977, contact−0.983994
+and passive joint−0.000292, yielding native tree residual−2.81639 Nm. The
+limited dedicated shoulder coverage is real, but this accounting does not
+prove absence of any support-feasible equilibrium. No forces are added or
+controls adjusted to compensate.
+
+The solver now uses the full observed native acceleration Jacobian, while
+verifying the native force/inverse-mass sign identity at every sample. This
+includes mass configuration and constraint-reaction dependence without extra
+native evaluations. The former approximation and failed trial records remain
+intact. A bounded comparison may explicitly restart the numerical box at.00375
+after this derivative formulation change; the override is recorded and all
+physical/source bounds remain unchanged. The proposed resume is the latest
+supported saved q, with unchanged original98 wrap physics. No candidate wrap
+or metadata epoch is combined with this numerical correction.

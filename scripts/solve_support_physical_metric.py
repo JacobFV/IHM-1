@@ -22,7 +22,8 @@ def physical_gate(response,weight,height):
         maximum_constraint_error=constraint,passed=bool(maximum<=1e-4 and max(map(abs,support+gauges))<=1e-4 and constraint<=1e-5))
 
 
-def run(build_path,resume_path=None):
+def run(build_path,resume_path=None,initial_radius=None):
+    if initial_radius is not None and not 0<initial_radius<=.03:raise ValueError("Invalid explicit native trust radius")
     build=verify(build_path);exe=ROOT/build['executable']
     prerequisite=ROOT/'data/derived/native-physical-metric-04jdqqbn/report.json'
     prerequisite_record=json.loads(prerequisite.read_text())
@@ -90,6 +91,8 @@ def run(build_path,resume_path=None):
             replay_gate=physical_gate(current,weight,height)
             if max(map(abs,replay_gate['support_constraints']+replay_gate['gauge_residual']))>1e-4:raise ValueError('Fresh resume response lost physical support')
             report['resume'].update(radius=radius,maximum_actual_q_difference=float(np.max(np.abs(np.array(current['independent_q'])-resume['response']['independent_q']))),maximum_acceleration_difference=float(np.max(np.abs(np.array(current['udot'])-resume['response']['udot']))))
+        if initial_radius is not None:
+            report['explicit_initial_radius']=dict(value=initial_radius,basis='Explicit diagnostic radius after derivative formulation change; physical bounds unchanged');radius=initial_radius
         rootnames=('pelvis_tx','pelvis_tilt','pelvis_rotation');rootindices=[current['mobility_names'].index(n) for n in rootnames];rootcolumns=[free.index(n) for n in rootnames]
         rootscale=np.array([weight,weight*height,weight*height])
         report['native_metric_prerequisite']=dict(path=str(prerequisite.relative_to(ROOT)),sha256=sha(prerequisite))
@@ -109,11 +112,12 @@ def run(build_path,resume_path=None):
             condition=float(np.linalg.cond(D))
             if condition>100 or maximum_gauge_drift>1e-8:raise ValueError('Unresolved assembled Jacobian coordinate map')
             J=np.linalg.solve(D,Y).T
-            Bmetric=-np.asarray(current['inverse_mass_matrix'])@J;full_acceleration_jacobian=np.linalg.solve(D,Ya).T
+            frozen_mass_jacobian=-np.asarray(current['inverse_mass_matrix'])@J;full_acceleration_jacobian=np.linalg.solve(D,Ya).T
+            Bmetric=full_acceleration_jacobian
             A=J[rootindices]/rootscale[:,None];rootblock=A[:,rootcolumns]
             if np.linalg.cond(rootblock)>1e10:raise ValueError('Ill-conditioned native support correction')
-            write('last_jacobian.json',dict(iteration=iteration,q=q,force=r.tolist(),jacobian=J.tolist(),physical_jacobian=Bmetric.tolist(),condition=condition,maximum_gauge_drift=maximum_gauge_drift,
-                frozen_mass_vs_full_acceleration_jacobian_relative_difference=float(np.linalg.norm(Bmetric-full_acceleration_jacobian)/np.linalg.norm(full_acceleration_jacobian))))
+            write('last_jacobian.json',dict(iteration=iteration,q=q,force=r.tolist(),jacobian=J.tolist(),physical_jacobian=Bmetric.tolist(),derivative_basis='Full observed native acceleration Jacobian; includes configuration dependence of MInv and native constraint reactions',condition=condition,maximum_gauge_drift=maximum_gauge_drift,
+                frozen_mass_vs_full_acceleration_jacobian_relative_difference=float(np.linalg.norm(frozen_mass_jacobian-full_acceleration_jacobian)/np.linalg.norm(full_acceleration_jacobian))))
             accepted=False
             for attempt in range(8):
                 step,diagnostic=physical_step(acceleration,Bmetric,x,B,gate['support_constraints'],A,radius)
@@ -163,6 +167,6 @@ def run(build_path,resume_path=None):
         write('report.json',report);print(json.dumps({k:v for k,v in report.items() if k!='iterations'}|{'output':str(output)},indent=2))
 
 if __name__=='__main__':
-    parser=argparse.ArgumentParser();parser.add_argument('--run-native',action='store_true');parser.add_argument('build',type=Path);parser.add_argument('--resume',type=Path);args=parser.parse_args()
+    parser=argparse.ArgumentParser();parser.add_argument('--run-native',action='store_true');parser.add_argument('build',type=Path);parser.add_argument('--resume',type=Path);parser.add_argument('--initial-radius',type=float);args=parser.parse_args()
     if not args.run_native:raise SystemExit('Coordinated native grant required')
-    run(args.build.resolve(),None if args.resume is None else args.resume.resolve())
+    run(args.build.resolve(),None if args.resume is None else args.resume.resolve(),args.initial_radius)
