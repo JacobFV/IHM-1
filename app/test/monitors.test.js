@@ -30,3 +30,6 @@ test('local microvascular geometry is discoverable as a source-conditioned anato
  assert.deepEqual(filterMonitors('local','vascular').map(m=>m.id),['microvascular']);
  assert.deepEqual(filterMonitors('kidney','vascular').map(m=>m.id),['microvascular']);
 });
+test('actual mechanical mass ownership has its own searchable live monitor',()=>{
+ assert.deepEqual(filterMonitors('mass','live').map(m=>m.id),['intake-mass']);
+});

@@ -5,6 +5,7 @@ export const MONITORS = [
   ...[1,2,3].map(i=>({id:`live-signal-${i}`,title:`Live signal ${i}`,description:'An independently selected signal from the active body, using actual recorded live samples.',tags:['live','physiology','signals']})),
   {id:'microvascular',title:'Local microvessels',description:'Source-conditioned muscle and kidney vessel graphs with physical diameters, pressures and flows at local zoom.',tags:['anatomy','vascular','evidence','inspect']},
   {id:'temporal-spectrum',title:'Live Laplace spectrum',description:'Finite-window Laplace magnitude from actual live signal samples, with elapsed seconds, native units and selectable damping.',tags:['live','physiology','signals','spectra','analysis']},
+  {id:'intake-mass',title:'Mechanical mass',description:'Actual native body mass, confirmed intake transfer, pending boundaries and validated capacity.',tags:['live','physiology','mechanics','mass','intake']},
   {id:'intake',title:'Food & drink',description:'Schedule native nutrient and water intake on the active body clock; inspect queued, issued and accepted events.',tags:['live','controls','physiology','food','drink']},
   {id:'motor',title:'Motor & skin inputs',description:'Named muscle descending drive, selective sensory/motor blocks and whole-Skin pressure.',tags:['live','controls','neural','muscle','skin']},
   {
@@ -184,7 +185,7 @@ export function mountMonitors() {
     ),
   );
   const liveContents={};
-  for(const id of ['live','motor','intake','temporal-spectrum','microvascular','live-signal-1','live-signal-2','live-signal-3']){
+  for(const id of ['live','motor','intake','intake-mass','temporal-spectrum','microvascular','live-signal-1','live-signal-2','live-signal-3']){
     const mount=node('div');mount.id=id==='live'?'live-body-monitor':id==='motor'?'live-motor-monitor':`${id}-monitor`;
     mount.append(node('p','muted','Start Body to inspect its current computed state.'));
     liveContents[id]=mount;

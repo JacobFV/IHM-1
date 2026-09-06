@@ -4,6 +4,7 @@ import './scene-interaction.css';
 import {cursorSpring,advanceScene} from './scene-forces.js';
 import {bodyEndpoint,bodyEnvironment,bodyCommand,frameScope,materialOffset,materialPoint,createBodyOwner,closeBodyOwner,scheduleBodyIntakes} from './embodied-live.js';
 import {mountTemporalSpectrumMonitor} from './temporal-spectrum-monitor.js';
+import {mountIntakeMassMonitor} from './intake-mass-monitor.js';
 import {mountIntakeMonitor} from './intake-monitor.js';
 import {mountEmbodiedPanels} from './embodied-panels.js';
 
@@ -26,6 +27,7 @@ export function mountSceneInteraction({scene,camera,renderer,controls,group,getO
   let mode='select',session=null,state=null,running=false,pending=false,creating=null,drag=null,gizmoDragging=false;
   let lastStep=0,lastPoll=0,disposed=false,environment='bed',kind='embodied',initializing=false,faulted=false,selectedId=null,lastError='',resetting=false,resetTask=null;
   const panels=mountEmbodiedPanels();
+  const intakeMass=mountIntakeMassMonitor(document.getElementById('intake-mass-monitor'));
   const spectrum=mountTemporalSpectrumMonitor(document.getElementById('temporal-spectrum-monitor'));
   let intakeTask=null,intakeOwner=null,intakeSignature='',intakeConnected=false;
   let intake=mountIntakeMonitor(document.getElementById('intake-monitor'),{submit:scheduleIntakes});
@@ -100,7 +102,7 @@ export function mountSceneInteraction({scene,camera,renderer,controls,group,getO
   }
   function accept(frame) {
     if(!frame?.entities||!Number.isFinite(frame.time_s)||!Number.isInteger(frame.sequence)||(kind==='embodied'&&frame.schema!=='ihm.embodied-frame.v1')){faulted=true;syncIntake();throw Error(frame?.error||'Body owner has no valid live frame; Reset required.');}
-    panels.update(session,frame);state=frame;
+    panels.update(session,frame);state=frame;intakeMass.update(session,frame);
     if(kind==='embodied')spectrum.update(session,frame);else spectrum.clear();
     if(kind==='embodied'){
       if(intakeOwner&&intakeOwner!==session)clearIntake();intakeOwner=session;
@@ -171,7 +173,7 @@ export function mountSceneInteraction({scene,camera,renderer,controls,group,getO
         else if((await request(endpoint()+'/'+session+'/close',{})).closed!==true)throw Error('Reduced scene did not confirm closure');
       }
       if(disposed)return;
-      session=null;state=null;initializing=false;faulted=false;selectedId=null;environment=$('scene-environment').value;kind=$('scene-owner').value;environmentMeshes();panels.clear();spectrum.clear();clearIntake();syncIntake();
+      session=null;state=null;initializing=false;faulted=false;selectedId=null;environment=$('scene-environment').value;kind=$('scene-owner').value;environmentMeshes();panels.clear();spectrum.clear();intakeMass.clear();clearIntake();syncIntake();
       $('scene-play').textContent='Start '+label();$('scene-clock').textContent='0.00 s';$('scene-force-value').textContent='0 N';
       onFrame(null);status('Body reset. Start '+label()+' to advance.');
     }catch(e){status(e.message);throw e;}finally{resetting=false;resetTask=null;syncIntake();}
@@ -266,6 +268,6 @@ export function mountSceneInteraction({scene,camera,renderer,controls,group,getO
   function unload(){if(session)navigator.sendBeacon(endpoint()+'/'+session+'/close',new Blob(['{}'],{type:'application/json'}));}
   window.addEventListener('pagehide',unload);environmentMeshes();
   return {update,reset,scheduleIntakes,createControls:()=>mount,get state(){return state;},get active(){return !!session||!!creating||pending;},
-    dispose(){disposed=true;spectrum.dispose();intake.dispose();running=false;unload();window.removeEventListener('pagehide',unload);gizmo.dispose();scene.remove(gizmo.getHelper());group.remove(environmentGroup,gizmoTarget,arrow);
+    dispose(){disposed=true;intakeMass.dispose();spectrum.dispose();intake.dispose();running=false;unload();window.removeEventListener('pagehide',unload);gizmo.dispose();scene.remove(gizmo.getHelper());group.remove(environmentGroup,gizmoTarget,arrow);
       renderer.domElement.removeEventListener('pointerdown',down,true);renderer.domElement.removeEventListener('pointermove',move,true);renderer.domElement.removeEventListener('pointerup',up,true);renderer.domElement.removeEventListener('pointercancel',up,true);}};
 }
