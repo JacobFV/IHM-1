@@ -8,6 +8,20 @@
       "locator": "Table 3; demographic ages Table 1",
       "license": "CC-BY; article license",
       "tier": "measured_other_human_cohort"
+    },
+    {
+      "path": "data/research/organ_microvascular/muscle_diameter_1988.json",
+      "sha256": "bbe29f4b3579aa34e326304d28e9210270204254ffd1bc5bb8b22fda40bb5982",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/3350624/",
+      "license": "Abstract bibliographic evidence; full article reuse license not established",
+      "tier": "measured_other_human_specimens"
+    },
+    {
+      "path": "data/research/organ_microvascular/muscle_radius_2020.xml",
+      "sha256": "c265a68b5f4f9b81a4c9e464bea08f35fa214c7e233e08414fe829d165428f78",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7013089/",
+      "license": "CC-BY article",
+      "tier": "measured_other_human_specimens"
     }
   ],
   "organs": {
@@ -199,7 +213,39 @@
         "longitudinal tortuosity",
         "joint individual-level covariance"
       ],
-      "source_index": 0
+      "source_index": 0,
+      "radius_evidence": {
+        "id": "gidlof_1988_quadriceps",
+        "species": "Homo sapiens",
+        "region": "quadriceps femoris",
+        "specimen": "human biopsies sectioned perpendicular to fibers; computerized planimetry",
+        "donor_count": null,
+        "uncertainty_definition": "Abstract reports +/- without defining SD versus SE; do not reinterpret",
+        "unit": "um",
+        "uncorrected": {
+          "major_diameter_mean": 3.82,
+          "major_diameter_plusminus": 0.82,
+          "minor_diameter_mean": 2.61,
+          "minor_diameter_plusminus": 0.72
+        },
+        "shrinkage_corrected": {
+          "major_diameter_mean": 5.31,
+          "major_diameter_plusminus": 1.14,
+          "minor_diameter_mean": 3.62,
+          "minor_diameter_plusminus": 1.0
+        },
+        "source_index": 1,
+        "measured_circular_radius_distribution": false,
+        "joint_major_minor_covariance": null,
+        "conditional_transform": "r=sqrt(mean_major_diameter*mean_minor_diameter)/2; equivalent-area circle formed from two means, not observed mean radius",
+        "transfer": "Other human quadriceps specimens; not same subjects as density cohorts",
+        "length_distribution": null,
+        "cautions": [
+          "Shrinkage correction estimated by source, not direct in-vivo measurement",
+          "Do not use the two diameter uncertainties as a radius distribution",
+          "2020 study notes unexcluded glutaraldehyde shrinkage and factor-two correction of earlier radius formula; do not import historical values indiscriminately"
+        ]
+      }
     },
     "Skin": {
       "materialization_supported": false,

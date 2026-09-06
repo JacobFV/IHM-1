@@ -1,0 +1,17 @@
+{
+  "muscle_radius_2020.xml": {
+    "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7013089/fullTextXML",
+    "bytes": 136936,
+    "sha256": "c265a68b5f4f9b81a4c9e464bea08f35fa214c7e233e08414fe829d165428f78",
+    "http_status": 200,
+    "acquired_utc": "2026-09-06T03:45:10.165495+00:00",
+    "timestamp_basis": "payload filesystem modification time"
+  },
+  "muscle_diameter_1988.json": {
+    "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:3350624%20AND%20SRC:MED&format=json&resultType=core",
+    "bytes": 3833,
+    "sha256": "bbe29f4b3579aa34e326304d28e9210270204254ffd1bc5bb8b22fda40bb5982",
+    "http_status": 200,
+    "acquired_utc": "2026-09-06T03:45:52.047661+00:00"
+  }
+}

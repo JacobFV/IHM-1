@@ -24,7 +24,7 @@ def positive(value,label):
 
 
 def materialize_muscle(root, *, cohort='young_men', section_mm=(.2,.2), extent_mm=.5,
-                       seed=0, density_per_mm2=None):
+                       seed=0, density_per_mm2=None, hydraulic_scenario=None):
  """Match an observed section-density target, leaving 3D topology inferred.
 
  One capillary per transverse-plane crossing. Mean target by default; no
@@ -50,7 +50,7 @@ def materialize_muscle(root, *, cohort='young_men', section_mm=(.2,.2), extent_m
  if int(crossing.sum())!=count or not np.all(kinds[crossing]==2):raise ValueError('Unexpected transverse topology')
  achieved=count/area
  path=Path(root)/'data/sources/organ_microvascular_priors.json'
- return {'schema':'ihm.conditional_muscle_microvascular.v1','evidence_kind':'conditional_synthetic_graph',
+ graph={'schema':'ihm.conditional_muscle_microvascular.v1','evidence_kind':'conditional_synthetic_graph',
   'species':'Homo sapiens','region':'vastus lateralis prior; donor-local synthetic fixture','cohort':cohort,'seed':seed,
   'registry_sha256':hashlib.sha256(path.read_bytes()).hexdigest(),'source_receipts':registry['sources'],
   'generator_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
@@ -63,6 +63,8 @@ def materialize_muscle(root, *, cohort='young_men', section_mm=(.2,.2), extent_m
   'topology_assumption':'Inherited paired binary supply/return trees; connectivity inferred, not measured human branching',
   'unmet_constraints':['domain_area_distribution','capillary_per_fiber','log_domain_sd','3D_radius','tortuosity','permeability','registered_fiber_alignment','native_terminal_correspondence'],
   'body_registered':False,'population_distribution_sampled':False}
+ if hydraulic_scenario is not None:_apply_hydraulic_scenario(graph,registry,hydraulic_scenario)
+ return graph
 
 
 def solve_passive(edges, resistance_pa_s_per_m3, pressure_boundaries_pa):
@@ -103,3 +105,51 @@ def solve_passive(edges, resistance_pa_s_per_m3, pressure_boundaries_pa):
   'max_internal_residual_m3_per_s':float(np.max(np.abs(residual[free]))) if len(free) else 0.,
   'boundary_outflow_m3_per_s':{str(int(i)):float(residual[i]) for i in fixed},
   'evidence_kind':'caller_resistance_pressure_scenario','native_flow_owned':False,'native_feedback_enabled':False}
+
+
+def _apply_hydraulic_scenario(graph, registry, scenario):
+ """Realize radii and solve Newtonian cylindrical flow for explicit assumptions."""
+ required={'radius_mode','capillary_radius_cv','supply_radius_multiplier','return_radius_multiplier','viscosity_pa_s','pressure_boundaries_pa'}
+ if not isinstance(scenario,dict) or not required.issubset(scenario):raise ValueError('Incomplete explicit hydraulic scenario')
+ mode=scenario['radius_mode'];source=None
+ if mode=='human_quadriceps_1988_equal_area':
+  evidence=registry['organs']['Muscle']['radius_evidence'];state=scenario.get('diameter_state')
+  if state not in ('uncorrected','shrinkage_corrected'):raise ValueError('Explicit histological diameter state required')
+  diam=evidence[state];mean=.5e-6*math.sqrt(diam['major_diameter_mean']*diam['minor_diameter_mean']);source=evidence
+ elif mode=='engineering_lognormal':
+  mean=positive(scenario.get('capillary_radius_mean_m'),'engineering radius mean')
+ else:raise ValueError('Unknown conditional radius mode')
+ cv=scenario['capillary_radius_cv']
+ if isinstance(cv,bool) or not isinstance(cv,(int,float)) or not math.isfinite(cv) or not 0<=cv<=2:raise ValueError('Explicit radius CV in [0,2] required for bounded scenario')
+ supply=positive(scenario['supply_radius_multiplier'],'supply radius multiplier')
+ ret=positive(scenario['return_radius_multiplier'],'return radius multiplier')
+ viscosity=positive(scenario['viscosity_pa_s'],'scenario viscosity')
+ bounds=scenario['pressure_boundaries_pa']
+ if not isinstance(bounds,dict) or set(bounds)!={0,1}:raise ValueError('Declare supply0 and return1 pressure boundaries')
+ kinds=np.asarray(graph['edge_kind']);count=int((kinds==2).sum())
+ rng=np.random.default_rng(graph['seed']);sigma=math.sqrt(math.log1p(cv*cv))
+ capillary=rng.lognormal(-sigma*sigma/2,sigma,count)
+ # Moment conditioning is explicit finite-sample normalization, not an iid draw.
+ capillary*=mean/float(capillary.mean())
+ radius=np.empty(len(kinds));radius[kinds==2]=capillary;radius[kinds==0]=mean*supply;radius[kinds==1]=mean*ret
+ points=np.asarray(graph['positions_m']);edges=np.asarray(graph['edges']);length=np.linalg.norm(points[edges[:,0]]-points[edges[:,1]],axis=1)
+ with np.errstate(over='ignore',under='ignore',divide='ignore',invalid='ignore'):
+  resistance=8*viscosity*length/(math.pi*radius**4);volumes=math.pi*radius**2*length;area=2*math.pi*radius*length
+ if not np.isfinite(radius).all() or np.any(radius<=0) or not np.isfinite(volumes).all() or np.any(volumes<=0) or not np.isfinite(area).all():raise ValueError('Unrepresentable hydraulic geometry')
+ solution=solve_passive(graph['edges'],resistance.tolist(),bounds)
+ if not all(math.isfinite(x) for x in solution['pressure_pa']+solution['flow_m3_per_s']):raise ValueError('Nonfinite hydraulic solution')
+ graph.update(radius_m=radius.tolist(),edge_length_m=length.tolist(),edge_resistance_pa_s_per_m3=resistance.tolist(),
+              edge_geometric_volume_m3=volumes.tolist(),geometric_lumen_volume_m3=float(math.fsum(volumes)),
+              geometric_lumen_surface_m2=float(math.fsum(area)),flow_solution=solution)
+ graph['radius_conditioning']={'mode':mode,'evidence':source,'target_mean_m':mean,'target_cv':cv,'target_sd_is_measured':False,
+  'realized_capillary_mean_m':float(capillary.mean()),'realized_capillary_sd_m':float(capillary.std(ddof=0)),
+  'realized_capillary_min_m':float(capillary.min()),'realized_capillary_max_m':float(capillary.max()),
+  'distribution':'Engineering lognormal shape with finite-sample mean normalization; source does not identify radius distribution',
+  'scenario':dict(scenario),'sampling_seed':graph['seed'],'supply_return_radii':'Constant multipliers of target capillary mean; inferred, no measured branching law',
+  'lengths':'Straight edge lengths of declared synthetic topology, not measured human capillary lengths'}
+ graph['ownership']='Synthetic geometry and standalone flow diagnostic; native volume, mass and perfusion remain native-owned and unallocated here'
+ graph['hydraulic_model']={'law':'Poiseuille circular cylinders: R=8*mu*L/(pi*r^4)',
+  'viscosity_pa_s':viscosity,'evidence_kind':'declared_Newtonian_engineering_scenario',
+  'limitations':['Circular area-equivalent radius is not hydraulic equivalence to flattened histology','No hematocrit, RBC phase separation, non-Newtonian rheology, vessel compliance or exchange'],
+  'volume_semantics':'Geometric lumen demand only, not additional native blood volume; no native volume is allocated or debited'}
+ graph['unmet_constraints']=[x for x in graph['unmet_constraints'] if x!='3D_radius']+['measured_radius_distribution','native_volume_allocation']

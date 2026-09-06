@@ -49,3 +49,32 @@ A runtime consumer may attach the result to native anatomical supports only with
 ## Verification
 
 `.venv/bin/python scripts/verify_vascular_priors.py` passes eight bounded tests: source values/units, source-tampering rejection, deterministic density and missing-field semantics, invalid/oversized requests, numeric overflow rejection, analytic passive closure, generated-graph closure and unanchored-component rejection. Tests were first observed failing for the absent module; the overflow check also failed before validation was added. No native engine, browser, large graph or new dataset download was used.
+
+## Explicit radius and flow realization
+
+`materialize_muscle(..., hydraulic_scenario=...)` now optionally produces definite positive radii, geometric lumen volumes, cylindrical resistance and a solved pressure/flow field. The option requires every hydraulic assumption; omission still returns the earlier geometry-only result. There is no hidden measured-radius default.
+
+[Fine structure of the human skeletal muscle capillary, Gidlöf et al. 1988](https://pubmed.ncbi.nlm.nih.gov/3350624/) provides primary quadriceps-femoris biopsy diameter measurements perpendicular to muscle fibers. Major/minor lumen diameter means are **3.82/2.61 µm before estimated preparative-shrinkage correction**, and **5.31/3.62 µm after correction**. Reported ± quantities are 0.82/0.72 µm and 1.14/1.00 µm respectively. The held abstract does not identify SD versus SE, sample n or major/minor covariance; these remain unknown. Its network volume/surface estimates use assumed section density, so they were not promoted to independent measured constraints. No human length distribution was acquired. Rat length/corrosion-cast diameter reports located during search were excluded from human calibration.
+
+The option `human_quadriceps_1988_equal_area` transforms the selected pair of diameter means into `r = sqrt(D_major_mean * D_minor_mean)/2`. This is an area-equivalent circle formed from two means, **not** an observed mean radius or a hydraulic equivalence to a flattened capillary. Corrected means give approximately 2.1922 µm. The transfer combines different human quadriceps specimens with the separate vastus-lateralis density cohorts; it is conditional synthesis, not same-donor anatomy.
+
+[Structural Microangiopathies in Skeletal Muscle Related to Systemic Vascular Pathologies in Humans, 2020](https://pmc.ncbi.nlm.nih.gov/articles/PMC7013089/) was also acquired. It explicitly warns that glutaraldehyde-fixation shrinkage cannot be excluded and reports a factor-two correction of prior radius calculations. Its human morphometry and mouse ultrastructural validation are not pooled. The 2020 figure's radius values were not digitized. This prevents an unjustified import of earlier radius numbers merely because a paper labels them “radius.” The primary payload hashes and byte sizes are in `data/research/organ_microvascular/radius_acquisition.json`; 1988 bibliographic/abstract access is not treated as permission for unrestricted full-article reuse. The 2020 article is CC-BY.
+
+```python
+scenario = {
+    'radius_mode': 'human_quadriceps_1988_equal_area',
+    'diameter_state': 'shrinkage_corrected',
+    'capillary_radius_cv': 0.2,
+    'supply_radius_multiplier': 2.0,
+    'return_radius_multiplier': 2.4,
+    'viscosity_pa_s': 0.003,
+    'pressure_boundaries_pa': {0: 4000., 1: 1000.},
+}
+graph = materialize_muscle('.', seed=13, hydraulic_scenario=scenario)
+```
+
+The CV, distribution family, supply/return multipliers, viscosity and pressure boundaries in this example are **engineering scenario choices**. None is attributed to the diameter study. `engineering_lognormal` is an alternative explicit mode requiring `capillary_radius_mean_m`; it permits a fully declared synthesis when source transfer is unsuitable. The implementation uses seeded lognormal shape then rescales the finite capillary sample to the chosen mean. It records realized mean, population-form SD, min/max and seed. Thus realized CV need not equal requested lognormal shape CV, especially for small fixtures; n=1 necessarily has zero realized SD. CV is bounded to [0,2] for this small numerical fixture. Constant supply/return radii are explicit multiplier assumptions with no inferred Murray-law claim.
+
+Actual edge lengths come from the generated graph. Poiseuille resistance uses declared viscosity and realized radius/length, and `solve_passive` solves those resistances rather than a separately supplied resistance vector. Returned geometric volumes and lumen surface are geometric demand, **not independent blood stores**; they are neither allocated to nor added on top of the native Muscle owner. Native feedback remains disabled. The Newtonian circular-cylinder scenario omits RBC effects, phase separation, compliance and exchange; its numerical solution does not establish physiological accuracy.
+
+The verification suite now has eleven passing tests, including deterministic source-conditioned moments, positive geometry, pressure bounds/forward monotonicity, Kirchhoff conservation, and the analytic scaling that doubling all radii multiplies flow by 16 and geometric volume by 4. An incomplete scenario is rejected. The retained bounded example `data/research/organ_microvascular/muscle_hydraulic_fixture.json` contains actual radii and solved flows with input/source/generator provenance.
