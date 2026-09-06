@@ -265,3 +265,25 @@ Evidence SHA-256:
 - `data/derived/constrained-supine-mbmlqx0h/report.json`: `e928c18b1d88627a9f6d2c0e0c5fdd2403bf36f214dd95f9e3070f004d1d1466`
 - `data/derived/constrained-supine-mbmlqx0h/last_optimizer_iterate.json`: `15b10d2575f128d1b026af6ae69d9040da40705ad88bfedd1dae3a2bba30817f`
 - `data/derived/constrained-supine-mbmlqx0h/candidates.jsonl`: `ad9461cbf22cf7001fef271d1dbf7a44b5a62e714e65c546f72c2ee7d214883f`
+
+
+## Continued frozen support-constrained descent
+
+Two further bounded continuations retain the same archived physics, source-scaled numerical compatibility receipt and unchanged physical thresholds. Neither advances physical time or produces accepted equilibrium.
+
+`constrained-supine-5s2g39s6` used 200 new calls in 41.291 s, recovered 1036 responses with 36 cache hits, and verified the archive after cleanup. Seven accepted objectives decreased 1042.05 → 838.34 → 718.95 → 642.83 → 473.16 → 353.70 → 335.75. The last accepted maximum acceleration was 8.21681 rad/s² (left arm adduction). Normalized force/pitch/roll residuals were −8.72752e−5, 1.04114e−5, 1.27877e−6; maximum gauge residual was 2.28730e−7. Maximum skin compression was 1.41676 mm and bed deflection 74.37856 mm. Its lower best-supported objective 335.65129 was a finite-difference sample; continuation used the accepted objective 335.75391 and exact q. Ten of 29 Jacobian samples were cached.
+
+`constrained-supine-895l3gi5` then used 200 new calls in 42.496 s, recovered 1236 responses with 23 cache hits, and retained an intact archive. Six accepted objectives decreased 208.36 → 182.71 → 155.86 → 131.05 → 118.32 → 105.31. This is a 68.6% reduction from the prior accepted objective, with continuing improvement across accepted steps rather than stagnation. Maximum acceleration fell to 6.03008 rad/s² (left arm adduction), followed by right arm flexion −3.70426, right arm rotation 3.32944 and right arm adduction 3.06900 rad/s².
+
+The last accepted support is 761.3754377 N versus weight 761.3757104 N. Normalized force/pitch/roll residuals are 3.58264e−7, −1.41768e−7, 6.80615e−8; gauge residuals are 5.59941e−17, −3.73294e−17, −1.40533e−8. Native position/velocity constraint errors are zero and acceleration error 9.78787e−15. Maximum skin compression is 1.41166 mm; mattress deflection is 73.50967 mm. No optimized coordinate is within 1e−5 of a source bound. All acceleration criteria remain far above the unchanged 1e−4 threshold, so no forward run or initial-reference promotion follows.
+
+The last accepted objective is 105.30746; the lower best-supported 105.22616 remains a finite-difference sample. The journal retains 1436 successful responses and 24/29 exact Jacobian evaluations at the accepted q, leaving five new calls to complete its next Jacobian. A further continuation must use `last_optimizer_iterate.json`, preserve exact coordinates and bind the same archived identities.
+
+Evidence SHA-256:
+
+- `data/derived/constrained-supine-5s2g39s6/report.json`: `29665214e0c1226469d053919ca6760d850c704601acce8e3f8ef47df3cf1618`
+- `data/derived/constrained-supine-5s2g39s6/last_optimizer_iterate.json`: `9d009112e6d1c5872f1df6804ff748000d91d862bbe335b133b6d825cdcba411`
+- `data/derived/constrained-supine-5s2g39s6/candidates.jsonl`: `2620493a918e25489452524068aef9d4c4cacd92e6d1254972ef8f452b82f768`
+- `data/derived/constrained-supine-895l3gi5/report.json`: `45cd6dead73c1ecae65f5a3ccea67c5bbd8734e52aa49f1451e9e8c93216a894`
+- `data/derived/constrained-supine-895l3gi5/last_optimizer_iterate.json`: `c03cb954c29bd4e246c068127508b6c6a97a2a492509d6c9d96cf7269c48cc02`
+- `data/derived/constrained-supine-895l3gi5/candidates.jsonl`: `c215b93c9c9acbc4f1e7f77ae61bd43575377b972f82ba10687ad55c3ea15786`
