@@ -81,6 +81,18 @@ inline std::string evaluate(OpenSim::Model& model, const SimTK::State& continuin
     out << ",\"q\":"; array(out,candidate.getQ());
     out << ",\"u\":"; array(out,candidate.getU());
     out << ",\"udot\":"; array(out,candidate.getUDot());
+    std::vector<std::string> mobility_names(candidate.getNU());
+    std::vector<int> mobility_rotational(candidate.getNU(),-1);
+    for(const auto& coordinate:model.getComponentList<OpenSim::Coordinate>()){
+        const auto& body=matter.getMobilizedBody(coordinate.getBodyIndex());
+        if(body.getNumQ(candidate)!=body.getNumU(candidate))throw std::runtime_error("static force units need source coordinate/mobility mapping");
+        const int index=int(body.getFirstUIndex(candidate))+int(coordinate.getMobilizerQIndex());
+        if(index<0||index>=candidate.getNU()||!mobility_names[index].empty())throw std::runtime_error("ambiguous static mobility coordinate map");
+        mobility_names[index]=coordinate.getName();mobility_rotational[index]=coordinate.getMotionType()==OpenSim::Coordinate::Rotational?1:0;
+    }
+    out<<",\"mobility_coordinate_names\":[";
+    for(int i=0;i<candidate.getNU();i++){if(i)out<<',';if(mobility_names[i].empty())throw std::runtime_error("unmapped static mobility");quoted(out,mobility_names[i]);}
+    out<<"],\"mobility_rotational\":";array(out,mobility_rotational);
     out << ",\"constraint_position_error\":"; number(out,candidate.getQErr().norm());
     out << ",\"constraint_velocity_error\":"; number(out,candidate.getUErr().norm());
     out << ",\"constraint_acceleration_error\":"; number(out,candidate.getUDotErr().norm());
