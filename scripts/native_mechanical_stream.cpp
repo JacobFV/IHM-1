@@ -70,7 +70,9 @@ int main(int argc,char** argv){try{
   for(int i=0;i<contact_templates.getSize();i++)model.addComponent(contact_templates.get(i).clone());
  }else if(environment=="supine" && fs::exists(source/"supine_surface_foundation.txt")){
   surface_foundation=new ihm_surface::Foundation;surface_foundation->setName("retained_skin_surface_foundation");
-  surface_foundation->read((source/"supine_surface_foundation.txt").string(),model);support_plane=surface_foundation->plane;
+  surface_foundation->read((source/"supine_surface_foundation.txt").string(),model);
+  if(fs::exists(source/"surface_sensor_indices.txt"))surface_foundation->select((source/"surface_sensor_indices.txt").string());
+  support_plane=surface_foundation->plane;
   model.addForce(surface_foundation);
  }else if(environment=="supine"){
   // Engineering posterior contact proxies: uniform ellipsoid posterior semi-axis
@@ -151,7 +153,13 @@ int main(int argc,char** argv){try{
    o<<",\"surface_foundation\":{\"elastic_energy_j\":";num(o,surface.energy);
    o<<",\"power_to_body_w\":";num(o,surface.power);o<<",\"dissipative_power_w\":";num(o,surface.dissipative_power);
    o<<",\"bed_force_n\":";vec(o,-surface.force);o<<",\"bed_moment_about_source_origin_nm\":";vec(o,surface.bed_moment);
-   o<<",\"maximum_penetration_m\":";num(o,surface.maximum_penetration);o<<'}';}
+   o<<",\"maximum_penetration_m\":";num(o,surface.maximum_penetration);
+   o<<",\"sensor_points\":[";bool sensor_first=true;
+   for(const auto& point:surface.observations){if(!sensor_first)o<<',';sensor_first=false;
+    o<<"{\"quadrature_index\":"<<point.index<<",\"body_frame\":";str(o,point.body);
+    o<<",\"point_source_m\":";vec(o,point.location);o<<",\"normal_source\":[-1,0,0],\"reaction_normal_source\":[1,0,0],\"force_n\":";vec(o,point.force);
+    o<<",\"indentation_m\":";num(o,point.indentation);o<<",\"bed_indentation_m\":0,\"contact_area_m2\":";num(o,point.area);o<<'}';}
+   o<<"]}";}
   o<<",\"contact_force_n\":";vec(o,total);o<<",\"momentum_balance_residual_n\":";vec(o,model.getTotalMass(state)*(model.calcMassCenterAcceleration(state)-model.getGravity())-total-ext);
   int axis=environment=="supine"?0:1;o<<",\"foot_contact_force_n\":{\"r\":";num(o,std::max(0.,foot_r[axis]));o<<",\"l\":";num(o,std::max(0.,foot_l[axis]));o<<"},\"environment\":";str(o,environment);o<<'}';
   std::cout<<"@IHM "<<o.str()<<std::endl;

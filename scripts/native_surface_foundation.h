@@ -3,13 +3,15 @@
 #include <fstream>
 #include <map>
 #include <vector>
+#include <set>
 #include <cmath>
 
 namespace ihm_surface {
-struct Point {SimTK::Vec3 station;double area;};
-struct Group {std::string body;std::vector<Point> points;SimTK::Vec3 low{SimTK::Infinity},high{-SimTK::Infinity};};
+struct Point {SimTK::Vec3 station;double area;int index=-1;bool selected=false;};
+struct Observation {int index;std::string body;SimTK::Vec3 location,force;double area,indentation;};
+struct Group {std::string body;std::vector<Point> points;bool has_sensors=false;SimTK::Vec3 low{SimTK::Infinity},high{-SimTK::Infinity};};
 struct Wrench {SimTK::Vec3 force{0},moment{0};double maximum_penetration=0;int contacting_points=0;};
-struct Sample {std::map<std::string,Wrench> bodies;SimTK::Vec3 force{0},bed_moment{0};double energy=0,power=0,dissipative_power=0,maximum_penetration=0;int contacting_points=0;};
+struct Sample {std::vector<Observation> observations;std::map<std::string,Wrench> bodies;SimTK::Vec3 force{0},bed_moment{0};double energy=0,power=0,dissipative_power=0,maximum_penetration=0;int contacting_points=0;};
 class Foundation final:public OpenSim::Force {
     OpenSim_DECLARE_CONCRETE_OBJECT(Foundation,OpenSim::Force);
 public:
@@ -32,10 +34,18 @@ public:
                 throw std::runtime_error("invalid surface foundation quadrature");
             model.getBodySet().get(body);
             if(!indices.count(body)){indices[body]=(int)groups.size();groups.push_back(Group{});groups.back().body=body;}
-            auto& group=groups[indices.at(body)];group.points.push_back(point);
+            auto& group=groups[indices.at(body)];point.index=i;group.points.push_back(point);
             for(int k=0;k<3;k++){group.low[k]=std::min(group.low[k],point.station[k]);group.high[k]=std::max(group.high[k],point.station[k]);}
         }
         std::string extra;if(input>>extra)throw std::runtime_error("trailing surface foundation input");
+    }
+    void select(const std::string& path){
+        std::ifstream input(path);int count;
+        if(!(input>>count)||count<0||count>128)throw std::runtime_error("invalid selected skin sensor count");
+        std::set<int> selected;for(int i=0;i<count;i++){int index;if(!(input>>index)||index<0||!selected.insert(index).second)throw std::runtime_error("invalid selected skin sensor index");}
+        std::string extra;if(input>>extra)throw std::runtime_error("trailing skin sensor selection");
+        for(auto& group:groups)for(auto& point:group.points)if(selected.erase(point.index)){point.selected=true;group.has_sensors=true;}
+        if(!selected.empty())throw std::runtime_error("selected skin sensor outside quadrature");
     }
     Sample sample(const SimTK::State& state,bool with_velocity=true) const {
         Sample result;
@@ -45,12 +55,13 @@ public:
             double minimum_x=origin[0];
             for(int k=0;k<3;k++)minimum_x+=rotation(0,k)*(rotation(0,k)>=0?group.low[k]:group.high[k]);
             auto& wrench=result.bodies[group.body];
-            if(minimum_x>=plane)continue;
+            if(minimum_x>=plane&&!group.has_sensors)continue;
             SimTK::SpatialVec velocity(SimTK::Vec3(0),SimTK::Vec3(0));
             if(with_velocity)velocity=body.getMobilizedBody().getBodyVelocity(state);
             for(const auto& point:group.points){
+                if(minimum_x>=plane&&!point.selected)continue;
                 const auto offset=transform.R()*point.station;const auto location=origin+offset;
-                const double penetration=plane-location[0];if(penetration<=0)continue;
+                const double penetration=plane-location[0];if(penetration<=0){if(point.selected)result.observations.push_back({point.index,group.body,location,SimTK::Vec3(0),point.area,0.});continue;}
                 const double stretch=1-penetration/h;
                 if(stretch<minimum_ratio-1e-12)throw std::runtime_error("surface foundation compression exceeds declared domain");
                 const double log=std::log(stretch);
@@ -61,6 +72,7 @@ public:
                 const double coefficient=friction*std::tanh(tangent/transition)+viscous*tangent;
                 SimTK::Vec3 force(normal,0,0);
                 if(tangent>0){force[1]=-normal*coefficient*speed[1]/tangent;force[2]=-normal*coefficient*speed[2]/tangent;}
+                if(point.selected)result.observations.push_back({point.index,group.body,location,force,point.area,penetration});
                 wrench.force+=force;wrench.moment+=cross(offset,force);wrench.contacting_points++;
                 wrench.maximum_penetration=std::max(wrench.maximum_penetration,penetration);
                 result.force+=force;result.bed_moment-=cross(location,force);result.contacting_points++;

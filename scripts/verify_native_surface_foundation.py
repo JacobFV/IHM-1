@@ -21,10 +21,14 @@ def run(manifest_path):
         for variant in ('sphere','surface'):
             stream=NativeMechanicalStream(ROOT,output/variant,environment='supine',target_mass_kg=77.6122029,
                  augmented_registration='data/derived/mechanics/whole_body_arm26_v2/registration.json',
-                 surface_contact_manifest=manifest_path if variant=='surface' else None)
+                 surface_contact_manifest=manifest_path if variant=='surface' else None,
+                 surface_sensor_indices=[int(np.argmin(data['reference_points_source_m'][:,0]))] if variant=='surface' else [])
             initial=stream.snapshot();write(variant+'_initial.json',initial)
             if variant=='surface':
                 assert initial['contact_model']=='retained_skin_foundation'
+                sensors=initial['surface_foundation']['sensor_points']
+                assert len(sensors)==1 and sensors[0]['material_identity']['triangle_index']==int(data['face_indices'][sensors[0]['quadrature_index']])
+                assert sensors[0]['normal_source']==[-1,0,0] and sensors[0]['bed_indentation_m']==0
                 assert all(c['geometry_type']=='retained_skin_foundation' for c in initial['contacts'])
                 checkpoint=stream.checkpoint()
                 evaluated=stream._request('evaluate_static_pose 1 pelvis_tx -0.001')

@@ -14,7 +14,7 @@ def vec(value):
     return x
 
 class NativeMechanicalStream:
-    def __init__(self,root,output,*,environment='supine',target_mass_kg,augmented_registration=None,surface_contact_manifest=None):
+    def __init__(self,root,output,*,environment='supine',target_mass_kg,augmented_registration=None,surface_contact_manifest=None,surface_sensor_indices=()):
         self.root=Path(root).resolve();self.output=Path(output).resolve()
         if self.output.exists() or not self.output.is_relative_to(self.root):raise ValueError('Fresh owned native output directory required')
         if environment not in ('free','supine','upright') or finite(target_mass_kg)<=0:raise ValueError('Invalid native environment or mass')
@@ -35,6 +35,7 @@ class NativeMechanicalStream:
             catalog_bytes=(self.root/augmentation['catalog_path']).read_bytes()
             if hashlib.sha256(catalog_bytes).hexdigest()!=augmentation['catalog_sha256']:raise ValueError('Augmented catalog changed while copying')
             self.muscle_catalog=json.loads(catalog_bytes)
+        self.surface_sensor_identity={}
         surface_manifest=None;surface_bytes=None;surface_input=None
         if surface_contact_manifest is not None:
             if environment!='supine':raise ValueError('Surface foundation requires supine environment')
@@ -49,6 +50,11 @@ class NativeMechanicalStream:
                 relative=Path(surface_manifest[key+'_path'])
                 if relative.is_absolute() or '..' in relative.parts or sha(self.root/relative)!=surface_manifest[key+'_sha256']:raise ValueError('Surface foundation artifact identity mismatch')
             surface_input=(self.root/surface_manifest['native_input_path']).read_bytes()
+            selected=list(surface_sensor_indices)
+            if len(selected)>128 or len(set(selected))!=len(selected) or any(type(i)!=int or not 0<=i<surface_manifest['points'] for i in selected):raise ValueError('At most 128 unique valid skin sensor indices required')
+            with np.load(self.root/surface_manifest['arrays_path']) as arrays:
+                for index in selected:self.surface_sensor_identity[index]={'manifest_sha256':hashlib.sha256(surface_bytes).hexdigest(),'quadrature_index':index,'triangle_index':int(arrays['face_indices'][index])}
+        elif surface_sensor_indices:raise ValueError('Skin sensor selection requires surface contact manifest')
         self.output.mkdir(parents=True);source=self.output/'inputs';source.mkdir()
         original=self.root/'data/raw/mechanics/opensim-core/OpenSim/Examples/Moco/example3DWalking';inputs={}
         for name in SOURCE_FILES:
@@ -61,6 +67,8 @@ class NativeMechanicalStream:
             (source/'supine_surface_foundation.txt').write_bytes(surface_input)
             (source/'surface_contact_manifest.json').write_bytes(surface_bytes)
             inputs['supine_surface_foundation.txt']=hashlib.sha256(surface_input).hexdigest()
+            sensor_bytes=(' '.join(map(str,[len(self.surface_sensor_identity),*self.surface_sensor_identity]))+'\n').encode()
+            (source/'surface_sensor_indices.txt').write_bytes(sensor_bytes);inputs['surface_sensor_indices.txt']=hashlib.sha256(sensor_bytes).hexdigest()
         runtime=self.root/'data/runtime/opensim';libdirs=[runtime/'install/opensim/lib',runtime/'install/simbody/lib']+[runtime/'sysroot/usr/lib/aarch64-linux-gnu'/p for p in ('lapack','blas','')]
         env=dict(os.environ,OPENBLAS_NUM_THREADS='1',OMP_NUM_THREADS='1',LD_LIBRARY_PATH=':'.join(map(str,libdirs)))
         limiter=shutil.which('prlimit')
@@ -91,6 +99,12 @@ class NativeMechanicalStream:
             if not line.startswith('@IHM '):self.log.write(line);self.log.flush();continue
             data=json.loads(line[5:],parse_constant=lambda value:(_ for _ in ()).throw(ValueError('Nonfinite native response')))
             if 'error' in data:raise ValueError(data['error'])
+            for point in data.get('surface_foundation',{}).get('sensor_points',[]):
+                index=point['quadrature_index']
+                if index not in self.surface_sensor_identity:raise ValueError('Native emitted unrequested skin sensor')
+                point.update(id='skin-contact-'+str(index),material_identity=self.surface_sensor_identity[index],
+                    indentation_basis='native nonlinear confined-layer modeled compression',area_basis='projected reference quadrature area',
+                    point_basis='rigid reference material attachment in native source world')
             return data
     def _request(self,command):
         with self.lock:
