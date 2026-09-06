@@ -1,7 +1,44 @@
 """Demand-stepped native body actors: one controller thread per live body."""
 from concurrent.futures import Future
 from pathlib import Path
-import gzip,hashlib,json,os,queue,threading,time,uuid
+import gzip,hashlib,json,os,queue,re,threading,time,uuid
+
+
+def resolve_ibm_candidate(root,selector):
+    """Resolve only server-installed commit directories; never import candidate code."""
+    from ihm.brain.candidate import SourcePin,verify_pin
+    if (not isinstance(selector,dict) or set(selector)!={'commit','manifest_sha256'}
+        or not isinstance(selector['commit'],str) or not re.fullmatch('[0-9a-f]{40}',selector['commit'])
+        or not isinstance(selector['manifest_sha256'],str) or not re.fullmatch('[0-9a-f]{64}',selector['manifest_sha256'])):
+        raise ValueError('ibm_candidate requires exact commit and manifest_sha256 identities')
+    root=Path(root).absolute()
+    candidate=root/'data/derived/ibm-candidates'/selector['commit']
+    try:
+        # Check before resolve: SourcePin canonicalizes paths and would hide links.
+        if any(path.is_symlink() for path in (candidate,*candidate.parents)):
+            raise ValueError('Candidate directory ancestors may not be symlinks')
+        entries=list(candidate.rglob('*'))
+        if any(path.is_symlink() or not (path.is_file() or path.is_dir()) for path in entries):
+            raise ValueError('Candidate entries must be ordinary files and directories')
+        if {path.name for path in candidate.iterdir()}!={'source','manifest.json','source_pin.json'}:
+            raise ValueError('Candidate root has missing or extra entries')
+        raw=json.loads((candidate/'source_pin.json').read_bytes())
+        if raw.get('artifact_dir')!=str(candidate) or raw.get('manifest_sha256')!=selector['manifest_sha256']:
+            raise ValueError('Candidate pin does not match server location and requested identity')
+        pin=SourcePin.load(candidate/'source_pin.json')
+        if raw!=pin.to_dict():raise ValueError('Candidate pin has unexpected fields')
+        manifest,_=verify_pin(pin)
+        if manifest.get('donor_commit')!=selector['commit']:
+            raise ValueError('Candidate commit does not match requested identity')
+        expected={Path('source'),Path('manifest.json'),Path('source_pin.json')}
+        for name in manifest['files']:
+            relative=Path('source')/name
+            expected.add(relative);expected.update(p for p in relative.parents if p!=Path('.'))
+        if {path.relative_to(candidate) for path in entries}!=expected:
+            raise ValueError('Candidate contains unexpected directories or files')
+        return pin
+    except (OSError,KeyError,TypeError,ValueError) as error:
+        raise ValueError('Invalid server-owned IBM candidate: '+str(error)) from error
 
 
 class BodyActor:
@@ -124,13 +161,14 @@ class EmbodiedSessions:
         self.root=Path(root);self.lock=threading.Lock();self.actors={};self.creating=False;self.shutting_down=False
         self.creation_done=threading.Condition(self.lock)
     def create(self,data):
-        if not isinstance(data,dict) or set(data)-{'environment','regional_skin','intake_mass'}:raise ValueError('Unknown embodied configuration')
+        if not isinstance(data,dict) or set(data)-{'environment','regional_skin','intake_mass','ibm_candidate'}:raise ValueError('Unknown embodied configuration')
         intake_mass=data.get('intake_mass',False)
         if type(intake_mass) is not bool:raise ValueError('intake_mass must be boolean')
         regional_skin=data.get('regional_skin',False)
         if type(regional_skin) is not bool:raise ValueError('regional_skin must be boolean')
         environment=data.get('environment','supine')
         if environment not in ('free','supine','upright'):raise ValueError('Unknown articulated environment')
+        source_pin=resolve_ibm_candidate(self.root,data['ibm_candidate']) if 'ibm_candidate' in data else None
         with self.lock:
             if self.shutting_down:raise RuntimeError('Embodied service is shutting down')
             if self.creating or any(not a.closed for a in self.actors.values()):raise ValueError('One native body at a time while sharing machine resources')
@@ -138,15 +176,31 @@ class EmbodiedSessions:
         try:
             from ihm.assembly.embodied import EmbodiedRuntime
             ident=uuid.uuid4().hex;output=self.root/'data/derived/embodied-sessions'/ident
-            actor=BodyActor(lambda:EmbodiedRuntime.from_workspace(self.root,output/'runtime',environment=environment,regional_skin=regional_skin,intake_mass=intake_mass),output)
+            options={'environment':environment,'regional_skin':regional_skin,'intake_mass':intake_mass}
+            if source_pin is not None:options['source_pin']=source_pin
+            selected=dict(data['ibm_candidate']) if source_pin is not None else None
+            def factory():
+                if selected is not None and resolve_ibm_candidate(self.root,selected)!=source_pin:
+                    raise ValueError('Candidate source pin changed before initialization')
+                return EmbodiedRuntime.from_workspace(self.root,output/'runtime',**options)
+            actor=BodyActor(factory,output)
+            if source_pin is not None:
+                actor.brain_source_selection={'mode':'immutable_candidate','commit':selected['commit'],
+                    'manifest_sha256':source_pin.manifest_sha256,'package_sha256':source_pin.package_sha256,
+                    'neural_source_sha256':source_pin.neural_source_sha256}
+
             # Timeout must not orphan initialization or free its resource slot.
             with self.lock:
                 self.actors[ident]=actor
                 shutting_down=self.shutting_down
             if shutting_down:actor.request_close(wait=False)
-            return {'id':ident,**actor.status()}
+            return {'id':ident,**actor.status(),**self._identity(actor)}
         finally:
             with self.creation_done:self.creating=False;self.creation_done.notify_all()
+    @staticmethod
+    def _identity(actor):
+        value=getattr(actor,'brain_source_selection',None)
+        return {'brain_source_selection':dict(value)} if value is not None else {}
     def command(self,ident,action,data=None):
         with self.lock:actor=self.actors.get(ident)
         if action=='close' and data not in ({},None):raise ValueError('Close requires an empty object')
@@ -154,13 +208,13 @@ class EmbodiedSessions:
             if action=='close':return {'id':ident,'closed':True,'already_absent':True}
             raise ValueError('Unknown embodied session')
         status=actor.status()
-        if action=='snapshot' and status['status']!='ready':return {'id':ident,**status}
+        if action=='snapshot' and status['status']!='ready':return {'id':ident,**status,**self._identity(actor)}
         result=actor.request_close() if action=='close' else actor.call(action,data)
         if action=='close' and result.get('closed'):
             with self.lock:self.actors.pop(ident,None)
-        return {'id':ident,**result}
+        return {'id':ident,**result,**self._identity(actor)}
     def list(self):
-        with self.lock:return {'sessions':[{'id':ident,**actor.status()} for ident,actor in self.actors.items()]}
+        with self.lock:return {'sessions':[{'id':ident,**actor.status(),**self._identity(actor)} for ident,actor in self.actors.items()]}
     def close(self,timeout=30):
         deadline=time.monotonic()+timeout
         with self.creation_done:

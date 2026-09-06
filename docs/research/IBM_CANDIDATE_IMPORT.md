@@ -137,3 +137,19 @@ PYTHONPATH=. OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 nice -n 10 \
 This establishes source-bound native initialization and cleanup, not a coupled
 step, receptor response under native motion, equilibrium, full brain completion
 or promotion of the candidate to the default runtime.
+
+### Opt-in embodied API selection
+
+`POST /api/embodied/sessions` accepts an optional configuration member:
+
+```json
+{"regional_skin":true,"ibm_candidate":{"commit":"398375cc993ac17907d4ddd9f6d53eed2fab31de","manifest_sha256":"397b3fd3e20b7a15da0055bbba9c83fec6cfaee04135e34c99407da8280d300b"}}
+```
+
+The configured workspace's `data/derived/ibm-candidates/<commit>` directory is the server-owned candidate registry. Installation remains a server/operator action using the capture helper. The API accepts no filesystem path, donor location, revision alias, upload, or dataset reference. Exact lowercase commit and manifest hashes select an installed artifact; all SourcePin package, neural-law, manifest and source hashes are verified before actor creation and again on its owner thread before calling the factory. The factory's existing immutable import identity checks still reject process hot-swapping before native startup. Selecting a different package in a process that already loaded IBM requires a fresh server process.
+
+Resolution rejects redirected pin paths, symlink ancestors or tree entries, missing/changed/unmanifested source files, extra root files and even unexpected empty directories. Candidate storage must remain server-controlled during initialization; these checks are not a filesystem locking protocol against a concurrent privileged operator changing directories. The donor working tree and optional evidence datasets are never imported by selection.
+
+Creation, listing, snapshot and command responses include `brain_source_selection` for opt-in sessions: mode, commit, manifest, package and neural source hashes. This is the verified selection, not a claim that initialization has finished; clients must also inspect session status. The runtime manifest separately retains the actual import receipt and source bytes. Omitting `ibm_candidate` retains legacy factory defaults and response behavior. No candidate is automatically promoted.
+
+Validation: `PYTHONPATH=. OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 .venv/bin/python -m unittest scripts.verify_embodied_candidate_api scripts.verify_embodied_actor scripts.verify_embodied_http` exercises candidate forwarding/identity, malformed selectors, tampering, redirected and symlink paths, extra entries, owner-thread revalidation, default preservation, actor lifecycle and HTTP routing. This suite mocks the native factory; it makes no new native initialization or stepping claim.
