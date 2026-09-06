@@ -243,12 +243,14 @@ implementation gaps without closing whole-body validation:
 | Area | Current executable evidence | Next unresolved integration |
 | --- | --- | --- |
 | Signed mechanical energy | Native chemical/heat/signed-work ledger; corrected shared-donor library; six signed whole-engine boundary steps and native water intake accepted (`e998b4b`); latched signed sessions reject ordinary-step bypass (`efa4fc8`) | Actual mechanical startup asks −36.49 W versus allowed −8.69 W and is correctly rejected; need supported reference and causal energy-supply feedback |
-| Support | Retained 21,381 skin quadrature points and opt-in finite-strain contact (`0770bdf`); emitted-pose force comparison resolves apparent discrepancy without changing the law | Fixed pose cannot balance force or moment: only 12.44 N support versus 761.38 N weight, all contact cranial to COM (`f1a7b62`); separate bed deformation and valid pose needed |
-| Skin–brain–motor | Pinned source receptor → shared brain → changed motor excitation matched controls (`9dc8149`); direct native indentation with identity checks (`59716a6`); runtime latency, block and rollback wiring (`cb2d600`, `cf2ebb9`) | Workspace factory awaits selected native material contacts and moving coordinate registration; no accepted whole-body reflex trajectory |
-| Fine vessels | Human muscle source-conditioned density, explicit radius/flow scenarios, 13-capillary/61-edge conserved fixture (`4520b28`) | Other organs, macro boundaries, full regional flow feedback and subject calibration |
-| Lymph | Native ownership audit and conservative traction mapper (`34d2671`) | Existing native Skin is one inventory; local regional pressures require an actual circuit/storage partition, now being implemented as an isolated variant |
-| Intake/UI | Native schedule acknowledgment, uncertain-outcome handling and consumed-water fixture; Food & drink monitor production build (`d5637a3`) | End-to-end GI physiology, meal mass/inertia mapping, glucose/acid–base failures; possible scarce-donor absorption gate under investigation |
-| Visualization | New intake assets built with capped CPU; no server restart | Stable live body acceptance, temporal monitor integration and affordable real hair dynamics remain in progress |
+| Support | Retained skin contact plus source-derived separate mattress compression; exact native mass-matrix residuals; domain-safe cached static evaluations | Latest MM solve stops without equilibrium: ankle acceleration ~424 rad/s², support 51% above weight, mattress near measured domain boundary (`de7ed9b`). Next solve explicitly constrains force and moments; no startup promotion |
+| Skin–brain–motor | Native sensor factory and canonical moving contact registration; missing or duplicate native samples reject rather than imply release (`53a59f4`); runtime causal latency/block/rollback tests | No accepted whole-body reflex trajectory until mechanical startup is valid; cortical registration and recruitment remain explicit priors |
+| Fine vessels | Source-conditioned muscle patches with bounded API and zoom monitor; kidney glomerular/peritubular prototype from retained human observations (`e062c41`) | Anatomical kidney embedding, macro boundaries, regional perfusion feedback, other organs and calibration |
+| Lymph | Actual three-region native Skin circuit with separate inventories, localized pressure response, sweating ownership and full-engine short acceptance; signed Python adapter; shared tissue observer (`d64b777`) | Regions are engineering fractions, not anatomical territories. Opt-in embodied factory integration in progress; no mechanically registered local pressure transfer or long-run acceptance |
+| Intake/GI | Corrected scarce-donor native absorption gate and exact tail handling (`50700d8`); signed whole-engine intake accepted; native molar/charge audit (`6ec5af6`) | Finite epithelial transport under development; acid–base and long-run glucose behavior unresolved; full-model localized mass/inertia transfer being tested |
+| Bioelectric integument | Finite three-ion epithelial inventories and two membrane capacitors; primary human TEP data acquired; bounded conservation/energy tests (`2e2a087`) | Native inventory/energy ownership, calibrated ion pathways, anatomical layers and wound/regeneration predictions remain unresolved |
+| Mass and cervical mechanics | Isolated Simbody instance-mass library passes small-system momentum/energy tests; whole 92-muscle validation in progress. Source-derived cervical inertia recipe conserves donor torso moments (`d84641c`) | No default library promotion; no dynamic intake-mass command. Cervical joints and attachments still need valid registration |
+| Visualization | Local server refreshed; current bundle includes intake, bounded microvessel inspection, finite Laplace spectra and actual worker hair dynamics (`10a1837`, `f270b41`) | Browser acceptance and stable live body remain open. Hair/garment/body reaction forces, realistic clothes, whole-body contact and all requested interaction modes remain incomplete |
 
 Cardiovascular signed-demand reader audit needs particular care: in the held
 source it runs only inside a drug-resistance-change branch. Rest-fixture count
@@ -256,7 +258,8 @@ zero is reported honestly; it does not establish routine demand-driven vascular
 feedback. Endocrine and both observed nervous readers consume signed effective
 demand in the native fixture. Tests of reader access are not empirical validation.
 
-Current parallel lanes include support/bed mechanics, cervical source acquisition,
-regional native lymph partition, native GI absorption investigation, causal energy
-supply feasibility, real hair worker scheduling, and temporal monitor integration.
+Current parallel lanes include constrained support mechanics, whole-model variable
+mass validation, regional embodied integration, epithelial GI transport and kidney
+microvascular integration. Previously accepted source and short-fixture results
+remain distinct from integrated predictive validation.
 Native compilation and runtime fixtures use one explicit shared heavy-job slot.
