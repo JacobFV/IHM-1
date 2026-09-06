@@ -79,7 +79,11 @@ def run(seed_path,material,resume_path=None,resume_cache=None,mode='constrained'
         candidate={**seed,**dict(zip(names,map(float,values)))}
         command=['evaluate_static_pose',str(len(all_names))]
         for name in all_names:command.extend([name,str(candidate[name])])
+        write('last_native_request.json',dict(status='pending',new_evaluation=len(evaluations)+1,
+            coordinates=candidate,command=' '.join(command),wall_s=time.monotonic()-started))
         native=stream._request(' '.join(command))
+        write('last_native_request.json',dict(status='completed',new_evaluation=len(evaluations)+1,
+            coordinates=candidate,wall_s=time.monotonic()-started))
         weight=native['mass_kg']*np.linalg.norm(native['gravity_m_s2'])
         scales=np.where(native['mobility_rotational'],weight*length,weight)
         residual=np.asarray(native['constrained_zero_acceleration_residual_mobility_force'])/scales
@@ -176,7 +180,12 @@ def run(seed_path,material,resume_path=None,resume_cache=None,mode='constrained'
         observed=stream._request('observe');report['continuing_state_unchanged']=all(before[k]==observed[k] for k in before if k!='kind')
         if not report['continuing_state_unchanged']:raise AssertionError('Static solve mutated continuing state')
         stream.restore(checkpoint);stream.release(checkpoint)
-    except Exception as error:report.update(status='stopped',error=f'{type(error).__name__}: {error}')
+    except Exception as error:
+        report.update(status='stopped',error=f'{type(error).__name__}: {error}')
+        failure=dict(exception_type=type(error).__name__,physical_or_protocol_failure_text=str(error)[:65536])
+        if isinstance(error,json.JSONDecodeError):
+            failure.update(response_payload=error.doc[:65536],payload_truncated=len(error.doc)>65536,parse_position=error.pos)
+        write('failure.json',failure)
     finally:
         signal.setitimer(signal.ITIMER_REAL,0);signal.signal(signal.SIGALRM,old)
         if stream is not None:stream.close()
