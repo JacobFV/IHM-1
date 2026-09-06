@@ -46,3 +46,21 @@ Evidence SHA-256:
 The held source produces bilateral elbow flexion 1.569788 rad, knee flexion 0.490078 rad, arm flexion 0.160698 rad, arm adduction -0.625613 rad, and hip flexion -0.060267 rad. Pure ankle damping has no preferred static angle and preserves zero. These are **isolated passive-coordinate-force zeros**, not muscle-force or whole-body equilibrium. The native residual solver must evaluate all unchanged muscle/gravity/contact forces at these poses. Initial source receipt: `data/derived/supine-initialization-n69xgzc9`; fixtures verify all resulting roots, unchanged controls/plane and rejection of unsafe expression syntax.
 
 The proposed minimal future clock-zero initialization interface is an optional identity-bound startup q seed, applied and assembled after constructing the original contact plane but before initial muscle equilibration and the first observation. It must retain the original fixed bed geometry, zero starting speed, source coefficients and controls. Such a seed would be labeled `unsettled_seed`, with its startup metabolic observation explicitly **not verified as a resting reference**. This is a proposal, not an implemented state-import or accepted-baseline feature. Sustained forward verification remains necessary before claiming a supported reference state.
+
+## Authorized passive-neutral static experiment — 2026-09-05
+
+One run, `data/derived/supine-static-solve-qblxfx5z`, used the same native model/build/environment/controls as the default-seed experiment and changed only the documented starting q. It stopped at **200 evaluations / 2.472 wall seconds**, with zero physical-time advance. Continuing-state observation and checkpoint restore checks passed. No startup import or reference promotion occurred.
+
+The raw isolated passive-neutral seed was **worse as a support pose**: maximum proxy penetration **90.881 mm**, maximum generalized acceleration **13,274.68 rad/s²**, and scaled residual norm **805.576**. Isolated coordinate-force neutrality clearly does not imply feasible muscle/contact geometry.
+
+The optimizer reduced its aggregate residual to **26.9125**, compared with **167.7376** for the previous default-seed search. However, this numerical improvement is **not an improvement in supported equilibrium**. Its best candidate lifted the pelvis about **0.205 m** along +X, away from the fixed bed, leaving support of only **2.14e-6 N** and COM acceleration **9.81 m/s²** toward the bed. Maximum generalized acceleration remained **609.50 rad/s²**, dominated by ankles. Zero penetration reflected lost contact, not proper load support. The low residual therefore selects a largely unsupported pose while reducing larger limb accelerations.
+
+This result does not satisfy the condition for implementing a clock-zero startup seed as a useful supported initialization. The next static formulation needs explicit support-force and feasible-contact constraints, with full generalized force balance, so limb residual reduction cannot compensate for losing bed support. No coefficient tuning, tolerance relaxation, reference reset, or additional native run was performed. All source-law seeds and native candidates remain marked unaccepted.
+
+Evidence SHA-256:
+
+- `report.json`: `d72055d8db96c3cbf4df2e84f0d65febd2cb035dc9a107db6cf2d05763fa40a9`
+- `evaluations.json`: `114142d36f99eb6c4e96a56250ec19c864837c7dbf709f954588cc1bc8be45e8`
+- `best_candidate.json`: `c46bbc0bcff41ec8a38e9d4c85d30080cf349d9fc5faa76097b297f574705ed9`
+- `seed.json`: `4f368cee657ec5e016e7bbe8838a23b281dd16ee6709ff254a8125569a7b2875`
+- `native/execution.json`: `cdaeeb2abfa4e142e202ccaa08585b9c3f7f305fc4a477cc785c025225de68ae`
