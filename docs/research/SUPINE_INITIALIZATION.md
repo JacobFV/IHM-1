@@ -171,3 +171,12 @@ Evidence SHA-256:
 - `data/derived/constrained-supine-0hpzsu5p/candidates.jsonl`: `71e1fd4968fedb795d38cd29cf71be2f4d99e143e01fbf53cf3c98c3d5818b49`
 - `data/derived/constrained-supine-0hpzsu5p/rejected_trials.jsonl`: `9c2784dafef57720e269c6bf21614907c66f8656a6d3e9e1cc3c5da4f04ccecd`
 - `data/derived/constrained-supine-0hpzsu5p/cache_recovery.json`: `0e80c9737469fbcce8bb08583b2c6e583aec9b83a90470b11862d65b47fb856e`
+
+
+## Local acceleration solve with explicit support equalities
+
+The opt-in `balanced-root` mode solves a bounded linearized acceleration least-squares problem with exact linearized normal-force, pitch and roll equalities. All q remain within source bounds and ±0.03 of the current accepted pose. Constant objective/row normalization conditions the numerical quadratic problem without changing its minimizer. SLSQP is limited to 150 inexpensive linear-problem iterations; it performs no native evaluations. Linear equality error above 1e−8 rejects the proposed direction.
+
+Actual trial poses receive at most three root-coordinate corrections using the current force/moment Jacobian block, inside the same local/source bounds, and at most six half-step trials. A step is accepted only if the actual acceleration objective decreases and all actual normalized support and held-gauge residuals are ≤1e−4. The exact material-domain rejection triggers a recorded half-step; all other errors stop. Final all-acceleration/constraint thresholds and mandatory forward acceptance remain unchanged. This corrects the preceding mode's ability to lower ankle acceleration by increasing total bed support.
+
+The already evaluated supported origin is retained in `supported-newton-origin-hus45aso/candidate.json`, with original journal/hash/line provenance. It uses the complete-Jacobian supported seed immediately neighboring the prior best-supported finite-difference point; no new native evaluation constructed it. On the retained 33×28 Jacobian, six bounded constrained steps predict acceleration norm 2654.38 → 1380.48 on the first step → 303.16 after six, with linear equality errors at most 2.53e−12 and 0.03 maximum coordinate changes. The three-root support block has condition number 195.39. These are linear-surrogate predictions, not achieved native poses. Source fixtures cover exact support equalities, nonlinear root-coordinate correction, held-gauge rejection and local/source bounds. Evaluation-cache mode remains the same all-acceleration response profile; actual optimizer mode is reported separately.

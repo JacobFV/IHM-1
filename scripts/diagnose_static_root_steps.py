@@ -4,7 +4,7 @@ import argparse,json,sys
 import numpy as np
 from scipy.optimize import least_squares
 from static_pose_journal import digest
-from bounded_static_root import interior_origin,local_step
+from bounded_static_root import interior_origin,local_step,constrained_local_step
 
 
 def compare(directory):
@@ -13,11 +13,12 @@ def compare(directory):
     for line in (directory/'candidates.jsonl').read_text().splitlines():
         record=json.loads(line);assert digest(record['payload'])==record['sha256'];records.append(record['payload'])
     # TRF's first interior-adjusted point follows the explicit seed observation.
-    base=records[1];q=np.array(base['values']);a=np.array(base['entry']['native']['udot']);columns={}
+    base=records[1];q=np.array(base['values']);a=np.array(base['entry']['native']['udot']);columns={};support_columns={};support=np.array(base['entry']['support_constraints'])
     for record in records[2:]:
         delta=np.array(record['values'])-q;changed=np.flatnonzero(delta)
         if len(changed)==1 and int(changed[0]) not in columns:
             i=int(changed[0]);columns[i]=(np.array(record['entry']['native']['udot'])-a)/delta[i]
+            support_columns[i]=(np.array(record['entry']['support_constraints'])-support)/delta[i]
         if len(columns)==len(q):break
     if len(columns)!=len(q):raise ValueError('No complete first Jacobian in journal')
     matrix=np.column_stack([columns[i] for i in range(len(q))]);bounds=np.array(identity['bounds'])
@@ -35,6 +36,15 @@ def compare(directory):
         residual=a+matrix@(bounded_q-q);step=local_step(matrix,residual,bounded_q,bounds);bounded_q+=step
         steps.append(dict(maximum_step=float(np.max(np.abs(step))),surrogate_residual_norm=float(np.linalg.norm(a+matrix@(bounded_q-q)))))
     results['bounded_local_newton']=steps
+    support_matrix=np.column_stack([support_columns[i] for i in range(len(q))])
+    supported_q=q.copy();balanced=[]
+    for _ in range(6):
+        direction,diagnostic=constrained_local_step(matrix,a+matrix@(supported_q-q),supported_q,bounds,
+            support_matrix,support+support_matrix@(supported_q-q))
+        supported_q+=direction;balanced.append(diagnostic)
+    results['support_constrained_local_newton']=balanced
+    root_indices=[identity['coordinate_order'].index(name) for name in ('pelvis_tx','pelvis_tilt','pelvis_rotation')]
+    results['support_root_block_condition']=float(np.linalg.cond(support_matrix[:,root_indices]))
     return dict(native_run=False,scope='Frozen first-Jacobian linear surrogate only; no actual changed-pose physics or material-domain verification',
         source_cache_identity=digest(identity),initial_residual_norm=float(np.linalg.norm(a)),comparison=results)
 

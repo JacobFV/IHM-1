@@ -6,7 +6,7 @@ from scipy.optimize import minimize,NonlinearConstraint,Bounds,least_squares
 ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT));sys.path.insert(0,str(ROOT/'scripts'))
 from build_supine_initial_state import analyze,recipe
 from static_pose_journal import PoseJournal,pose_key
-from bounded_static_root import interior_origin,local_step,StaticDomainRejection,backtracked_trial
+from bounded_static_root import interior_origin,local_step,StaticDomainRejection,backtracked_trial,constrained_local_step,balanced_backtracked_trial
 
 
 def dynamic_metric(native):
@@ -54,7 +54,7 @@ def run(seed_path,material,resume_path=None,resume_cache=None,mode='constrained'
     seed=dict(seed_record['best']['seed_coordinates'])
     if resume_path is not None:
         resumed=json.loads(resume_path.read_text())
-        if mode=='constrained' and (max(abs(v) for v in resumed['support_constraints'])>1e-4 or max(abs(v) for v in resumed['gauge_residual'])>1e-4):raise ValueError('Resume candidate lost support constraints')
+        if mode in ('constrained','balanced-root') and (max(abs(v) for v in resumed['support_constraints'])>1e-4 or max(abs(v) for v in resumed['gauge_residual'])>1e-4):raise ValueError('Resume candidate lost support constraints')
         seed.update(resumed['coordinates'])
         if resume_cache is None:seed['mtp_angle_r']=0.;seed['mtp_angle_l']=0.
     bounds=[base['coordinate_bounds'][n] for n in names]
@@ -62,7 +62,7 @@ def run(seed_path,material,resume_path=None,resume_cache=None,mode='constrained'
     if any(not lo<=value<=hi for value,(lo,hi) in zip(x0,bounds)):raise ValueError('Supported seed outside source bounds')
     output=Path(tempfile.mkdtemp(prefix='constrained-supine-',dir=ROOT/'data/derived'));started=time.monotonic();stream=None;evaluations=[];cache={};best=None;best_feasible=None;journal=None;cache_hits=0
     report=dict(passed=False,accepted_equilibrium=False,physical_time_advanced_s=0,material=material,
-                maximum_evaluations=200,maximum_wall_s=60,mode=mode,objective=('all mobility accelerations divided by 1 rad/s^2 or 1 m/s^2, no inertia weighting' if mode=='acceleration-root' else 'udot^T M udot/(mass*g^2), cross-checked against -r dot udot; no cost floor'),
+                maximum_evaluations=200,maximum_wall_s=60,mode=mode,objective=('all mobility accelerations divided by 1 rad/s^2 or 1 m/s^2, no inertia weighting' if mode in ('acceleration-root','balanced-root') else 'udot^T M udot/(mass*g^2), cross-checked against -r dot udot; no cost floor'),
                 toe_seed=('exact resumed coordinates retained for cache reuse' if resume_cache is not None else 'held passive law neutral0 on resume; pure ankle damping has no preferred static angle so retained ankle q'),held_gauge_coordinates={n:seed[n] for n in gauges},
                 scope='Native generalized-force static solve with explicit support force/pitch/roll balance; unchanged forward acceptance remains mandatory')
     def write(name,value):(output/name).write_text(json.dumps(value,indent=2,allow_nan=False)+'\n')
@@ -119,7 +119,7 @@ def run(seed_path,material,resume_path=None,resume_cache=None,mode='constrained'
             journal_sha256=hashlib.sha256((ROOT/'scripts/static_pose_journal.py').read_bytes()).hexdigest(),
             solver_sha256=hashlib.sha256((ROOT/'scripts/bounded_static_root.py').read_bytes()).hexdigest(),
             source_sha256=execution['source_sha256'],build_files=execution['build']['files'],
-            material=material,mass_kg=77.6122029,environment='supine',mode=mode,coordinate_order=names,
+            material=material,mass_kg=77.6122029,environment='supine',mode=('acceleration-root' if mode=='balanced-root' else mode),coordinate_order=names,
             held_gauges={n:seed[n] for n in gauges},bounds=bounds,
             surface_manifest_sha256=hashlib.sha256(manifest_path.read_bytes()).hexdigest())
         # JSON normalization keeps tuples/lists identical after disk round-trip.
@@ -151,22 +151,31 @@ def run(seed_path,material,resume_path=None,resume_cache=None,mode='constrained'
             with (output/'optimizer_iterates.jsonl').open('a') as destination:destination.write(json.dumps(record,allow_nan=False)+'\n')
             write('last_optimizer_iterate.json',entry)
             return False
-        if mode=='acceleration-root':
+        if mode in ('acceleration-root','balanced-root'):
             q=interior_origin(x0,bounds)
-            report['local_solver']=dict(method='bounded variable least-squares Newton step plus backtracking',
+            report['local_solver']=dict(method=('support-constrained linear Newton plus bounded nonlinear support correction' if mode=='balanced-root' else 'bounded variable least-squares Newton step plus backtracking'),
+                maximum_support_corrections=(3 if mode=='balanced-root' else 0),
                 maximum_coordinate_step=.03,interior_margin=1e-12,maximum_iterations=10,
                 maximum_backtracks=6,origin_coordinate_changes={name:float(v-x0[i]) for i,(name,v) in enumerate(zip(names,q)) if v!=x0[i]})
             success=False;message='Local Newton iteration cap'
             for iteration in range(10):
                 current=evaluate(q)
                 if static_converged(current):success=True;message='All static checks passed';break
-                acceleration=acceleration_residual(current['native']);jac=np.zeros((len(acceleration),len(q)))
+                acceleration=acceleration_residual(current['native']);jac=np.zeros((len(acceleration),len(q)));support_jac=np.zeros((3,len(q)))
                 for index,(lo,hi) in enumerate(bounds):
                     step=1e-5 if q[index]+1e-5<=hi else -1e-5
                     shifted=q.copy();shifted[index]+=step
-                    jac[:,index]=(acceleration_residual(evaluate(shifted)['native'])-acceleration)/step
-                direction=local_step(jac,acceleration,q,bounds)
-                candidate,trial=backtracked_trial(q,direction,np.array(bounds),current['cost'],evaluate)
+                    shifted_entry=evaluate(shifted)
+                    jac[:,index]=(acceleration_residual(shifted_entry['native'])-acceleration)/step
+                    support_jac[:,index]=(np.asarray(shifted_entry['support_constraints'])-np.asarray(current['support_constraints']))/step
+                if mode=='balanced-root':
+                    direction,diagnostic=constrained_local_step(jac,acceleration,q,bounds,support_jac,current['support_constraints'])
+                    with (output/'linear_support_steps.jsonl').open('a') as destination:destination.write(json.dumps(dict(iteration=iteration,**diagnostic))+'\n')
+                    root_indices=[names.index(name) for name in ('pelvis_tx','pelvis_tilt','pelvis_rotation')]
+                    candidate,trial=balanced_backtracked_trial(q,direction,np.array(bounds),current['cost'],evaluate,support_jac,root_indices)
+                else:
+                    direction=local_step(jac,acceleration,q,bounds)
+                    candidate,trial=backtracked_trial(q,direction,np.array(bounds),current['cost'],evaluate)
                 if candidate is None:message='No decreasing valid local Newton step';break
                 q=candidate;retain_iterate(q)
             final=evaluate(q)
@@ -200,6 +209,6 @@ def run(seed_path,material,resume_path=None,resume_cache=None,mode='constrained'
 
 
 if __name__=='__main__':
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--run-native',action='store_true');parser.add_argument('--seed',type=Path);parser.add_argument('--resume',type=Path);parser.add_argument('--resume-cache',type=Path);parser.add_argument('--mode',choices=('constrained','acceleration-root'),default='constrained');parser.add_argument('--material',choices=('MM','HM'),default='MM');args=parser.parse_args()
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--run-native',action='store_true');parser.add_argument('--seed',type=Path);parser.add_argument('--resume',type=Path);parser.add_argument('--resume-cache',type=Path);parser.add_argument('--mode',choices=('constrained','acceleration-root','balanced-root'),default='constrained');parser.add_argument('--material',choices=('MM','HM'),default='MM');args=parser.parse_args()
     if not args.run_native or args.seed is None:raise SystemExit('Coordinated --run-native slot and --seed required')
     run(args.seed.resolve(),args.material,None if args.resume is None else args.resume.resolve(),None if args.resume_cache is None else args.resume_cache.resolve(),args.mode)
