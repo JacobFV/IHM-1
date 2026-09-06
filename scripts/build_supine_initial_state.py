@@ -4,6 +4,8 @@ This source-only builder does not load a native library or start a simulation.
 """
 from pathlib import Path
 import argparse
+import ast
+import math
 import hashlib
 import json
 import signal
@@ -98,6 +100,64 @@ def recipe(analysis, snapshot, identity):
                                      'accepted full-state export/import bound to exact model/contact/muscle identities'])
 
 
+def passive_expression(expression, q):
+    """Evaluate only held arithmetic/exp expressions; no Python eval or attributes."""
+    def evaluate(node):
+        if isinstance(node,ast.Expression):return evaluate(node.body)
+        if isinstance(node,ast.Constant) and type(node.value) in (int,float):return float(node.value)
+        if isinstance(node,ast.Name) and node.id in ('q','qdot'):return q if node.id=='q' else 0.
+        if isinstance(node,ast.UnaryOp) and isinstance(node.op,(ast.UAdd,ast.USub)):
+            value=evaluate(node.operand);return value if isinstance(node.op,ast.UAdd) else -value
+        if isinstance(node,ast.BinOp) and isinstance(node.op,(ast.Add,ast.Sub,ast.Mult,ast.Div)):
+            a,b=evaluate(node.left),evaluate(node.right)
+            if isinstance(node.op,ast.Add):return a+b
+            if isinstance(node.op,ast.Sub):return a-b
+            if isinstance(node.op,ast.Mult):return a*b
+            return a/b
+        if isinstance(node,ast.Call) and isinstance(node.func,ast.Name) and node.func.id=='exp' and len(node.args)==1 and not node.keywords:
+            return math.exp(evaluate(node.args[0]))
+        raise ValueError('Unsupported passive expression syntax')
+    value=evaluate(ast.parse(expression,mode='eval'))
+    if not math.isfinite(value):raise ValueError('Nonfinite passive expression')
+    return value
+
+
+def passive_neutral_seed(seed, force_source):
+    result=json.loads(json.dumps(seed));groups={}
+    for force in ET.fromstring(force_source).iter('ExpressionBasedCoordinateForce'):
+        if force.findtext('appliesForce','true')=='false':continue
+        name=force.findtext('coordinate')
+        if name in seed['seed_coordinates']:
+            groups.setdefault(name,[]).append(force.findtext('expression'))
+    receipts=[]
+    for name,expressions in groups.items():
+        def force(q):return sum(passive_expression(expression,q) for expression in expressions)
+        lo,hi=seed['coordinate_bounds'][name];original=seed['seed_coordinates'][name]
+        points=np.linspace(lo,hi,129);values=[force(float(q)) for q in points]
+        if all(v==0 for v in values):
+            chosen=original;status='identically_zero_preserved_original'
+        else:
+            roots=[float(q) for q,v in zip(points,values) if v==0]
+            for a,b,fa,fb in zip(points[:-1],points[1:],values[:-1],values[1:]):
+                if (fa<0)==(fb<0) or fa==0 or fb==0:continue
+                for _ in range(80):
+                    middle=(a+b)/2;fm=force(float(middle))
+                    if (fa<0)==(fm<0):a,fa=middle,fm
+                    else:b=middle
+                roots.append(float((a+b)/2))
+            if not roots:raise ValueError('No source-bounded passive neutral root: '+name)
+            chosen=min(roots,key=lambda q:abs(q-original));status='nearest_bracketed_passive_zero'
+        if not lo<=chosen<=hi or abs(force(chosen))>1e-6:raise ValueError('Invalid passive neutral root')
+        result['seed_coordinates'][name]=chosen
+        receipts.append(dict(coordinate=name,expressions=expressions,source_bounds=[lo,hi],
+                             original_q=original,neutral_q=chosen,original_passive_force=force(original),
+                             neutral_passive_force=force(chosen),status=status))
+    result['passive_neutral_seed']=dict(source_sha256=hashlib.sha256(force_source).hexdigest(),
+        scope='Isolated zero-speed coordinate-force roots; muscles, gravity and contact excluded from root derivation; not full equilibrium',
+        coordinates=receipts)
+    return result
+
+
 def fixture_check():
     run = ROOT/'data/derived/supine-support-5ma720yd'
     snapshot = json.loads((run/'initial_native.json').read_text())
@@ -119,8 +179,17 @@ def fixture_check():
                        [c['gap_m'] for c in shifted_report['contact_geometry']['contacts']],atol=1e-12)
     assert all(m['activation']==m['default_activation'] for m in report['muscles'] if m['default_activation'] is not None)
     assert all(m['activation']==.05 for m in report['muscles'] if m['model']=='Thelen2003Muscle')
+    passive_source=(run/'plant/native/inputs/subject_walk_scaled_ExpressionBasedCoordinateForceSet.xml').read_bytes()
+    neutral=passive_neutral_seed(plan,passive_source)
+    assert 1.5<neutral['seed_coordinates']['elbow_flex_r']<1.6
+    assert neutral['fixed_excitation']==plan['fixed_excitation']
+    assert neutral['support_plane_source_x_m']==plan['support_plane_source_x_m']
+    assert all(abs(r['neutral_passive_force'])<1e-6 for r in neutral['passive_neutral_seed']['coordinates'])
+    try:passive_expression('__import__("os").system("false")',0.)
+    except ValueError:pass
+    else:raise AssertionError('Unsafe expression accepted')
     return dict(passed=True, native_run=False, checks=['retained torso-only support','large pelvis gap',
-                'equilibrium rejection','dependent coordinate exclusion','translation invariance','unchanged excitation'])
+                'equilibrium rejection','dependent coordinate exclusion','translation invariance','unchanged excitation','source-bounded passive roots','unsafe syntax rejected'])
 
 
 def solve_native(args, seed):
@@ -208,6 +277,7 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--run',type=Path,default=ROOT/'data/derived/supine-support-5ma720yd')
     parser.add_argument('--fixture-check',action='store_true')
+    parser.add_argument('--passive-neutral',action='store_true',help='Derive source coordinate-force neutral seed')
     parser.add_argument('--solve-native',action='store_true',help='Requires explicit coordinated heavy-resource slot')
     args=parser.parse_args()
     if args.fixture_check:
@@ -224,10 +294,15 @@ def main():
     snapshot=json.loads(snapshot_path.read_text())
     analysis=analyze(snapshot,model.read_bytes())
     identity={str(p.relative_to(ROOT)):sha(p) for p in (model,snapshot_path,execution_path,Path(__file__).resolve())}
+    seed=recipe(analysis,snapshot,identity)
+    if args.passive_neutral:
+        force_source=run/'plant/native/inputs/subject_walk_scaled_ExpressionBasedCoordinateForceSet.xml'
+        if execution['source_sha256'][force_source.name]!=sha(force_source):raise ValueError('Passive source identity mismatch')
+        seed=passive_neutral_seed(seed,force_source.read_bytes())
     if args.solve_native:
-        solve_native(args,recipe(analysis,snapshot,identity));return
+        solve_native(args,seed);return
     output=Path(tempfile.mkdtemp(prefix='supine-initialization-',dir=ROOT/'data/derived'))
-    for name,value in [('analysis.json',analysis),('static_seed.json',recipe(analysis,snapshot,identity))]:
+    for name,value in [('analysis.json',analysis),('static_seed.json',seed)]:
         (output/name).write_text(json.dumps(value,indent=2,allow_nan=False)+'\n')
     print(json.dumps(dict(output=str(output),native_run=False,accepted_initial_state=False,
                          metrics=analysis['metrics'],contact_geometry=analysis['contact_geometry']),indent=2))
