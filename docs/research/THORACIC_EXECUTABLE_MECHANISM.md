@@ -7,6 +7,10 @@ cavity volume, and work-conjugate loads. It is an executable Python static/
 kinematic mechanism, not a native dynamic integrator or a physiological muscle
 model. No recoil stiffness, damping, activation, or chemical work is added.
 
+The actual current native torso is **27.654676965 kg**. This subsystem requires
+the prospective 7.418919568 kg cervical debit first; its 20.235757397 kg mass
+is not the current native torso mass and cannot be substituted directly.
+
 The source anatomy remains the [registered thoracic recipe](THORACIC_ANATOMY_RECIPE.md).
 All 48 debited moving material shares are represented. The residual core remains
 17.937704388 kg; together they recover the cervical-reduced 20.235757397 kg
@@ -45,6 +49,13 @@ interpolation. A complete native model must further validate attachment
 constraints, tissue strains and contact before using these maps dynamically.
 
 ## Complete material kinetic metric
+
+Parent velocity is the body-frame quasi-velocity
+`u_parent=(R.T @ v_world_origin, omega_body)`. Angular velocity is not an Euler
+angle derivative. A dynamic integrator must use `xdot_world=R @ v_body`,
+`Rdot=R @ skew(omega_body)`, or the equivalent chart `qdot=N(q)u`, with the
+associated convective/gyroscopic terms. The current kinetic metric alone does
+not implement those dynamics.
 
 The generalized velocity has 32 entries: three parent linear velocities,
 three parent angular velocities, 24 rib angular velocities, sternum translation
@@ -173,3 +184,8 @@ pass in roughly seven seconds under 1 GiB. No compilation or native job runs:
 OPENBLAS_NUM_THREADS=1 prlimit --as=1073741824 nice -n 10 .venv/bin/python -m scripts.verify_thoracic_mechanism
 OPENBLAS_NUM_THREADS=1 prlimit --as=1073741824 nice -n 10 .venv/bin/python -m scripts.probe_thoracic_mechanism --output <fresh workspace directory>
 ```
+
+Review hardening: diaphragm compressed bytes are hash-verified before parsing;
+parsed anatomy/prior/lobe bytes supply their own receipts without rereading.
+External node IDs must be nonnegative, in-range integers; floats and booleans
+are rejected before indexing. Historical v2 artifacts remain unchanged.

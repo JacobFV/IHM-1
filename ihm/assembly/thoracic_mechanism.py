@@ -23,6 +23,16 @@ def closed_volume(vertices,faces):
     return volume,gradient
 
 
+
+def source_node_indices(values,count):
+    array=np.asarray(values)
+    if array.ndim!=1 or not len(array):raise ValueError('Nonempty one-dimensional source-node IDs required')
+    if any(isinstance(v,(bool,np.bool_)) or not isinstance(v,(int,np.integer)) for v in values):
+        raise ValueError('Source-node IDs must be integers, not booleans or rounded floats')
+    if any(v<0 or v>=count for v in values):raise ValueError('Source-node ID outside retained geometry')
+    return array.astype(np.int64,copy=False)
+
+
 def spatial_jacobian(position,internal):
     n=len(position);result=np.zeros((n,3,32));result[:,:,:3]=np.eye(3)
     result[:,:,3:6]=np.cross(np.eye(3)[None,:,:],position[:,None,:]).transpose(0,2,1)
@@ -79,7 +89,7 @@ class ThoracicMechanism:
         return out,jac
 
     def material_state(self,ident,q,vertex_indices=None):
-        q=self.coordinates(q);m=self.material[ident];b=m['bindings'];select=slice(None) if vertex_indices is None else np.asarray(vertex_indices,int)
+        q=self.coordinates(q);m=self.material[ident];b=m['bindings'];select=slice(None) if vertex_indices is None else source_node_indices(vertex_indices,len(m['reference']))
         reference=m['reference'][select];kind=m['entry']['map_kind']
         if kind=='rigid':return self.driver(reference,np.full(len(reference),m['entry']['driver']),q)
         if kind!='moving_anchors':raise ValueError('Unknown material map')

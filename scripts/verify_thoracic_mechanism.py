@@ -1,6 +1,8 @@
 """Source-only executable mechanism checks; no native process or stiffness."""
 import unittest
 import json,hashlib
+from unittest.mock import patch
+from scripts.build_thoracic_mechanism import read_json_receipt,verified_gzip_json
 from pathlib import Path
 import numpy as np
 from ihm.assembly.thoracic_mechanism import closed_volume,ThoracicMechanism
@@ -75,6 +77,24 @@ class ThoracicMechanismTests(unittest.TestCase):
             raw=(m.path.parent/row['retained_copy']).read_bytes()
             self.assertEqual(hashlib.sha256(raw).hexdigest(),row['sha256'])
             self.assertEqual(len(raw),row['bytes'])
+
+    def test_exact_source_node_ids(self):
+        m=self.model;ident=next(iter(m.material));q=np.zeros(26)
+        for bad in [-1,.9,True,np.float64(1.),len(m.material[ident]['reference'])]:
+            with self.assertRaises(ValueError):m.point_load(ident,bad,q,[1,2,3])
+            with self.assertRaises(ValueError):m.material_state(ident,q,[bad])
+        with self.assertRaises(ValueError):m.material_state(ident,q,[True,1])
+
+    def test_read_once_and_verify_before_parse(self):
+        raw=b'{"value":1}'
+        with patch.object(Path,'read_bytes',side_effect=[raw,b'{"value":2}']) as read:
+            parsed,identity=read_json_receipt(ROOT/'unused.json')
+        self.assertEqual(read.call_count,1)
+        self.assertEqual(parsed,{'value':1})
+        self.assertEqual(identity['sha256'],hashlib.sha256(raw).hexdigest())
+        with patch.object(Path,'read_bytes',return_value=b'bad gzip'),patch('scripts.build_thoracic_mechanism.gzip.decompress') as decode:
+            with self.assertRaises(ValueError):verified_gzip_json(ROOT/'unused.gz','0'*64)
+            decode.assert_not_called()
 
     def test_locked_geometry_and_domain_rejection(self):
         m=self.model;q=np.zeros(26);q[11]=.001

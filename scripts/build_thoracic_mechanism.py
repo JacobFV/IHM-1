@@ -11,8 +11,18 @@ ANATOMY=ROOT/'data/research/thoracic_anatomy/v3/manifest.json'
 
 def packed(**arrays):
     b=io.BytesIO();np.savez_compressed(b,**arrays);return b.getvalue()
-def receipt(path):
-    raw=path.read_bytes();return {'path':str(path.relative_to(ROOT)),'sha256':hashlib.sha256(raw).hexdigest(),'bytes':len(raw)}
+def receipt(path,raw=None):
+    raw=path.read_bytes() if raw is None else raw
+    return {'path':str(path.relative_to(ROOT)),'sha256':hashlib.sha256(raw).hexdigest(),'bytes':len(raw)}
+def read_json_receipt(path):
+    raw=path.read_bytes()
+    return json.loads(raw),receipt(path,raw)
+
+def verified_gzip_json(path,expected_sha256):
+    raw=path.read_bytes()
+    if hashlib.sha256(raw).hexdigest()!=expected_sha256:raise ValueError('Compressed source identity mismatch before parsing')
+    return json.loads(gzip.decompress(raw))
+
 def cardinal(points,anchors):
     k=min(3,len(anchors));distance,index=cKDTree(anchors).query(points,k=k)
     if k==1:distance=distance[:,None];index=index[:,None]
@@ -24,7 +34,7 @@ def cardinal(points,anchors):
 def build(output):
     output=Path(output).resolve()
     if output.exists() or not output.is_relative_to(ROOT):raise ValueError('Fresh workspace artifact required')
-    anatomy=json.loads(ANATOMY.read_bytes());entities=anatomy['entities'];geometry={};drivers={}
+    anatomy,anatomy_receipt=read_json_receipt(ANATOMY);entities=anatomy['entities'];geometry={};drivers={}
     for ident,h in anatomy['rib_hinges'].items():drivers[ident]=h['coordinate_index']
     for ident in anatomy['sternum_mode']['source_entities']:drivers[ident]=24
     for ident,row in entities.items():
@@ -34,7 +44,7 @@ def build(output):
         p=json.loads(gzip.decompress(raw));v=np.asarray(p['positions'],float).reshape(-1,3)
         t=np.asarray(row['source_geometry_to_torso']);geometry[ident]=v@t[:3,:3].T+t[:3,3]
     maps={};materials={};audit=[]
-    raw=(ANATOMY.parent/anatomy['diaphragm_mode']['weights_file']).read_bytes();diaphragm=json.loads(gzip.decompress(raw))
+    diaphragm=verified_gzip_json(ANATOMY.parent/anatomy['diaphragm_mode']['weights_file'],anatomy['diaphragm_mode']['weights_sha256'])
     for ident,v in geometry.items():
         row=entities[ident];candidates=[]
         if row['kind'] in ['rib','sternum']:
@@ -75,7 +85,8 @@ def build(output):
         materials[ident]=entry|{'map_file':filename,'map_sha256':hashlib.sha256(blob).hexdigest(),'mass_kg':row['source_proxy_mass_kg']}
     # The convex solid is only an engineered cavity geometry. It is NOT native
     # lung gas volume, not a tissue mass, and includes the interlobar/mediastinal gap.
-    prior=json.loads((ROOT/'data/research/cervical_inertia/v2/manifest.json').read_bytes())
+    prior,prior_receipt=read_json_receipt(ROOT/'data/research/cervical_inertia/v2/manifest.json')
+    if prior_receipt['sha256']!=anatomy['inputs'][0]['sha256']:raise ValueError('Prior partition identity mismatch')
     original=next(e for e in prior['inputs'] if e['path'].endswith('/canonical_mechanics.json'))
     raw=gzip.decompress((ROOT/'data/research/cervical_inertia/v2'/original['retained_copy']).read_bytes())
     if hashlib.sha256(raw).hexdigest()!=original['sha256']:raise ValueError('Frozen anatomy source changed')
@@ -91,7 +102,7 @@ def build(output):
             raise ValueError('Unknown lung geometry receipt schema')
         v=np.asarray(p['positions'],float).reshape(-1,3);lung.append(v@t[:3,:3].T+t[:3,3])
         filename='lung_sources/'+path.name;lung_archives[filename]=raw
-        lung_receipts.append(receipt(path)|{'retained_copy':filename,'entity_id':e['id'],'name':e['name'],'registered_source_geometry_sha256':p.get('source_geometry_sha256'),'source_schema':'Registered Z-Anatomy topology; this snapshot has no display-decimation field' if 'display_decimation' not in p else 'Canonical topology with explicit decimation flag'})
+        lung_receipts.append(receipt(path,raw)|{'retained_copy':filename,'entity_id':e['id'],'name':e['name'],'registered_source_geometry_sha256':p.get('source_geometry_sha256'),'source_schema':'Registered Z-Anatomy topology; this snapshot has no display-decimation field' if 'display_decimation' not in p else 'Canonical topology with explicit decimation flag'})
     if len(lung)!=5:raise ValueError('Expected five retained lobe geometries')
     cloud=np.vstack(lung);hull=ConvexHull(cloud-cloud.mean(0));faces=hull.simplices.copy()
     tri=cloud[faces];normal=np.cross(tri[:,1]-tri[:,0],tri[:,2]-tri[:,0]);wrong=np.einsum('ij,ij->i',normal,hull.equations[:,:3])<0
@@ -104,7 +115,8 @@ def build(output):
     indices,weights=cardinal(cavity,all_nodes)
     cavity_blob=packed(reference=cavity,faces=faces,entity_codes=node_codes[indices],vertex_indices=node_indices[indices],weights=weights)
     locked=sorted(h['coordinate_index'] for h in anatomy['rib_hinges'].values() if h['axis_conditioning_status']=='ambiguous_geometric_axis')
-    manifest={'schema':'ihm.thoracic-mechanism.v1','native_activation_allowed':False,'anatomy_manifest':receipt(ANATOMY),
+    license_raw=(ROOT/'data/raw/anatomy/extended/License.txt').read_bytes()
+    manifest={'schema':'ihm.thoracic-mechanism.v1','native_activation_allowed':False,'anatomy_manifest':anatomy_receipt,'inertial_prior_manifest':prior_receipt,
         'code_inputs':[receipt(Path(__file__).resolve()),receipt(ROOT/'ihm/assembly/thoracic_mechanism.py')],
         'materials':materials,'moving_material_count':len(materials),'locked_internal_coordinates':locked,
         'independent_generalized_coordinates':32-len(locked),'coordinate_convention':'v_torso(3),omega_torso(3),24ribangles(rad),sternum_anterior(m),diaphragm_inferior(m); all spatial values in frozen torso axes',
@@ -114,7 +126,7 @@ def build(output):
             'vertices':len(cavity),'faces':len(faces),'source_lobes':lung_receipts,'material_entity_order':owner_ids,
             'maximum_nearest_material_node_gap_m':float(cKDTree(all_nodes).query(cavity)[0].max()),
             'derived_data_license':'CC BY-SA4.0; retained Z-Anatomy upstream attribution applies to lobe-derived cavity data',
-            'upstream_license':receipt(ROOT/'data/raw/anatomy/extended/License.txt')|{'retained_copy':'Z-Anatomy-License.txt'},
+            'upstream_license':receipt(ROOT/'data/raw/anatomy/extended/License.txt',license_raw)|{'retained_copy':'Z-Anatomy-License.txt'},
             'basis':'Closed oriented convex envelope of five registered lobe surfaces, displacement-bound to nearest mechanical material nodes',
             'gas_mapping':'Optional explicit native reference supplies constant offset Vgas0−Vgeom0. No native gas store or gas-exchange area introduced.',
             'limitations':['Convex envelope fills interlobar gaps, mediastinum and concavities; it is not actual gas-exchange volume.',
@@ -129,7 +141,7 @@ def build(output):
     output.mkdir(parents=True);(output/'maps').mkdir();(output/'lung_sources').mkdir()
     for filename,blob in maps.items():(output/filename).write_bytes(blob)
     for filename,blob in lung_archives.items():(output/filename).write_bytes(blob)
-    (output/'Z-Anatomy-License.txt').write_bytes((ROOT/'data/raw/anatomy/extended/License.txt').read_bytes())
+    (output/'Z-Anatomy-License.txt').write_bytes(license_raw)
     (output/'ATTRIBUTION.md').write_text('# Derived geometry attribution\n\nLobe sources and derived cavity geometry: Z-Anatomy — The libre3D atlas of anatomy, CC BY-SA4.0; BodyParts3D — Database Center for Life Science, upstream attribution retained in Z-Anatomy-License.txt. The generated lobe-derived cavity data are shared under CC BY-SA4.0.\n\nThoracic material maps derive from the identity-bound BodyParts3D source recipe (DBCLS, CC BY4.0). Source licenses concern retained/derived anatomical data; they do not assert a new license for unrelated repository code.\n')
     (output/'cavity.npz').write_bytes(cavity_blob);(output/'manifest.json').write_text(json.dumps(manifest,indent=2,allow_nan=False)+'\n')
     return {'output':str(output),'materials':len(materials),'independent_dofs':32-len(locked),'locked':locked,'cavity_m3':volume,'cavity_vertices':len(cavity)}
