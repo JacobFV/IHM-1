@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Prepare an immutable regional signed adapter; compile only with explicit --run."""
 from pathlib import Path
+from build_signed_coupled_native import intake_source_receipt
 import argparse,hashlib,json,os,resource,shlex,shutil,subprocess,tempfile,time
 BASE=Path(__file__).resolve().parents[1]
 SOURCE=BASE/'data/raw/physiology/biogears';RUNTIME=BASE/'data/runtime/physiology'
@@ -11,7 +12,7 @@ REVISION='3f16a5fa1dade9c511b88d923606fa51cc35e95d'
 ENGINE=SOURCE/'projects/biogears/libBiogears/src/engine/Controller/BioGearsEngine.cpp'
 ENGINE_PIN='5c29a09c536a876d569069625bbe4ef2c9e375e3ba12c48c64b94ceed49cbc95'
 ADAPTER_SOURCES=('native_biogears_regional_signed.cpp','native_regional_coupled_engine.h','native_body_ports.h',
-                 'native_tissue_ports.h','native_regional_skin.h','native_regional_species.h','native_signed_muscle_port.h')
+                 'native_tissue_ports.h','native_regional_skin.h','native_regional_species.h','native_signed_muscle_port.h','native_intake_receipts.h')
 def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
 def step_source(text):
     signature='bool BioGearsEngine::AdvanceModelTime(bool appendDataTrack)'
@@ -93,6 +94,7 @@ def main():
     if sha(VARIANT/'manifest.json')!=MANIFEST_PIN or sha(VARIANT/'libbiogears.so.8.0.0')!=LIBRARY_PIN:raise ValueError('Regional variant changed')
     if sha(ENGINE)!=ENGINE_PIN:raise ValueError('Held native lifecycle source changed')
     manifest=json.loads((VARIANT/'manifest.json').read_text())
+    intake_guard=intake_source_receipt(VARIANT)
     for name,expected in manifest['header_receipts'].items():
         if sha(BASE/'scripts'/name)!=expected or sha(VARIANT/name)!=expected:raise ValueError('Regional/signed ABI header changed: '+name)
     cwd=RUNTIME/'biogears-build/projects/biogears/libBiogears';objects=shlex.split((VARIANT/'objects.rsp').read_text())
@@ -103,7 +105,7 @@ def main():
     frozen={p:p.read_bytes() for p in sources};out=Path(tempfile.mkdtemp(prefix='regional-signed-adapter-',dir=RUNTIME))
     for path,raw in frozen.items():(out/path.name).write_bytes(raw)
     generated=out/'native_regional_coupled_step.inc';generated.write_text(step_source(ENGINE.read_text()))
-    record={'source_revision':REVISION,'source_sha256':{str(p.relative_to(BASE)):hashlib.sha256(raw).hexdigest() for p,raw in frozen.items()},
+    record={'intake_consumer_guards':{VARIANT.name:intake_guard},'source_revision':REVISION,'source_sha256':{str(p.relative_to(BASE)):hashlib.sha256(raw).hexdigest() for p,raw in frozen.items()},
         'variant':VARIANT.name,'variant_manifest_sha256':MANIFEST_PIN,'library_sha256':LIBRARY_PIN,'generated_step_sha256':sha(generated),
         'builder_sha256':sha(Path(__file__)),'engineering_fractions':{'region_a':.2,'region_b':.3,'residual':.5},'retained_build':str(out.relative_to(BASE))}
     (out/'preparation.json').write_text(json.dumps(record,indent=2)+'\n')

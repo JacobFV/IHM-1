@@ -12,6 +12,7 @@
 #include "native_regional_coupled_engine.h"
 #include "native_tissue_ports.h"
 #include "native_signed_muscle_port.h"
+#include "native_intake_receipts.h"
 #include <memory>
 #include <iostream>
 #include <iomanip>
@@ -19,6 +20,7 @@
 #include <cmath>
 #include <regex>
 int main(int argc, char** argv) {
+ try {
   if(argc!=4) return 4;
   auto bg=std::make_unique<RegionalCoupledBioGearsEngine>("native_engine.log");
   if(std::string(argv[2])=="-" || !bg->LoadState(argv[2])) return 2;
@@ -31,11 +33,25 @@ int main(int argc, char** argv) {
   const double origin=bg->GetSimulationTime(TimeUnit::s);
   ihm_signed::Record last_port;bool has_port=false;std::string fixed_reference;
   auto pending_meal=[&](){return engine->GetActions().GetPatientActions().HasConsumeNutrients();};
+  ihm_intake::Ledger intake(ihm_intake::epoch());
+  if(pending_meal())throw std::runtime_error("Loaded pending intake has no accepted command identity");
+  auto held_intake=[&]()->std::optional<ihm_intake::Payload>{
+    if(!pending_meal())return std::nullopt;
+    if(engine->GetState()!=EngineState::Active)throw std::runtime_error("Intake consumer is not in the audited Active phase");
+    auto* held=engine->GetActions().GetPatientActions().GetConsumeNutrients();
+    if(!held || held->HasNutritionFile())throw std::runtime_error("Unbound native intake action payload");
+    return ihm_intake::capture(held->GetNutrition(),MassUnit::kg,MassUnit::g,MassUnit::mg,VolumeUnit::mL);
+  };
+  auto before_native=[&](){
+    intake.before(held_intake(),static_cast<std::uint64_t>(seq),static_cast<std::uint64_t>(ticks),bg->GetSimulationTime(TimeUnit::s));
+    std::cerr<<"INTAKE_ATTEMPT ";intake.write_attempt(std::cerr);std::cerr<<std::endl;
+  };
   std::cout<<"ENGINE_VERSION="<<full_version_string()<<'\n';
   auto emit=[&](const std::string& status){
     std::cout<<std::setprecision(17)<<"IHM\t{\"sequence\":"<<seq<<",\"status\":\""<<status<<"\",\"time_s\":"<<bg->GetSimulationTime(TimeUnit::s)<<",\"elapsed_s\":"<<ticks*.02<<",\"origin_s\":"<<origin<<",\"values\":{";
     bool first=true;
     auto observations=body_ports(*engine);
+    observations["patient_weight_kg"]=engine->GetPatient().GetWeight(MassUnit::kg);
     observations.merge(native_tissue_ports(*engine));
     observations["coupling.external_pressure_pa"]=bg->external_pressure_pa;
     observations["coupling.generated_driver_pa"]=bg->generated_driver_pa;
@@ -66,7 +82,8 @@ int main(int argc, char** argv) {
       std::cout<<'\"'<<key<<"\":";
       if(std::isfinite(value)) std::cout<<value; else std::cout<<"null";
     }
-    std::cout<<"},\"pending_meal\":"<<(pending_meal()?"true":"false")<<"}"<<std::endl;
+    std::cout<<"},\"pending_meal\":"<<(pending_meal()?"true":"false")<<",\"intake\":";
+    intake.write_json(std::cout);std::cout<<"}"<<std::endl;
   };
   emit("ready"); std::string line;
   while(std::getline(std::cin,line)) {
@@ -85,10 +102,13 @@ int main(int argc, char** argv) {
         if(ok) {
           try {
             ihm_signed::Scope scope(&record);
-            if(!bg->AdvanceModelTime())return 8;
+            before_native();
+            if(!bg->AdvanceModelTime())throw std::runtime_error("Native advancement failed before intake commit");
             ihm_signed::finish(record);
+            intake.commit(pending_meal(),static_cast<std::uint64_t>(ticks+1),bg->GetSimulationTime(TimeUnit::s));
             ++ticks;fixed_reference=reference;last_port=record;has_port=true;
           } catch(const std::exception& error) {
+            intake.terminal_failure();
             std::cerr<<std::setprecision(17)<<"SIGNED_NATIVE_FAILURE: "<<error.what()
               <<" delta_m_w="<<record.delta_m_W<<" delta_h_w="<<record.delta_h_W<<" delta_w_w="<<record.delta_w_W
               <<" allowed_decrement_w="<<record.allowed_decrement_W<<" heat_count="<<record.heat_count
@@ -101,7 +121,12 @@ int main(int argc, char** argv) {
     else if(op=="step") {
       long count=0;
       if(!fixed_reference.empty() || !(input>>count) || count<1 || count>horizon-ticks || (input>>extra)) ok=false;
-      else for(long i=0;i<count;++i) { if(!bg->AdvanceModelTime()) return 8; ++ticks; }
+      else for(long i=0;i<count;++i) {
+        before_native();
+        if(!bg->AdvanceModelTime())throw std::runtime_error("Native advancement failed before intake commit");
+        intake.commit(pending_meal(),static_cast<std::uint64_t>(ticks+1),bg->GetSimulationTime(TimeUnit::s));
+        ++ticks;
+      }
     } else if(op=="regional_skin_pressure") {
       std::string region;double value;
       if(!(input>>region>>value) || !std::isfinite(value) || value<0 || value>5000 || (input>>extra))ok=false;
@@ -139,6 +164,11 @@ int main(int argc, char** argv) {
           n.GetFat().SetValue(f,MassUnit::g); n.GetSodium().SetValue(s,MassUnit::g);
           n.GetCalcium().SetValue(ca,MassUnit::mg); n.GetWater().SetValue(w,VolumeUnit::mL);
           ok=bg->ProcessAction(a);
+          if(ok) {
+            auto held=held_intake();
+            if(!held)throw std::runtime_error("Accepted native intake action was not retained");
+            intake.accepted(static_cast<std::uint64_t>(seq),*held);
+          } else if(pending_meal())throw std::runtime_error("Rejected intake left a native pending action");
         }
       }
     } else if(op=="save") {
@@ -155,5 +185,6 @@ int main(int argc, char** argv) {
     return 9;
   }
   return 0;
+ }catch(const std::exception& error){std::cerr<<"INTAKE_NATIVE_FAILURE: "<<error.what()<<std::endl;return 16;}
 }
 

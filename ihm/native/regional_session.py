@@ -11,7 +11,7 @@ class RegionalSignedNativeSession(SignedCoupledNativeSession):
     executable_name='native_biogears_regional_signed'
     adapter_sources=('native_biogears_regional_signed.cpp','native_regional_coupled_engine.h',
         'native_body_ports.h','native_tissue_ports.h','native_regional_skin.h',
-        'native_regional_species.h','native_signed_muscle_port.h')
+        'native_regional_species.h','native_signed_muscle_port.h','native_intake_receipts.h')
     regions=('region_a','region_b','residual')
     supports_whole_skin_compression=False
 
