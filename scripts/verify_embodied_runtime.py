@@ -72,6 +72,16 @@ class Tests(unittest.TestCase):
         self.assertEqual(body.neural.inputs[2]['additional_sensory_inputs_hz'],{})
         self.assertAlmostEqual(receptor.time_s,body.time_s)
         before=receptor.checkpoint()
+        body.mechanical_state['cutaneous_contacts']=[{'id':'fixture','force_n':[0,0,-2]}]
+        project=body.respiratory_load.project_load
+        def fail(*args):raise ValueError('load projection rejected')
+        body.respiratory_load.project_load=fail
+        with self.assertRaisesRegex(ValueError,'load projection'):body.step({})
+        self.assertEqual(before,receptor.checkpoint())
+        self.assertAlmostEqual(body.plant.t,body.time_s)
+        self.assertAlmostEqual(body.neural.t,body.time_s)
+        body.respiratory_load.project_load=project
+        body.mechanical_state.pop('cutaneous_contacts')
         # Missing physical observation is unknown, never silently a release.
         with self.assertRaisesRegex(ValueError,'cutaneous contacts'):body.step({})
         self.assertEqual(before,receptor.checkpoint())
