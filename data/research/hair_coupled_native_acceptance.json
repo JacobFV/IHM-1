@@ -1,0 +1,1920 @@
+{
+  "schema": "ihm.hair-coupled-native-acceptance.v1",
+  "live_enabled": false,
+  "output": "data/derived/hair-coupled-native-e01u9psr",
+  "binary_sha256": "370b28d2c7ede38e73db2f1d108b0387aa1a8d58a73b34cc792017e3777601ee",
+  "intervals": [
+    {
+      "interval": 0,
+      "native_time_s": 0.0001,
+      "hair_time_s": 0.0001,
+      "linear_momentum_change": [
+        2.8398794427175744e-10,
+        2.160134887672259e-11,
+        -6.165901123011963e-14
+      ],
+      "angular_momentum_change": [
+        7.730621698343043e-14,
+        -9.39352762241441e-14,
+        -1.5426326882561625e-11
+      ],
+      "total_mechanical_energy_change_j": 0.0014384000256781881,
+      "native_external_work_j": -1.2406441558747673e-10,
+      "native_signed_active_fiber_work_j": 8.359244184698862e-07,
+      "native_muscle_heat_energy_j": 0.013068363791013364,
+      "hair_audit": {
+        "surface_contact_impulse_ns": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "surface_contact_angular_impulse_nms": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "hair_body_impulse_residual_ns": [
+          -9.761919457566023e-17,
+          4.97055739690919e-17,
+          -3.591941812760877e-17
+        ],
+        "hair_body_angular_impulse_residual_nms": [
+          2.5408275157686357e-15,
+          -8.678067605391872e-16,
+          2.1678077580148051e-16
+        ],
+        "maximum_transverse_slope": 0.00015588853388052144,
+        "within_small_deflection": true,
+        "hair_energy_change_j": 1.1818668547804712e-10,
+        "interface_body_work_j": -1.2407759303199253e-10,
+        "external_gravity_work_j": 0.0,
+        "normal_impact_dissipation_j": 0.0,
+        "friction_dissipation_j": 0.0,
+        "hair_numerical_energy_defect_j": -5.890907553945413e-12,
+        "contact_count": 0,
+        "unresolved_edge_contacts": 0,
+        "maximum_position_correction_m": 0.0,
+        "substeps": 1,
+        "canonical_reaction_wrenches": [
+          {
+            "body": "pelvis",
+            "point_m": [
+              -4.986236217318328e-05,
+              0.092249255449252,
+              0.08882676081306215
+            ],
+            "force_n": [
+              3.089226801353625e-11,
+              -1.2172745100644435e-09,
+              -2.0827357494594566e-09
+            ],
+            "moment_nm": [
+              -2.2923158519573127e-10,
+              8.115880201203372e-12,
+              -5.1918949279337524e-11
+            ],
+            "kind": "interval_mean_hair_reaction_wrench"
+          },
+          {
+            "body": "femur_r",
+            "point_m": [
+              -0.08361525857630146,
+              0.009447170613311795,
+              0.01667367324430988
+            ],
+            "force_n": [
+              3.068949939091336e-11,
+              -6.9960845490610994e-09,
+              6.934855131974501e-09
+            ],
+            "moment_nm": [
+              -1.7011857244744962e-09,
+              7.684129890875603e-10,
+              -2.0643276954460333e-10
+            ],
+            "kind": "interval_mean_hair_reaction_wrench"
+          },
+          {
+            "body": "tibia_r",
+            "point_m": [
+              -0.08484658905124574,
+              -0.38434774665823723,
+              -0.011028446815111698
+            ],
+            "force_n": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "moment_nm": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "kind": "interval_mean_hair_reaction_wrench"
+          },
+          {
+            "body": "patella_r",
+            "point_m": [
+              -0.08523740725103751,
+              -0.400732887257929,
+              0.029549874377116953
+            ],
+            "force_n": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "moment_nm": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "kind": "interval_mean_hair_reaction_wrench"
+          },
+          {
+            "body": "talus_r",
+            "point_m": [
+              -0.08639900340227412,
+              -0.8469988677530925,
+              -0.060767717262433185
+            ],
+            "force_n": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "moment_nm": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "kind": "interval_mean_hair_reaction_wrench"
+          },
+          {
+            "body": "calcn_r",
+            "point_m": [
+              -0.09650985573590791,
+              -0.8981501627820477,
+              -0.12512261055967297
+            ],
+            "force_n": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "moment_nm": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "kind": "interval_mean_hair_reaction_wrench"
+          },
+          {
+            "body": "toes_r",
+            "point_m": [
+              -0.09842152321632879,
+              -0.9147976711424991,
+              0.052904950207846996
+            ],
+            "force_n": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "moment_nm": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "kind": "interval_mean_hair_reaction_wrench"
+          },
+          {
+            "body": "femur_l",
+            "point_m": [
+              0.08350007141473867,
+              0.008808908451454545,
+              0.017394654571769627
+            ],
+            "force_n": [
+              1.0340316876883824e-09,
+              -2.4615451757914925e-09,
+              3.8001933641187155e-09
+            ],
+            "moment_nm": [
+              -1.8275807421890187e-09,
+              -6.361477420666459e-11,
+              4.560795949730904e-10
+            ],
+            "kind": "interval_mean_hair_reaction_wrench"
+          },
+          {
+            "body": "tibia_l",
+            "point_m": [
+              0.08196240596168855,
+              -0.384984838837512,
+              -0.010308787100691122
+            ],
+            "force_n": [
+              -1.3551977276749552e-09,
+              -1.7092051488849498e-09,
+              4.132156917736848e-10
+            ],
+            "moment_nm": [
+              -1.2892260900634593e-12,
+              -1.2092805695356765e-11,
+              -5.4223947344724346e-11
+            ],
+            "kind": "interval_mean_hair_reaction_wrench"
+          },
+          {
+            "body": "patella_l",
+            "point_m": [
+              0.08187792274000263,
+              -0.40137114941978635,
+              0.030270855704576702
+            ],
+            "force_n": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "moment_nm": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "kind": "interval_mean_hair_reaction_wrench"
+          },
+          {
+            "body": "talus_l",
+            "point_m": [
+              0.08040999899517372,
+              -0.8476359599605708,
+              -0.0600480575161538
+            ],
+            "force_n": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "moment_nm": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "kind": "interval_mean_hair_reaction_wrench"
+          },
+          {
+            "body": "calcn_l",
+            "point_m": [
+              0.09068474040313108,
+              -0.8988651135147311,
+              -0.12431500177581781
+            ],
+            "force_n": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "moment_nm": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "kind": "interval_mean_hair_reaction_wrench"
+          },
+          {
+            "body": "toes_l",
+            "point_m": [
+              0.09093305343493781,
+              -0.9155208714704254,
+              0.05372187773952185
+            ],
+            "force_n": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "moment_nm": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "kind": "interval_mean_hair_reaction_wrench"
+          },
+          {
+            "body": "torso",
+            "point_m": [
+              0.0008025691563643004,
+              0.19356536431354188,
+              -0.0190652647883865
+            ],
+            "force_n": [
+              3.1787215553825668e-06,
+              -1.2955122247056621e-05,
+              -8.775274365592334e-05
+            ],
+            "moment_nm": [
+              -5.2179570756532114e-05,
+              -8.190750410965382e-08,
+              -1.8758589171424507e-06
+            ],
+            "kind": "interval_mean_hair_reaction_wrench"
+          },
+          {
+            "body": "humerus_r",
+            "point_m": [
+              -0.19665121040975017,
+              0.5778424945963226,
+              0.01573193161125827
+            ],
+            "force_n": [
+              2.4018808997820293e-08,
+              -7.400056658093833e-08,
+              1.5972476843365913e-07
+            ],
+            "moment_nm": [
+              -4.3528286569868166e-08,
+              3.4604509902975758e-09,
+              8.148981974189177e-09
+            ],
+            "kind": "interval_mean_hair_reaction_wrench"
+          },
+          {
+            "body": "ulna_r",
+            "point_m": [
+              -0.18788674714357814,
+              0.2576970478378905,
+              0.003853910902246859
+            ],
+            "force_n": [
+              7.572420426454677e-10,
+              2.0834926193996605e-08,
+              1.3396576578582815e-08
+            ],
+            "moment_nm": [
+              -5.051525273228977e-10,
+              7.7724629199424e-10,
+              -1.1802605964829455e-09
+            ],
+            "kind": "interval_mean_hair_reaction_wrench"
+          },
+          {
+            "body": "radius_r",
+            "point_m": [
+              -0.21637272948952294,
+              0.24541836752335067,
+              -0.0045058247177398696
+            ],
+            "force_n": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "moment_nm": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "kind": "interval_mean_hair_reaction_wrench"
+          },
+          {
+            "body": "hand_r",
+            "point_m": [
+              -0.23200221595639356,
+              0.010946246788941849,
+              -0.03330467867911096
+            ],
+            "force_n": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "moment_nm": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "kind": "interval_mean_hair_reaction_wrench"
+          },
+          {
+            "body": "humerus_l",
+            "point_m": [
+              0.20087823425056603,
+              0.5763242137613781,
+              0.017446982568767064
+            ],
+            "force_n": [
+              -3.044267819307952e-09,
+              -1.6748118752597155e-08,
+              2.702916132153593e-08
+            ],
+            "moment_nm": [
+              -5.940856639491481e-09,
+              -6.548365294352352e-10,
+              -1.0748755942079976e-09
+            ],
+            "kind": "interval_mean_hair_reaction_wrench"
+          },
+          {
+            "body": "ulna_l",
+            "point_m": [
+              0.18977146320405563,
+              0.2562546610395483,
+              0.005483231909703853
+            ],
+            "force_n": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "moment_nm": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "kind": "interval_mean_hair_reaction_wrench"
+          },
+          {
+            "body": "radius_l",
+            "point_m": [
+              0.21823389552700373,
+              0.24375847812807228,
+              -0.0026308126440778307
+            ],
+            "force_n": [
+              3.672046006274691e-09,
+              7.206962751846369e-08,
+              2.364822883707442e-07
+            ],
+            "moment_nm": [
+              3.024664454994568e-09,
+              -1.0894314988193475e-08,
+              3.27323357520189e-09
+            ],
+            "kind": "interval_mean_hair_reaction_wrench"
+          },
+          {
+            "body": "hand_l",
+            "point_m": [
+              0.2323198529754662,
+              0.009172865450853829,
+              -0.031301466037605856
+            ],
+            "force_n": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "moment_nm": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "kind": "interval_mean_hair_reaction_wrench"
+          }
+        ],
+        "body_impulse_ns": [
+          3.203865800337417e-10,
+          -1.2965350488061499e-09,
+          -8.730704533278041e-09
+        ],
+        "body_angular_impulse_nms": [
+          -6.929263073231009e-09,
+          -1.012227817533861e-11,
+          -2.4827441170587024e-10
+        ],
+        "native_hair_work_j": -1.2406441558747676e-10,
+        "hair_plus_native_interface_work_j": -5.877730109429641e-12,
+        "interface_work_quadrature_defect_j": 1.3177444515772235e-14,
+        "iterations": 1,
+        "boundary_position_residual_m": 4.0711668635337094e-14,
+        "boundary_tolerance_m": 1e-10,
+        "root_position_residual_m": 4.069422650795726e-14,
+        "root_tolerance_m": 1e-09,
+        "clamp_position_residual_m": 4.104856303035261e-14,
+        "coverage": "Opt-in authoritative Python straight small-deflection beams; moving registered face-interior centerline contact and full single-owner follicle clamp reaction; zero radial clearance, no edges/CCD/self-contact, no viewer synchronization"
+      }
+    },
+    {
+      "interval": 1,
+      "native_time_s": 0.0002,
+      "hair_time_s": 0.0002,
+      "linear_momentum_change": [
+        2.1693353779994595e-09,
+        1.7095477320085643e-10,
+        -2.6989521728637555e-13
+      ],
+      "angular_momentum_change": [
+        5.898198596199222e-13,
+        5.935529845402243e-14,
+        -1.2374812285997905e-10
+      ],
+      "total_mechanical_energy_change_j": 0.00570830985904891,
+      "native_external_work_j": -4.226002503070441e-10,
+      "native_signed_active_fiber_work_j": 4.933370663166771e-06,
+      "native_muscle_heat_energy_j": 0.026137936423224904,
+      "hair_audit": {
+        "surface_contact_impulse_ns": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "surface_contact_angular_impulse_nms": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "hair_body_impulse_residual_ns": [
+          -2.4799698636229873e-17,
+          1.2749741340550885e-17,
+          2.959310440685626e-17
+        ],
+        "hair_body_angular_impulse_residual_nms": [
+          5.009885359161792e-15,
+          -1.5710233164012404e-15,
+          2.500580378632041e-16
+        ],
+        "maximum_transverse_slope": 0.0003608473954679791,
+        "within_small_deflection": true,
+        "hair_energy_change_j": 2.7472595799711836e-10,
+        "interface_body_work_j": -2.9856307515527664e-10,
+        "external_gravity_work_j": 0.0,
+        "normal_impact_dissipation_j": 0.0,
+        "friction_dissipation_j": 0.0,
+        "hair_numerical_energy_defect_j": -2.383711715815828e-11,
+        "contact_count": 0,
+        "unresolved_edge_contacts": 0,
+        "maximum_position_correction_m": 0.0,
+        "substeps": 1,
+        "canonical_reaction_wrenches": [
+          {
+            "body": "pelvis",
+            "point_m": [
+              -4.9868480422107266e-05,
+              0.09224915209003437,
+              0.08882807824547305
+            ],
+            "force_n": [
+              4.659752924850582e-11,
+              -2.4479735729554685e-09,
+              -4.160600595163751e-09
+            ],
+            "moment_nm": [
+              -4.6258659078594066e-10,
+              2.2287175280453738e-11,
+              -1.0685516586385474e-10
+            ],
+            "kind": "interval_mean_hair_reaction_wrench"
+          },
+          {
+            "body": "femur_r",
+            "point_m": [
+              -0.08361531040840754,
+              0.009447071236446614,
+              0.01667503905097378
+            ],
+            "force_n": [
+              -6.560897454603231e-11,
+              -1.4185604794735707e-08,
+              1.3737425390559142e-08
+            ],
+            "moment_nm": [
+              -3.3941492766570637e-09,
+              1.5466449915904607e-09,
+              -4.3927261375430037e-10
+            ],
+            "kind": "interval_mean_hair_reaction_wrench"
+          },
+          {
+            "body": "tibia_r",
+            "point_m": [
+              -0.08484664354228465,
+              -0.3843478394646862,
+              -0.0110271377244259
+            ],
+            "force_n": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "moment_nm": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "kind": "interval_mean_hair_reaction_wrench"
+          },
+          {
+            "body": "patella_r",
+            "point_m": [
+              -0.08523744103490705,
+              -0.40073296591730934,
+              0.029551196932051802
+            ],
+            "force_n": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "moment_nm": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "kind": "interval_mean_hair_reaction_wrench"
+          },
+          {
+            "body": "talus_r",
+            "point_m": [
+              -0.08639907400201052,
+              -0.8469989790594968,
+              -0.060766235590853424
+            ],
+            "force_n": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "moment_nm": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "kind": "interval_mean_hair_reaction_wrench"
+          },
+          {
+            "body": "calcn_r",
+            "point_m": [
+              -0.09650996621974041,
+              -0.8981500004073804,
+              -0.1251213401512587
+            ],
+            "force_n": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "moment_nm": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "kind": "interval_mean_hair_reaction_wrench"
+          },
+          {
+            "body": "toes_r",
+            "point_m": [
+              -0.09842142969342307,
+              -0.9147982835608324,
+              0.05290615035352618
+            ],
+            "force_n": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "moment_nm": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "kind": "interval_mean_hair_reaction_wrench"
+          },
+          {
+            "body": "femur_l",
+            "point_m": [
+              0.08350002012328366,
+              0.008808818553564635,
+              0.017395903443514323
+            ],
+            "force_n": [
+              2.0620309393413275e-09,
+              -4.871137472661112e-09,
+              7.493450736910668e-09
+            ],
+            "moment_nm": [
+              -3.6055950300533672e-09,
+              -1.2790704034430708e-10,
+              9.090357658384746e-10
+            ],
+            "kind": "interval_mean_hair_reaction_wrench"
+          },
+          {
+            "body": "tibia_l",
+            "point_m": [
+              0.08196236538089195,
+              -0.38498492235904486,
+              -0.010307593496657438
+            ],
+            "force_n": [
+              -2.6789753934868282e-09,
+              -3.485284772017501e-09,
+              8.018534869096743e-10
+            ],
+            "moment_nm": [
+              5.903813383946529e-13,
+              -2.4398686778930022e-11,
+              -1.0401578696426357e-10
+            ],
+            "kind": "interval_mean_hair_reaction_wrench"
+          },
+          {
+            "body": "patella_l",
+            "point_m": [
+              0.08187791895624122,
+              -0.4013712190458971,
+              0.030272062424347507
+            ],
+            "force_n": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "moment_nm": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "kind": "interval_mean_hair_reaction_wrench"
+          },
+          {
+            "body": "talus_l",
+            "point_m": [
+              0.08040995811998203,
+              -0.8476360617692668,
+              -0.06004669380411316
+            ],
+            "force_n": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "moment_nm": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "kind": "interval_mean_hair_reaction_wrench"
+          },
+          {
+            "body": "calcn_l",
+            "point_m": [
+              0.09068466135465249,
+              -0.8988649398489482,
+              -0.12431386375493225
+            ],
+            "force_n": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "moment_nm": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "kind": "interval_mean_hair_reaction_wrench"
+          },
+          {
+            "body": "toes_l",
+            "point_m": [
+              0.09093301032404795,
+              -0.9155214735827573,
+              0.053722943132755704
+            ],
+            "force_n": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "moment_nm": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "kind": "interval_mean_hair_reaction_wrench"
+          },
+          {
+            "body": "torso",
+            "point_m": [
+              0.0008024817934732384,
+              0.1935652741112227,
+              -0.019063935642841583
+            ],
+            "force_n": [
+              6.286690820953529e-06,
+              -2.6185282064893632e-05,
+              -0.00017758628406746376
+            ],
+            "moment_nm": [
+              -0.00010568407046614092,
+              -1.5145860599666031e-07,
+              -3.71254793707352e-06
+            ],
+            "kind": "interval_mean_hair_reaction_wrench"
+          },
+          {
+            "body": "humerus_r",
+            "point_m": [
+              -0.19665129567871076,
+              0.5778423876699109,
+              0.015733457327853567
+            ],
+            "force_n": [
+              4.3209520145247576e-08,
+              -1.524234960480726e-07,
+              3.236915507429875e-07
+            ],
+            "moment_nm": [
+              -8.844533920422094e-08,
+              7.531240117045077e-09,
+              1.535323218502745e-08
+            ],
+            "kind": "interval_mean_hair_reaction_wrench"
+          },
+          {
+            "body": "ulna_r",
+            "point_m": [
+              -0.18788717523073492,
+              0.2576969899998748,
+              0.003853860704584407
+            ],
+            "force_n": [
+              1.502209093616404e-09,
+              4.159081200264774e-08,
+              2.6582225063055202e-08
+            ],
+            "moment_nm": [
+              -9.88602380853772e-10,
+              1.5422807983702664e-09,
+              -2.3572157757369234e-09
+            ],
+            "kind": "interval_mean_hair_reaction_wrench"
+          },
+          {
+            "body": "radius_r",
+            "point_m": [
+              -0.21637312622339336,
+              0.24541816801196947,
+              -0.004505773662384926
+            ],
+            "force_n": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "moment_nm": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "kind": "interval_mean_hair_reaction_wrench"
+          },
+          {
+            "body": "hand_r",
+            "point_m": [
+              -0.2320021102227508,
+              0.010945755966792592,
+              -0.03330252846674163
+            ],
+            "force_n": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "moment_nm": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "kind": "interval_mean_hair_reaction_wrench"
+          },
+          {
+            "body": "humerus_l",
+            "point_m": [
+              0.20087815026449274,
+              0.5763241294967142,
+              0.017448230965725786
+            ],
+            "force_n": [
+              -6.101681026614646e-09,
+              -3.338772270796652e-08,
+              5.3830298903158596e-08
+            ],
+            "moment_nm": [
+              -1.18344465653457e-08,
+              -1.3008136062999445e-09,
+              -2.1482661367168265e-09
+            ],
+            "kind": "interval_mean_hair_reaction_wrench"
+          },
+          {
+            "body": "ulna_l",
+            "point_m": [
+              0.18977175611515967,
+              0.2562546219724243,
+              0.005482921332364653
+            ],
+            "force_n": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "moment_nm": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "kind": "interval_mean_hair_reaction_wrench"
+          },
+          {
+            "body": "radius_l",
+            "point_m": [
+              0.21823414524732423,
+              0.24375830094801276,
+              -0.0026310620211008207
+            ],
+            "force_n": [
+              1.0147819479476575e-08,
+              1.4544786481584787e-07,
+              4.7392891941103037e-07
+            ],
+            "moment_nm": [
+              6.106398998656718e-09,
+              -2.1956453965233275e-08,
+              6.607808700926435e-09
+            ],
+            "kind": "interval_mean_hair_reaction_wrench"
+          },
+          {
+            "body": "hand_l",
+            "point_m": [
+              0.2323195669080662,
+              0.00917240263452257,
+              -0.03129964146776241
+            ],
+            "force_n": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "moment_nm": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "kind": "interval_mean_hair_reaction_wrench"
+          }
+        ],
+        "body_impulse_ns": [
+          6.334812732745812e-10,
+          -2.620904460744355e-09,
+          -1.7669037894432437e-08
+        ],
+        "body_angular_impulse_nms": [
+          -1.4031677663236756e-08,
+          -1.860809994800916e-11,
+          -4.910408836418385e-10
+        ],
+        "native_hair_work_j": -2.985358347195673e-10,
+        "hair_plus_native_interface_work_j": -2.3809876722448948e-11,
+        "interface_work_quadrature_defect_j": 2.7240435709330924e-14,
+        "iterations": 1,
+        "boundary_position_residual_m": 8.250255839543767e-14,
+        "boundary_tolerance_m": 1e-10,
+        "root_position_residual_m": 8.24667006064026e-14,
+        "root_tolerance_m": 1e-09,
+        "clamp_position_residual_m": 8.318749652384462e-14,
+        "coverage": "Opt-in authoritative Python straight small-deflection beams; moving registered face-interior centerline contact and full single-owner follicle clamp reaction; zero radial clearance, no edges/CCD/self-contact, no viewer synchronization"
+      }
+    }
+  ],
+  "replay_exact_hair": true,
+  "nonconvergence_atomic_rollback": true,
+  "final_time_s": 0.0002,
+  "wall_s": 0.4204636600043159,
+  "limitations": [
+    "Sparse94follicle faces only; no complete containment, edges,CCD,finite radius,self-contact or garment",
+    "Native muscles/passive tissue remain active; reported total mechanical change is not a closed whole-native energy certificate",
+    "Current22body reduction; scalp structural torso prior; no viewer synchronization",
+    "No face collision occurred in the actual native pose: this receipt exercises moving follicle clamp reactions only"
+  ],
+  "input_identity": {
+    "schema": "ihm.hair-residual-native-input.v1",
+    "native_started": false,
+    "live_enabled": false,
+    "destination": "data/derived/hair-coupled-native-e01u9psr/inputs",
+    "dependencies": {
+      "data/research/hair_native_partition.json": "4d0a755a7237a224749d9741e63bf7a395a65f9fa9e76f7d0f846c9bb73d3c06",
+      "data/research/hair_source_factory.json": "525e5377b41014c8ba81404e9ab9d511a21739145d4467fe17f759dbe7b8140b",
+      "data/derived/hair/elastic_v3/manifest_fragment.json": "037903f22f4ba60efd1e125561710ee14636f1ab02a507b783be6a2558126619",
+      "data/derived/canonical/geometry/body-bp3d-FJ2810.json.gz": "e724b62e6fc21764a0cf79c1874e96b9852755dc420711360a02d0b7afd93d05",
+      "data/derived/hair/elastic_v3/body-dynamic-scalp-hair.json.gz": "ef49c1c94fd6eebbeba1aa86d7e585e802b6d85c65950c488d3606ec7f5fd06b",
+      "data/derived/hair/elastic_v3/scalp_population.npz": "368660493c9a9b36a9b4e9c76d67379575e05b87a9cfc018ec1f558724b19131",
+      "data/derived/hair/elastic_v3/body-dynamic-body-hair.json.gz": "ff78ef6d8d1f9e77caa8025a354656eaf3b78df910fc290bbde9b21747788e38",
+      "data/derived/canonical/hair_samples.npz": "2298fcee67979b6f42865352a5990b2d3a89d8eb62dd8ffb68e892ed41569987",
+      "data/derived/canonical/mechanics.json": "50c2d7752631ead840fa45f0e854379de9761fcf913e1b4e39188747a1b3bc0d",
+      "data/derived/mechanics/whole_body_arm26_v2/registration.json": "9bae06c73db2c98589f8baf76ef82c5f79d3ccc7ec4b4aba0382bebd967912af",
+      "data/derived/mechanics/whole_body_arm26_v2/subject_with_arms.osim": "e697dc40b2939f5edbc2879bcbd7e5954ffbabbb234032c403d57f5c39ea3810",
+      "data/derived/audits/cutaneous-factory-ylro2d66/body/mechanics/identity.json": "9d5bc1975d1e9a2e9c3703b05a17fd3e003bc3c387c407fd10891cecfe9e328b",
+      "data/derived/audits/cutaneous-factory-ylro2d66/body/mechanics/registration.json": "6e0dc4aae2543cb24aea6d010d1030f31ebde928767490a3b98ba03a9dae521e",
+      "data/derived/audits/cutaneous-factory-ylro2d66/body/mechanics/native/assembled_model.osim": "899148fee8932126fd266a64f38c95a7fbecaa6651df908c8e4e890a8197b9d6",
+      "data/measurements/hair/strand_reference.json": "8e895ab22c4f64bab3283bcdb8f4ca1f0c1835a9ee0dd601387309ed5fc8f6eb",
+      "scripts/audit_hair_source_factory.py": "e0b05415f800964eaf981b501bb0be2db7e09d5441b4a760f7e33f9f5de8badb",
+      "ihm/assembly/source_skin.py": "f7915c92222f40108124c35fc54f0b1573959872a725539c35b878212bd5f060",
+      "ihm/assembly/hair_source_factory.py": "6b9d8c0de363449f38d9853042f2bbd31782b9d73756dad45986c0d21904d69a",
+      "ihm/assembly/hair_dynamics.py": "c575bc26d5bc9ecaefce8756172a0938266c11a6465a20fa65dda40fc6452a38",
+      "data/derived/audits/cutaneous-factory-ylro2d66/body/mechanics/native/inputs/surface_contact_manifest.json": "6c2216146edf30f30f4b1f3135d1817c453336444e73dc94d430cb45daa17458",
+      "data/research/engineered_skin_territories/materialization.json": "de669f96f6db5b150dd467f149464677e19f22ec2e7be5a77d895d873b3fef1a",
+      "scripts/materialize_hair_native_partition.py": "df7cf8883b9c9db9bdac9d97fce9fbb72894cbbd2659f57a4d830f4340bb534f",
+      "ihm/assembly/hair_source_ownership.py": "850a0c911001b1c31d1bcb8f0575294fbca0fd7c53c60301da63c6047219c596",
+      "data/raw/mechanics/opensim-core/OpenSim/Examples/Moco/example3DWalking/subject_walk_scaled_ExpressionBasedCoordinateForceSet.xml": "ff09a63fa9c2036a3692214889c87bee28bea6f51a503233692b288c5b28aba0",
+      "data/raw/mechanics/opensim-core/OpenSim/Examples/Moco/example3DWalking/subject_walk_scaled_FunctionBasedPathSet.xml": "932ac403e4d6d0d10d9a9da551e43d0ded94dd2b99c370f9b25053ee9232f8a5",
+      "data/raw/mechanics/opensim-core/OpenSim/Examples/Moco/example3DWalking/subject_walk_scaled_ContactForceSet.xml": "659d571d9f731c9e119d93371edcd46c7fc265796ef0681670d46bd875b1b54d",
+      "data/raw/mechanics/opensim-core/OpenSim/Examples/Moco/example3DWalking/subject_walk_scaled_ContactGeometrySet.xml": "b64f1f1c7ebc9da5008c14896dc877f16b958505d8c4adbb29f86bdd3f1be47f",
+      "scripts/materialize_hair_residual_native.py": "5d4332456ce0ab352b0e92c12a57c14a0162e437671fcb834cf0ba0c1fca91a0"
+    },
+    "files": {
+      "subject_walk_scaled.osim": "b1f2b7c6cf01a42c0ecb02a9695703f9ea55ee676ec66724fec6562b3f980288",
+      "subject_walk_scaled_ExpressionBasedCoordinateForceSet.xml": "ff09a63fa9c2036a3692214889c87bee28bea6f51a503233692b288c5b28aba0",
+      "subject_walk_scaled_FunctionBasedPathSet.xml": "932ac403e4d6d0d10d9a9da551e43d0ded94dd2b99c370f9b25053ee9232f8a5",
+      "subject_walk_scaled_ContactForceSet.xml": "659d571d9f731c9e119d93371edcd46c7fc265796ef0681670d46bd875b1b54d",
+      "subject_walk_scaled_ContactGeometrySet.xml": "b64f1f1c7ebc9da5008c14896dc877f16b958505d8c4adbb29f86bdd3f1be47f"
+    },
+    "target_native_mass_kg": 77.61218724193209,
+    "original_actual_mass_kg": 77.6122029,
+    "represented_hair_mass_kg": 1.565806789575483e-05,
+    "mass_scale_required": 1.0,
+    "mass_transfer_port_enabled": false,
+    "expected_native_bodies": {
+      "pelvis": {
+        "mass_kg": 12.140529571284757,
+        "centroid_m": [
+          -0.0706999999978897,
+          -1.578901605234442e-12,
+          -9.684171348443843e-13
+        ],
+        "inertia_com_kg_m2": [
+          [
+            0.10597320537754949,
+            -2.172773254861304e-12,
+            5.8287309417853615e-12
+          ],
+          [
+            -2.1727732548613054e-12,
+            0.08978858162689674,
+            -3.0381872967266158e-12
+          ],
+          [
+            5.828730941785361e-12,
+            -3.038187296726617e-12,
+            0.059687243104704885
+          ]
+        ]
+      },
+      "femur_r": {
+        "mass_kg": 9.588513348605709,
+        "centroid_m": [
+          3.742120588361237e-12,
+          -0.1699999999951732,
+          -7.008477684111798e-12
+        ],
+        "inertia_com_kg_m2": [
+          [
+            0.13803319257808028,
+            1.4914451714781554e-11,
+            3.6362856279082814e-12
+          ],
+          [
+            1.4914451714781547e-11,
+            0.03618345821046415,
+            5.256136369308521e-12
+          ],
+          [
+            3.6362856279082818e-12,
+            5.256136369308534e-12,
+            0.14555852726972696
+          ]
+        ]
+      },
+      "tibia_r": {
+        "mass_kg": 3.82194220842961,
+        "centroid_m": [
+          0.0,
+          -0.1867,
+          0.0
+        ],
+        "inertia_com_kg_m2": [
+          [
+            0.05195573491556598,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.005257425557474054,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.05267734236643956
+          ]
+        ]
+      },
+      "patella_r": {
+        "mass_kg": 0.06372015269521884,
+        "centroid_m": [
+          0.0018,
+          0.0264,
+          0.0
+        ],
+        "inertia_com_kg_m2": [
+          [
+            2.1215410468129707e-06,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            9.691081227776324e-06,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            9.691081227776324e-06
+          ]
+        ]
+      },
+      "talus_r": {
+        "mass_kg": 0.10308677567957888,
+        "centroid_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "inertia_com_kg_m2": [
+          [
+            0.0010308677349511052,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0010308677349511052,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0010308677349511052
+          ]
+        ]
+      },
+      "calcn_r": {
+        "mass_kg": 1.288584695994736,
+        "centroid_m": [
+          0.1,
+          0.03,
+          0.0
+        ],
+        "inertia_com_kg_m2": [
+          [
+            0.0014432149017471595,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.004020384239124923,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.00422655782252295
+          ]
+        ]
+      },
+      "toes_r": {
+        "mass_kg": 0.22328595614162808,
+        "centroid_m": [
+          0.0346,
+          0.006,
+          -0.0175
+        ],
+        "inertia_com_kg_m2": [
+          [
+            0.0006499620764861537,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0007530488681851673,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0010308677349511052
+          ]
+        ]
+      },
+      "femur_l": {
+        "mass_kg": 9.588513352392905,
+        "centroid_m": [
+          7.466431577574064e-12,
+          -0.16999999997447643,
+          -1.1548675506529796e-12
+        ],
+        "inertia_com_kg_m2": [
+          [
+            0.13803319254330243,
+            1.7828663208470745e-11,
+            -8.067359263051114e-13
+          ],
+          [
+            1.782866320847075e-11,
+            0.03618345823780342,
+            -2.7576388045558172e-12
+          ],
+          [
+            -8.067359263051104e-13,
+            -2.7576388045558237e-12,
+            0.14555852724000543
+          ]
+        ]
+      },
+      "tibia_l": {
+        "mass_kg": 3.8219422076560674,
+        "centroid_m": [
+          -4.905692299225985e-12,
+          -0.18670000002255294,
+          -5.8471222145757915e-12
+        ],
+        "inertia_com_kg_m2": [
+          [
+            0.05195573490531543,
+            2.0892279338591124e-12,
+            5.417924305275159e-13
+          ],
+          [
+            2.0892279338591124e-12,
+            0.005257425556373721,
+            2.4901655477105243e-12
+          ],
+          [
+            5.417924305275155e-13,
+            2.4901655477105276e-12,
+            0.0526773423563801
+          ]
+        ]
+      },
+      "patella_l": {
+        "mass_kg": 0.06372015269521884,
+        "centroid_m": [
+          0.0018,
+          0.0264,
+          0.0
+        ],
+        "inertia_com_kg_m2": [
+          [
+            2.1215410468129707e-06,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            9.691081227776324e-06,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            9.691081227776324e-06
+          ]
+        ]
+      },
+      "talus_l": {
+        "mass_kg": 0.10308677567957888,
+        "centroid_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "inertia_com_kg_m2": [
+          [
+            0.0010308677349511052,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0010308677349511052,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0010308677349511052
+          ]
+        ]
+      },
+      "calcn_l": {
+        "mass_kg": 1.288584695994736,
+        "centroid_m": [
+          0.1,
+          0.03,
+          0.0
+        ],
+        "inertia_com_kg_m2": [
+          [
+            0.0014432149017471595,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.004020384239124923,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.00422655782252295
+          ]
+        ]
+      },
+      "toes_l": {
+        "mass_kg": 0.22328595614162808,
+        "centroid_m": [
+          0.0346,
+          0.006,
+          -0.0175
+        ],
+        "inertia_com_kg_m2": [
+          [
+            0.0006499620764861537,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0007530488681851673,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0010308677349511052
+          ]
+        ]
+      },
+      "torso": {
+        "mass_kg": 27.65466131808373,
+        "centroid_m": [
+          -0.02999997280660293,
+          0.31999983949771704,
+          6.325392332986835e-10
+        ],
+        "inertia_com_kg_m2": [
+          [
+            1.5200131559843157,
+            -1.988091047899765e-07,
+            1.3097472112436498e-09
+          ],
+          [
+            -1.988091047899765e-07,
+            0.7788204354927706,
+            4.2394814264966294e-09
+          ],
+          [
+            1.3097472112436492e-09,
+            4.239481426496609e-09,
+            1.4755827189210724
+          ]
+        ]
+      },
+      "humerus_r": {
+        "mass_kg": 2.0952387142043305,
+        "centroid_m": [
+          5.316557965002064e-11,
+          -0.16450199994859663,
+          -2.5275607290948288e-11
+        ],
+        "inertia_com_kg_m2": [
+          [
+            0.012314746184412776,
+            7.991319691096343e-12,
+            -3.9297426568464856e-12
+          ],
+          [
+            7.991319691096343e-12,
+            0.004248205984944199,
+            -3.799188928431861e-12
+          ],
+          [
+            -3.9297426568464856e-12,
+            -3.7991889284318095e-12,
+            0.013822905779467778
+          ]
+        ]
+      },
+      "ulna_r": {
+        "mass_kg": 0.6262521619204752,
+        "centroid_m": [
+          2.5066951020876434e-11,
+          -0.12052499999577251,
+          -3.415534553931574e-11
+        ],
+        "inertia_com_kg_m2": [
+          [
+            0.0030534303155247693,
+            1.1835694326957807e-13,
+            -9.561927455455245e-13
+          ],
+          [
+            1.1835694326957807e-13,
+            0.000637076259651456,
+            -1.612615610281514e-13
+          ],
+          [
+            -9.56192745545525e-13,
+            -1.612615610281514e-13,
+            0.003312178136894726
+          ]
+        ]
+      },
+      "radius_r": {
+        "mass_kg": 0.6262521622716456,
+        "centroid_m": [
+          0.0,
+          -0.120525,
+          0.0
+        ],
+        "inertia_com_kg_m2": [
+          [
+            0.0030534303168475957,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0006370762616560952,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0033121781376164606
+          ]
+        ]
+      },
+      "hand_r": {
+        "mass_kg": 0.47162199875227734,
+        "centroid_m": [
+          0.0,
+          -0.068095,
+          0.0
+        ],
+        "inertia_com_kg_m2": [
+          [
+            0.0009195340290424153,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.000563884647741552,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.001381362772116042
+          ]
+        ]
+      },
+      "humerus_l": {
+        "mass_kg": 2.0952387153552197,
+        "centroid_m": [
+          1.2183448156064115e-11,
+          -0.16450199999865284,
+          5.726872886476695e-12
+        ],
+        "inertia_com_kg_m2": [
+          [
+            0.012314746193574073,
+            2.0562075382484651e-13,
+            8.741081324002428e-13
+          ],
+          [
+            2.0562075382484328e-13,
+            0.004248205992807761,
+            9.665217970265147e-14
+          ],
+          [
+            8.741081324002428e-13,
+            9.665217970264501e-14,
+            0.013822905793577414
+          ]
+        ]
+      },
+      "ulna_l": {
+        "mass_kg": 0.6262521622716456,
+        "centroid_m": [
+          0.0,
+          -0.120525,
+          0.0
+        ],
+        "inertia_com_kg_m2": [
+          [
+            0.0030534303168475957,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0006370762616560952,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0033121781376164606
+          ]
+        ]
+      },
+      "radius_l": {
+        "mass_kg": 0.6262521609291191,
+        "centroid_m": [
+          9.266353387077631e-11,
+          -0.12052500025032675,
+          9.693521220100091e-11
+        ],
+        "inertia_com_kg_m2": [
+          [
+            0.0030534302957965676,
+            -6.776286484367418e-12,
+            2.6241841547986777e-12
+          ],
+          [
+            -6.776286484367418e-12,
+            0.0006370762564023944,
+            -7.088665233665771e-12
+          ],
+          [
+            2.624184154798676e-12,
+            -7.088665233665771e-12,
+            0.003312178116802065
+          ]
+        ]
+      },
+      "hand_l": {
+        "mass_kg": 0.47162199875227734,
+        "centroid_m": [
+          0.0,
+          -0.068095,
+          0.0
+        ],
+        "inertia_com_kg_m2": [
+          [
+            0.0009195340290424153,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.000563884647741552,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.001381362772116042
+          ]
+        ]
+      }
+    },
+    "source_xml_before": {
+      "pelvis": {
+        "mass": "13.3383808106",
+        "mass_center": "-0.070699999999999999 0 0",
+        "inertia": "0.1164291031 0.098647615600000002 0.065576313900000002 0 0 0"
+      },
+      "femur_r": {
+        "mass": "10.534568673900001",
+        "mass_center": "0 -0.17000000000000001 0",
+        "inertia": "0.1516523045 0.039753516699999998 0.15992012999999999 0 0 0"
+      },
+      "tibia_r": {
+        "mass": "4.1990359900999996",
+        "mass_center": "0 -0.1867 0",
+        "inertia": "0.057081972699999997 0.0057761519999999997 0.0578747779 0 0 0"
+      },
+      "patella_r": {
+        "mass": "0.070007132465728705",
+        "mass_center": "0.0018 0.0264 0",
+        "inertia": "2.330863923162893e-06 1.0647256457374749e-05 1.0647256457374749e-05 0 0 0"
+      },
+      "talus_r": {
+        "mass": "0.1132578824",
+        "mass_center": "0 0 0",
+        "inertia": "0.0011325788 0.0011325788 0.0011325788 0 0 0"
+      },
+      "calcn_r": {
+        "mass": "1.41572353",
+        "mass_center": "0.10000000000000001 0.029999999999999999 0",
+        "inertia": "0.0015856104 0.0044170574000000004 0.0046435731999999999 0 0 0"
+      },
+      "toes_r": {
+        "mass": "0.24531657330000001",
+        "mass_center": "0.034599999999999999 0.0060000000000000001 -0.017500000000000002",
+        "inertia": "0.0007140909 0.00082734880000000005 0.0011325788 0 0 0"
+      },
+      "femur_l": {
+        "mass": "10.534568673900001",
+        "mass_center": "0 -0.17000000000000001 0",
+        "inertia": "0.1516523045 0.039753516699999998 0.15992012999999999 0 0 0"
+      },
+      "tibia_l": {
+        "mass": "4.1990359900999996",
+        "mass_center": "0 -0.1867 0",
+        "inertia": "0.057081972699999997 0.0057761519999999997 0.0578747779 0 0 0"
+      },
+      "patella_l": {
+        "mass": "0.070007132465728705",
+        "mass_center": "0.0018 0.0264 0",
+        "inertia": "2.330863923162893e-06 1.0647256457374749e-05 1.0647256457374749e-05 0 0 0"
+      },
+      "talus_l": {
+        "mass": "0.1132578824",
+        "mass_center": "0 0 0",
+        "inertia": "0.0011325788 0.0011325788 0.0011325788 0 0 0"
+      },
+      "calcn_l": {
+        "mass": "1.41572353",
+        "mass_center": "0.10000000000000001 0.029999999999999999 0",
+        "inertia": "0.0015856104 0.0044170574000000004 0.0046435731999999999 0 0 0"
+      },
+      "toes_l": {
+        "mass": "0.24531657330000001",
+        "mass_center": "0.034599999999999999 0.0060000000000000001 -0.017500000000000002",
+        "inertia": "0.0007140909 0.00082734880000000005 0.0011325788 0 0 0"
+      },
+      "torso": {
+        "mass": "30.383239080799999",
+        "mass_center": "-0.029999999999999999 0.32000000000000001 0",
+        "inertia": "1.669987476 0.85566330160000004 1.6211733287000001 0 0 0"
+      },
+      "humerus_r": {
+        "mass": "2.3019664598",
+        "mass_center": "0 -0.16450200000000001 0",
+        "inertia": "0.0135297866 0.0046673573000000001 0.015186749500000001 0 0 0"
+      },
+      "ulna_r": {
+        "mass": "0.68804163559999998",
+        "mass_center": "0 -0.12052499999999999 0",
+        "inertia": "0.0033546984999999999 0.00069993370000000004 0.0036389757999999999 0 0 0"
+      },
+      "radius_r": {
+        "mass": "0.68804163559999998",
+        "mass_center": "0 -0.12052499999999999 0",
+        "inertia": "0.0033546984999999999 0.00069993370000000004 0.0036389757999999999 0 0 0"
+      },
+      "hand_r": {
+        "mass": "0.51815481200000002",
+        "mass_center": "0 -0.068095000000000003 0",
+        "inertia": "0.0010102602999999999 0.00061952060000000002 0.0015176555999999999 0 0 0"
+      },
+      "humerus_l": {
+        "mass": "2.3019664598",
+        "mass_center": "0 -0.16450200000000001 0",
+        "inertia": "0.0135297866 0.0046673573000000001 0.015186749500000001 0 0 0"
+      },
+      "ulna_l": {
+        "mass": "0.68804163559999998",
+        "mass_center": "0 -0.12052499999999999 0",
+        "inertia": "0.0033546984999999999 0.00069993370000000004 0.0036389757999999999 0 0 0"
+      },
+      "radius_l": {
+        "mass": "0.68804163559999998",
+        "mass_center": "0 -0.12052499999999999 0",
+        "inertia": "0.0033546984999999999 0.00069993370000000004 0.0036389757999999999 0 0 0"
+      },
+      "hand_l": {
+        "mass": "0.51815481200000002",
+        "mass_center": "0 -0.068095000000000003 0",
+        "inertia": "0.0010102602999999999 0.00061952060000000002 0.0015176555999999999 0 0 0"
+      }
+    },
+    "engineering_default_speeds": {
+      "pelvis_tx": 0.013,
+      "pelvis_rotation": 0.007
+    },
+    "partition_conservation": {
+      "before": {
+        "mass_kg": 77.61220289999999,
+        "first_moment_kg_m": [
+          0.0361589718868181,
+          7.108843932258272,
+          -0.61773844153985
+        ],
+        "second_moment_origin_kg_m2": [
+          [
+            1.0555572565716143,
+            0.047253627830970674,
+            0.0028099909538330326
+          ],
+          [
+            0.04725362783097057,
+            15.237100550676262,
+            -0.08159303875531942
+          ],
+          [
+            0.002809990953833038,
+            -0.0815930387553194,
+            0.4945109383018634
+          ]
+        ],
+        "centroid_m": [
+          0.0004658928691072897,
+          0.09159440998495706,
+          -0.007959295297103984
+        ],
+        "inertia_com_kg_m2": [
+          [
+            15.075564360655196,
+            -0.04394166813533492,
+            -0.003097790888719899
+          ],
+          [
+            -0.043941668135334816,
+            1.5451345859937309,
+            0.025011650677449974
+          ],
+          [
+            -0.003097790888719904,
+            0.025011650677449947,
+            15.641510595390379
+          ]
+        ],
+        "inertia_origin_kg_m2": [
+          [
+            15.731611488978128,
+            -0.047253627830970674,
+            -0.0028099909538330326
+          ],
+          [
+            -0.04725362783097057,
+            1.5500681948734805,
+            0.08159303875531942
+          ],
+          [
+            -0.002809990953833038,
+            0.0815930387553194,
+            16.292657807247878
+          ]
+        ],
+        "frame": "canonical-reference-m",
+        "owner": null
+      },
+      "residual_native_plus_guides": {
+        "mass_kg": 77.61220289999999,
+        "first_moment_kg_m": [
+          0.03615897188681793,
+          7.108843932258276,
+          -0.61773844153985
+        ],
+        "second_moment_origin_kg_m2": [
+          [
+            1.0555572565716154,
+            0.04725362783097066,
+            0.0028099909538330304
+          ],
+          [
+            0.04725362783097064,
+            15.237100550676251,
+            -0.08159303875531945
+          ],
+          [
+            0.0028099909538330313,
+            -0.08159303875531951,
+            0.4945109383018634
+          ]
+        ],
+        "centroid_m": [
+          0.00046589286910728747,
+          0.09159440998495712,
+          -0.007959295297103984
+        ],
+        "inertia_com_kg_m2": [
+          [
+            15.075564360655187,
+            -0.04394166813533492,
+            -0.0030977908887198954
+          ],
+          [
+            -0.0439416681353349,
+            1.5451345859937344,
+            0.025011650677449968
+          ],
+          [
+            -0.0030977908887198963,
+            0.025011650677450023,
+            15.641510595390372
+          ]
+        ],
+        "inertia_origin_kg_m2": [
+          [
+            15.731611488978116,
+            -0.04725362783097066,
+            -0.0028099909538330304
+          ],
+          [
+            -0.04725362783097064,
+            1.5500681948734805,
+            0.08159303875531945
+          ],
+          [
+            -0.0028099909538330313,
+            0.08159303875531951,
+            16.292657807247867
+          ]
+        ],
+        "frame": "canonical-reference-m",
+        "owner": null
+      },
+      "mass_residual_kg": 0.0,
+      "first_moment_residual_kg_m": [
+        -1.734723475976807e-16,
+        4.440892098500626e-15,
+        0.0
+      ],
+      "second_moment_residual_kg_m2": [
+        [
+          1.1102230246251565e-15,
+          -1.3877787807814457e-17,
+          -2.168404344971009e-18
+        ],
+        [
+          6.938893903907228e-17,
+          -1.0658141036401503e-14,
+          -2.7755575615628914e-17
+        ],
+        [
+          -6.5052130349130266e-18,
+          -1.1102230246251565e-16,
+          0.0
+        ]
+      ],
+      "inertia_origin_residual_kg_m2": [
+        [
+          -1.0658141036401503e-14,
+          1.3877787807814457e-17,
+          2.168404344971009e-18
+        ],
+        [
+          -6.938893903907228e-17,
+          1.1102230246251565e-15,
+          2.7755575615628914e-17
+        ],
+        [
+          6.5052130349130266e-18,
+          1.1102230246251565e-16,
+          -9.547918011776346e-15
+        ]
+      ]
+    },
+    "installation_order": "Explicit actual residual mass/COM/full tensor XML properties before model load/initSystem/muscle reference; target equals residual XML total; no uniform restoration to full subject mass",
+    "limitations": [
+      "Two retained body roots on inner shell remain unchanged and physically ineligible; population and original guide assets are preserved",
+      "Exterior selection is an engineering surface proxy with open boundaries, not closed-volume or anatomical exclusivity proof",
+      "Sparse follicle faces are not complete moving body/garment contact coverage",
+      "Nearest bone envelopes and connected-face coherence are explicit inferred priors; ambiguity and overrides remain retained",
+      "Native installation, matched moving-state initialization, single coupled interval and authoritative viewer synchronization remain absent"
+    ]
+  },
+  "source_receipts": {
+    "data/derived/hair-coupled-native-e01u9psr/receipt.json": "72c7f0910eb695588ce2a62eaa8d08d955689d4482a749eab2c236424a38f68f",
+    "data/derived/hair-coupled-native-e01u9psr/inputs/hair_residual_identity.json": "161e42b30676e01afe9154abe38aef6e639b73e5c3193541de9d6844c403da63",
+    "data/derived/hair-coupled-native-e01u9psr/native/assembled_model.osim": "677b2cdc11e4e377ecf68f420271b0614b68d2cfcdc1a40b31598cd12988a075",
+    "ihm/assembly/hair_coupled_candidate.py": "cbdf6e21a427e19ae44e89d826f107ac6a8901fc3de1abbcf7fc5470dffdfade",
+    "ihm/assembly/hair_feedback.py": "74026ea607aa0033bcb4d4876d4c056ff671c4958b9c83ead304da6a8a55b6cf",
+    "ihm/assembly/hair_dynamics.py": "c575bc26d5bc9ecaefce8756172a0938266c11a6465a20fa65dda40fc6452a38",
+    "scripts/verify_hair_coupled_native.py": "97af57532641b0e5db2ace96b60b4d6222bada6ecf50e8e3bfba8d2cb79fdaa8"
+  },
+  "profile": {
+    "elapsed_s": 1.01,
+    "peak_rss_kib": 97984,
+    "native_child_reaped": true,
+    "compile_performed": false
+  },
+  "collision_exercised": false,
+  "accepted_physical_duration_s": 0.0002,
+  "embodied_20ms_readiness": false
+}
