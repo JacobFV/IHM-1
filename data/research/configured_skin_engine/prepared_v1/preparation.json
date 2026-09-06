@@ -1,0 +1,46 @@
+{
+  "schema": "configured_skin_engine_preparation_v1",
+  "configuration_sha256": "ad93aa3dcc4e9bcfeb54f076c7bbe76d316f0b2e6d52ec4865536a20e511aefb",
+  "region_names": [
+    "engineered_left_lower_leg",
+    "engineered_right_lower_leg",
+    "engineered_exterior_complement"
+  ],
+  "fractions": [
+    0.0528095448201903,
+    0.052890723645319306,
+    0.8942997315344904
+  ],
+  "parent_variant": "whole_body_integrity_regional_skin_graph_v2",
+  "parent_manifest_sha256": "52de403e3dab2682f774755b7bf1370711bc5ab218244c581460b84a82aad130",
+  "parent_library_sha256": "bc91cbab829c04bfa2df7490433af5bee752e7514332ac715e9f0bd11a17650a",
+  "native_state_path": "/home/brandonin/Documents/IHM-1/data/derived/audits/thermal-final-initial-state-ctkr8bap/inputs/data/derived/audits/thermal-evaporation-humidity-fresh-hour/states/native_stabilized.xml",
+  "native_state_sha256": "cba7ffb523728d86e8f07b2a30b215b040676c30580e8accda722d175bd687b3",
+  "native_engine_source_sha256": "5c29a09c536a876d569069625bbe4ef2c9e375e3ba12c48c64b94ceed49cbc95",
+  "accepted_fullengine_preparation_sha256": "73b4e8a47343047664deec8d04e5374d9c0546337451f2d5d072740e77d91d55",
+  "input_sha256": {
+    "data/research/configured_regional_skin/prepared_v1/native_configured_regional_skin.h": "7401a91d4d1c705334db6a65a4bd9f7ff1bc3bb8d0b0ecebe8b0a99096e50413",
+    "scripts/native_configured_skin_engine_probe.cpp": "7cfe566baaae754d466b159bbd3f44776dadfe3d7d2296c8d44970394f1b3b2f",
+    "data/derived/audits/native-regional-engine-cu9dn9or/native_regional_species.h": "badbfe4fdfb7daa6a5699351ce1c372a168a4ba9608decc3de53c9f981a609b6",
+    "data/derived/audits/native-regional-engine-cu9dn9or/native_body_ports.h": "0dc2e8d0b052089e2d9ff03756755599d0d7008fdb126968d7557f0bf3b309f6",
+    "data/derived/audits/native-regional-engine-cu9dn9or/native_tissue_ports.h": "16b67da259c6228814ec110472634afe1382f5654d6eb1b3aa5560c1b322a42b"
+  },
+  "prepared_sha256": {
+    "native_configured_regional_skin.h": "7401a91d4d1c705334db6a65a4bd9f7ff1bc3bb8d0b0ecebe8b0a99096e50413",
+    "native_configured_skin_engine_probe.cpp": "7cfe566baaae754d466b159bbd3f44776dadfe3d7d2296c8d44970394f1b3b2f",
+    "native_regional_species.h": "badbfe4fdfb7daa6a5699351ce1c372a168a4ba9608decc3de53c9f981a609b6",
+    "native_body_ports.h": "0dc2e8d0b052089e2d9ff03756755599d0d7008fdb126968d7557f0bf3b309f6",
+    "native_tissue_ports.h": "16b67da259c6228814ec110472634afe1382f5654d6eb1b3aa5560c1b322a42b",
+    "native_regional_engine_step.inc": "ef48a7a3e728b766e80f4c7bc4b00d965836d20ea57885b0618ba2d05491dc35"
+  },
+  "steps_per_mode": 12,
+  "dt_s": 0.02,
+  "modes": [
+    "baseline",
+    "zero",
+    "load"
+  ],
+  "native_executed": false,
+  "native_activation_allowed": false,
+  "scope": "Held native LoadState plus full circuit/solute lifecycle; no restart equivalence or fresh stabilization claim"
+}

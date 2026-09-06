@@ -1,0 +1,42 @@
+{
+  "schema": "configured_skin_engine_boundary_diagnosis_v1",
+  "failed_audit": "data/derived/audits/configured-skin-engine-qsffqz8c",
+  "failure": "Baseline observer rejected nonfinite liquid volume immediately after successful LoadState; no native ticks executed",
+  "identity_evidence": "Source/state inference before revised native execution: Ambient is the only serialized liquid compartment mapped to an INF-volume node; no negative current volumes in state",
+  "native_source": {
+    "path": "data/raw/physiology/biogears/projects/biogears/libBiogears/src/engine/Controller/BioGears.cpp",
+    "sha256": "451ddda942a26e547a0ed4f1d5ba875fa7ca9e2c6275895b791f9c81e7a39166",
+    "lines": [
+      1164,
+      1171
+    ]
+  },
+  "state_sha256": "cba7ffb523728d86e8f07b2a30b215b040676c30580e8accda722d175bd687b3",
+  "boundary": "Ambient",
+  "mapped_node": "Ambient",
+  "serialized_substance_quantities": 0,
+  "classification": "explicit_native_external_aerosol_boundary",
+  "correction": "Observe exact named positive-INF boundary separately; preserve all finite/INF/unknown boundary quantities; export active aerosol carrier flows, solute flux unknown; finite internal owners still strict",
+  "failure_receipts": [
+    {
+      "path": "data/derived/audits/configured-skin-engine-qsffqz8c/baseline.stderr",
+      "sha256": "21d5e98fff336fdf3c4c473ee51a4837cd94a36f17503482efa1c7cef3b841b1"
+    },
+    {
+      "path": "data/derived/audits/configured-skin-engine-qsffqz8c/baseline.stdout",
+      "sha256": "fe2625b1add52df30cf6d8fac3cef04f0466c393b1c4206ad2755cc48ae1c18b"
+    },
+    {
+      "path": "data/derived/audits/configured-skin-engine-qsffqz8c/baseline.resources",
+      "sha256": "b37e93bde0468220af4a18e39c4d345de6ecf6ce472ed70dcef9dbcd039295dc"
+    },
+    {
+      "path": "data/derived/audits/configured-skin-engine-qsffqz8c/compile.resources",
+      "sha256": "70e99265823d305e3c82afcbe48c5d32cb7067f4c7f16a0b5dfea1a45bd0ddf9"
+    },
+    {
+      "path": "data/derived/audits/configured-skin-engine-qsffqz8c/failure.json",
+      "sha256": "194f96b3c82b3224ff92c26e5539252788f3f7b3389f4a3c52cea1be13e4e574"
+    }
+  ]
+}
