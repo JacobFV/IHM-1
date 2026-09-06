@@ -75,13 +75,19 @@ class Meal:
 class NativeSession:
     """Own one native process; commands act on its continuing state, without replay."""
 
+    executable_name = 'native_biogears_stream'
+    adapter_sources = ('native_biogears_stream.cpp','native_body_ports.h')
+
+    def launch_command(self,command):
+        return command
+
     def __init__(self, config, output_dir, timeout_s=1800):
         if not isinstance(config, SessionConfig):
             raise ValueError('Expected SessionConfig')
         number(timeout_s, 1, 3600, 'timeout_s')
         self.config, self.timeout_s = config, timeout_s
         self.out = Path(output_dir).resolve()
-        executable = RUNTIME/'native_biogears_stream'
+        executable = RUNTIME/self.executable_name
         if not executable.is_file():
             raise RuntimeError('Build scripts/build_native_adapter.py first')
         compiled=json.loads(executable.with_suffix('.manifest.json').read_text())
@@ -137,10 +143,11 @@ class NativeSession:
         self._queue = queue.Queue()
         self._journal = (self.out/'receipts.jsonl').open('x')
         command = [str(executable), config.patient, str(state_input or '-'), str(round(config.horizon_s*50))]
+        launcher_command=self.launch_command(command)
         manifest = dict(schema='ihm.native-session.v1', configuration=asdict(config),
-                        command=command, source_revision=SOURCE_REVISION,
+                        command=command, launcher_command=launcher_command, source_revision=SOURCE_REVISION,
                         executable_sha256=_sha(executable), variant_manifest=variant_manifest,
-                        adapter_sha256={p:_sha(BASE/'scripts'/p) for p in ('native_biogears_stream.cpp','native_body_ports.h')},
+                        adapter_sha256={p:_sha(BASE/'scripts'/p) for p in self.adapter_sources},
                         state_sha256=patient_input_sha256 if config.state_path else None,
                         patient_identity=patient_data, patient_identity_input=str(patient_input),
                         patient_identity_input_sha256=patient_input_sha256,
@@ -171,7 +178,7 @@ class NativeSession:
                 selected_resource_tree=str(detached),selected_patient_input=str(selected_patient),
                 selected_patient_input_sha256=patient_input_sha256,
                 selection='Detached resource tree and copied initial state selected before Popen; libraries remain at manifest-resolved paths'),indent=2)+'\n')
-            self.process = subprocess.Popen(command, cwd=self.out, env=environment, stdin=subprocess.PIPE,
+            self.process = subprocess.Popen(launcher_command, cwd=self.out, env=environment, stdin=subprocess.PIPE,
                                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
             self._reader = threading.Thread(target=self._read, daemon=True)
             self._reader.start()

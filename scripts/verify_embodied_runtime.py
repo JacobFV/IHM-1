@@ -1,0 +1,82 @@
+"""Small causal exchange/failed-native checks; no full model or subprocess."""
+from copy import deepcopy
+import unittest
+from ihm.assembly.embodied import EmbodiedRuntime
+
+class Plant:
+    def __init__(self):self.t=0.;self.force=0.;self.commands=[]
+    def snapshot(self):return {'time_s':self.t,'entities':{},'muscles':{},'foot_contact_force_n':{'r':0,'l':0},'total_muscle_metabolic_w':100.,'muscle_metabolic_energy_j':105*self.t}
+    def checkpoint(self):return deepcopy(self.__dict__)
+    def restore(self,state):self.__dict__=deepcopy(state)
+    def advance(self,dt_s,forces=(),actuation=None):
+        self.commands.append(dict(actuation or {}));self.t+=dt_s
+        return {**self.snapshot(),'positive_muscle_work_j':.1}
+    def close(self):pass
+
+class Neural:
+    def __init__(self):self.t=0
+    def checkpoint(self):return self.t
+    def restore(self,state):self.t=state
+    def step(self,dt,observation,**inputs):
+        assert observation['time_s']==self.t;self.t+=dt
+        return {'time_s':self.t,'motor_excitations':{'muscle':.5}}
+
+class Native:
+    def __init__(self):self.t=0;self.loads=[];self.demands=[];self.closed=False;self.fail=False
+    def snapshot(self):return {'elapsed_s':self.t,'time_s':100+self.t,'values':{
+        'mean_arterial_pressure_mmhg':90,'oxygen_saturation':.98,'core_temperature_c':37,
+        'maximum_work_rate_w':100,'lung_volume_ml':3000}}
+    def respiratory_load(self,p):self.loads.append(p)
+    def exercise(self,f):self.demands.append(f)
+    def step(self,dt):
+        self.t+=dt
+        if self.fail:raise RuntimeError('Native interrupted after advance')
+        return self.snapshot()
+    def close(self,graceful=True):self.closed=True
+
+class Load:
+    bindings={'chest':None}
+    def project_load(self,forces,entities,volume):return {'external_pressure_pa':sum(f['force_n'][0] for f in forces)}
+
+    def geometry(self,volume,entities,time):return {'entities':deepcopy(entities),'skin_field':{},'time_s':time}
+
+class Exchange:
+    def observe(self,snapshot):return {'time_s':snapshot['time_s'],'owner':'native'}
+
+class Tests(unittest.TestCase):
+    def body(self):return EmbodiedRuntime(Plant(),Neural(),Native(),Exchange(),Load())
+    def test_delayed_actuation_native_load_and_work(self):
+        body=self.body();first=body.step({'forces':[{'id':'chest','force_n':[2,0,0],'point_m':[0,0,0]}]})
+        self.assertEqual(body.plant.commands,[{}]);self.assertEqual(body.native.loads,[2])
+        self.assertAlmostEqual(body.native.demands[0],.05);self.assertEqual(first['time_s'],.02)
+        body.step({});self.assertEqual(body.plant.commands[-1],{'muscle':.5})
+        self.assertEqual(body.native.loads[-1],0)
+    def test_negative_metabolic_increment_rolls_back_before_native(self):
+        body=self.body();body.reference_metabolic_w=110
+        with self.assertRaisesRegex(ValueError,'signed decrement'):body.step({})
+        self.assertEqual(body.plant.t,0);self.assertEqual(body.neural.t,0)
+        self.assertEqual(body.native.loads,[]);self.assertFalse(body.failed)
+    def test_horizon_preflight_has_no_side_effects(self):
+        from types import SimpleNamespace
+        body=self.body();body.native.config=SimpleNamespace(horizon_s=0)
+        with self.assertRaisesRegex(ValueError,'horizon'):body.step({})
+        self.assertEqual(body.plant.t,0);self.assertEqual(body.native.loads,[])
+    def test_close_failure_retains_owner_for_retry(self):
+        body=self.body();original=body.plant.close
+        def fail():raise RuntimeError('cleanup failed')
+        body.plant.close=fail
+        with self.assertRaisesRegex(RuntimeError,'unconfirmed'):body.close()
+        self.assertFalse(body.closed);self.assertTrue(body.native.closed)
+        body.plant.close=original;body.close();self.assertTrue(body.closed)
+    def test_uncertain_native_commit_aborts_instead_of_fake_rollback(self):
+        body=self.body();body.native.fail=True
+        with self.assertRaises(RuntimeError):body.step({})
+        self.assertTrue(body.failed);self.assertTrue(body.native.closed)
+        with self.assertRaises(RuntimeError):body.step({})
+    def test_invalid_input_does_not_advance_any_owner(self):
+        body=self.body()
+        for data in [{'seconds':.03},{'bad':2},{'forces':[{'id':'chest','force_n':[float('nan'),0,0],'point_m':[0,0,0]}]}]:
+            with self.assertRaises(ValueError):body.step(data)
+        self.assertEqual(body.plant.t,0);self.assertEqual(body.neural.t,0);self.assertEqual(body.native.t,0)
+
+if __name__=='__main__':unittest.main()
