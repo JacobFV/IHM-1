@@ -191,3 +191,36 @@ acceleration constraint errors <=1e-5. A bound-stationary nonzero residual
 fails. Even a passed static gate requires separate forward acceptance before
 an immutable startup reference can be adopted. No native run of this solver
 has occurred at this preparation checkpoint.
+
+### Actual first force-root chunk: numerical improvement, physical regression
+
+`data/derived/native-force-root-919h2o1p` retains 179 calls in 30.941 s,
+including all actual q/force/acceleration records, six Jacobians, scales and
+trial ratios. The process closed/reaped and continuing state remained unchanged.
+All six numerical iterates were accepted by their declared model-ratio test;
+four additional attempts in iteration 2 were rejected. No physical iterate
+passed equilibrium acceptance and no trajectory/reference was promoted.
+
+The scaled force merit fell from 2.86598979e-5 to 8.15047330e-6, while maximum
+native acceleration increased from 54.1717563 to 88.5339739. Normal support
+residual increased from 1.98840e-5 to 0.182804410 of weight (139.182837 N).
+Final pitch and roll normalized residuals were 0.00481840 and -0.00134266;
+maximum gauge residual was 0.000255531. Native constraint error remained small,
+2.13902e-14. Thus this is an explicitly failed physical result, not settlement.
+
+The source-derived sensitivity scaling was unit-invariant but not an adequate
+physical-error metric: the normal-support row scale was 409158.6 N, so losing
+139.18 N of support cost little relative to reducing flexible-joint errors.
+Lumbar extension torque decreased from 12.8272 to 4.64611 Nm and bending from
+5.81625 to 1.65872 Nm, but left ankle acceleration reached -88.534 and its toe
+75.6604. This exposes a meaningful tradeoff failure of residual equilibration,
+not merely a missed optimizer tolerance. Accepted reduction ratios ranged
+0.272 to 0.799; favorable prediction agreement does not imply useful physical
+progress.
+
+Do not continue this formulation unchanged. A subsequent formulation must
+retain support feasibility (for example exact root-force equalities with native
+nonlinear verification) and connect residual weighting to inertial acceleration
+error rather than inverse stiffness alone. Any mass/inverse-mass observation
+must be source-verified before use; no guessed inertia, artificial balancing
+reaction or relaxed physical limit is justified by this failed chunk.
