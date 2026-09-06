@@ -68,6 +68,12 @@ public:
       bool touches=original_nodes.count(path->GetSourceNode().GetName())||original_nodes.count(path->GetTargetNode().GetName());
       if(touches&&!original_paths.count(path->GetName()))throw std::invalid_argument("Unmapped regional boundary path: "+path->GetName());
     }
+    std::vector<SELiquidCompartmentGraph*> owner_graphs;
+    for(auto* graph:compartments.GetLiquidGraphs())if(graph->GetCompartment(parent.GetName())==&parent) {
+      for(auto* link:graph->GetLinks())if(&link->GetSourceCompartment()==&parent||&link->GetTargetCompartment()==&parent)
+        throw std::invalid_argument("Skin extracellular graph links require explicit regional mapping");
+      owner_graphs.push_back(graph);
+    }
     for(size_t i=0;i<3;++i) {
       for(const auto& n:node_names)if(circuit.GetNode(name(i,n)))throw std::invalid_argument("Duplicate regional node");
       if(compartments.GetLiquidCompartment(name(i,"SkinTissueExtracellular")))throw std::invalid_argument("Duplicate regional compartment");
@@ -122,6 +128,13 @@ public:
     for(auto* node:mapped)parent.GetNodeMapping().RemoveNode(*node);
     for(auto* child:children)parent.AddChild(*child);
     parent.StateChange();
+    // The cardiovascular transporter visits even disconnected tissue vertices.
+    // Its native concentration writes must target leaves, never an aggregate.
+    for(auto* graph:owner_graphs) {
+      graph->RemoveCompartment(parent);
+      for(auto* child:children)graph->AddCompartment(*child);
+      graph->StateChange();
+    }
     for(const auto& [n,path]:original_paths)circuit.RemovePath(*path);
     for(const auto& [n,node]:original_nodes)circuit.RemoveNode(*node);
     circuit.StateChange();
