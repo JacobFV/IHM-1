@@ -1,0 +1,136 @@
+{
+  "schema": "ihm.upperbody-source-audit.v1",
+  "sources": [
+    {
+      "id": "arm26",
+      "path": "data/raw/anatomy/opensim-models/source/Models/Arm26/arm26.osim",
+      "sha256": "e2224d0044eb393b05d64926c3fa1682c451a9adc7f510e5517ef9958d3d41b9",
+      "bytes": 90192,
+      "url": "https://github.com/opensim-org/opensim-models/blob/master/Models/Arm26/arm26.osim",
+      "acquisition": "already held source inspected 2026-09-05; no new model download",
+      "muscle_count": 6,
+      "body_count": 3,
+      "credits": "The OpenSim Development Team (Reinbolt, J; Seth, A; Habib, A; Hamner, S) adapted from a model originally created by Kate Holzbaur (11/22/04) License: Creative Commons (CCBY 3.0). You are free to distribute, remix, tweak, and build upon this work, even commercially, as long as you credit us for the original creation. http://creativecommons.org/licenses/by/3.0/",
+      "publications": "Holzbaur, K.R.S., Murray, W.M., Delp, S.L. A Model of the Upper Extremity for Simulating Musculoskeletal Surgery and Analyzing Neuromuscular Control. Annals of Biomedical Engineering, vol 33, pp 829\u2013840, 2005",
+      "muscle_names": [
+        "TRIlong",
+        "TRIlat",
+        "TRImed",
+        "BIClong",
+        "BICshort",
+        "BRA"
+      ],
+      "law_types": [
+        "Thelen2003Muscle"
+      ]
+    },
+    {
+      "id": "wrist",
+      "path": "data/raw/anatomy/opensim-models/source/Models/WristModel/wrist.osim",
+      "sha256": "66488a7819cecac562bda9c59b935c1e4c7b78c7bdb21d2ef44e23f6198c1996",
+      "bytes": 419036,
+      "url": "https://github.com/opensim-org/opensim-models/blob/master/Models/WristModel/wrist.osim",
+      "acquisition": "already held source inspected 2026-09-05; no new model download",
+      "muscle_count": 25,
+      "body_count": 28,
+      "credits": "Gonzalez, R.V., Buchanan, T.S., Delp, S.L.",
+      "publications": "How muscle architecture and moment arms affect wrist flexion-extension moments. Journal of Biomechanics, vol. 30, pp. 705-712, 1997.",
+      "muscle_names": [
+        "FCR",
+        "FCU",
+        "ECU_pre-surgery",
+        "ECU_post-surgery",
+        "EDM",
+        "ECRB",
+        "ECRL",
+        "FDSI",
+        "FDSM",
+        "FDSR",
+        "FDSL",
+        "FDPI",
+        "FDPM",
+        "FDPR",
+        "FDPL",
+        "EDCL",
+        "EDCR",
+        "EDCM",
+        "EDCI",
+        "FPL",
+        "APL",
+        "EPB",
+        "EPL",
+        "EIP",
+        "PL"
+      ],
+      "law_types": [
+        "Schutte1993Muscle_Deprecated"
+      ]
+    },
+    {
+      "id": "neck-fixture",
+      "path": "data/raw/mechanics/opensim-core/OpenSim/Tools/tests/resources/Neck3dof_point_constraint.osim",
+      "sha256": "559ae5f628f9c393903dc070b1679b75b87b203e4e0beefe23c892f9b5baba99",
+      "bytes": 137214,
+      "url": "https://github.com/opensim-org/opensim-core/blob/main/OpenSim/Tools/tests/resources/Neck3dof_point_constraint.osim",
+      "acquisition": "already held source inspected 2026-09-05; no new model download",
+      "muscle_count": 5,
+      "body_count": 26,
+      "credits": " Model authors names.. ",
+      "publications": " List of publications related to model... ",
+      "muscle_names": [
+        "stern_mast_L",
+        "cleid_mast_L",
+        "cleid_occ_L",
+        "splen_cap_sklc6_R",
+        "splen_cap_sklthx_R"
+      ],
+      "law_types": [
+        "Schutte1993Muscle"
+      ]
+    },
+    {
+      "id": "Thelen2003Muscle",
+      "path": "data/raw/mechanics/opensim-core/OpenSim/Actuators/Thelen2003Muscle.cpp",
+      "sha256": "9210fba43346531f9114b0c1d7c16b587a948269c98160c872611711c34fd882",
+      "bytes": 63056,
+      "url": "https://github.com/opensim-org/opensim-core/blob/main/OpenSim/Actuators/Thelen2003Muscle.cpp",
+      "acquisition": "already held source; native compiled execution identity belongs to plant build manifest"
+    },
+    {
+      "id": "WrapObject",
+      "path": "data/raw/mechanics/opensim-core/OpenSim/Simulation/Wrap/WrapObject.cpp",
+      "sha256": "5ad139405e296f167e372da75e4313c738ed8158818b36c2235c9298bfb21014",
+      "bytes": 12752,
+      "url": "https://github.com/opensim-org/opensim-core/blob/main/OpenSim/Simulation/Wrap/WrapObject.cpp",
+      "acquisition": "already held source; native compiled execution identity belongs to plant build manifest"
+    }
+  ],
+  "primary_publications": [
+    {
+      "url": "https://nmbl.stanford.edu/publications/pdf/Holzbaur2005.pdf",
+      "doi": "10.1007/s10439-005-3320-7",
+      "status": "primary URL verified; PDF not newly acquired"
+    },
+    {
+      "url": "https://uwnmbl.engr.wisc.edu/pubs/jbme03.pdf",
+      "doi": "10.1115/1.1531112",
+      "status": "primary URL verified; source muscle implementation held"
+    },
+    {
+      "url": "https://opensimconfluence.atlassian.net/wiki/spaces/OpenSim/pages/53090607/Musculoskeletal%2BModelssrc%3Dbreadcrumbs-parent",
+      "scope": "Arm26 explicitly described as educational six-muscle reduction"
+    }
+  ],
+  "unacquired_richer_source": {
+    "url": "https://simtk.org/projects/upexdyn",
+    "name": "MoBL-ARMS dynamic upper limb",
+    "status": "web tool returned403; no model bytes acquired; do not count as model data"
+  },
+  "canonical_audit": {
+    "muscle_actuators": 443,
+    "native_lowerlimb": 80,
+    "geometry_synthesized": 363,
+    "connective_paths_not_muscles": 24,
+    "unverified_synthetic_attachment_basis": "principal surface extrema projected to nearest same-side bones; not anatomical insertion evidence"
+  }
+}
