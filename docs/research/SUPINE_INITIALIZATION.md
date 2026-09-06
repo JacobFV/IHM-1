@@ -228,3 +228,18 @@ The source-only prepared manifest `data/derived/frozen-static-stream-oay9phwy/ma
 The original Python adapter is retained byte-for-byte (SHA-256 `c53ec4b4c5ea6ca569b7e365e8ce044bfd8daffd185178c7977be9600a11c1cc`). A narrowly checked derivative replaces its worktree/latest-build validation with full archive attestation, selects the copied loader/library directory, and adds the explicit attestation to execution receipts. Other adapter behavior remains byte-identical. Verification rejects an unexpected transformation, missing compiled dependencies, changed adapter/library hashes or unverified loader paths. This validates archived compiled sources explicitly; it does not pretend current worktree sources match the old build or ignore their mismatch.
 
 `solve_constrained_supine_pose.py --frozen-stream MANIFEST` selects this isolated adapter. Solver source hashes still identify the exact-q-preserving algorithm, while `frozen_stream_attestation` identifies execution origin and all copied library/runtime hashes. Cache physics identity remains the original immutable native build/input identity; archived versus live execution is recorded separately. No cache migration to the mass-modified native physics is performed. The archive is revalidated before initialization and after cleanup. Source fixtures and four tamper checks pass. Native initialization and equivalence testing are still pending a heavy-slot grant.
+
+
+## Frozen native replay: strict equivalence failure and assembly analysis
+
+One authorized frozen initialization/replay (`frozen-static-acceptance-57u8erpr`) completed in 0.562 s without physical-time advance. The archive was intact, but the initial generic 1e−9 absolute equivalence assertion failed: maximum q difference 4.150e−11, acceleration difference 7.067e−8, and contact/generalized-force difference 2.21646e−7 N. The failure is retained; no continued solve followed it. This was a replay comparison failure, not a failed equilibrium criterion or evidence of force balance.
+
+The retained `Model.cpp` implementation (lines 587–650) keeps an `_assemblySolver`, updates its coordinate references and tries `track()` before a full `assemble()`. The native protocol sets assembly accuracy to 1e−10. Cached poses came from a continuing sequence of static evaluations, whereas this replay started a fresh model. All coordinate differences are below 4.15e−11 and both candidate position/velocity constraint errors are zero. These facts support, but alone do not prove, an assembly-history explanation.
+
+Source-only reconstruction found 26 complete finite-difference Jacobians in the retained journal. The nearest (0.03 maximum coordinate distance from the replay pose) predicts a 2.25339e−7 N contact-force change from the actual measured independent-coordinate perturbation, versus observed 2.21646e−7 N. Its acceleration prediction is 6.89911e−8 versus observed 7.06691e−8. The three nearest Jacobians yield absolute force-contribution sums between 2.3830e−7 and 2.4535e−7 N, covering the observed change. This is local linearization evidence, not a rigorous current-pose error bound. The original heterogeneous-unit 1e−9 check remains failed; no physical acceptance threshold has been relaxed.
+
+Evidence SHA-256:
+
+- `data/derived/frozen-static-acceptance-57u8erpr/report.json`: `8d0cf82567512fc43f40eda2d541c608cd744ccfbab37060ab1587b1a99f33d1`
+- `data/derived/frozen-static-acceptance-57u8erpr/observed.json`: `d3eb3bea3ac9477bb44921c778e40e48ada2d3c4594f5668466af884106eab76`
+- `data/derived/frozen-static-acceptance-57u8erpr/roundoff_jacobian_analysis.json`: `dea4b308b3186d11a7e4688821d0bbe6f8c57867bee1985eeb1116a344cc0edc`
