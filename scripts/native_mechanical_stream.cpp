@@ -4,6 +4,7 @@
 #include <OpenSim/Actuators/ModelOperators.h>
 #include "native_muscle_metabolism.h"
 #include "native_static_pose.h"
+#include "native_surface_foundation.h"
 #include <filesystem>
 #include <sstream>
 #include <iomanip>
@@ -61,11 +62,16 @@ int main(int argc,char** argv){try{
  IHMNativeMuscleMetabolism metabolism(model);
  model.finalizeConnections();auto initial=model.initSystem();model.realizePosition(initial);
  ForceSet contact_templates((source/"subject_walk_scaled_ContactForceSet.xml").string());
+ ihm_surface::Foundation* surface_foundation=nullptr;
  double support_plane=0;std::map<std::string,double> proxy_radius;
  if(environment=="upright"){
   ContactGeometrySet geo((source/"subject_walk_scaled_ContactGeometrySet.xml").string());
   for(int i=0;i<geo.getSize();i++)model.addContactGeometry(geo.get(i).clone());
   for(int i=0;i<contact_templates.getSize();i++)model.addComponent(contact_templates.get(i).clone());
+ }else if(environment=="supine" && fs::exists(source/"supine_surface_foundation.txt")){
+  surface_foundation=new ihm_surface::Foundation;surface_foundation->setName("retained_skin_surface_foundation");
+  surface_foundation->read((source/"supine_surface_foundation.txt").string(),model);support_plane=surface_foundation->plane;
+  model.addForce(surface_foundation);
  }else if(environment=="supine"){
   // Engineering posterior contact proxies: uniform ellipsoid posterior semi-axis
   // derived from source mass/inertia, placed at retained segment COM. Contact
@@ -100,6 +106,7 @@ int main(int argc,char** argv){try{
   o<<",\"metabolic_reference\":{\"M0_w\":";num(o,reference.total_muscle_metabolic_w);o<<",\"W0_w\":";num(o,reference.active_fiber_work_w);o<<",\"H0_w\":";num(o,reference.total_muscle_metabolic_w-reference.active_fiber_work_w);o<<'}';
   o<<",\"constraint_position_error\":";num(o,state.getQErr().norm());o<<",\"constraint_velocity_error\":";num(o,state.getUErr().norm());
   o<<",\"original_source_mass_kg\":";num(o,original_mass);o<<",\"mass_scale\":";num(o,mass_scale);
+  o<<",\"contact_model\":";str(o,surface_foundation?"retained_skin_foundation":"source_sphere_proxies");
   o<<",\"support_plane_source_x_m\":";num(o,support_plane);bool first=true;
   std::ostringstream bodies;bodies<<'{';first=true;
   SimTK::Vector_<SimTK::SpatialVec> reactions;model.getMatterSubsystem().calcMobilizerReactionForces(state,reactions);
@@ -126,8 +133,26 @@ int main(int argc,char** argv){try{
    o<<",\"paired_force_residual_n\":";vec(o,wrench[1]+f.getHalfSpaceForce(state)[1]);o<<",\"center_m\":";vec(o,center);o<<",\"radius_m\":";num(o,sphere.getRadius());o<<'}';
    auto n=sphere.getFrame().getName();if(n=="calcn_r"||n=="toes_r")foot_r+=wrench[1];if(n=="calcn_l"||n=="toes_l")foot_l+=wrench[1];
   }
+  if(surface_foundation){
+   const auto surface=surface_foundation->sample(state);total+=surface.force;
+   for(const auto& item:surface.bodies){
+    if(!first)o<<',';first=false;
+    o<<"{\"name\":";str(o,"surface_"+item.first);o<<",\"body_frame\":";str(o,item.first);
+    o<<",\"geometry_type\":\"retained_skin_foundation\",\"force_n\":";vec(o,item.second.force);
+    o<<",\"moment_nm\":";vec(o,item.second.moment);o<<",\"penetration_m\":";num(o,item.second.maximum_penetration);
+    o<<",\"contacting_points\":"<<item.second.contacting_points<<'}';
+    if(item.first=="calcn_r"||item.first=="toes_r")foot_r+=item.second.force;
+    if(item.first=="calcn_l"||item.first=="toes_l")foot_l+=item.second.force;
+   }
+  }
   SimTK::Vec3 ext(0);for(const auto& p:external->loads)ext+=p.force;
-  o<<"],\"contact_force_n\":";vec(o,total);o<<",\"momentum_balance_residual_n\":";vec(o,model.getTotalMass(state)*(model.calcMassCenterAcceleration(state)-model.getGravity())-total-ext);
+  o<<"]";
+  if(surface_foundation){const auto surface=surface_foundation->sample(state);
+   o<<",\"surface_foundation\":{\"elastic_energy_j\":";num(o,surface.energy);
+   o<<",\"power_to_body_w\":";num(o,surface.power);o<<",\"dissipative_power_w\":";num(o,surface.dissipative_power);
+   o<<",\"bed_force_n\":";vec(o,-surface.force);o<<",\"bed_moment_about_source_origin_nm\":";vec(o,surface.bed_moment);
+   o<<",\"maximum_penetration_m\":";num(o,surface.maximum_penetration);o<<'}';}
+  o<<",\"contact_force_n\":";vec(o,total);o<<",\"momentum_balance_residual_n\":";vec(o,model.getTotalMass(state)*(model.calcMassCenterAcceleration(state)-model.getGravity())-total-ext);
   int axis=environment=="supine"?0:1;o<<",\"foot_contact_force_n\":{\"r\":";num(o,std::max(0.,foot_r[axis]));o<<",\"l\":";num(o,std::max(0.,foot_l[axis]));o<<"},\"environment\":";str(o,environment);o<<'}';
   std::cout<<"@IHM "<<o.str()<<std::endl;
  };
@@ -141,7 +166,7 @@ int main(int argc,char** argv){try{
    if(command=="checkpoint"){std::string key;in>>key;if(key.empty()||checkpoints.size()>=64||checkpoints.count(key))throw std::runtime_error("invalid checkpoint id/capacity");checkpoints.emplace(key,before);std::cout<<"@IHM {\"kind\":\"checkpointed\"}"<<std::endl;continue;}
    if(command=="restore"){std::string key;in>>key;const auto& old=checkpoints.at(key);state=old.state;external->loads=old.loads;excitation->values=old.excitations;work=old.work;positive_work=old.positive_work;metabolic_energy=old.metabolic_energy;signed_work=old.signed_work;heat_energy=old.heat_energy;model.markControlsAsInvalid(state);state.invalidateAllCacheAtOrAbove(SimTK::Stage::Dynamics);emit("restored");continue;}
    if(command=="drop"){std::string key;in>>key;if(!checkpoints.erase(key))throw std::runtime_error("unknown checkpoint");std::cout<<"@IHM {\"kind\":\"dropped\"}"<<std::endl;continue;}
-   if(command=="evaluate_static_pose"){std::cout<<"@IHM "<<ihm_static_pose::evaluate(model,state,in,environment,!external->loads.empty(),support_plane)<<std::endl;continue;}
+   if(command=="evaluate_static_pose"){std::cout<<"@IHM "<<ihm_static_pose::evaluate(model,state,in,environment,!external->loads.empty(),support_plane,surface_foundation)<<std::endl;continue;}
    if(command!="advance")throw std::runtime_error("unknown command");double dt;int count;in>>dt>>count;if(!in||!std::isfinite(dt)||dt<=0||dt>.02||count<0||count>10000)throw std::runtime_error("invalid native step/force count");
    model.realizePosition(state);external->loads.clear();
    for(int i=0;i<count;i++){std::string name;SimTK::Vec3 point,force;in>>name;for(int k=0;k<3;k++)in>>point[k];for(int k=0;k<3;k++)in>>force[k];if(!in||!point.isFinite()||!force.isFinite())throw std::runtime_error("invalid force port");const auto& body=model.getBodySet().get(name);external->loads.push_back({name,~body.getTransformInGround(state)*point,force});}

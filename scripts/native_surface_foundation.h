@@ -1,0 +1,84 @@
+#pragma once
+#include <OpenSim/OpenSim.h>
+#include <fstream>
+#include <map>
+#include <vector>
+#include <cmath>
+
+namespace ihm_surface {
+struct Point {SimTK::Vec3 station;double area;};
+struct Group {std::string body;std::vector<Point> points;SimTK::Vec3 low{SimTK::Infinity},high{-SimTK::Infinity};};
+struct Wrench {SimTK::Vec3 force{0},moment{0};double maximum_penetration=0;int contacting_points=0;};
+struct Sample {std::map<std::string,Wrench> bodies;SimTK::Vec3 force{0},bed_moment{0};double energy=0,power=0,dissipative_power=0,maximum_penetration=0;int contacting_points=0;};
+class Foundation final:public OpenSim::Force {
+    OpenSim_DECLARE_CONCRETE_OBJECT(Foundation,OpenSim::Force);
+public:
+    double plane=0,h=0,mu=0,lambda=0,minimum_ratio=0,dissipation=0,friction=0,viscous=0,transition=0;
+    std::vector<Group> groups;
+    void read(const std::string& path,const OpenSim::Model& model) {
+        std::ifstream input(path);std::string version;int count;
+        if (!(input>>version>>plane>>h>>mu>>lambda>>minimum_ratio>>dissipation>>friction>>viscous>>transition>>count)
+            ||version!="IHM_SURFACE_FOUNDATION_V1"||count<1||count>50000)
+            throw std::runtime_error("invalid surface foundation input header");
+        for(double value:{plane,h,mu,lambda,minimum_ratio,dissipation,friction,viscous,transition})
+            if(!std::isfinite(value))throw std::runtime_error("nonfinite surface foundation parameter");
+        if(h<=0||mu<=0||lambda<0||minimum_ratio<=0||minimum_ratio>=1||dissipation<0||friction<0||viscous<0||transition<=0)
+            throw std::runtime_error("invalid surface foundation material/domain");
+        std::map<std::string,int> indices;
+        for(int i=0;i<count;++i){
+            std::string body;Point point;
+            if(!(input>>body>>point.station[0]>>point.station[1]>>point.station[2]>>point.area)
+                ||!point.station.isFinite()||!std::isfinite(point.area)||point.area<=0)
+                throw std::runtime_error("invalid surface foundation quadrature");
+            model.getBodySet().get(body);
+            if(!indices.count(body)){indices[body]=(int)groups.size();groups.push_back(Group{});groups.back().body=body;}
+            auto& group=groups[indices.at(body)];group.points.push_back(point);
+            for(int k=0;k<3;k++){group.low[k]=std::min(group.low[k],point.station[k]);group.high[k]=std::max(group.high[k],point.station[k]);}
+        }
+        std::string extra;if(input>>extra)throw std::runtime_error("trailing surface foundation input");
+    }
+    Sample sample(const SimTK::State& state,bool with_velocity=true) const {
+        Sample result;
+        for(const auto& group:groups){
+            const auto& body=getModel().getBodySet().get(group.body);const auto transform=body.getTransformInGround(state);
+            const auto rotation=transform.R().asMat33();const auto origin=transform.p();
+            double minimum_x=origin[0];
+            for(int k=0;k<3;k++)minimum_x+=rotation(0,k)*(rotation(0,k)>=0?group.low[k]:group.high[k]);
+            auto& wrench=result.bodies[group.body];
+            if(minimum_x>=plane)continue;
+            SimTK::SpatialVec velocity(SimTK::Vec3(0),SimTK::Vec3(0));
+            if(with_velocity)velocity=body.getMobilizedBody().getBodyVelocity(state);
+            for(const auto& point:group.points){
+                const auto offset=transform.R()*point.station;const auto location=origin+offset;
+                const double penetration=plane-location[0];if(penetration<=0)continue;
+                const double stretch=1-penetration/h;
+                if(stretch<minimum_ratio-1e-12)throw std::runtime_error("surface foundation compression exceeds declared domain");
+                const double log=std::log(stretch);
+                const double elastic=point.area*(-mu*(stretch-1/stretch)-lambda*log/stretch);
+                const auto speed=velocity[1]+cross(velocity[0],offset);
+                const double normal=std::max(0.,elastic*(1-dissipation*speed[0]));
+                const double tangent=std::hypot(speed[1],speed[2]);
+                const double coefficient=friction*std::tanh(tangent/transition)+viscous*tangent;
+                SimTK::Vec3 force(normal,0,0);
+                if(tangent>0){force[1]=-normal*coefficient*speed[1]/tangent;force[2]=-normal*coefficient*speed[2]/tangent;}
+                wrench.force+=force;wrench.moment+=cross(offset,force);wrench.contacting_points++;
+                wrench.maximum_penetration=std::max(wrench.maximum_penetration,penetration);
+                result.force+=force;result.bed_moment-=cross(location,force);result.contacting_points++;
+                result.maximum_penetration=std::max(result.maximum_penetration,penetration);
+                result.energy+=point.area*h*(.5*mu*(stretch*stretch-1)-mu*log+.5*lambda*log*log);
+                result.power+=dot(force,speed);result.dissipative_power+=dot(force-SimTK::Vec3(elastic,0,0),speed);
+            }
+        }
+        if(result.dissipative_power>1e-8)throw std::runtime_error("surface foundation created dissipative energy");
+        return result;
+    }
+    void computeForce(const SimTK::State& state,SimTK::Vector_<SimTK::SpatialVec>& forces,SimTK::Vector&) const override {
+        const auto result=sample(state);
+        for(const auto& value:result.bodies){const auto& body=getModel().getBodySet().get(value.first);
+            forces[body.getMobilizedBodyIndex()][0]+=value.second.moment;
+            forces[body.getMobilizedBodyIndex()][1]+=value.second.force;}
+        forces[0][0]+=result.bed_moment;forces[0][1]-=result.force;
+    }
+    double computePotentialEnergy(const SimTK::State& state) const override {return sample(state,false).energy;}
+};
+} // namespace ihm_surface

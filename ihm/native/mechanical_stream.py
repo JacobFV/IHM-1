@@ -14,7 +14,7 @@ def vec(value):
     return x
 
 class NativeMechanicalStream:
-    def __init__(self,root,output,*,environment='supine',target_mass_kg,augmented_registration=None):
+    def __init__(self,root,output,*,environment='supine',target_mass_kg,augmented_registration=None,surface_contact_manifest=None):
         self.root=Path(root).resolve();self.output=Path(output).resolve()
         if self.output.exists() or not self.output.is_relative_to(self.root):raise ValueError('Fresh owned native output directory required')
         if environment not in ('free','supine','upright') or finite(target_mass_kg)<=0:raise ValueError('Invalid native environment or mass')
@@ -35,6 +35,20 @@ class NativeMechanicalStream:
             catalog_bytes=(self.root/augmentation['catalog_path']).read_bytes()
             if hashlib.sha256(catalog_bytes).hexdigest()!=augmentation['catalog_sha256']:raise ValueError('Augmented catalog changed while copying')
             self.muscle_catalog=json.loads(catalog_bytes)
+        surface_manifest=None;surface_bytes=None;surface_input=None
+        if surface_contact_manifest is not None:
+            if environment!='supine':raise ValueError('Surface foundation requires supine environment')
+            surface_path=(self.root/surface_contact_manifest).resolve()
+            if not surface_path.is_relative_to(self.root):raise ValueError('Owned surface contact manifest required')
+            surface_bytes=surface_path.read_bytes();surface_manifest=json.loads(surface_bytes)
+            if surface_manifest.get('schema')!='ihm.supine-skin-foundation.v1':raise ValueError('Unknown surface foundation schema')
+            for path,digest in surface_manifest['source_files'].items():
+                relative=Path(path)
+                if relative.is_absolute() or '..' in relative.parts or sha(self.root/relative)!=digest:raise ValueError('Surface foundation source identity mismatch: '+path)
+            for key in ('native_input','arrays'):
+                relative=Path(surface_manifest[key+'_path'])
+                if relative.is_absolute() or '..' in relative.parts or sha(self.root/relative)!=surface_manifest[key+'_sha256']:raise ValueError('Surface foundation artifact identity mismatch')
+            surface_input=(self.root/surface_manifest['native_input_path']).read_bytes()
         self.output.mkdir(parents=True);source=self.output/'inputs';source.mkdir()
         original=self.root/'data/raw/mechanics/opensim-core/OpenSim/Examples/Moco/example3DWalking';inputs={}
         for name in SOURCE_FILES:
@@ -43,6 +57,10 @@ class NativeMechanicalStream:
             (source/'augmentation_registration.json').write_bytes(augmentation_bytes)
             (source/'augmentation_catalog.json').write_bytes(catalog_bytes)
             if inputs['subject_walk_scaled.osim']!=augmentation['model_sha256']:raise ValueError('Augmented model changed while copying')
+        if surface_manifest is not None:
+            (source/'supine_surface_foundation.txt').write_bytes(surface_input)
+            (source/'surface_contact_manifest.json').write_bytes(surface_bytes)
+            inputs['supine_surface_foundation.txt']=hashlib.sha256(surface_input).hexdigest()
         runtime=self.root/'data/runtime/opensim';libdirs=[runtime/'install/opensim/lib',runtime/'install/simbody/lib']+[runtime/'sysroot/usr/lib/aarch64-linux-gnu'/p for p in ('lapack','blas','')]
         env=dict(os.environ,OPENBLAS_NUM_THREADS='1',OMP_NUM_THREADS='1',LD_LIBRARY_PATH=':'.join(map(str,libdirs)))
         limiter=shutil.which('prlimit')
@@ -51,8 +69,8 @@ class NativeMechanicalStream:
         command=[limiter,'--as=4294967296','--','nice','-n','10',*engine_command]
         self.identity=uuid.uuid4().hex;self.lock=threading.RLock();self.closed=False;self.tokens=set();self.log=(self.output/'engine.log').open('w')
         execution={'schema':'ihm.native-mechanical-stream.v1','command':command,'engine_command':engine_command,'address_space_limit_bytes':4294967296,'source_sha256':inputs,'build':manifest,'target_mass_kg':target_mass_kg,
-                   'augmented_registration':augmentation,'checkpoint_scope':'Complete in-process SimTK State, excitation/load commands and work accumulators; native process must remain alive. Call release(checkpoint) after accepted intervals.',
-                   'support_scope':'Supine unilateral engineering posterior spheres from source COM and inertia ellipsoid approximation; source foot contact parameters transferred, not calibrated mattress.',
+                   'surface_contact_manifest':surface_manifest,'augmented_registration':augmentation,'checkpoint_scope':'Complete in-process SimTK State, excitation/load commands and work accumulators; native process must remain alive. Call release(checkpoint) after accepted intervals.',
+                   'support_scope':('Retained posterior skin quadrature with prior-based confined neo-Hookean layers; rigid plane, uncalibrated mattress.' if surface_manifest is not None else 'Supine unilateral engineering posterior spheres from source COM and inertia ellipsoid approximation; source foot contact parameters transferred, not calibrated mattress.'),
                    'external_work_scope':'Endpoint trapezoidal point-force power; not exact integration or metabolic energy'}
         (self.output/'execution.json').write_text(json.dumps(execution,indent=2)+'\n')
         self.process=subprocess.Popen(command,cwd=self.output,env=env,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=self.log,bufsize=0)

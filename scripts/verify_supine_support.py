@@ -46,7 +46,7 @@ def metrics(frame, previous=None):
         omega = np.asarray(body['angular_velocity_rad_s'], float)
         velocity += body['mass_kg'] * (np.asarray(body['origin_velocity_m_s']) + np.cross(omega, offset)) / mass
         max_angular = max(max_angular, float(np.linalg.norm(omega)))
-    penetration = max((max(0., frame['support_plane_source_x_m'] + c['radius_m'] - c['center_m'][0]) for c in frame['contacts']), default=0.)
+    penetration = max(((c['penetration_m'] if c.get('geometry_type') == 'retained_skin_foundation' else max(0., frame['support_plane_source_x_m'] + c['radius_m'] - c['center_m'][0])) for c in frame['contacts']), default=0.)
     row = dict(time_s=frame['time_s'], support_relative_weight=float(np.dot(support, -gravity/g)/(mass*g)),
                balance_relative_weight=float(np.linalg.norm(support+mass*gravity)/(mass*g)),
                acceleration_g=float(np.linalg.norm(acceleration)/g),

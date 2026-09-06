@@ -2,6 +2,7 @@
 // Isolated static residual evaluations. No assignment to the continuing State,
 // no controller mutation, and no integration or accumulated-work updates.
 #include <OpenSim/OpenSim.h>
+#include "native_surface_foundation.h"
 #include <cmath>
 #include <iomanip>
 #include <map>
@@ -29,7 +30,7 @@ template<class Vector> inline void array(std::ostream& out, const Vector& values
 }
 inline std::string evaluate(OpenSim::Model& model, const SimTK::State& continuing,
                             std::istream& input, const std::string& environment,
-                            bool has_external_loads, double support_plane) {
+                            bool has_external_loads, double support_plane, const ihm_surface::Foundation* foundation=nullptr) {
     if (environment != "supine" || has_external_loads)
         throw std::runtime_error("static pose requires supine with no external loads");
     int count;
@@ -120,8 +121,15 @@ inline std::string evaluate(OpenSim::Model& model, const SimTK::State& continuin
         out << ",\"force_n\":"; array(out,wrench[1]);
         out << ",\"penetration_m\":"; number(out,overlap); out << '}';
     }
+    if(foundation){const auto result=foundation->sample(candidate);support+=result.force;penetration=std::max(penetration,result.maximum_penetration);
+        for(const auto& item:result.bodies){if(!first)out<<',';first=false;
+            out<<"{\"name\":";quoted(out,"surface_"+item.first);out<<",\"force_n\":";array(out,item.second.force);
+            out<<",\"penetration_m\":";number(out,item.second.maximum_penetration);out<<'}';}}
     out << "],\"contact_force_n\":"; array(out,support);
     out << ",\"maximum_penetration_m\":"; number(out,penetration);
+    if(foundation){const auto result=foundation->sample(candidate);
+        out<<",\"surface_foundation\":{\"elastic_energy_j\":";number(out,result.energy);
+        out<<",\"bed_force_n\":";array(out,-result.force);out<<",\"bed_moment_about_source_origin_nm\":";array(out,result.bed_moment);out<<'}';}
     out << ",\"accepted_equilibrium\":false,\"scope\":\"Static candidate only; requires sustained forward verification and explicit new reference initialization\"}";
     return out.str();
 }
