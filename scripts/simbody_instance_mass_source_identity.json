@@ -1,0 +1,12 @@
+{
+  "revision": "59c6e7b89b3bdf266a2f3d54c611599d964205f7",
+  "source_sha256": {
+    "MobilizedBodyImpl.h": "ce7c6669f4fdb1d054315a93d41f4763a6594c0ef934344375fd347a947ae127",
+    "MobilizedBody.cpp": "71c77f2762d0af36707e9e58708f3464c91b73d6e429d560d949e54ed91e8521",
+    "RigidBodyNode.h": "a8c87dc3252757a6d58b0dad5785956e296167ec6a10c1741d6ed715ea6dbf42",
+    "RigidBodyNode.cpp": "9feddf8e7dcb16a22c5a75497943cc132daf3ceabcec3f0ad80ba16afcb3e2cb",
+    "RigidBodyNodeSpec.h": "caadd753d2be40b1b783d3839594106a9b466d608428497a7c76fe1df658115b",
+    "RigidBodyNode_Weld.cpp": "9733490f203e230b8b310ba0dea0543ca064ff5f8ff2ed8e4549a00854932cd9",
+    "RigidBodyNode_LoneParticle.cpp": "ceeb09054920520bff01268d745cec5d149f88b3d8c15bebb3d077f2277f02b6"
+  }
+}
