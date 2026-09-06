@@ -71,3 +71,16 @@ test('intake double network failure never retries POST and invalid sequences nev
  await assert.rejects(scheduleBodyIntakes(request,'/body/id',0,[{event_id:'water'}]),/Offline/);assert.equal(posts,1);
  await assert.rejects(scheduleBodyIntakes(request,'/body/id',-1,[{}]),/Missing current/);assert.equal(posts,1);
 });
+test('only pre-mutation 400 intake rejection is marked correctable while refreshing the owner',async()=>{
+ for(const httpStatus of [400,409,422,503,undefined]){
+  const error=Object.assign(Error('Request failed'),{httpStatus});const calls=[];
+  const result=await scheduleBodyIntakes(async(path,data)=>{calls.push(path);if(data)throw error;return frame(.02,2);},'/body/id',1,[{event_id:'water'}]);
+  assert.equal(result.error.definitelyRejected===true,httpStatus===400);
+  assert.deepEqual(calls,['/body/id/intakes','/body/id']);
+ }
+});
+test('known rejection remains correctable if read recovery is offline',async()=>{
+ const error=Object.assign(Error('Past intake time'),{httpStatus:400});let posts=0;
+ await assert.rejects(scheduleBodyIntakes(async(path,data)=>{if(data){posts++;throw error;}throw Error('Offline');},'/body/id',2,[{event_id:'water'}]),e=>e===error&&e.definitelyRejected===true);
+ assert.equal(posts,1);
+});

@@ -90,5 +90,10 @@ export async function closeBodyOwner(request,path,wait) {
 export async function scheduleBodyIntakes(request,path,sequence,events) {
  if(!Number.isInteger(sequence)||sequence<0||!Array.isArray(events)||!events.length)throw Error('Missing current body sequence or intake events');
  try{return {frame:await request(path+'/intakes',{sequence,events}),recovered:false};}
- catch(error){try{return {frame:await request(path),recovered:true,error};}catch{throw error;}}
+ catch(error){
+  // The intake API guarantees 400 validation failures occur before mutation.
+  // Refresh the owning sequence, but leave this proven rejection correctable.
+  if(error.httpStatus===400)error.definitelyRejected=true;
+  try{return {frame:await request(path),recovered:true,error};}catch{throw error;}
+ }
 }

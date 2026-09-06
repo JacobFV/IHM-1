@@ -43,6 +43,7 @@ export function mountSceneInteraction({scene,camera,renderer,controls,group,getO
         accept(result.frame);
         if(result.recovered){
           running=false;playText('Resume '+label());
+          if(result.error.definitelyRejected)throw result.error;
           const known=new Set((result.frame.intake_schedule?.events||[]).map(e=>e.event_id));
           if(!events.every(e=>known.has(e.event_id)))throw result.error;
           status('Intake request recovered from current body state. Body paused; review the schedule before resuming.');
