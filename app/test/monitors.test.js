@@ -28,4 +28,5 @@ test('live finite-window spectrum has its own searchable monitor card',()=>{
 });
 test('local microvascular geometry is discoverable as a source-conditioned anatomy monitor',()=>{
  assert.deepEqual(filterMonitors('local','vascular').map(m=>m.id),['microvascular']);
+ assert.deepEqual(filterMonitors('kidney','vascular').map(m=>m.id),['microvascular']);
 });
