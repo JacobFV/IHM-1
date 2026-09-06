@@ -56,3 +56,40 @@ Existing ports expose stomach nutrient masses; `SmallIntestineChyme`, `SmallInte
 - GI sodium/chloride boundary incidence and exact VC-derived SID, pCO2/CO2 and buffer solver inputs for acid–base attribution.
 
 The next chemistry correction remains explicitly declared dietary/secretion/absorption ions or compounds with paired molar accounting. Do not reinterpret elemental sodium as NaCl or patch SID/pH to compensate. The shared-donor correction and this absorption-boundary defect each require event evidence in the failing interval before either is assigned responsibility for systemic collapse.
+
+## Implemented native correction and linked-library regression
+
+The isolated correction is now built as `data/runtime/physiology/variants/whole_body_integrity_gi_absorption`. It derives from exact **`whole_body_integrity_signed_muscle_v2`**, library SHA-256 `5a02e2942e6ac5ff3cdce352246e5073de7871b500a572b4ab2d8f50eb87b695`, and replaces only the inherited GI object. All **359 other objects** remain hash-identical, preserving signed muscle demand, shared-donor transport, corrected substrate availability, renal, GI digestion/depletion and thermal lineage. The signed-port ABI `header_sha256` is inherited as `28e3fb59b2680d406bcb0f394b40ec4885bab7d43dbda7e44e1368132f96f545` for adapter build compatibility.
+
+| Identity | SHA-256 |
+| --- | --- |
+| Corrected library | `9792d857c47a5907f571a03495fe9f4f1144f114afd72c0451869e1a7049588b` |
+| Corrected variant manifest | `de1aa254b868b4b51e3fbd4f90323e09370a409957d83ac7552a09bb0f3e7125` |
+| Corrected Gastrointestinal.cpp | `804cba46cea17e9b05be3c45c3d20b2e4683dfdb12a5ea8ea7016de415cb6235` |
+| Original inherited Gastrointestinal.cpp | `13af1a9350d9da3c4344b6cae187c7ecde44d11cb57358dc39ba7fe5cc1d333e` |
+
+Builder: `scripts/build_biogears_gi_absorption_variant.py`. It verifies the full signed-v2 object inventory before and after build, freezes source/parent identities, refuses to overwrite an existing variant, and retains compile/link/resource receipts. Source outside the no-argument `AbsorbNutrients` method is byte-identical. The independent sodium/water fallback policy, original rate coefficients and glucose-before-AA order are unchanged.
+
+`python3 scripts/verify_native_gi_absorption_correction.py --variant original` first ran the expanded acceptance gate against the old actual linked library. The retained 14-case run at `data/derived/audits/gi-absorption-correction-aph3_yk3/report.json` exits **1**, with **nine expected bounded-transfer failures** out of 42 checks. It adds AA tail/equality, AA sodium scarcity, sequential glucose-plus-AA sodium use and ample controls. The earlier 11-case red run is retained separately at `gi-absorption-correction-z5723dn_`.
+
+The exact same compiled thin fixture was then reused against the corrected library:
+
+```sh
+python3 scripts/verify_native_gi_absorption_correction.py --variant corrected \
+  --probe data/derived/audits/gi-absorption-correction-aph3_yk3/probe \
+  --original-report data/derived/audits/gi-absorption-correction-aph3_yk3/report.json
+```
+
+Receipt `data/derived/audits/gi-absorption-correction-4rrrl_ru/report.json` reports **47/47 checks passed**. All cases require finite/nonnegative native ending masses, paired species conservation within 1e−12 g and independently specified bounded transfers. Five controls—ample glucose, ample AA, ample fat, ample mixed glucose+AA and all-empty—have exact original/corrected native-output parity.
+
+Representative corrected actual credits:
+
+- A 1 µg glucose tail credits 1 µg glucose with 0.5 µg sodium; exact 33.3333333333 µg glucose credits the complete requested pair.
+- A 0.1 µg sodium donor with ample glucose credits 0.2 µg glucose and exactly 0.1 µg sodium.
+- AA tails/equality and sodium-limited AA credit matching 1:1 source mass amounts.
+- With 25 µg sodium and ample glucose+AA, glucose consumes 16.6666666667 µg sodium first; AA then consumes the remaining 8.3333333333 µg. Total sodium credit is exactly 25 µg and the donor ends at zero.
+- TAG tails of 1 µg and exact 38 µg both transfer completely. The existing independent sodium behavior in the fat-tail case is preserved and not reinterpreted as corrected counterion chemistry.
+
+The production GI compile took 3.18 s with peak RSS 575,756 KiB; linking took 0.51 s and 116,500 KiB. The expanded thin fixture compiled in 2.15 s with peak 517,164 KiB; original/corrected native calls peaked at 40,648 KiB. Production children used 4 GiB address-space/180 CPU-second/210 wall-second bounds; fixtures retained 1 GiB/120/150 bounds. The slot was released after linked verification. No existing library, upstream donor source or signed-metabolic header was changed.
+
+These tests establish the local native remainder correction, including its composable library lineage. Active fluid-circuit integration, whole-body meal trajectories, counterion chemistry and exertion_v3 cause attribution remain separate acceptance gates.
