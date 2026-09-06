@@ -112,3 +112,38 @@ correction. This observation interface can be reused in independent energy
 closure diagnostics without claiming that the corrected numerical merit has
 passed the complete native virtual-work gate. Its fixture checks the analytic
 passive-force derivative and preservation of all 98 original observations.
+
+### Actual targeted wrap result: persistent force/path discrepancy
+
+`data/derived/native-wrap-work-ovst3fef/report.json` retains the 50-call result
+(8.934 s), raw and corrected observations, and actual assembled coordinates.
+The native process closed/reaped, continuing state remained unchanged, and no
+physical time advanced. Repeating the exact requested seed changed actual q
+by at most 6.624e-10 and raw effective energy by 8.680e-11 J.
+
+Both sides at 1e-4 and 1e-5 rad converge to a nonzero discrepancy between stored
+path-length derivative and native force moment arm. Fine sided means change
+by less than 1e-8 m/rad for all eight tested directions, while every mean remains
+above the original 1e-6 m/rad gate. Representative fine means:
+
+| Path / coordinate | Length–moment-arm discrepancy (m/rad) |
+|---|---:|
+| BIClong left / arm adduction | 0.0002335568 |
+| BIClong right / arm adduction | 0.0001071940 |
+| BRA left / elbow flexion | 0.0001344210 |
+| BRA right / elbow flexion | 0.0001091474 |
+
+The corrected muscle energy derivative still agrees with tendon force times
+measured length derivative to roughly 1e-9 Nm at the fine steps. Therefore an
+ordinary finite-difference truncation or muscle primitive error does not explain
+the remaining native virtual-work failure. Right BIClong has larger sided
+deviations at some 1e-3 rad steps; those may indicate wrap-construction transitions,
+but the probe does not expose a native branch identifier and does not assert one.
+
+`scripts/summarize_wrap_virtual_work.py` reproduces `convergence.json`. The complete
+energy-gradient gate remains failed. A justified next numerical route is a
+trust region on actual native generalized-force residuals, with source-backed
+sensitivity scaling and unchanged physical acceleration/support acceptance.
+A scalar path-length potential cannot supply an exact gradient for this native
+force mapping until a separate wrap tangent-construction correction is validated.
+No muscle, wrap, force law, source bound or acceptance threshold was changed.
