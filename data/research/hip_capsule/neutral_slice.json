@@ -1,0 +1,93 @@
+{
+  "schema": "ihm.hip-capsule-fixed-pose.v1",
+  "native_activation_allowed": false,
+  "calibrated_pose_degrees": {
+    "flexion": 0.0,
+    "adduction": 0.0
+  },
+  "source_doi": "10.1016/j.jbiomech.2015.09.002",
+  "source_population": "Eight analyzed older cadaveric left hips; intact aggregate periarticular restraint, not capsule-only tissue isolation",
+  "nominal": {
+    "mid_slack_internal_degrees": 5.7,
+    "slack_width_degrees": 27.5,
+    "slack_to_5Nm_degrees": 14.5,
+    "stiffness_at_5Nm_Nm_per_degree": 0.82
+  },
+  "parameter_evidence": {
+    "mid_slack": "Published Figure5 neutral regression y=-0.21*flexion_degrees+5.7; F0 intercept is a regression estimate, not an individual specimen zero.",
+    "slack_width": "Figure4 neutral F0 mean; manual plot read rounded to0.5deg.",
+    "slack_to_5Nm": "Figure6 left neutral F0 pooled rotation-direction mean; manual plot read rounded to0.5deg.",
+    "stiffness": "Figure6 right neutral F0 pooled rotation-direction mean; manual plot read rounded to0.01Nm/deg."
+  },
+  "plot_reading": {
+    "method": "Manual pixel selections from unmodified PDF pages rendered by pdftoppm -scale-to1800; approximate, not raw torque-angle samples",
+    "figure4": {
+      "page": "envelope_page4_1800.png",
+      "y_zero_px": 1009,
+      "y_60deg_px": 778,
+      "F0_mean_y_px": 903,
+      "F0_CI_top_bottom_y_px": [
+        845,
+        964
+      ],
+      "pixel_selection_uncertainty_px": 3
+    },
+    "figure6_toe": {
+      "page": "envelope_page5_1800.png",
+      "y_zero_px": 1011,
+      "y_35deg_px": 667,
+      "F0_mean_y_px": 869,
+      "F0_CI_top_bottom_y_px": [
+        842,
+        897
+      ],
+      "pixel_selection_uncertainty_px": 3
+    },
+    "figure6_stiffness": {
+      "page": "envelope_page5_1800.png",
+      "y_zero_px": 1011,
+      "y_1_6Nm_per_deg_px": 667,
+      "F0_mean_y_px": 835,
+      "F0_CI_top_bottom_y_px": [
+        802,
+        867
+      ],
+      "pixel_selection_uncertainty_px": 3
+    }
+  },
+  "uncertainty": {
+    "published_95CI_approximate": {
+      "slack_width_degrees": [
+        11.7,
+        42.6
+      ],
+      "slack_to_5Nm_degrees": [
+        11.6,
+        17.2
+      ],
+      "stiffness_Nm_per_degree": [
+        0.67,
+        0.97
+      ]
+    },
+    "plot_read_uncertainty": {
+      "slack_degrees": 0.8,
+      "toe_degrees": 0.4,
+      "stiffness_Nm_per_degree": 0.02
+    },
+    "scope": "CIs describe published means, not a95% individual prediction interval; correlations and regression-intercept uncertainty unavailable. No joint-confidence torque envelope claimed."
+  },
+  "law": {
+    "stretch": "x=max(0,abs(theta-center)-slack_width/2), all angles converted to radians",
+    "exponent": "p=stiffness_at_5Nm_in_Nm_per_rad*toe_radians/5",
+    "potential": "V=5*toe/(p+1)*(x/toe)^(p+1)",
+    "restoring_torque": "tau=-sign(theta-center)*5*(x/toe)^p",
+    "domain": "Flexion=0,adduction=0;0<=x<=toe,aggregate resistance<=5Nm. All other poses/rotation beyond endpoint rejected.",
+    "assumptions": [
+      "Power toe is an engineering interpolation constrained by endpoint torque and tangent; its interior is not independently validated.",
+      "Zero torque/stiffness at slack onset approximates the experimental0.03Nm/deg threshold; transition torque and hysteresis were not digitized.",
+      "Equal external/internal toe laws use the pooled Figure6 means; centered asymmetry follows Figure5, not a claim of directional symmetry in specimens.",
+      "No damping coefficient or multi-DOF cross-coupling is identified; no generic spring activates at the existing40deg software ROM."
+    ]
+  }
+}

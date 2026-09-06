@@ -1,0 +1,467 @@
+<?xml version="1.0" encoding="UTF-8"?><article xml:lang="en" article-type="research-article"><front><journal-meta><journal-id journal-id-type="pmc-domain-id">2649</journal-id><journal-id journal-id-type="pmc-domain">bjj</journal-id><journal-title-group><journal-title>The Bone &amp; Joint Journal</journal-title><abbrev-journal-title>Bone Joint J</abbrev-journal-title></journal-title-group></journal-meta><article-meta><article-id pub-id-type="pmcid">PMC4491667</article-id><article-id pub-id-type="pmcaid">4491667</article-id><article-id pub-id-type="pmcaiid">4491667</article-id><article-id pub-id-type="pmid">25820886</article-id><article-id pub-id-type="doi">10.1302/0301-620X.97B4.34638</article-id><title-group><article-title>The capsular ligaments provide more hip rotational restraint than the
+acetabular labrum and the ligamentum teres </article-title><subtitle>an experimental study</subtitle></title-group><contrib-group content-type="author"><contrib><name name-style="western"><surname>van Arkel</surname><given-names initials="RJ">R J</given-names></name><degrees>MEng, AMIMechE</degrees><role>Research Assistant, Department of Mechanical Engineering</role><xref ref-type="aff" rid="a1">1</xref></contrib><contrib><name name-style="western"><surname>Amis</surname><given-names initials="AA">A A</given-names></name><degrees>FREng, DSc(Eng)</degrees><role>Professor of Orthopaedic Biomechanics, Department of Mechanical Engineering,
+and Musculoskeletal Surgery, Department of Surgery and Cancer</role><xref ref-type="aff" rid="a1">1</xref></contrib><contrib><name name-style="western"><surname>Cobb</surname><given-names initials="JP">J P</given-names></name><degrees>BMBCh, FRCS, MCh</degrees><role>Professor of Orthopaedic Surgery, Consultant Orthopaedic Surgeon,
+Musculoskeletal Surgery, Department of Surgery and Cancer</role><xref ref-type="aff" rid="a3">2</xref></contrib><contrib><name name-style="western"><surname>Jeffers</surname><given-names initials="JRT">J R T</given-names></name><degrees>PhD, CEng, FIMechE</degrees><role>Senior Lecturer, Department of Mechanical Engineering</role><xref ref-type="aff" rid="a1">1</xref></contrib></contrib-group><aff id="a1"><label>1</label>Imperial College London, London SW7 2AZ, UK.</aff><aff id="a3"><label>2</label>Charing Cross Hospital, London W6 8RF, UK.</aff><author-notes><fn id="corresp1"><label>✉</label><p>Correspondence should be sent to Dr J.R.T. Jeffers; email:
+<email>j.jeffers@imperial.ac.uk</email></p></fn></author-notes><pub-date><day>1</day><month>4</month><year>2015</year></pub-date><volume>97-B</volume><issue>4</issue><fpage>484</fpage><page-range>484–491</page-range><pub-history><event event-type="pmc-release"><date><day>13</day><month>7</month><year>2015</year></date></event></pub-history><permissions><copyright-statement/><license><license-p>This is an open-access article distributed under the terms of the Creative
+Commons CC-BY license, which permits copying and redistributing the material in
+any medium or format, remixing, transforming and building upon the material for
+any purpose, even commercially, provided the original author and source are
+credited, and changes made are indicated. This may be done in a reasonable manner,
+but not in any way that suggests the licensor endorses you or your
+use.</license-p></license></permissions><self-uri xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="bonejointj-97B-484.pdf" content-type="pmc-pdf"><?cloudpmc-path cde1/4491667/7a9590a7860b/bonejointj-97B-484.pdf?><?cloudpmc-bucket app?><?size 2514383?></self-uri><abstract id="abstract1"><title>Abstract</title><p>In this <italic>in vitro</italic> study of the hip joint we examined which soft
+tissues act as primary and secondary passive rotational restraints when the hip joint
+is functionally loaded. A total of nine cadaveric left hips were mounted in a testing
+rig that allowed the application of forces, torques and rotations in all six degrees
+of freedom. The hip was rotated throughout a complete range of movement (ROM) and the
+contributions of the iliofemoral (medial and lateral arms), pubofemoral and
+ischiofemoral ligaments and the ligamentum teres to rotational restraint was
+determined by resecting a ligament and measuring the reduced torque required to
+achieve the same angular position as before resection. The contribution from the
+acetabular labrum was also measured. Each of the capsular ligaments acted as the
+primary hip rotation restraint somewhere within the complete ROM, and the ligamentum
+teres acted as a secondary restraint in high flexion, adduction and external
+rotation. The iliofemoral lateral arm and the ischiofemoral ligaments were primary
+restraints in two-thirds of the positions tested. Appreciation of the importance of
+these structures in preventing excessive hip rotation and subsequent
+impingement/instability may be relevant for surgeons undertaking both hip joint
+preserving surgery and hip arthroplasty.</p><p>Cite this article: <italic>Bone Joint J </italic>2015; 97-B:484–91.</p><sec id="kwd-group1" sec-type="kwd-group" disp-level="2"><p><bold>Keywords:</bold> hip, primary restraints, capsule, ligamentum teres, labrum</p></sec></abstract><custom-meta-group><custom-meta><meta-name>status</meta-name><meta-value>released</meta-value></custom-meta><custom-meta><meta-name>display-pdf</meta-name><meta-value>yes</meta-value></custom-meta><custom-meta><meta-name>is-in-collection-domain</meta-name><meta-value>yes</meta-value></custom-meta><custom-meta><meta-name>is-olf</meta-name><meta-value>no</meta-value></custom-meta><custom-meta><meta-name>is-manuscript</meta-name><meta-value>no</meta-value></custom-meta><custom-meta><meta-name>is-preprint</meta-name><meta-value>no</meta-value></custom-meta><custom-meta><meta-name>is-journal-matter</meta-name><meta-value>no</meta-value></custom-meta><custom-meta><meta-name>is-scanned</meta-name><meta-value>no</meta-value></custom-meta><custom-meta><meta-name>is-retracted</meta-name><meta-value>no</meta-value></custom-meta></custom-meta-group></article-meta><notes notes-type="article-notes"><sec id="historyarticle-meta1" sec-type="history" disp-level="2"><p>Received 2014 Jun 17; Accepted 2014 Nov 14; Collection date 2015 Apr.</p></sec></notes></front><body><p>There is increasing interest in early interventional hip surgery to treat conditions from
+instability to femoroacetabular impingement (FAI) in young adults.<sup><xref rid="r1" ref-type="bibr">1</xref>-<xref rid="r3" ref-type="bibr">3</xref></sup>
+However, concerns exist regarding post-operative instability following resection of the hip
+joint ligaments during open<sup><xref rid="r4" ref-type="bibr">4</xref></sup> or
+arthroscopic surgery.<sup><xref rid="r5" ref-type="bibr">5</xref></sup> Case reports
+describe instances of rapid joint degeneration following early interventional hip surgery,
+to a point where total hip arthroplasty (THA) becomes necessary secondary to joint
+subluxation<sup><xref rid="r6" ref-type="bibr">6</xref>,<xref rid="r7" ref-type="bibr">7</xref></sup> as well as complete hip joint dislocation.<sup><xref rid="r8" ref-type="bibr">8</xref>-<xref rid="r11" ref-type="bibr">11</xref></sup>
+This raises questions about the role of soft tissues and ligaments in the maintenance of
+hip stability.</p><p>Instability is not an infrequent complication of THA. Excessive hip rotation can lead to
+impingement. This may destabilise the hip by forcing the femoral head to lever out of the
+acetabular component, causing edge loading, high wear,<sup><xref rid="r12" ref-type="bibr">12</xref>,<xref rid="r13" ref-type="bibr">13</xref></sup> or even
+dislocation.<sup><xref rid="r14" ref-type="bibr">14</xref></sup> Repairing the
+capsule and neighbouring muscles can help reduce the post-operative dislocation rate in
+THA.<sup><xref rid="r15" ref-type="bibr">15</xref></sup> However, the importance of
+the capsule in restraining excessive rotation and preventing impingement in the native hip
+is not understood. It is unclear whether these capsular repair strategies could be
+optimised to further improve outcomes in THA and early interventional hip surgery.</p><p>Cutting capsular ligaments results in large increases in hip joint rotational
+laxity.<sup><xref rid="r16" ref-type="bibr">16</xref>-<xref rid="r18" ref-type="bibr">18</xref></sup> However, few research studies include the hip joint reaction force,
+which is common to all functional tasks.<sup><xref rid="r19" ref-type="bibr">19</xref></sup> The hip joint reaction force is essential in gaining stability from the
+osseous anatomy as it forces the femoral head into the acetabulum. There is some evidence
+that the ligamentum teres could restrain hip rotation and help stabilise the hip.<sup><xref rid="r20" ref-type="bibr">20</xref>,<xref rid="r21" ref-type="bibr">21</xref></sup>
+Its relative importance compared with the capsular ligaments is unknown. For informed
+decisions to be made about which soft tissues should be preserved or repaired during hip
+surgery, a complete picture of the relative contributions of each structure to hip
+stability needs to be defined. The preservation or repair of the capsule and ligaments
+varies between open and arthroscopic approaches, so an appreciation of the relative
+importance of each structure will inform the debate about surgical approaches and
+repairs.</p><p>We undertook this study to quantify the relative contributions of each ligament to
+restraining hip rotation throughout a complete range of movement (ROM) and under joint
+compression. Our null hypothesis was that the capsular ligaments, acetabular labrum and
+ligamentum teres contribute equally to hip joint rotational restraint. </p><sec id="sec1" disp-level="1"><title>Materials and Methods</title><p>Following approval from the local research ethics committee, nine fresh–frozen
+cadaveric pelves (six male), mean age 76.4 years (61 to 89) with full-length femora were
+defrosted and stripped of their soft tissues, while carefully preserving the hip joint
+capsule. Specimens were bisected into hemi-pelves and the left hip was mounted into a
+six degrees of freedom testing rig (Fig. 1) according to the International Society of
+Biomechanics (ISB) coordinate system.<sup><xref rid="r22" ref-type="bibr">22</xref></sup> Movements in this coordinate system mimic movements of the lower
+limb in a clinical environment (Fig. 2), with neutral flexion, rotation and ab/adduction
+equating to a standing upright position (when the ISB pelvic and femoral axes align).
+Flexion and abduction torques were applied by hanging weights, and angular positions
+applied using screw clamps. Internal/external rotation torques/angles were controlled by
+the rotating axis of a dual-axis Instron servohydraulic materials testing machine
+(Instron Ltd, High Wycombe, United Kingdom) equipped with a two degrees of freedom
+(tension/torsion) load cell. Throughout testing, a fixed joint compression force of 110
+N angled 20° medially/proximally relative to the mechanical axis of the femur was
+applied using the servohydraulic machine’s vertical axis and a horizontal hanging
+weight. This load is similar to the direction of the peak hip joint contact force
+measured for a variety of functional tasks.<sup><xref rid="r19" ref-type="bibr">19</xref></sup> Translations were not applied, but were free to occur in response
+to the applied load by mounting the test fixture on to a freely moving table mounted on
+rollers to allow unrestricted translation in the horizontal plane. For each specimen all
+tests and measurements were performed on the same day, without removing the specimen
+from the testing rig. The tests were done at room temperature and the specimens were
+kept moist by sparaying regularly with water.</p><fig id="f1" position="float"><?disp-level 2?><label>Fig. 1</label><caption><p>Photograph showing the anterior view of a left hemi-pelvis mounted in the
+custom-built testing rig. The hip is in neutral ad/abduction, extension and
+external rotation and all capsular ligaments have been resected except for the
+medial iliofemoral ligament, which can be seen to be taut.</p></caption><alternatives><graphic xmlns:xlink="http://www.w3.org/1999/xlink" content-type="image" xlink:href="34638-galleyfig1.jpg"><?cloudpmc-path blobs/cde1/4491667/0cf869173fcc/34638-galleyfig1.jpg?><?cloudpmc-bucket cdn?><?image-server-status NEVER_LOAD?><?original-height 743?><?original-width 498?><?scaled-height 743?><?scaled-width 498?></graphic><graphic xmlns:xlink="http://www.w3.org/1999/xlink" content-type="thumb" xlink:href="34638-galleyfig1.gif"><?cloudpmc-path blobs/cde1/4491667/71f15e2b50f1/34638-galleyfig1.gif?><?cloudpmc-bucket cdn?></graphic></alternatives></fig><fig id="f2" position="float"><?disp-level 2?><label>Fig. 2</label><caption><p>Diagram showing the co-ordinate system used throughout testing. The axis for
+flexion/extension (F/E, blue) is fixed to the pelvis. The axis for
+internal/external rotation (IR/ER, purple) is fixed to the femoral mechanical axis
+(connecting the hip and knee joint centres). The axis for ab/adduction (Ab/Ad,
+red) is floating and varies with hip flexion; ab/adduction moves the knee
+away-from/towards the sagittal plane (without changing the angle of hip flexion or
+rotation).</p></caption><alternatives><graphic xmlns:xlink="http://www.w3.org/1999/xlink" content-type="image" xlink:href="34638-galleyfig2.jpg"><?cloudpmc-path blobs/cde1/4491667/921f99a22ec8/34638-galleyfig2.jpg?><?cloudpmc-bucket cdn?><?image-server-status LOAD_COMPLETED?><?original-height 1798?><?original-width 2400?><?scaled-height 581?><?scaled-width 776?></graphic><graphic xmlns:xlink="http://www.w3.org/1999/xlink" content-type="thumb" xlink:href="34638-galleyfig2.gif"><?cloudpmc-path blobs/cde1/4491667/165f93ce3886/34638-galleyfig2.gif?><?cloudpmc-bucket cdn?></graphic></alternatives></fig><p>For each specimen, the ROM, with the joint capsule intact, was established by applying 5
+Nm flexion/extension torques with the hip joint in neutral rotation and ab/adduction to
+define angles of maximum hip flexion (FLX) and extension (EXT). Then, with the joint
+still in neutral rotation, 5 Nm ab/adduction torques were applied at different positions
+of hip flexion (EXT, 0°, 30°, 60°, 90° and FLX) to define maximum
+hip adduction (ADD) and abduction (ABD) at each of the six flexion angles. Finally, 5 Nm
+torques were applied in external/internal rotation at all different positions of the hip
+(ADD, 0° and ABD at all six flexion/extension angles) to define maximum hip
+internal and external rotation (IR and ER, respectively) for all 18 positions.
+Importantly, throughout testing the joint was never rotated beyond the angles determined
+by these initial 5 Nm passive resistance boundaries, such that when a ligament was
+resected, the remaining ligaments did not experience increased strain.</p><p>One of the following ligaments was then resected: pubofemoral, medial arm of
+iliofemoral, lateral arm of iliofemoral, ischiofemoral or ligamentum teres. For each of
+the 18 angular positions of flexion/extension and ab/adduction, the torque required to
+rotate the joint back to the intact IR and ER angular positions was measured. This
+process was then repeated after cutting another ligament, until no ligaments remained.
+With all the ligaments resected, the passive resistance caused by labral impingement was
+measured in the same way. The cutting order for the capsular ligaments was varied, such
+that each ligament was cut first and last at least once in different specimens, with no
+pattern to the cutting order; however, the intra-articular ligamentum teres had to be
+resected after the capsular ligaments had been divided, as the joint had to be
+dislocated to gain access. The principle of superposition was used to determine the
+contribution to rotational restraint of each ligament and the labrum by calculating the
+negative change in passive resistance torque after a ligament was cut as a percentage of
+the intact passive resistance (5 Nm).<sup><xref rid="r23" ref-type="bibr">23</xref>,<xref rid="r24" ref-type="bibr">24</xref></sup>
+</p><p>Pilot testing showed that in some cases, the native hip could dislocate after division
+of the capsular ligaments for some of the positions tested. If no capsular ligaments
+remained and adjacent non-dislocating trials had zero passive rotation resistance, a
+zero value was assumed for the dislocating trial as well. When this was not the case,
+subsequent measurements were taken by running the vertical axis of the servohydraulic
+machine in position control (instead of load control). This resulted in small
+fluctuations of the otherwise constant applied force (variations of 70 N to 110 N
+magnitude and 20° to 32° angle). In total, dislocation affected five of the
+nine hips but only 2.8% (52/1836) of the measurements made. </p><sec id="sec2" disp-level="2"><title>Statistical analysis</title><p>Internal and external rotation contributions were analysed as separate dependent
+variables using SPSS software version 21 (SPSS Inc., Chicago, Illinois) and a two-way
+repeated measures analysis of variance (RMANOVA) with independent variables of
+soft-tissue state and hip position. <italic>Post hoc</italic> one-way RMANOVAs and
+paired <italic>t</italic>-tests with a Bonferroni correction were applied when
+differences across tests were found, and significance was set to p &lt; 0.05.</p><p>Two analyses were performed: first, the respective contributions of extra- and
+intra-articular tissues (capsule, labrum and ligamentum teres) were compared against
+each other to determine their relative importance. Second, the effects of cutting the
+soft tissues (iliofemoral medial/lateral arms, ischiofemoral, pubofemoral, labrum and
+ligamentum teres) were examined to determine where each tissue made a significant
+contribution to rotational restraint.</p><p>A primary restraint was defined in each position as the tissue with the greatest
+statistically significant mean passive resistance contribution, and secondary
+stabilisers as any other ligaments with statistically significant mean contributions
+&gt; 10%.</p></sec></sec><sec id="sec3" disp-level="1"><title>Results</title><p>External rotation data for one female specimen were lost owing to a pull-out failure of
+the lateral iliofemoral ligament at its femoral attachment under the 5 Nm external
+rotation torque when the hip was in a position of full flexion and full abduction.
+Therefore, the results presented are for eight specimens in external rotation and nine
+in internal rotation, resulting in a total of 1836 torque measurements. An example of
+the resistive torque measured for a specimen in a single position as the ligaments were
+cut away is given in Figure 3.</p><fig id="f3" position="float"><?disp-level 2?><label>Fig. 3</label><caption><p>A graph of the internal/external rotation cycles for one specimen positioned at
+60° flexion and full adduction showing the change in torque as different
+ligaments are resected. Percentage changes not labelled (including the labrum) all
+lie on the zero torque axis. It can be seen that cutting the ischiofemoral and
+lateral iliofemoral ligaments caused the largest respective drops in internal and
+external passive rotation resistance.</p></caption><alternatives><graphic xmlns:xlink="http://www.w3.org/1999/xlink" content-type="image" xlink:href="34638-galleyfig3.jpg"><?cloudpmc-path blobs/cde1/4491667/e578db5e726f/34638-galleyfig3.jpg?><?cloudpmc-bucket cdn?><?image-server-status LOAD_COMPLETED?><?original-height 1211?><?original-width 2400?><?scaled-height 415?><?scaled-width 822?></graphic><graphic xmlns:xlink="http://www.w3.org/1999/xlink" content-type="thumb" xlink:href="34638-galleyfig3.gif"><?cloudpmc-path blobs/cde1/4491667/528133243186/34638-galleyfig3.gif?><?cloudpmc-bucket cdn?></graphic></alternatives></fig><p>The capsular ligaments provided primary internal and external rotation restraint
+throughout a complete range of hip movement (Fig. 4), protecting the hip from labral
+impingement. The contribution of the ligaments was significantly greater than that from
+the labrum and ligamentum teres in all hip positions (p &lt; 0.05; Tables I and II).
+Labral impingement only provided secondary restraint in the native hip, and only when it
+was positioned in: high flexion (≥ 60°), full abduction and internal
+rotation; in low flexion (≤ 0°), full abduction and external rotation; or in
+extension, any ad/abduction and external rotation (Fig. 4). The ligamentum teres also
+had a small secondary role restraining external rotation when the hip was in high
+flexion (≥ 60°) with neutral/full adduction (Fig. 4).<sup><xref rid="r25" ref-type="bibr">25</xref></sup></p><fig id="f4" position="float"><?disp-level 2?><label>Figs. 4a - 4b</label><caption><p>Graphs showing the mean percentage internal (a) and external (b) rotation
+restraint with 95% confidence intervals provided by the hip capsule, labrum and
+ligamentum teres for a complete range of movement. The images illustrate the hip
+positions on the<italic>x</italic>-axis. The dashed boxes highlight at-risk
+positions for anterior/posterior dislocation (AD/PD) in total hip
+arthroplasty,<sup><xref rid="r12" ref-type="bibr">12</xref></sup> and
+physical tests for femoracetabular impingement including the anterior impingement
+test (AT), hyperextension, log-roll and posterior impingement tests (PTs) and the
+end-point of a FABER test.<sup><xref rid="r23" ref-type="bibr">23</xref></sup></p></caption><alternatives><graphic xmlns:xlink="http://www.w3.org/1999/xlink" content-type="image" xlink:href="34638-galleyfig4a.jpg"><?cloudpmc-path blobs/cde1/4491667/827ec0cd4e8d/34638-galleyfig4a.jpg?><?cloudpmc-bucket cdn?><?image-server-status NEVER_LOAD?><?original-height 380?><?original-width 984?><?scaled-height 190?><?scaled-width 492?></graphic><graphic xmlns:xlink="http://www.w3.org/1999/xlink" content-type="thumb" xlink:href="34638-galleyfig4a.gif"><?cloudpmc-path blobs/cde1/4491667/32dc1fd2dcb5/34638-galleyfig4a.gif?><?cloudpmc-bucket cdn?></graphic></alternatives><alternatives><graphic xmlns:xlink="http://www.w3.org/1999/xlink" content-type="image" xlink:href="34638-galleyfig4b.jpg"><?cloudpmc-path blobs/cde1/4491667/e7566b9e9d76/34638-galleyfig4b.jpg?><?cloudpmc-bucket cdn?><?image-server-status NEVER_LOAD?><?original-height 380?><?original-width 984?><?scaled-height 190?><?scaled-width 492?></graphic><graphic xmlns:xlink="http://www.w3.org/1999/xlink" content-type="thumb" xlink:href="34638-galleyfig4b.gif"><?cloudpmc-path blobs/cde1/4491667/dfcf816601d1/34638-galleyfig4b.gif?><?cloudpmc-bucket cdn?></graphic></alternatives></fig><table-wrap id="t1" position="float"><?disp-level 2?><label>Table I</label><caption><p>The mean and standard deviation (<sc>sd</sc>) percentage contributions of the
+capsular ligaments (C), the ligamentum teres (LT) and the labrum (L) to internal
+rotation restraint in all hip positions.</p></caption><table frame="hsides" rules="groups"><thead><tr><th colspan="2" align="center" rowspan="1"><bold>Hip position (°)</bold></th><th align="center" rowspan="1" colspan="1"><bold>Capsular ligaments (%)</bold></th><th align="center" rowspan="1" colspan="1"><bold>Ligamentum teres (%)</bold></th><th align="center" rowspan="1" colspan="1"><bold>Labrum (%)</bold></th><th align="center" rowspan="1" colspan="1"><bold>C <italic>vs</italic> LT (p-value)</bold></th><th align="center" rowspan="1" colspan="1"><bold>C <italic>vs</italic> L (p-value)</bold></th><th align="center" rowspan="1" colspan="1"><bold>LT <italic>vs</italic> L (p-value)</bold></th></tr></thead><tbody><tr><td rowspan="1" colspan="1"/><td rowspan="1" colspan="1"/><td rowspan="1" colspan="1"/><td rowspan="1" colspan="1"/><td rowspan="1" colspan="1"/><td rowspan="1" colspan="1"/><td rowspan="1" colspan="1"/><td rowspan="1" colspan="1"/></tr><tr><td rowspan="3" align="center" colspan="1">Extended</td><td align="center" rowspan="1" colspan="1">Add</td><td align="center" rowspan="1" colspan="1">98 (<sc>sd</sc> 2)</td><td align="center" rowspan="1" colspan="1">0 (<sc>sd</sc> 1)</td><td align="center" rowspan="1" colspan="1">1 (<sc>sd</sc> 1)</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">0.195</td></tr><tr><td align="center" rowspan="1" colspan="1">0</td><td align="center" rowspan="1" colspan="1">97 (<sc>sd</sc> 4)</td><td align="center" rowspan="1" colspan="1">1 (<sc>sd</sc> 1)</td><td align="center" rowspan="1" colspan="1">2 (<sc>sd</sc> 3)</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">0.337</td></tr><tr><td align="center" rowspan="1" colspan="1">Abd</td><td align="center" rowspan="1" colspan="1">97 (<sc>sd</sc> 4)</td><td align="center" rowspan="1" colspan="1">0 (<sc>sd</sc> 1)</td><td align="center" rowspan="1" colspan="1">2 (<sc>sd</sc> 4)</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">0.201</td></tr><tr><td rowspan="3" align="center" colspan="1">0<bold>°</bold></td><td align="center" rowspan="1" colspan="1">Add</td><td align="center" rowspan="1" colspan="1">98 (<sc>sd</sc> 2)</td><td align="center" rowspan="1" colspan="1">1 (<sc>sd</sc> 1)</td><td align="center" rowspan="1" colspan="1">1 (<sc>sd</sc> 1)</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">1.000</td></tr><tr><td align="center" rowspan="1" colspan="1">0</td><td align="center" rowspan="1" colspan="1">96 (<sc>sd</sc> 8)</td><td align="center" rowspan="1" colspan="1">0 (<sc>sd</sc> 1)</td><td align="center" rowspan="1" colspan="1">3 (<sc>sd</sc> 6)</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">0.391</td></tr><tr><td align="center" rowspan="1" colspan="1">Abd</td><td align="center" rowspan="1" colspan="1">96 (<sc>sd</sc> 8)</td><td align="center" rowspan="1" colspan="1">0 (<sc>sd</sc> 1)</td><td align="center" rowspan="1" colspan="1">4 (<sc>sd</sc> 8)</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">0.467</td></tr><tr><td rowspan="3" align="center" colspan="1">30<bold>°</bold></td><td align="center" rowspan="1" colspan="1">Add</td><td align="center" rowspan="1" colspan="1">93 (<sc>sd</sc> 6)</td><td align="center" rowspan="1" colspan="1">4 (<sc>sd</sc> 4)</td><td align="center" rowspan="1" colspan="1">3 (<sc>sd</sc> 5)</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">1.000</td></tr><tr><td align="center" rowspan="1" colspan="1">0</td><td align="center" rowspan="1" colspan="1">93 (<sc>sd</sc> 16)</td><td align="center" rowspan="1" colspan="1">1 (<sc>sd</sc> 3)</td><td align="center" rowspan="1" colspan="1">6 (<sc>sd</sc> 13)</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">0.510</td></tr><tr><td align="center" rowspan="1" colspan="1">Abd</td><td align="center" rowspan="1" colspan="1">87 (<sc>sd</sc> 17)</td><td align="center" rowspan="1" colspan="1">1 (<sc>sd</sc> 2)</td><td align="center" rowspan="1" colspan="1">12 (<sc>sd</sc> 15)</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">0.115</td></tr><tr><td rowspan="3" align="center" colspan="1">60<bold>°</bold></td><td align="center" rowspan="1" colspan="1">Add</td><td align="center" rowspan="1" colspan="1">94 (<sc>sd</sc> 9)</td><td align="center" rowspan="1" colspan="1">1 (<sc>sd</sc> 2)</td><td align="center" rowspan="1" colspan="1">5 (<sc>sd</sc> 7)</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">0.371</td></tr><tr><td align="center" rowspan="1" colspan="1">0</td><td align="center" rowspan="1" colspan="1">83 (<sc>sd</sc> 19)</td><td align="center" rowspan="1" colspan="1">3 (<sc>sd</sc> 6)</td><td align="center" rowspan="1" colspan="1">13 (<sc>sd</sc> 14)</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">0.001*</td><td align="center" rowspan="1" colspan="1">0.084</td></tr><tr><td align="center" rowspan="1" colspan="1">Abd</td><td align="center" rowspan="1" colspan="1">66 (<sc>sd</sc> 24)</td><td align="center" rowspan="1" colspan="1">7 (<sc>sd</sc> 12)</td><td align="center" rowspan="1" colspan="1">28 (<sc>sd</sc> 14)</td><td align="center" rowspan="1" colspan="1">0.003*</td><td align="center" rowspan="1" colspan="1">0.046*</td><td align="center" rowspan="1" colspan="1">0.003*</td></tr><tr><td rowspan="3" align="center" colspan="1">90<bold>°</bold></td><td align="center" rowspan="1" colspan="1">Add</td><td align="center" rowspan="1" colspan="1">97 (<sc>sd</sc> 6)</td><td align="center" rowspan="1" colspan="1">0 (<sc>sd</sc> 1)</td><td align="center" rowspan="1" colspan="1">3 (<sc>sd</sc> 5)</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">0.254</td></tr><tr><td align="center" rowspan="1" colspan="1">0</td><td align="center" rowspan="1" colspan="1">74 (<sc>sd</sc> 16)</td><td align="center" rowspan="1" colspan="1">5 (<sc>sd</sc> 9)</td><td align="center" rowspan="1" colspan="1">21 (<sc>sd</sc> 17)</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">0.003*</td><td align="center" rowspan="1" colspan="1">0.169</td></tr><tr><td align="center" rowspan="1" colspan="1">Abd</td><td align="center" rowspan="1" colspan="1">71 (<sc>sd</sc> 13)</td><td align="center" rowspan="1" colspan="1">1 (<sc>sd</sc> 2)</td><td align="center" rowspan="1" colspan="1">27 (<sc>sd</sc> 13)</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">0.003*</td><td align="center" rowspan="1" colspan="1">0.001*</td></tr><tr><td rowspan="3" align="center" colspan="1">Flexed</td><td align="center" rowspan="1" colspan="1">Add</td><td align="center" rowspan="1" colspan="1">95 (<sc>sd</sc> 6)</td><td align="center" rowspan="1" colspan="1">1 (<sc>sd</sc> 1)</td><td align="center" rowspan="1" colspan="1">4 (<sc>sd</sc> 5)</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">0.185</td></tr><tr><td align="center" rowspan="1" colspan="1">0</td><td align="center" rowspan="1" colspan="1">90 (<sc>sd</sc> 8)</td><td align="center" rowspan="1" colspan="1">1 (<sc>sd</sc> 1)</td><td align="center" rowspan="1" colspan="1">9 (<sc>sd</sc> 8)</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">0.022*</td></tr><tr><td align="center" rowspan="1" colspan="1">Abd</td><td align="center" rowspan="1" colspan="1">74 (<sc>sd</sc> 15)</td><td align="center" rowspan="1" colspan="1">2 (<sc>sd</sc> 2)</td><td align="center" rowspan="1" colspan="1">24 (<sc>sd</sc> 15)</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">0.003*</td><td align="center" rowspan="1" colspan="1">0.006*</td></tr><tr><td rowspan="1" colspan="1"/><td rowspan="1" colspan="1"/><td rowspan="1" colspan="1"/><td rowspan="1" colspan="1"/><td rowspan="1" colspan="1"/><td rowspan="1" colspan="1"/><td rowspan="1" colspan="1"/><td rowspan="1" colspan="1"/></tr></tbody></table><table-wrap-foot><fn id="fn1"><p> * Significant differences between these contributions detected by the post-hoc
+paired t-tests with a Bonferroni correction Abd, abduction; Add, adduction </p></fn></table-wrap-foot></table-wrap><table-wrap id="t2" position="float"><?disp-level 2?><label>Table II</label><caption><p>The mean and standard deviation (<sc>sd</sc>) percentage contributions of the
+capsular ligaments (C), the ligamentum teres (LT) and the labrum (L) to external
+rotation restraint in all hip positions.</p></caption><table frame="hsides" rules="groups"><thead><tr><th colspan="2" align="center" rowspan="1"><bold>Hip position (°)</bold></th><th align="center" rowspan="1" colspan="1"><bold>Capsular ligaments (%)</bold></th><th align="center" rowspan="1" colspan="1"><bold>Ligamentum teres (%)</bold></th><th align="center" rowspan="1" colspan="1"><bold>Labrum (%)</bold></th><th align="center" rowspan="1" colspan="1"><bold>C <italic>vs</italic> LT (p-value)</bold></th><th align="center" rowspan="1" colspan="1">C <italic>vs</italic> L (p-value)</th><th align="center" rowspan="1" colspan="1">LT <italic>vs</italic> L (p-value)</th></tr></thead><tbody><tr><td rowspan="1" colspan="1"/><td rowspan="1" colspan="1"/><td rowspan="1" colspan="1"/><td rowspan="1" colspan="1"/><td rowspan="1" colspan="1"/><td rowspan="1" colspan="1"/><td rowspan="1" colspan="1"/><td rowspan="1" colspan="1"/></tr><tr><td rowspan="3" align="center" colspan="1">Extended</td><td align="center" rowspan="1" colspan="1">Add</td><td align="center" rowspan="1" colspan="1">85 (<sc>sd</sc> 10)</td><td align="center" rowspan="1" colspan="1">0 (<sc>sd</sc> 1)</td><td align="center" rowspan="1" colspan="1">14 (<sc>sd</sc> 10)</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">0.012*</td></tr><tr><td align="center" rowspan="1" colspan="1">0</td><td align="center" rowspan="1" colspan="1">82 (<sc>sd</sc> 14)</td><td align="center" rowspan="1" colspan="1">1 (<sc>sd</sc> 1)</td><td align="center" rowspan="1" colspan="1">17 (<sc>sd</sc> 13)</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">0.001*</td><td align="center" rowspan="1" colspan="1">0.017*</td></tr><tr><td align="center" rowspan="1" colspan="1">Abd</td><td align="center" rowspan="1" colspan="1">74 (<sc>sd</sc> 17)</td><td align="center" rowspan="1" colspan="1">2 (<sc>sd</sc> 1)</td><td align="center" rowspan="1" colspan="1">25 (<sc>sd</sc> 16)</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">0.012*</td><td align="center" rowspan="1" colspan="1">0.018*</td></tr><tr><td rowspan="3" align="center" colspan="1">0<bold>°</bold></td><td align="center" rowspan="1" colspan="1">Add</td><td align="center" rowspan="1" colspan="1">95 (<sc>sd</sc> 3)</td><td align="center" rowspan="1" colspan="1">1 (<sc>sd</sc> 1)</td><td align="center" rowspan="1" colspan="1">4 (<sc>sd</sc> 3)</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">0.055</td></tr><tr><td align="center" rowspan="1" colspan="1">0</td><td align="center" rowspan="1" colspan="1">82 (<sc>sd</sc> 17)</td><td align="center" rowspan="1" colspan="1">0 (<sc>sd</sc> 1)</td><td align="center" rowspan="1" colspan="1">18 (<sc>sd</sc> 17)</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">0.003*</td><td align="center" rowspan="1" colspan="1">0.056</td></tr><tr><td align="center" rowspan="1" colspan="1">Abd</td><td align="center" rowspan="1" colspan="1">74 (<sc>sd</sc> 15)</td><td align="center" rowspan="1" colspan="1">2 (<sc>sd</sc> 3)</td><td align="center" rowspan="1" colspan="1">24 (<sc>sd</sc> 16)</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">0.009*</td><td align="center" rowspan="1" colspan="1">0.028*</td></tr><tr><td rowspan="3" align="center" colspan="1">30<bold>°</bold></td><td align="center" rowspan="1" colspan="1">Add</td><td align="center" rowspan="1" colspan="1">88 (<sc>sd</sc> 9)</td><td align="center" rowspan="1" colspan="1">9 (<sc>sd</sc> 8)</td><td align="center" rowspan="1" colspan="1">3 (<sc>sd</sc> 2)</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">0.164</td></tr><tr><td align="center" rowspan="1" colspan="1">0</td><td align="center" rowspan="1" colspan="1">88 (<sc>sd</sc> 10)</td><td align="center" rowspan="1" colspan="1">6 (<sc>sd</sc> 7)</td><td align="center" rowspan="1" colspan="1">6 (<sc>sd</sc> 4)</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">1.000</td></tr><tr><td align="center" rowspan="1" colspan="1">Abd</td><td align="center" rowspan="1" colspan="1">76 (<sc>sd</sc> 11)</td><td align="center" rowspan="1" colspan="1">7 (<sc>sd</sc> 8)</td><td align="center" rowspan="1" colspan="1">17 (<sc>sd</sc> 8)</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">0.129</td></tr><tr><td rowspan="3" align="center" colspan="1">60<bold>°</bold></td><td align="center" rowspan="1" colspan="1">Add</td><td align="center" rowspan="1" colspan="1">87 (<sc>sd</sc> 8)</td><td align="center" rowspan="1" colspan="1">11 (<sc>sd</sc> 7)</td><td align="center" rowspan="1" colspan="1">2 (<sc>sd</sc> 1)</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">0.014*</td></tr><tr><td align="center" rowspan="1" colspan="1">0</td><td align="center" rowspan="1" colspan="1">83 (<sc>sd</sc> 16)</td><td align="center" rowspan="1" colspan="1">13 (<sc>sd</sc> 17)</td><td align="center" rowspan="1" colspan="1">4 (<sc>sd</sc> 3)</td><td align="center" rowspan="1" colspan="1">0.002*</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">0.493</td></tr><tr><td align="center" rowspan="1" colspan="1">Abd</td><td align="center" rowspan="1" colspan="1">88 (<sc>sd</sc> 7)</td><td align="center" rowspan="1" colspan="1">5 (<sc>sd</sc> 4)</td><td align="center" rowspan="1" colspan="1">7 (<sc>sd</sc> 7)</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">1.000</td></tr><tr><td rowspan="3" align="center" colspan="1">90<bold>°</bold></td><td align="center" rowspan="1" colspan="1">Add</td><td align="center" rowspan="1" colspan="1">87 (<sc>sd</sc> 9)</td><td align="center" rowspan="1" colspan="1">12 (<sc>sd</sc> 8)</td><td align="center" rowspan="1" colspan="1">1 (<sc>sd</sc> 1)</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">0.008*</td></tr><tr><td align="center" rowspan="1" colspan="1">0</td><td align="center" rowspan="1" colspan="1">83 (<sc>sd</sc> 20)</td><td align="center" rowspan="1" colspan="1">16 (<sc>sd</sc> 20)</td><td align="center" rowspan="1" colspan="1">2 (<sc>sd</sc> 2)</td><td align="center" rowspan="1" colspan="1">0.006*</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">0.279</td></tr><tr><td align="center" rowspan="1" colspan="1">Abd</td><td align="center" rowspan="1" colspan="1">94 (<sc>sd</sc> 4)</td><td align="center" rowspan="1" colspan="1">2 (<sc>sd</sc> 3)</td><td align="center" rowspan="1" colspan="1">4 (<sc>sd</sc> 3)</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">0.595</td></tr><tr><td rowspan="3" align="center" colspan="1">Flexed</td><td align="center" rowspan="1" colspan="1">Add</td><td align="center" rowspan="1" colspan="1">86 (<sc>sd</sc> 9)</td><td align="center" rowspan="1" colspan="1">13 (<sc>sd</sc> 9)</td><td align="center" rowspan="1" colspan="1">1 (<sc>sd</sc> 1)</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">0.011*</td></tr><tr><td align="center" rowspan="1" colspan="1">0</td><td align="center" rowspan="1" colspan="1">86 (<sc>sd</sc> 7)</td><td align="center" rowspan="1" colspan="1">12 (<sc>sd</sc> 7)</td><td align="center" rowspan="1" colspan="1">2 (<sc>sd</sc> 2)</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">0.013*</td></tr><tr><td align="center" rowspan="1" colspan="1">Abd</td><td align="center" rowspan="1" colspan="1">92 (<sc>sd</sc> 6)</td><td align="center" rowspan="1" colspan="1">3 (<sc>sd</sc> 6)</td><td align="center" rowspan="1" colspan="1">5 (<sc>sd</sc> 4)</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">&lt; 0.001*</td><td align="center" rowspan="1" colspan="1">1.000</td></tr><tr><td rowspan="1" colspan="1"/><td rowspan="1" colspan="1"/><td rowspan="1" colspan="1"/><td rowspan="1" colspan="1"/><td rowspan="1" colspan="1"/><td rowspan="1" colspan="1"/><td rowspan="1" colspan="1"/><td rowspan="1" colspan="1"/></tr></tbody></table><table-wrap-foot><fn id="fn2"><p> * Significant differences between these contributions detected by the
+<italic>post hoc</italic> paired <italic>t</italic>-tests with a Bonferroni
+correction Abd, abduction; Add, adduction </p></fn></table-wrap-foot></table-wrap><p>The contribution of the capsular ligaments was not uniform: the ischiofemoral ligament
+provided primary internal rotation restraint in more than half the tested positions and
+was particularly prominent in high flexion (≥ 30°), adduction and internal
+rotation, or low flexion (≤ 30°), abduction and internal rotation (Fig. 5).
+The iliofemoral ligament provided primary external rotation restraint in all hip
+positions, and both primary internal and external rotation restraint when the hip was
+extended or in neutral hip flexion (Fig. 5). The medial arm of the iliofemoral ligament
+dominated in neutral flexion or extension, and the lateral arm in all other positions
+(Fig. 5). The pubofemoral ligament only contributed significantly to rotational
+restraint when the hip was fully abducted, contributing to external rotation restraint
+in extension and internal rotation restraint in hip flexion (Fig. 5). </p><fig id="f5" position="float"><?disp-level 2?><label>Figs. 5a - 5b</label><caption><p>Graphs showing mean percentage contributions to internal (a) and external (b)
+rotation restraint with 95% confidence intervals provided by individual capsular
+ligaments for a complete range of hip movement. The images illustrate the hip
+positions on the<italic>x</italic>-axis and the dashed boxes are equivalent to
+those shown in Figure 4.</p></caption><alternatives><graphic xmlns:xlink="http://www.w3.org/1999/xlink" content-type="image" xlink:href="34638-galleyfig5a.jpg"><?cloudpmc-path blobs/cde1/4491667/739e3316f4b6/34638-galleyfig5a.jpg?><?cloudpmc-bucket cdn?><?image-server-status NEVER_LOAD?><?original-height 326?><?original-width 820?><?scaled-height 163?><?scaled-width 410?></graphic><graphic xmlns:xlink="http://www.w3.org/1999/xlink" content-type="thumb" xlink:href="34638-galleyfig5a.gif"><?cloudpmc-path blobs/cde1/4491667/43bbfe467510/34638-galleyfig5a.gif?><?cloudpmc-bucket cdn?></graphic></alternatives><alternatives><graphic xmlns:xlink="http://www.w3.org/1999/xlink" content-type="image" xlink:href="34638-galleyfig5b.jpg"><?cloudpmc-path blobs/cde1/4491667/7edc563695c3/34638-galleyfig5b.jpg?><?cloudpmc-bucket cdn?><?image-server-status NEVER_LOAD?><?original-height 292?><?original-width 834?><?scaled-height 146?><?scaled-width 417?></graphic><graphic xmlns:xlink="http://www.w3.org/1999/xlink" content-type="thumb" xlink:href="34638-galleyfig5b.gif"><?cloudpmc-path blobs/cde1/4491667/93b7c994dfd9/34638-galleyfig5b.gif?><?cloudpmc-bucket cdn?></graphic></alternatives></fig><p>Dislocations were only recorded in high flexion (≥ 60°) with neutral/full
+adduction and only after resection of the ischiofemoral ligament, indicating that
+tension in this ligament as it wrapped around the femoral head provided a net force that
+restrained the head from subluxing from the acetabulum (Fig. 6). For one hip dislocation
+occurred in high flexion and adduction after resection of the joint capsule, but ceased
+to occur following resection of the ligamentum teres; the ligamentum teres was wrapping
+around the posterior femoral head in external rotation, causing the head to sublux
+laterally and inferiorly out of the acetabulum, in a slingshot-like mechanism. This
+specific hip specimen had an unusually high proportional contribution to external
+rotation from the ligamentum teres; however, non-dislocating subluxations caused by the
+ligamentum teres in high flexion and adduction were also observed in other hips
+following resection of the joint capsule.</p><fig id="f6" position="float"><?disp-level 2?><label>Figs. 6a - 6c</label><caption><p>Photographs showing posterolateral views (a and b) and inferior view (c) of a hip
+in deep flexion with adduction and internal rotation. (a) The ischiofemoral
+ligament fibres are taut and wrap around the femoral head, stabilising the hip
+against excessive internal rotation and, thus, reducing the risk of impingement
+while supporting the femoral head in a sling. (b) When the ligament is resected
+the internal rotation restraint is lost and the femoral head is exposed, with
+little support from the acetabulum and labrum. (c) Tension in the ischiofemoral
+ligament (white arrows) pulls the femoral head into the acetabulum, stabilising
+the hip.</p></caption><alternatives><graphic xmlns:xlink="http://www.w3.org/1999/xlink" content-type="image" xlink:href="34638-galleyfig6a.jpg"><?cloudpmc-path blobs/cde1/4491667/13f02e7e4b69/34638-galleyfig6a.jpg?><?cloudpmc-bucket cdn?><?image-server-status NEVER_LOAD?><?original-height 700?><?original-width 614?><?scaled-height 700?><?scaled-width 614?></graphic><graphic xmlns:xlink="http://www.w3.org/1999/xlink" content-type="thumb" xlink:href="34638-galleyfig6a.gif"><?cloudpmc-path blobs/cde1/4491667/571194b56936/34638-galleyfig6a.gif?><?cloudpmc-bucket cdn?></graphic></alternatives><alternatives><graphic xmlns:xlink="http://www.w3.org/1999/xlink" content-type="image" xlink:href="34638-galleyfig6b.jpg"><?cloudpmc-path blobs/cde1/4491667/adfb6faaa077/34638-galleyfig6b.jpg?><?cloudpmc-bucket cdn?><?image-server-status NEVER_LOAD?><?original-height 700?><?original-width 618?><?scaled-height 700?><?scaled-width 618?></graphic><graphic xmlns:xlink="http://www.w3.org/1999/xlink" content-type="thumb" xlink:href="34638-galleyfig6b.gif"><?cloudpmc-path blobs/cde1/4491667/7781b0bebf09/34638-galleyfig6b.gif?><?cloudpmc-bucket cdn?></graphic></alternatives><alternatives><graphic xmlns:xlink="http://www.w3.org/1999/xlink" content-type="image" xlink:href="34638-galleyfig6c.jpg"><?cloudpmc-path blobs/cde1/4491667/5a8f68f20f5b/34638-galleyfig6c.jpg?><?cloudpmc-bucket cdn?><?image-server-status NEVER_LOAD?><?original-height 700?><?original-width 683?><?scaled-height 700?><?scaled-width 683?></graphic><graphic xmlns:xlink="http://www.w3.org/1999/xlink" content-type="thumb" xlink:href="34638-galleyfig6c.gif"><?cloudpmc-path blobs/cde1/4491667/02d19c1fcf43/34638-galleyfig6c.gif?><?cloudpmc-bucket cdn?></graphic></alternatives></fig></sec><sec id="funding-statement" disp-level="1"><title>Discussion</title><p>This was a small study using cadavers and, therefore, conclusions should be applied
+clinically with caution. However, we show a difference in importance between structures,
+thereby overturning the null hypothesis with confidence.</p><p>Capsular ligaments provide primary rotational restraint and prevent labral impingements
+around the limits of a complete range of hip movement (Fig. 4). Within the capsule, the
+ischiofemoral and iliofemoral ligaments are the dominant restraints for internal and
+external rotation, respectively, in more than two-thirds of the possible hip positions
+(Fig. 5). The ischiofemoral ligament also cradles the femoral head in deep hip flexion,
+stabilising the hip against posterior subluxation and dislocation (Fig. 6). Damage to
+these two ligaments in particular may possibly predispose to or be a cause of labral
+impingement, hip instability or damaging loads to the articular cartilage. These
+ligaments should be preserved as a priority during surgery to maintain/restore normal
+hip mechanics, particularly if early restoration of function is essential following
+joint preservation surgery.</p><p>Labral impingement only contributed significantly to resisting hip rotation in a limited
+number of positions by providing a soft buffer against bony impingement. These labral
+impingements triggered small subluxations of the femoral head out of the acetabulum.
+However, the restraint provided by the labrum was always less than the sum of
+contributions from the capsular ligaments (Fig. 4). Thus, the capsule protects the
+labrum against the full force of impingement by providing most of the rotational
+restraint. Release of the posterosuperior capsule during hip arthroscopy could therefore
+potentially increase the post-operative load on the labrum.</p><p>The ligamentum teres has a small role in limiting external rotation, but its
+contribution is considerably less than that of the lateral iliofemoral ligament (Fig.
+4), indicating that repair of the ligamentum teres to restore native restraint should
+only be considered second to repair of any deficiencies in the anterior joint capsule.
+In the complete absence of the joint capsule, the ligamentum teres can wrap around the
+femoral head and cause a destabilising subluxation in high flexion, adduction and
+external rotation, potentially leading to dislocation. Thus, with the capsular ligaments
+intact, this destabilising subluxation, caused by ligamentum teres tension, will be
+resisted by opposing tension from the capsular ligaments, resulting in increased joint
+stiffness with high passive stability. </p><p>By denuding the hip of its surrounding soft tissues with the exception of the capsule
+this study was limited, measuring only the contributions of the capsular ligaments, the
+ligamentum teres and the labrum. Any resistance caused by other soft tissues, such as
+muscles or fat, could not be assessed. Only a small number of specimens were included,
+and although visual observation suggested subjectively that the primary restraints for
+both male and female hips were similar, larger numbers would be needed to draw a
+significant conclusion on any differences between the genders. We also only modelled a
+single compressive loading condition whereas <italic>in vivo</italic> the magnitude and
+direction of this force varies for different activities<sup><xref rid="r19" ref-type="bibr">19</xref></sup> and could act to increase or decrease subluxation and
+loading on the labrum. Another limitation is that the tests were performed on cadaveric
+specimens with a mean age greater than that of patients undergoing hip arthroscopy, so
+the true contribution of the ligamentum teres in these patients may be higher than
+measured here, as the ligamentum can degenerate with age.<sup><xref rid="r26" ref-type="bibr">26</xref></sup> An intact capsule was necessary for ligamentum teres
+tension to develop without subluxation, and so our measurement of ligamentum teres
+contributions may be artificially reduced owing to cutting order bias, having for
+practical reasons always been resected after the capsular ligaments.</p><p>For the joint capsule, these results agree with a laxity-based cadaveric model which
+quantified their function in low flexion/extension.<sup><xref rid="r16" ref-type="bibr">16</xref></sup> They also agree with a detailed anatomical description of where
+the ligaments are taut throughout a complete ROM.<sup><xref rid="r27" ref-type="bibr">27</xref></sup> As for the labrum, the results corroborate a study which found
+that it only provides secondary stability in low hip flexion/extension, with primary
+stability coming from the iliofemoral ligament.<sup><xref rid="r18" ref-type="bibr">18</xref></sup> The position of deep flexion, full abduction and internal
+rotation where labral impingements were recorded in this study correlate well with those
+measured in ballet dancers with normal hip anatomy and normal passive range of hip
+movement during extreme dancing positions.<sup><xref rid="r28" ref-type="bibr">28</xref></sup> For the ligamentum teres, the findings support some results from a
+simple string model<sup><xref rid="r5" ref-type="bibr">5</xref></sup> and arthroscopic
+observations that it tightens in flexion, adduction and external rotation.<sup><xref rid="r29" ref-type="bibr">29</xref></sup> Recent work<sup><xref rid="r20" ref-type="bibr">20</xref>,<xref rid="r21" ref-type="bibr">21</xref></sup> also suggested
+that it has a role in preventing hip subluxation in high flexion and abduction, and low
+flexion/extension and external rotation; in these positions we found that the hip was
+indeed at risk of impingement and subluxation (Fig. 4), but did not find that the
+ligamentum teres provided consistent rotational restraint. </p><p>The iliofemoral ligament may be cut during treatment of FAI when performed by either
+open<sup><xref rid="r30" ref-type="bibr">30</xref></sup> or arthroscopic<sup><xref rid="r2" ref-type="bibr">2</xref></sup> surgery. Some reports indicate that hip
+instability is not a problem after these procedures,<sup><xref rid="r31" ref-type="bibr">31</xref></sup> whereas others have found that capsular defects<sup><xref rid="r32" ref-type="bibr">32</xref></sup> and instability<sup><xref rid="r33" ref-type="bibr">33</xref></sup> are more common in patients requiring
+revision hip arthroscopy, and that post-operative subluxations can be
+under-reported.<sup><xref rid="r2" ref-type="bibr">2</xref></sup> This study did
+not find an increase in risk of dislocation after resection of the iliofemoral ligament,
+but the loss of primary external rotational restraint across the complete ROM (Fig. 4)
+could increase the load on the labrum through impingement in extension or abduction,
+which may be perceived as pain and possible subluxation. Thus, we advocate repair of the
+capsular ligaments during early intervention surgery to reduce the risk of hip
+subluxation and labral overloading. This is particularly relevant when treating
+dysplastic hips, or trimming the rim of the acetabulum to treat FAI with a cam-pincer
+diagnosis,<sup><xref rid="r34" ref-type="bibr">34</xref></sup> because an
+deficient acetabulum increases the risk of hip instability.<sup><xref rid="r6" ref-type="bibr">6</xref>,<xref rid="r7" ref-type="bibr">7</xref>,<xref rid="r31" ref-type="bibr">31</xref></sup></p><p>The internal rotation restraint and supporting sling protecting against subluxation in
+deep hip flexion (Figs 5 and 6) offered by the ischiofemoral ligament could benefit
+patients who have undergone THA by passively stabilising the hip in a position where few
+muscles have favourable lines of action.<sup><xref rid="r35" ref-type="bibr">35</xref></sup> This may reduce the risk of dislocation but could also prevent
+posterior edge loading in THA. Posterior edge loading can lead to damage of the bearing
+surfaces and has been identified as a causative factor in ceramic hip
+squeaking.<sup><xref rid="r12" ref-type="bibr">12</xref></sup> The restraint
+provided by the ischiofemoral ligament likely increases with increasing bearing couple
+sizes as tension develops in the ligament as it wraps around the femoral head (Fig. 6):
+less subluxation means less edge loading,<sup><xref rid="r13" ref-type="bibr">13</xref></sup> but also a reduction in the pumping action that potentially expels
+joint fluid and edge loading wear debris into neighbouring soft tissues.<sup><xref rid="r36" ref-type="bibr">36</xref></sup> This study therefore supports repair of
+the ischiofemoral ligament after using a posterior approach for THA, particularly if a
+larger-diameter bearing couple is used.</p><p>In conclusion, the iliofemoral and ischiofemoral capsular ligaments are important
+passive rotational restraints to hip movement. The integrity of these ligaments appears
+to be important for maintaining normal hips mechanics and preventing excessive hip
+rotation. Preservation of them may prevent both impingement and hip instability.</p></sec><sec id="fn-group1" sec-type="fn-group" disp-level="1"><title>Footnotes</title><fn-group><fn id="fn3"><p><bold>Author contributions</bold></p></fn><fn id="fn4"><p>R. J. van Arkel: Design of experiment, Testing, data analysis, Statistical analysis,
+Writing the paper.</p></fn><fn id="fn5"><p>A. A. Amis: Design of the experiment, Writing the paper.</p></fn><fn id="fn6"><p>J. P. Cobb: Design of the experiment, Writing the paper.</p></fn><fn id="fn7"><p>J. R.T. Jeffers: Design of the experiment, Data analysis, Writing the paper.</p></fn><fn id="fn8"><p>This study was funded by the Wellcome Trust and EPSRC [088844/Z/09/Z] and the
+Institution of Mechanical Engineers. The dual-axis Instron materials testing machine
+was provided by an equipment grant from Arthritis Research UK.</p></fn><fn id="fn9"><p>No benefits in any form have been received or will be received from a commercial
+party related directly or indirectly to the subject of this article.</p></fn><fn id="fn10"><p>This article was primary edited by D. Johnstone and first proof edited by G.
+Scott.</p></fn></fn-group></sec><sec id="ref-list1" sec-type="ref-list" disp-level="1"><title>References</title><sec id="ref-list1_sec2" disp-level="2"><ref-list><ref id="r1"><label>1.</label><mixed-citation><named-content content-type="citation-string">Bedi A, Galano G, Walsh C, Kelly BT. Capsular management
+during hip arthroscopy: from femoroacetabular impingement to
+instability. Arthroscopy
+2011;27:1720–1731.</named-content><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="doi" xlink:href="10.1016/j.arthro.2011.08.288"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="pmid" xlink:href="22047925"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="google-scholar" xlink:href="journal=Arthroscopy&amp;title=Capsular management during hip arthroscopy: from femoroacetabular impingement to instability&amp;author=A Bedi&amp;author=G Galano&amp;author=C Walsh&amp;author=BT Kelly&amp;volume=27&amp;publication_year=2011&amp;pages=1720-1731&amp;pmid=22047925&amp;doi=10.1016/j.arthro.2011.08.288&amp;"/></mixed-citation></ref><ref id="r2"><label>2.</label><mixed-citation><named-content content-type="citation-string">Domb BG,
+Philippon MJ,
+Giordano BD. Arthroscopic
+capsulotomy, capsular repair, and capsular plication of the hip: relation to
+atraumatic instability. Arthroscopy
+2013;29:162–173.</named-content><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="doi" xlink:href="10.1016/j.arthro.2012.04.057"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="pmid" xlink:href="22901333"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="google-scholar" xlink:href="journal=Arthroscopy&amp;title=Arthroscopic capsulotomy, capsular repair, and capsular plication of the hip: relation to atraumatic instability&amp;author=BG Domb&amp;author=MJ Philippon&amp;author=BD Giordano&amp;volume=29&amp;publication_year=2013&amp;pages=162-173&amp;pmid=22901333&amp;doi=10.1016/j.arthro.2012.04.057&amp;"/></mixed-citation></ref><ref id="r3"><label>3.</label><mixed-citation><named-content content-type="citation-string">Bedi A, Kelly BT,
+Khanduja V. Arthroscopic hip
+preservation surgery: current concepts and perspective.
+Bone Joint J
+2013;95-B:10–19.</named-content><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="doi" xlink:href="10.1302/0301-620X.95B1.29608"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="pmid" xlink:href="23307667"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="google-scholar" xlink:href="journal=Bone Joint J&amp;title=Arthroscopic hip preservation surgery: current concepts and perspective&amp;author=A Bedi&amp;author=BT Kelly&amp;author=V Khanduja&amp;volume=95-B&amp;publication_year=2013&amp;pages=10-19&amp;pmid=23307667&amp;doi=10.1302/0301-620X.95B1.29608&amp;"/></mixed-citation></ref><ref id="r4"><label>4.</label><mixed-citation><named-content content-type="citation-string">Phillips AR,
+Bartlett G, Norton M, Fern D. Hip stability after
+ligamentum teres resection during surgical dislocation for cam
+impingement. Hip Int
+2012;22:329–334.</named-content><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="doi" xlink:href="10.5301/HIP.2012.9250"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="pmid" xlink:href="22740276"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="google-scholar" xlink:href="journal=Hip Int&amp;title=Hip stability after ligamentum teres resection during surgical dislocation for cam impingement&amp;author=AR Phillips&amp;author=G Bartlett&amp;author=M Norton&amp;author=D Fern&amp;volume=22&amp;publication_year=2012&amp;pages=329-334&amp;pmid=22740276&amp;doi=10.5301/HIP.2012.9250&amp;"/></mixed-citation></ref><ref id="r5"><label>5.</label><mixed-citation><named-content content-type="citation-string">Martin RL,
+Palmer I, Martin HD. Ligamentum teres: a
+functional description and potential clinical relevance.
+Knee Surg Sports Traumatol Arthrosc
+2012;20:1209–1214.</named-content><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="doi" xlink:href="10.1007/s00167-011-1663-1"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="pmid" xlink:href="21932079"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="google-scholar" xlink:href="journal=Knee Surg Sports Traumatol Arthrosc&amp;title=Ligamentum teres: a functional description and potential clinical relevance&amp;author=RL Martin&amp;author=I Palmer&amp;author=HD Martin&amp;volume=20&amp;publication_year=2012&amp;pages=1209-1214&amp;pmid=21932079&amp;doi=10.1007/s00167-011-1663-1&amp;"/></mixed-citation></ref><ref id="r6"><label>6.</label><mixed-citation><named-content content-type="citation-string">Mei-Dan O,
+McConkey MO, Brick M. Catastrophic failure of
+hip arthroscopy due to iatrogenic instability: can partial division of the
+ligamentum teres and iliofemoral ligament cause subluxation?
+Arthroscopy
+2012;28:440–445.</named-content><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="doi" xlink:href="10.1016/j.arthro.2011.12.005"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="pmid" xlink:href="22301357"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="google-scholar" xlink:href="journal=Arthroscopy&amp;title=Catastrophic failure of hip arthroscopy due to iatrogenic instability: can partial division of the ligamentum teres and iliofemoral ligament cause subluxation?&amp;author=O Mei-Dan&amp;author=MO McConkey&amp;author=M Brick&amp;volume=28&amp;publication_year=2012&amp;pages=440-445&amp;pmid=22301357&amp;doi=10.1016/j.arthro.2011.12.005&amp;"/></mixed-citation></ref><ref id="r7"><label>7.</label><mixed-citation><named-content content-type="citation-string">Benali Y,
+Katthagen BD. Hip subluxation as a
+complication of arthroscopic debridement.
+Arthroscopy
+2009;25:405–407.</named-content><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="doi" xlink:href="10.1016/j.arthro.2009.01.012"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="pmid" xlink:href="19341928"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="google-scholar" xlink:href="journal=Arthroscopy&amp;title=Hip subluxation as a complication of arthroscopic debridement&amp;author=Y Benali&amp;author=BD Katthagen&amp;volume=25&amp;publication_year=2009&amp;pages=405-407&amp;pmid=19341928&amp;doi=10.1016/j.arthro.2009.01.012&amp;"/></mixed-citation></ref><ref id="r8"><label>8.</label><mixed-citation><named-content content-type="citation-string">Sansone M,
+Ahldén M,
+Jónasson P, et al. 
+Total
+dislocation of the hip joint after arthroscopy and ileopsoas
+tenotomy. Knee Surg Sports Traumatol Arthrosc
+2013;21:420–423.</named-content><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="doi" xlink:href="10.1007/s00167-012-2300-3"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="pmid" xlink:href="23179452"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="google-scholar" xlink:href="journal=Knee Surg Sports Traumatol Arthrosc&amp;title=Total dislocation of the hip joint after arthroscopy and ileopsoas tenotomy&amp;author=M Sansone&amp;author=M Ahldén&amp;author=P Jónasson&amp;volume=21&amp;publication_year=2013&amp;pages=420-423&amp;pmid=23179452&amp;doi=10.1007/s00167-012-2300-3&amp;"/></mixed-citation></ref><ref id="r9"><label>9.</label><mixed-citation><named-content content-type="citation-string">Matsuda DK. Acute iatrogenic
+dislocation following hip impingement arthroscopic surgery.
+Arthroscopy
+2009;25:400–404.</named-content><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="doi" xlink:href="10.1016/j.arthro.2008.12.011"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="pmid" xlink:href="19341927"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="google-scholar" xlink:href="journal=Arthroscopy&amp;title=Acute iatrogenic dislocation following hip impingement arthroscopic surgery&amp;author=DK Matsuda&amp;volume=25&amp;publication_year=2009&amp;pages=400-404&amp;pmid=19341927&amp;doi=10.1016/j.arthro.2008.12.011&amp;"/></mixed-citation></ref><ref id="r10"><label>10.</label><mixed-citation><named-content content-type="citation-string">Ranawat AS,
+McClincy M, Sekiya JK. Anterior dislocation
+of the hip after arthroscopy in a patient with capsular laxity of the hip; a case
+report. :. J Bone Joint Surg [Am]
+2009;91-A:192–197.</named-content><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="doi" xlink:href="10.2106/JBJS.G.01367"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="pmid" xlink:href="19122095"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="google-scholar" xlink:href="journal=J Bone Joint Surg [Am]&amp;title=Anterior dislocation of the hip after arthroscopy in a patient with capsular laxity of the hip; a case report. :&amp;author=AS Ranawat&amp;author=M McClincy&amp;author=JK Sekiya&amp;volume=91-A&amp;publication_year=2009&amp;pages=192-197&amp;pmid=19122095&amp;doi=10.2106/JBJS.G.01367&amp;"/></mixed-citation></ref><ref id="r11"><label>11.</label><mixed-citation><named-content content-type="citation-string">Austin DC, Horneff
+Iii JG, Kelly
+Iv JD. Anterior hip
+dislocation 5 months after hip arthroscopy.
+Arthroscopy
+2014;30-10:1380–1382.</named-content><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="doi" xlink:href="10.1016/j.arthro.2014.04.099"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="pmid" xlink:href="24951135"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="google-scholar" xlink:href="journal=Arthroscopy&amp;title=Anterior hip dislocation 5 months after hip arthroscopy&amp;author=DC Austin&amp;author=JG Horneff Iii&amp;author=JD Kelly Iv&amp;volume=30-10&amp;publication_year=2014&amp;pages=1380-1382&amp;pmid=24951135&amp;doi=10.1016/j.arthro.2014.04.099&amp;"/></mixed-citation></ref><ref id="r12"><label>12.</label><mixed-citation><named-content content-type="citation-string">Esposito CI,
+Walter WL,
+Roques A, et al. 
+Wear in
+alumina-on-alumina ceramic total hip replacements: a retrieval analysis of edge
+loading. J Bone Joint Surg [Br]
+2012;94-B:901–907.</named-content><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="doi" xlink:href="10.1302/0301-620X.94B7.29115"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="pmid" xlink:href="22733943"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="google-scholar" xlink:href="journal=J Bone Joint Surg [Br]&amp;title=Wear in alumina-on-alumina ceramic total hip replacements: a retrieval analysis of edge loading&amp;author=CI Esposito&amp;author=WL Walter&amp;author=A Roques&amp;volume=94-B&amp;publication_year=2012&amp;pages=901-907&amp;pmid=22733943&amp;doi=10.1302/0301-620X.94B7.29115&amp;"/></mixed-citation></ref><ref id="r13"><label>13.</label><mixed-citation><named-content content-type="citation-string">De Haan R,
+Campbell PA, Su EP, De
+Smet KA. Revision of
+metal-on-metal resurfacing arthroplasty of the hip: the influence of
+malpositioning of the components. J Bone Joint Surg
+[Br]
+2008;90-B:1158–1163.</named-content><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="doi" xlink:href="10.1302/0301-620X.90B9.19891"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="pmid" xlink:href="18757954"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="google-scholar" xlink:href="journal=J Bone Joint Surg [Br]&amp;title=Revision of metal-on-metal resurfacing arthroplasty of the hip: the influence of malpositioning of the components&amp;author=R De Haan&amp;author=PA Campbell&amp;author=EP Su&amp;author=KA De Smet&amp;volume=90-B&amp;publication_year=2008&amp;pages=1158-1163&amp;pmid=18757954&amp;doi=10.1302/0301-620X.90B9.19891&amp;"/></mixed-citation></ref><ref id="r14"><label>14.</label><mixed-citation><named-content content-type="citation-string">Nadzadi ME,
+Pedersen DR, Yack HJ,
+Callaghan JJ, Brown TD. Kinematics, kinetics,
+and finite element analysis of commonplace maneuvers at risk for total hip
+dislocation. J Biomech
+2003;36:577–591.</named-content><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="doi" xlink:href="10.1016/s0021-9290(02)00232-4"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="pmid" xlink:href="12600348"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="google-scholar" xlink:href="journal=J Biomech&amp;title=Kinematics, kinetics, and finite element analysis of commonplace maneuvers at risk for total hip dislocation&amp;author=ME Nadzadi&amp;author=DR Pedersen&amp;author=HJ Yack&amp;author=JJ Callaghan&amp;author=TD Brown&amp;volume=36&amp;publication_year=2003&amp;pages=577-591&amp;pmid=12600348&amp;doi=10.1016/s0021-9290(02)00232-4&amp;"/></mixed-citation></ref><ref id="r15"><label>15.</label><mixed-citation><named-content content-type="citation-string">Kwon MS,
+Kuskowski M,
+Mulhall KJ, et al. 
+Does surgical
+approach affect total hip arthroplasty dislocation rates?
+Clin Orthop Relat Res
+2006;447:34–38.</named-content><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="doi" xlink:href="10.1097/01.blo.0000218746.84494.df"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="pmid" xlink:href="16741471"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="google-scholar" xlink:href="journal=Clin Orthop Relat Res&amp;title=Does surgical approach affect total hip arthroplasty dislocation rates?&amp;author=MS Kwon&amp;author=M Kuskowski&amp;author=KJ Mulhall&amp;volume=447&amp;publication_year=2006&amp;pages=34-38&amp;pmid=16741471&amp;doi=10.1097/01.blo.0000218746.84494.df&amp;"/></mixed-citation></ref><ref id="r16"><label>16.</label><mixed-citation><named-content content-type="citation-string">Martin HD,
+Savage A, Braly BA, et al. 
+The function
+of the hip capsular ligaments: a quantitative report.
+Arthroscopy
+2008;24:188–195.</named-content><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="doi" xlink:href="10.1016/j.arthro.2007.08.024"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="pmid" xlink:href="18237703"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="google-scholar" xlink:href="journal=Arthroscopy&amp;title=The function of the hip capsular ligaments: a quantitative report&amp;author=HD Martin&amp;author=A Savage&amp;author=BA Braly&amp;volume=24&amp;publication_year=2008&amp;pages=188-195&amp;pmid=18237703&amp;doi=10.1016/j.arthro.2007.08.024&amp;"/></mixed-citation></ref><ref id="r17"><label>17.</label><mixed-citation><named-content content-type="citation-string">Safran MR,
+Lopomo N,
+Zaffagnini S, et al. 
+In vitro
+analysis of peri-articular soft tissues passive constraining effect on hip
+kinematics and joint stability. Knee Surg Sports Traumatol
+Arthrosc
+2013;21:1655–1663.</named-content><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="doi" xlink:href="10.1007/s00167-012-2091-6"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="pmcid" xlink:href="PMC6319387"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="pmid" xlink:href="22752414"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="google-scholar" xlink:href="journal=Knee Surg Sports Traumatol Arthrosc&amp;title=In vitro analysis of peri-articular soft tissues passive constraining effect on hip kinematics and joint stability&amp;author=MR Safran&amp;author=N Lopomo&amp;author=S Zaffagnini&amp;volume=21&amp;publication_year=2013&amp;pages=1655-1663&amp;pmid=22752414&amp;doi=10.1007/s00167-012-2091-6&amp;"/></mixed-citation></ref><ref id="r18"><label>18.</label><mixed-citation><named-content content-type="citation-string">Myers CA,
+Register BC,
+Lertwanich P, et al. 
+Role of the
+acetabular labrum and the iliofemoral ligament in hip stability: an in vitro
+biplane fluoroscopy study. Am J Sports Med
+2011;3(9Suppl):85S–91S.</named-content><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="doi" xlink:href="10.1177/0363546511412161"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="pmid" xlink:href="21709037"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="google-scholar" xlink:href="journal=Am J Sports Med&amp;title=Role of the acetabular labrum and the iliofemoral ligament in hip stability: an in vitro biplane fluoroscopy study&amp;author=CA Myers&amp;author=BC Register&amp;author=P Lertwanich&amp;volume=3(9Suppl)&amp;publication_year=2011&amp;pages=85S-91S&amp;pmid=21709037&amp;doi=10.1177/0363546511412161&amp;"/></mixed-citation></ref><ref id="r19"><label>19.</label><mixed-citation><named-content content-type="citation-string">Bergmann G,
+Deuretzbacher G, Heller M, et al. 
+Hip contact
+forces and gait patterns from routine activities. J
+Biomech
+2001;34:859–871.</named-content><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="doi" xlink:href="10.1016/s0021-9290(01)00040-9"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="pmid" xlink:href="11410170"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="google-scholar" xlink:href="journal=J Biomech&amp;title=Hip contact forces and gait patterns from routine activities&amp;author=G Bergmann&amp;author=G Deuretzbacher&amp;author=M Heller&amp;volume=34&amp;publication_year=2001&amp;pages=859-871&amp;pmid=11410170&amp;doi=10.1016/s0021-9290(01)00040-9&amp;"/></mixed-citation></ref><ref id="r20"><label>20.</label><mixed-citation><named-content content-type="citation-string">Martin RL,
+Kivlan BR,
+Clemente FR. A cadaveric model for
+ligamentum teres function: a pilot study. Knee Surg Sports
+Traumatol Arthrosc
+2013;21:1689–1693.</named-content><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="doi" xlink:href="10.1007/s00167-012-2262-5"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="pmid" xlink:href="23117165"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="google-scholar" xlink:href="journal=Knee Surg Sports Traumatol Arthrosc&amp;title=A cadaveric model for ligamentum teres function: a pilot study&amp;author=RL Martin&amp;author=BR Kivlan&amp;author=FR Clemente&amp;volume=21&amp;publication_year=2013&amp;pages=1689-1693&amp;pmid=23117165&amp;doi=10.1007/s00167-012-2262-5&amp;"/></mixed-citation></ref><ref id="r21"><label>21.</label><mixed-citation><named-content content-type="citation-string">Kivlan BR,
+Richard Clemente F,
+Martin RL,
+Martin HD. Function of the
+ligamentum teres during multi-planar movement of the hip joint.
+Knee Surg Sports Traumatol Arthrosc
+2013;21:1664–1668.</named-content><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="doi" xlink:href="10.1007/s00167-012-2168-2"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="pmid" xlink:href="22885673"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="google-scholar" xlink:href="journal=Knee Surg Sports Traumatol Arthrosc&amp;title=Function of the ligamentum teres during multi-planar movement of the hip joint&amp;author=BR Kivlan&amp;author=Clemente F Richard&amp;author=RL Martin&amp;author=HD Martin&amp;volume=21&amp;publication_year=2013&amp;pages=1664-1668&amp;pmid=22885673&amp;doi=10.1007/s00167-012-2168-2&amp;"/></mixed-citation></ref><ref id="r22"><label>22.</label><mixed-citation><named-content content-type="citation-string">Wu G,
+Siegler S, Allard P, et al. 
+ISB
+recommendation on definitions of joint coordinate system of various joints for the
+reporting of human joint motion--part I: ankle, hip, and spine. International
+Society of Biomechanics. J Biomech
+2002;35:543–548.</named-content><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="doi" xlink:href="10.1016/s0021-9290(01)00222-6"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="pmid" xlink:href="11934426"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="google-scholar" xlink:href="journal=J Biomech&amp;title=ISB recommendation on definitions of joint coordinate system of various joints for the reporting of human joint motion--part I: ankle, hip, and spine. International Society of Biomechanics&amp;author=G Wu&amp;author=S Siegler&amp;author=P Allard&amp;volume=35&amp;publication_year=2002&amp;pages=543-548&amp;pmid=11934426&amp;doi=10.1016/s0021-9290(01)00222-6&amp;"/></mixed-citation></ref><ref id="r23"><label>23.</label><mixed-citation><named-content content-type="citation-string">Amis AA,
+Dawkins GP. Functional anatomy of
+the anterior cruciate ligament. Fibre bundle actions related to ligament
+replacements and injuries. J Bone Joint Surg [Br]
+1991;73-B:260–267.</named-content><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="doi" xlink:href="10.1302/0301-620X.73B2.2005151"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="pmid" xlink:href="2005151"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="google-scholar" xlink:href="journal=J Bone Joint Surg [Br]&amp;title=Functional anatomy of the anterior cruciate ligament. Fibre bundle actions related to ligament replacements and injuries&amp;author=AA Amis&amp;author=GP Dawkins&amp;volume=73-B&amp;publication_year=1991&amp;pages=260-267&amp;pmid=2005151&amp;doi=10.1302/0301-620X.73B2.2005151&amp;"/></mixed-citation></ref><ref id="r24"><label>24.</label><mixed-citation><named-content content-type="citation-string">Xerogeanes JW,
+Takeda Y,
+Livesay GA, et al. 
+Effect of
+knee flexion on the in situ force distribution in the human anterior cruciate
+ligament. Knee Surg Sports Traumatol Arthrosc
+1995;3:9–13.</named-content><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="doi" xlink:href="10.1007/BF01553518"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="pmid" xlink:href="7773824"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="google-scholar" xlink:href="journal=Knee Surg Sports Traumatol Arthrosc&amp;title=Effect of knee flexion on the in situ force distribution in the human anterior cruciate ligament&amp;author=JW Xerogeanes&amp;author=Y Takeda&amp;author=GA Livesay&amp;volume=3&amp;publication_year=1995&amp;pages=9-13&amp;pmid=7773824&amp;doi=10.1007/BF01553518&amp;"/></mixed-citation></ref><ref id="r25"><label>25.</label><mixed-citation><named-content content-type="citation-string">Tijssen M, van
+Cingel R,
+Willemsen L, de
+Visser E. Diagnostics of
+femoro-acetabular impingement and labral pathology of the hip: a systematic review
+of the accuracy and validity of physical tests.
+Arthroscopy
+2012;28:860–871.</named-content><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="doi" xlink:href="10.1016/j.arthro.2011.12.004"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="pmid" xlink:href="22365268"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="google-scholar" xlink:href="journal=Arthroscopy&amp;title=Diagnostics of femoro-acetabular impingement and labral pathology of the hip: a systematic review of the accuracy and validity of physical tests&amp;author=M Tijssen&amp;author=R van Cingel&amp;author=L Willemsen&amp;author=E de Visser&amp;volume=28&amp;publication_year=2012&amp;pages=860-871&amp;pmid=22365268&amp;doi=10.1016/j.arthro.2011.12.004&amp;"/></mixed-citation></ref><ref id="r26"><label>26.</label><mixed-citation><named-content content-type="citation-string">Tan CK, Wong WC. Absence of the
+ligament of head of femur in the human hip joint.
+Singapore Med J
+1990;31:360–363.</named-content><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="pmid" xlink:href="2124003"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="google-scholar" xlink:href="journal=Singapore Med J&amp;title=Absence of the ligament of head of femur in the human hip joint&amp;author=CK Tan&amp;author=WC Wong&amp;volume=31&amp;publication_year=1990&amp;pages=360-363&amp;pmid=2124003&amp;"/></mixed-citation></ref><ref id="r27"><label>27.</label><mixed-citation><named-content content-type="citation-string">Fuss FK,
+Bacher A. New aspects of the
+morphology and function of the human hip joint ligaments.
+Am J Anat
+1991;192:1–13.</named-content><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="doi" xlink:href="10.1002/aja.1001920102"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="pmid" xlink:href="1750378"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="google-scholar" xlink:href="journal=Am J Anat&amp;title=New aspects of the morphology and function of the human hip joint ligaments&amp;author=FK Fuss&amp;author=A Bacher&amp;volume=192&amp;publication_year=1991&amp;pages=1-13&amp;pmid=1750378&amp;doi=10.1002/aja.1001920102&amp;"/></mixed-citation></ref><ref id="r28"><label>28.</label><mixed-citation><named-content content-type="citation-string">Charbonnier C, Kolo FC,
+Duthon VB, et al. 
+Assessment of
+congruence and impingement of the hip joint in professional ballet dancers: a
+motion capture study. Am J Sports Med
+2011;39:557–566.</named-content><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="doi" xlink:href="10.1177/0363546510386002"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="pmid" xlink:href="21160017"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="google-scholar" xlink:href="journal=Am J Sports Med&amp;title=Assessment of congruence and impingement of the hip joint in professional ballet dancers: a motion capture study&amp;author=C Charbonnier&amp;author=FC Kolo&amp;author=VB Duthon&amp;volume=39&amp;publication_year=2011&amp;pages=557-566&amp;pmid=21160017&amp;doi=10.1177/0363546510386002&amp;"/></mixed-citation></ref><ref id="r29"><label>29.</label><mixed-citation><named-content content-type="citation-string">Kelly BT,
+Williams RJ 3rd,
+Philippon MJ. Hip arthroscopy:
+current indications, treatment options, and management issues.
+Am J Sports Med
+2003;31:1020–1037.</named-content><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="doi" xlink:href="10.1177/03635465030310060701"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="pmid" xlink:href="14623676"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="google-scholar" xlink:href="journal=Am J Sports Med&amp;title=Hip arthroscopy: current indications, treatment options, and management issues&amp;author=BT Kelly&amp;author=RJ 3rd Williams&amp;author=MJ Philippon&amp;volume=31&amp;publication_year=2003&amp;pages=1020-1037&amp;pmid=14623676&amp;doi=10.1177/03635465030310060701&amp;"/></mixed-citation></ref><ref id="r30"><label>30.</label><mixed-citation><named-content content-type="citation-string">Leunig M, Ganz R. The evolution and
+concepts of joint-preserving surgery of the hip. Bone
+Joint J
+2014;96-B:5–18.</named-content><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="doi" xlink:href="10.1302/0301-620X.96B1.32823"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="pmid" xlink:href="24395304"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="google-scholar" xlink:href="journal=Bone Joint J&amp;title=The evolution and concepts of joint-preserving surgery of the hip&amp;author=M Leunig&amp;author=R Ganz&amp;volume=96-B&amp;publication_year=2014&amp;pages=5-18&amp;pmid=24395304&amp;doi=10.1302/0301-620X.96B1.32823&amp;"/></mixed-citation></ref><ref id="r31"><label>31.</label><mixed-citation><named-content content-type="citation-string">Ilizaliturri
+VM Jr.
+Complications of arthroscopic femoroacetabular impingement
+treatment: a review. Clin Orthop Relat Res
+2009;467:760–768.</named-content><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="doi" xlink:href="10.1007/s11999-008-0618-4"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="pmcid" xlink:href="PMC2635434"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="pmid" xlink:href="19018604"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="google-scholar" xlink:href="journal=Clin Orthop Relat Res&amp;title=Complications of arthroscopic femoroacetabular impingement treatment: a review&amp;author=VM Ilizaliturri&amp;volume=467&amp;publication_year=2009&amp;pages=760-768&amp;pmid=19018604&amp;doi=10.1007/s11999-008-0618-4&amp;"/></mixed-citation></ref><ref id="r32"><label>32.</label><mixed-citation><named-content content-type="citation-string">McCormick F,
+Slikker W 3rd,
+Harris JD, et al. 
+Evidence of
+capsular defect following hip arthroscopy. Knee Surg
+Sports Traumatol Arthrosc
+2014;22:902–905.</named-content><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="doi" xlink:href="10.1007/s00167-013-2591-z"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="pmid" xlink:href="23851921"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="google-scholar" xlink:href="journal=Knee Surg Sports Traumatol Arthrosc&amp;title=Evidence of capsular defect following hip arthroscopy&amp;author=F McCormick&amp;author=W 3rd Slikker&amp;author=JD Harris&amp;volume=22&amp;publication_year=2014&amp;pages=902-905&amp;pmid=23851921&amp;doi=10.1007/s00167-013-2591-z&amp;"/></mixed-citation></ref><ref id="r33"><label>33.</label><mixed-citation><named-content content-type="citation-string">Philippon MJ,
+Schenker ML,
+Briggs KK, et al. 
+Revision hip
+arthroscopy. Am J Sports Med
+2007;35:1918–1921.</named-content><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="doi" xlink:href="10.1177/0363546507305097"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="pmid" xlink:href="17703000"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="google-scholar" xlink:href="journal=Am J Sports Med&amp;title=Revision hip arthroscopy&amp;author=MJ Philippon&amp;author=ML Schenker&amp;author=KK Briggs&amp;volume=35&amp;publication_year=2007&amp;pages=1918-1921&amp;pmid=17703000&amp;doi=10.1177/0363546507305097&amp;"/></mixed-citation></ref><ref id="r34"><label>34.</label><mixed-citation><named-content content-type="citation-string">Masjedi M,
+Nightingale CL, Azimi DY, Cobb JP. The three-dimensional
+relationship between acetabular rim morphology and the severity of femoral cam
+lesions. Bone Joint J
+2013;95-B:314–319.</named-content><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="doi" xlink:href="10.1302/0301-620X.95B3.30901"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="pmid" xlink:href="23450013"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="google-scholar" xlink:href="journal=Bone Joint J&amp;title=The three-dimensional relationship between acetabular rim morphology and the severity of femoral cam lesions&amp;author=M Masjedi&amp;author=CL Nightingale&amp;author=DY Azimi&amp;author=JP Cobb&amp;volume=95-B&amp;publication_year=2013&amp;pages=314-319&amp;pmid=23450013&amp;doi=10.1302/0301-620X.95B3.30901&amp;"/></mixed-citation></ref><ref id="r35"><label>35.</label><mixed-citation><named-content content-type="citation-string">van Arkel RJ,
+Modenese L,
+Phillips AT,
+Jeffers JR. Hip abduction can
+prevent posterior edge loading of hip replacements. J
+Orthop Res
+2013;31:1172–1179.</named-content><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="doi" xlink:href="10.1002/jor.22364"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="pmcid" xlink:href="PMC3736148"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="pmid" xlink:href="23575923"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="google-scholar" xlink:href="journal=J Orthop Res&amp;title=Hip abduction can prevent posterior edge loading of hip replacements&amp;author=RJ van Arkel&amp;author=L Modenese&amp;author=AT Phillips&amp;author=JR Jeffers&amp;volume=31&amp;publication_year=2013&amp;pages=1172-1179&amp;pmid=23575923&amp;doi=10.1002/jor.22364&amp;"/></mixed-citation></ref><ref id="r36"><label>36.</label><mixed-citation><named-content content-type="citation-string">Wroblewski BM, Siney PD,
+Fleming PA. Microseparation, fluid
+pressure and flow in failures of metal-on-metal hip resurfacing
+arthroplasties. Bone Joint Res
+2012;1:25–30.</named-content><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="doi" xlink:href="10.1302/2046-3758.13.2000040"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="pmcid" xlink:href="PMC3626193"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="pmid" xlink:href="23610667"/><ext-link xmlns:xlink="http://www.w3.org/1999/xlink" ext-link-type="google-scholar" xlink:href="journal=Bone Joint Res&amp;title=Microseparation, fluid pressure and flow in failures of metal-on-metal hip resurfacing arthroplasties&amp;author=BM Wroblewski&amp;author=PD Siney&amp;author=PA Fleming&amp;volume=1&amp;publication_year=2012&amp;pages=25-30&amp;pmid=23610667&amp;doi=10.1302/2046-3758.13.2000040&amp;"/></mixed-citation></ref></ref-list></sec></sec></body></article>

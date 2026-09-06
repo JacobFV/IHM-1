@@ -1,0 +1,144 @@
+{
+  "schema": "ihm.hip-capsule-source-cards.v1",
+  "native_activation_allowed": false,
+  "acquisition_date": "2026-09-06",
+  "source_cards": [
+    {
+      "file": "van_Arkel_2015_envelope.xml",
+      "title": "The envelope of passive motion allowed by the capsular ligaments of the hip",
+      "doi": "10.1016/j.jbiomech.2015.09.002",
+      "primary_article_url": "https://doi.org/10.1016/j.jbiomech.2015.09.002",
+      "retrieval_url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC4655836/fullTextXML",
+      "license": "CC BY4.0",
+      "license_verbatim": "\u00a9 2015 The Authors2015https://creativecommons.org/licenses/by/4.0/This is an open access article under the CC BY license (http://creativecommons.org/licenses/by/4.0/).",
+      "specimens": "10 fresh-frozen pelvises,6male; one morphology exclusion and one capsule rupture leave8 analyzed rotation specimens; age76\u00b19years; left hips.",
+      "conditions": "Skeletonized with capsule preserved;110N compression20degmedial/proximal relative to femur;roomtemperature,water spray;10s sinusoidal cycle,second iteration;\u00b15Nm at30 flexion/abduction positions.",
+      "usable_scope_and_limitations": "Numeric morphology and significance tables, plot means/CIs, mid-slack regression; no raw specimen torque-angle files or covariance found. Aggregate includes labrum; not capsule-only."
+    },
+    {
+      "file": "van_Arkel_2015_resection.xml",
+      "title": "The capsular ligaments provide more hip rotational restraint than the\nacetabular labrum and the ligamentum teres ",
+      "doi": "10.1302/0301-620X.97B4.34638",
+      "primary_article_url": "https://doi.org/10.1302/0301-620X.97B4.34638",
+      "retrieval_url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC4491667/fullTextXML",
+      "license": "CC BY (version not specified in retained permissions)",
+      "license_verbatim": "This is an open-access article distributed under the terms of the Creative\nCommons CC-BY license, which permits copying and redistributing the material in\nany medium or format, remixing, transforming and building upon the material for\nany purpose, even commercially, provided the original author and source are\ncredited, and changes made are indicated. This may be done in a reasonable manner,\nbut not in any way that suggests the licensor endorses you or your\nuse.",
+      "specimens": "Nine fresh-frozen cadaveric left hips,6male,age76.4years(range61\u201389).",
+      "conditions": "Sequential resection with return to original intact\u00b15Nm rotational angles across18 flexion/abduction positions;110N functional compression; superposition estimates contributions.",
+      "usable_scope_and_limitations": "Capsular ligaments dominate restraint but labrum/teres are present. Resection contributions do not identify a global elastic potential or independent constitutive laws."
+    },
+    {
+      "file": "Karunaseelan_2021_stabilization.xml",
+      "title": "Capsular ligaments provide a passive stabilizing force to protect the hip against edge loading",
+      "doi": "10.1302/2046-3758.109.BJR-2020-0536.R1",
+      "primary_article_url": "https://doi.org/10.1302/2046-3758.109.BJR-2020-0536.R1",
+      "retrieval_url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8479567/fullTextXML",
+      "license": "CC BY-NC-ND4.0",
+      "license_verbatim": "\u00a9 2021 Author(s) et al.2021https://creativecommons.org/licenses/by-nc-nd/4.0/This is an open-access article distributed under the terms of the Creative Commons Attribution Non-Commercial No Derivatives (CC BY-NC-ND 4.0) licence, which permits the copying and redistribution of the work only, and provided the original author and source are credited. See https://creativecommons.org/licenses/by-nc-nd/4.0/.",
+      "specimens": "Nine cadaveric hips from earlier resection study; not an independent new cohort.",
+      "conditions": "MATLAB/Twente2.0 enthesis centroid scaling plus ArtiSynth wrapping; effective moment arms; stiffness inferred from4\u20135Nm endpoint region.",
+      "usable_scope_and_limitations": "Modeled forces and attachment sensitivity; no executable MATLAB/ArtiSynth model or input deck recovered. Unchanged XML retained for research attribution; do not propagate this restrictive license to original code."
+    },
+    {
+      "file": "Anantha_Krishnan_2024_model.xml",
+      "title": "Instantaneous Generation of Subject-Specific Finite Element Models of the Hip Capsule",
+      "doi": "10.3390/bioengineering11010037",
+      "primary_article_url": "https://doi.org/10.3390/bioengineering11010037",
+      "retrieval_url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC10813259/fullTextXML",
+      "license": "CC BY4.0",
+      "license_verbatim": "\u00a9 2023 by the authors.2023https://creativecommons.org/licenses/by/4.0/Licensee MDPI, Basel, Switzerland. This article is an open access article distributed under the terms and conditions of the Creative Commons Attribution (CC BY) license (https://creativecommons.org/licenses/by/4.0/).",
+      "specimens": "Base model one implanted cadaver hip; property priors from10 prior calibrated specimens; independent validation5THA hips.",
+      "conditions": "Fiber-reinforced membrane with six sectors and tension-only springs; synthetic500-case dataset; experimental0\u20135Nm I/E at0,30,60,90degflexion.",
+      "usable_scope_and_limitations": "Article explicitly says data available upon request; no downloadable calibrated model or regression weights recovered. THA geometry and sector properties cannot be transplanted into native hip."
+    },
+    {
+      "file": "Pieroh_2016_material.xml",
+      "title": "The Stress-Strain Data of the Hip Capsule Ligaments Are Gender and Side Independent Suggesting a Smaller Contribution to Passive Stiffness",
+      "doi": "10.1371/journal.pone.0163306",
+      "primary_article_url": "https://doi.org/10.1371/journal.pone.0163306",
+      "retrieval_url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC5042535/fullTextXML",
+      "license": "CC BY (version not specified in retained permissions)",
+      "license_verbatim": "\u00a9 2016 Pieroh et alThis is an open access article distributed under the terms of the Creative Commons Attribution License, which permits unrestricted use, distribution, and reproduction in any medium, provided the original author and source are credited.",
+      "specimens": "Reported17 cadavers,age83.65\u00b110.54years; authors report9female/7male and inconsistent specimen counts in places; preserve rather than correct source.",
+      "conditions": "Ethanol-glycerin embalming,excised direction-selected ligament strips; saline storage,roomtemperature uniaxial tests.",
+      "usable_scope_and_limitations": "Material data include preparation-sensitive stress/strain values. Do not combine with fresh-frozen whole-joint torsional stiffness without geometry/slack-length and preparation model."
+    },
+    {
+      "file": "Myers_2020_metadata.json",
+      "title": "Development and calibration of a probabilistic finite element hip capsule representation.",
+      "doi": "10.1080/10255842.2020.1764543",
+      "primary_article_url": "https://doi.org/10.1080/10255842.2020.1764543",
+      "license": "Metadata retained; no fulltext/model reuse license established",
+      "usable_scope_and_limitations": "Abstract identifies calibrated fiber-reinforced FE capsule and4.7degmean/5.1degprobabilistic RMS. EuropePMC lists subscription-required fulltext; no model files or calibrated parameter table acquired."
+    }
+  ],
+  "retained_files": [
+    {
+      "file": "van_Arkel_2015_envelope.xml",
+      "bytes": 95645,
+      "sha256": "bbeaf1e0cec0b5bf513f94b78932e0f814a6178826ed7685e867cb3959285789",
+      "retrieval_url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC4655836/fullTextXML"
+    },
+    {
+      "file": "van_Arkel_2015_resection.xml",
+      "bytes": 91675,
+      "sha256": "2efa398536ed9da593afc0f54261d57bc5e4392e7a08e27be6b50f8c523ae22b",
+      "retrieval_url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC4491667/fullTextXML"
+    },
+    {
+      "file": "Karunaseelan_2021_stabilization.xml",
+      "bytes": 95305,
+      "sha256": "eaf5eeb7750bda52c150d08a2db59926167ebff8cff0ff88afc4d01c29f506f1",
+      "retrieval_url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC8479567/fullTextXML"
+    },
+    {
+      "file": "Anantha_Krishnan_2024_model.xml",
+      "bytes": 140200,
+      "sha256": "ebe33d507e63ff14afee3671a877d42744da2eb8b4e697d8ea3aa2d6674000b6",
+      "retrieval_url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC10813259/fullTextXML"
+    },
+    {
+      "file": "Pieroh_2016_material.xml",
+      "bytes": 131488,
+      "sha256": "20edf9140df3cfb7413fdda6370a88ff20fa4a615ee14b731ce57643f76f2660",
+      "retrieval_url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC5042535/fullTextXML"
+    },
+    {
+      "file": "van_Arkel_2015_envelope.pdf",
+      "bytes": 771480,
+      "sha256": "89cbf22479a1d737573c865dc707e661c17a3797ad35d0b16d9868adcf63c445",
+      "retrieval_url": "https://europepmc.org/articles/PMC4655836?pdf=render"
+    },
+    {
+      "file": "Myers_2020_metadata.json",
+      "bytes": 5442,
+      "sha256": "eacd9a9e115dd48f3e9bbb5d340219f2efb3e5213e01734a101215132d5e83f0",
+      "retrieval_url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:32432892%20AND%20SRC:MED&format=json&resultType=core"
+    },
+    {
+      "file": "envelope_page4_1800.png",
+      "bytes": 495423,
+      "sha256": "df4105877007b1683d308ed8072d4fc6a76b71781d591430c0c11fa2a0f6314d",
+      "retrieval_url": "Local rendering of retained CC BY4.0 PDF page4: pdftoppm -f4 -singlefile -scale-to1800 -png"
+    },
+    {
+      "file": "envelope_page5_1800.png",
+      "bytes": 455656,
+      "sha256": "7825f0856ee72dd489b6cfe64fb817b2eac1b597ac5f0a2cf9e4d06b3f1f0b3a",
+      "retrieval_url": "Local rendering of retained CC BY4.0 PDF page5: pdftoppm -f5 -singlefile -scale-to1800 -png"
+    },
+    {
+      "file": "neutral_slice.json",
+      "bytes": 3590,
+      "sha256": "dc12266051d9f3ab4d3d13d539733b85a14c830d3e61781f25cdeec75ad599ce",
+      "retrieval_url": "Local original research interpolation with explicit figure-derived calibration"
+    }
+  ],
+  "decision": "Retain one provisional conservative scalar research slice only. Full3DOF passive potential and subject-specific activation are not identified by available data.",
+  "prohibited_inferences": [
+    "Do not treat\u00b140degmodelROM as capsule slack or force onset.",
+    "Do not set production stiffness to remove a support residual.",
+    "Do not relax ROM bounds or apply fixed-pose torque at another flexion/abduction.",
+    "Do not add aggregate periarticular torque on top of separately modeled labrum/ligament forces without overlap accounting."
+  ]
+}
