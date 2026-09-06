@@ -52,14 +52,15 @@ class FreeDynamicsTests(unittest.TestCase):
             h=self.dynamics.directional_curvature(j,self.u[6:])
             np.testing.assert_allclose(h,np.einsum('ijk,k->ij',(jplus-jminus)/(2*eps),self.u[6:]),atol=1e-11,rtol=1e-7)
 
-    def test_locked_load_reaction_has_zero_power(self):
+    def test_formal_eliminated_load_is_not_a_physical_reaction(self):
         force=np.zeros(32)
         for k in self.model.locked:force[6+k]=3.5
         loaded=self.dynamics.solve(self.free,force)
         np.testing.assert_allclose(loaded['velocity_derivative'],self.free['velocity_derivative'],atol=1e-15)
-        for k in self.model.locked:self.assertEqual(loaded['constraint_generalized_reaction'][6+k],-3.5)
+        for k in self.model.locked:self.assertEqual(loaded['formal_eliminated_coordinate_load'][6+k],-3.5)
+        self.assertIsNone(loaded['physical_locked_joint_reaction'])
         self.assertEqual(loaded['external_power_W'],0)
-        self.assertAlmostEqual(float(self.u@loaded['constraint_generalized_reaction']),0,places=15)
+        self.assertAlmostEqual(float(self.u@loaded['formal_eliminated_coordinate_load']),0,places=15)
 
     def test_world_pose_rates_and_invalid_inputs(self):
         r=np.array([[0,-1,0],[1,0,0],[0,0,1.]])

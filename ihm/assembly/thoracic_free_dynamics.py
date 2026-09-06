@@ -2,7 +2,7 @@
 
 u=(R.T tdot, omega_body, qdot_internal). Parent angular velocity is a
 quasi-velocity, not an Euler-angle derivative. No native coupling, recoil,
-activation, gravity, numerical integration, or additional mass is installed.
+activation, gravity, or additional mass is installed.
 """
 import numpy as np
 from .thoracic_mechanism import spatial_jacobian
@@ -70,8 +70,8 @@ triangle masses use the same positive degree-two quadrature as kinetic().
     def solve(self,evaluated,generalized_force):
         """Reuse an evaluated state for another explicit load, without integration.
 
-Loads on locked coordinates are reported as ideal constraint reactions and do
-no work. Returned parent acceleration is a body-speed derivative; world origin
+Locked columns were eliminated in the material map. Their balancing loads
+are only minus explicit input loads, not reconstructed physical hinge wrenches. Returned parent acceleration is a body-speed derivative; world origin
 acceleration is R(udot_linear+omega cross v), not simply R udot_linear.
         """
         force=np.asarray(generalized_force,float)
@@ -81,5 +81,8 @@ acceleration is R(udot_linear+omega cross v), not simply R udot_linear.
         acceleration[active]=np.linalg.solve(matrix[np.ix_(active,active)],(force-bias)[active])
         reaction=matrix@acceleration+bias-force
         return {**evaluated,'velocity_derivative':acceleration,'generalized_force':force.copy(),
-                'constraint_generalized_reaction':reaction,'external_power_W':float(evaluated['velocity']@force),
+                'formal_eliminated_coordinate_load':np.where(np.isin(np.arange(32),active),0.,reaction),
+                'physical_locked_joint_reaction':None,
+                'constraint_report_scope':'Eliminated columns give only minus explicit locked-slot loads; physical rib hinge wrenches are not reconstructed',
+                'external_power_W':float(evaluated['velocity']@force),
                 'equation_residual_active':reaction[active]}
