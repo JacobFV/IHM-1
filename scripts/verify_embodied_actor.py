@@ -15,6 +15,29 @@ class FakeBody:
     def close(self):assert threading.get_ident()==self.owner
 
 class Tests(unittest.TestCase):
+    def test_regional_configuration_validates_before_starting_owner(self):
+        with tempfile.TemporaryDirectory() as p:
+            sessions=EmbodiedSessions(p)
+            with patch('ihm.app.embodied.BodyActor') as actor:
+                for value in (1,0,None,'true',{},[]):
+                    with self.subTest(value=value),self.assertRaisesRegex(ValueError,'regional_skin must be boolean'):
+                        sessions.create({'regional_skin':value})
+                actor.assert_not_called()
+            self.assertEqual(sessions.list()['sessions'],[])
+
+    def test_regional_configuration_reaches_single_owner_factory(self):
+        for config,expected in (({},False),({'regional_skin':True},True)):
+            with self.subTest(config=config),tempfile.TemporaryDirectory() as p:
+                sessions=EmbodiedSessions(p)
+                with patch('ihm.assembly.embodied.EmbodiedRuntime.from_workspace',side_effect=lambda *args,**kwargs:FakeBody()) as factory:
+                    try:
+                        result=sessions.create(config)
+                        sessions.actors[result['id']].ready.result(2)
+                        self.assertEqual(factory.call_args.kwargs['regional_skin'],expected)
+                        self.assertEqual(factory.call_args.kwargs['environment'],'supine')
+                        with self.assertRaisesRegex(ValueError,'One native body'):sessions.create(config)
+                    finally:sessions.close(timeout=2)
+
     def test_intake_schedule_uses_owner_sequence_and_distinct_journal_event(self):
         import gzip,json
         with tempfile.TemporaryDirectory() as p:
