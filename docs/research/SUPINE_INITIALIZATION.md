@@ -349,3 +349,21 @@ Evidence SHA-256:
 The solver now supports `--recompute-box --local-radius 0.0075` in `balanced-root` mode. This starts at the actual accepted maximum step in the retained trace. Each rejected trial halves the local box and recomputes the support-equality QP, rather than scaling the old direction; support correction is also restricted to that active box. At most six boxes and four evaluations per box are attempted, still under the overall 200-call/60-second cap. A successful box radius persists into the next iteration; this conservative version does not expand it. Exact source-coordinate bounds, material domains, all acceleration/support/gauge/constraint acceptance and copied-state semantics remain unchanged.
 
 The ordinary mode retains its prior defaults. Source fixtures verify shrinking after actual-objective rejection, recomputation of a bounded QP, correction staying inside the smaller box, source bounds, exact linear support equalities, unrelated-error propagation and unchanged static acceptance. The retained diagnostic still reproduces all five next accepted q exactly with the helper's default mode. No native comparison has run with this opt-in increment. The report records the box policy and hashes the numerical helper as well as the solver; native cache physics identities remain unchanged. A bounded comparison should resume exact `xovwbk2w/last_optimizer_iterate.json` and its 1836-response journal, with 12 new evaluations required to complete the accepted pose's Jacobian.
+
+
+## Actual smaller-box native comparison
+
+`constrained-supine-f58do2qb` ran the opt-in recomputed-box solver from the exact `xovwbk2w` accepted pose and cache. It used 200 new calls in 43.922 s, recovered 1836 responses with 32 cache hits, and verified the unchanged frozen archive after cleanup. Seven accepted objectives were 73.00906 → 73.00045 → 72.53309 → 72.53040 → 72.13646 → 71.92786 → 71.81534, a 4.66% reduction from 75.32286. The radius stayed 0.0075 for five accepted steps, shrank to 0.00375 on the sixth after rejection, and remained there on the seventh.
+
+Maximum acceleration worsened from 4.76730 to 5.10443 rad/s² (right arm adduction); right arm flexion is −3.88051 and left arm adduction 3.67973 rad/s². Support remains 761.36032 N, with normalized force/pitch/roll residuals 2.02175e−5, −1.29116e−6, 7.16893e−7 and maximum gauge residual 1.59477e−7. Constraint position/velocity errors are zero, acceleration error 1.91469e−14. Skin compression is 1.49513 mm and bed deflection 84.33124 mm. The static acceleration threshold still fails; physical time is zero and no startup reference or forward acceptance is promoted.
+
+Right hip rotation now reaches the exact upper source bound, 0.6981317 rad. Its actual acceleration is −0.216811 rad/s² (inward), with constrained zero-acceleration residual +0.0702887 N·m. Therefore the bound-active optimization does not prove an absent outward-stop reaction is causing the remaining imbalance. Adding an assumed restoring capsular torque could worsen that local residual. Missing physical hip-limit mechanics remain a coverage gap requiring source-based treatment, separately from diagnosing the full-body stationary point.
+
+The lower best-supported objective 71.81188 is a finite-difference sample. The actual accepted q has 12/29 exact Jacobian evaluations cached, with 2036 successful responses. The smaller-box change has not resolved slow progress or reduced maximum acceleration. Further unchanged native continuations should pause for source-bound projected-stationarity and coupled-residual analysis; no tolerance relaxation or arbitrary joint-limit force is justified.
+
+Evidence SHA-256:
+
+- `data/derived/constrained-supine-f58do2qb/report.json`: `4717a7b209b25dac8935dee450a0981e00e246d38632b398dc04035e2a02da38`
+- `data/derived/constrained-supine-f58do2qb/last_optimizer_iterate.json`: `8c448aaebd31c84b151cb7bba4124be95d94285691ef883c5c0b52d785a2d3b4`
+- `data/derived/constrained-supine-f58do2qb/candidates.jsonl`: `69c6e18cc09eb9bd929c028cb2520378f31c27961b583dc1af319b303a4eb1d5`
+- `data/derived/constrained-supine-f58do2qb/linear_support_steps.jsonl`: `7e6075d169e3c3bc13976a924b007fb9e5bfc38fef2e517a4825d77d5a7f3996`
