@@ -22,6 +22,7 @@ def patch_nervous(text):
   s=once(s,'  const double rSlope = 16.67;','  const double rSlope = 0.01667; // seconds per tired hour')
   s=once(s,'GetReactionTime().SetValue(m_ReactionTime_s / 1000.0, TimeUnit::s);','GetReactionTime().SetValue(m_ReactionTime_s, TimeUnit::s);')
   s=s.replace('//reaction time is computed in ms but we don\'t spport that time unit','// private and public reaction time are seconds')
+  s=once(s,'    //Store data','  ihm_sleep::validate(ihm_sleep::State{m_AttentionLapses,m_BiologicalDebt,m_ReactionTime_s,m_TiredTime_hr,wakeTime,sleepTime,sleepState==SESleepState::Sleeping?1u:0u});\n    //Store data')
   return once(s,'  SESleepState sleepState = GetSleepState();','  SESleepState sleepState = GetSleepState();\n  if(sleepState!=SESleepState::Awake&&sleepState!=SESleepState::Sleeping)throw std::runtime_error("Uninitialized sleep mode");\n  ihm_sleep::validate('+snapshot('(*this)')+');')
  return function(text,'void Nervous::CalculateSleepEffects()','void biogears::Nervous::UpdateSleepState()',sleep)
 def patch_io(text):

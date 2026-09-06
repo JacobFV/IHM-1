@@ -38,6 +38,9 @@ class ContractTests(unittest.TestCase):
   self.assertGreater(block.index('out.m_TiredTime_hr=sleep.tired_time_hr'),block.index('out.BioGearsSystem::LoadState();'))
   self.assertEqual(patched['schema'].count('name="IHMSleepState"'),1)
   self.assertIn('native_signed_muscle_port.h',n)
+  sleep=n[n.index('void Nervous::CalculateSleepEffects()'):n.index('void biogears::Nervous::UpdateSleepState()')]
+  self.assertEqual(sleep.count('ihm_sleep::validate('),2)
+  self.assertLess(sleep.rindex('ihm_sleep::validate('),sleep.index('GetSleepTime().SetValue(sleepTime'))
  def test_explicit_seed_required(self):
   for key in SEED:
    bad=dict(SEED);bad.pop(key)

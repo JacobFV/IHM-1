@@ -72,6 +72,8 @@ def bind_inputs(out,r):
  r['input_binding_note']='Live donor sources checked against held Git; build recipes and transitive donor headers pinned at this stage. Existing compiler commands remain retained; no claim of retroactive input capture.'
  record(out,r)
 def guard(out,r):
+ for revision in r.get('source_revisions',[]):assert sha(Path(revision['prior_source_archive']))==revision['prior_sha256'],'Archived source revision changed'
+ for archived in r.get('superseded_unbound',{}).values():assert sha(Path(archived['object']))==archived['sha256'],'Archived unbound object changed'
  for name,digest in r.get('external_build_inputs',{}).items():assert sha(Path(name))==digest,'External build input changed: '+name
  assert sha(PARENT/'manifest.json')==r['parent_manifest_sha256'] and sha(PARENT/'libbiogears.so.8.0.0')==r['parent_library_sha256']
  assert sha(Path(r['original_cdm_library']))==r['original_cdm_library_sha256']
@@ -102,6 +104,18 @@ def codegen(out,r):
  r['generated_receipts']={name:sha(out/name) for name in names}
  for name in names:r['frozen_inputs'].pop(name)
  r['stage']='generated';record(out,r)
+def revise_nervous(out,r):
+ if r['stage'] not in ('prepared','generated','compiling') or '12' in r['compiled']:raise ValueError('Nervous revision requires uncompiled Nervous object and unlinked build')
+ original,patched,receipt=prepare()
+ assert (out/'BioGearsPhysiology.cpp').read_text()==patched['io'] and (out/'xsd/biogears/BioGearsPhysiology.xsd').read_text()==patched['schema'],'Revision exceeds Nervous-only scope'
+ source=out/'Nervous.cpp';old=sha(source);new=hashlib.sha256(patched['nervous'].encode()).hexdigest()
+ if old==new:raise ValueError('No Nervous source revision')
+ archive=out/'source-revisions';archive.mkdir(exist_ok=True);saved=archive/('Nervous-'+old+'.cpp')
+ if saved.exists():raise ValueError('Source revision archive already exists')
+ shutil.copyfile(source,saved)
+ r.setdefault('source_revisions',[]).append({'source':'Nervous.cpp','prior_sha256':old,'new_sha256':new,'prior_source_archive':str(saved),'preceding_frozen_inputs':dict(r['frozen_inputs']),'compiled_indices_at_revision':sorted(r['compiled']),'patcher_sha256':sha(ROOT/'scripts/prepare_native_nervous_sleep_patch.py'),'reason':'Validate finite native sleep result before public output; reject overflow without clamping.'})
+ source.write_text(patched['nervous']);r['frozen_inputs']['Nervous.cpp']=new;r['patched_sources']['nervous']=new
+ record(out,r)
 def compile_one(out,r,index,replace_unbound=False):
  if r['stage'] not in ('generated','compiling'):raise ValueError('Compile requires generated stage')
  if str(index) in r['compiled']:
@@ -120,7 +134,9 @@ def compile_one(out,r,index,replace_unbound=False):
  options=shlex.split(next(line.split('=',1)[1] for line in flags.splitlines() if line.startswith('CXX_FLAGS =')))
  includes=shlex.split((cwd/f'CMakeFiles/{target}.dir/includes_CXX.rsp').read_text())
  command=['c++',*defines,*options,'-I'+str(out),'-I'+str(out/'generated'),*includes,'-c',job['source'],'-o',job['object']]
- run(out,r,command,f'compile-{index:02d}',cwd);r['compiled'][str(index)]={'sha256':sha(Path(job['object'])),'input_binding_sha256':hashlib.sha256(json.dumps(r['external_build_inputs'],sort_keys=True).encode()).hexdigest()};r['stage']='compiling';record(out,r)
+ source_digest=sha(Path(job['source']))
+ run(out,r,command,f'compile-{index:02d}',cwd);guard(out,r)
+ r['compiled'][str(index)]={'sha256':sha(Path(job['object'])),'source_sha256':source_digest,'frozen_inputs_sha256':hashlib.sha256(json.dumps(r['frozen_inputs'],sort_keys=True).encode()).hexdigest(),'input_binding_sha256':hashlib.sha256(json.dumps(r['external_build_inputs'],sort_keys=True).encode()).hexdigest()};r['stage']='compiling';record(out,r)
 def link(out,r):
  if len(r['compiled'])!=len(r['jobs']):raise ValueError('Every dependent object must be compiled before link')
  binding=hashlib.sha256(json.dumps(r['external_build_inputs'],sort_keys=True).encode()).hexdigest()
@@ -139,7 +155,7 @@ def link(out,r):
  r['acceptance']='unverified; do not register runtime variant';record(out,r)
  (out/'manifest.json').write_text(json.dumps(r,indent=2)+'\n')
 def main():
- p=argparse.ArgumentParser(description=__doc__);p.add_argument('stage',choices=['prepare','bind-inputs','codegen','compile','link']);p.add_argument('--directory',type=Path,default=DEFAULT);p.add_argument('--index',type=int);p.add_argument('--replace-unbound',action='store_true');a=p.parse_args();out=a.directory.resolve()
+ p=argparse.ArgumentParser(description=__doc__);p.add_argument('stage',choices=['prepare','bind-inputs','revise-nervous','codegen','compile','link']);p.add_argument('--directory',type=Path,default=DEFAULT);p.add_argument('--index',type=int);p.add_argument('--replace-unbound',action='store_true');a=p.parse_args();out=a.directory.resolve()
  if a.stage=='prepare':prepare_build(out);return
  r=json.loads((out/'build-state.json').read_text())
  for i,j in enumerate(r['jobs']):j['index']=i
@@ -147,7 +163,8 @@ def main():
   guard(out,r);bind_inputs(out,r);print(json.dumps({'external_build_inputs':len(r['external_build_inputs'])}));return
  if 'external_build_inputs' not in r:raise ValueError('Run explicit bind-inputs before resuming this older prepared build')
  guard(out,r)
- if a.stage=='codegen':codegen(out,r)
+ if a.stage=='revise-nervous':revise_nervous(out,r)
+ elif a.stage=='codegen':codegen(out,r)
  elif a.stage=='compile':
   if a.index is None or not 0<=a.index<len(r['jobs']):raise ValueError('Explicit valid compile index required')
   compile_one(out,r,a.index,a.replace_unbound)
