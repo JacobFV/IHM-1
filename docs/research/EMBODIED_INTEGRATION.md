@@ -98,3 +98,15 @@ pass; the actual integrated native acceptance is still pending at this checkpoin
 Coupled native launches carry a 4 GiB address-space cap and nice 10. This caps
 each native child, not aggregate system memory. Initial state and source model
 choices remain research assumptions and retain known long-horizon limitations.
+
+The default now verifies the retained initial state and exact library hashes from
+`systemic/exertion_v3/exercise/native/manifest.json` (final thermal-corrected
+research variant), avoiding the known old thermal state/library mismatch. This
+does not accept that variant's failed glucose/acid-base trajectories.
+
+Actual integrated attempt `data/derived/audits/embodied-native-kdfvcq_a` initialized
+the paired physiology and 92-muscle plant but failed on the first 20 ms mechanical
+advance with `Out-of-domain native muscle metabolism`. No successful integrated
+trajectory or viewer promotion is claimed. The earlier source-checker failure
+is retained separately at `embodied-native-kzihzxr1`; generated dataclass method
+receipts are now handled by a tested source-verification correction.

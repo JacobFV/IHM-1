@@ -60,13 +60,20 @@ class EmbodiedRuntime:
         from .interactive_scene import _loaded_source
         root=Path(root).resolve();output=Path(output).resolve()
         if not output.is_relative_to(root) or output.exists():raise ValueError('Fresh retained embodied output required')
-        state=Path(state_path) if state_path else root/'data/derived/canonical/native_baseline_v1/states/native_stabilized.xml'
+        reference_path=root/'data/derived/systemic/exertion_v3/exercise/native/manifest.json'
+        reference_raw=reference_path.read_bytes();reference_manifest=json.loads(reference_raw)
+        engine_variant=reference_manifest['configuration']['engine_variant']
+        if engine_variant!='whole_body_integrity_evaporation_humidity':raise ValueError('Expected retained final thermal-corrected research variant')
+        state=Path(state_path) if state_path else Path(reference_manifest['configuration']['state_path'])
+        if state_path is None and hashlib.sha256(state.read_bytes()).hexdigest()!=reference_manifest['state_sha256']:
+            raise ValueError('Paired native initial state changed')
         names=(__name__,'ihm.assembly.articulated','ihm.native.mechanical_stream','ihm.native.coupled_session',
             'ihm.native.session','ihm.assembly.sensorimotor','ihm.assembly.sensorimotor_catalog',
             'ihm.assembly.brain','ihm.assembly.body_exchange','ihm.assembly.body_microstructure',
             'ihm.assembly.respiratory_feedback','ihm.assembly.embodied_respiration','ihm.app.embodied')
         receipts=[_loaded_source(sys.modules[name]) for name in names if name in sys.modules]
         frozen={r['path']:r['bytes'] for r in receipts}
+        frozen[reference_path]=reference_raw
         for name in ('respiration','brain','anatomy','mechanics','microvascular','profile'):
             p=root/f'data/derived/canonical/{name}.json';frozen[p]=p.read_bytes()
         output.mkdir(parents=True)
@@ -77,8 +84,9 @@ class EmbodiedRuntime:
             hashes[str(relative)]=hashlib.sha256(raw).hexdigest()
         native=plant=None
         try:
-            native=CoupledNativeSession(SessionConfig(state_path=state,engine_variant='whole_body_integrity_depletion',horizon_s=120),output/'physiology')
+            native=CoupledNativeSession(SessionConfig(state_path=state,engine_variant=engine_variant,horizon_s=120),output/'physiology')
             manifest=json.loads((output/'physiology/manifest.json').read_text())
+            if manifest['library_sha256']!=reference_manifest['library_sha256']:raise ValueError('Paired native research library changed')
             weight=manifest['patient_identity']['Weight']
             if weight['unit']!='kg':raise ValueError('Expected explicit native initial mass in kg')
             mass=finite(float(weight['value']),'native initial body mass',1,500)
@@ -97,6 +105,7 @@ class EmbodiedRuntime:
                 'loaded_code':{str(r['path'].relative_to(root)):r['loaded_code_sha256'] for r in receipts},
                 'source_receipts':{str(r['path'].relative_to(root)):{k:v for k,v in r.items() if k not in ('path','bytes')} for r in receipts},
                 'environment':environment,'native_identity':identity,'effective_mechanical_mass_kg':mass,
+                'physiology_scope':'Paired retained thermal-corrected research initial state/library; known long-run glucose and acid-base failures remain unresolved',
                 'mass_mapping':'Initial native patient mass, including native initial GI contents, uniformly scales source segment inertia; local mass distribution is an engineering prior',
                 'native_checkpoint_exact':False,'exchange_dt_s':.02},indent=2)+'\n')
             return body
