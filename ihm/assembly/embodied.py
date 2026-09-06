@@ -70,11 +70,16 @@ class CleanupOwners:
 
 class EmbodiedRuntime:
     @classmethod
-    def from_workspace(cls,root,output,*,environment='supine',state_path=None,surface_contact_manifest=None,cutaneous_configuration=None,bed_material=None):
+    def from_workspace(cls,root,output,*,environment='supine',state_path=None,surface_contact_manifest=None,cutaneous_configuration=None,bed_material=None,regional_skin=False):
+        if type(regional_skin) is not bool:raise ValueError('regional_skin must be a bool')
         from pathlib import Path
         import hashlib,json,sys
         from ihm.native.session import SessionConfig
         from ihm.native.coupled_session import SignedCoupledNativeSession
+        native_session_type=SignedCoupledNativeSession
+        if regional_skin:
+            from ihm.native.regional_session import RegionalSignedNativeSession
+            native_session_type=RegionalSignedNativeSession
         from .articulated import ArticulatedBodyPlant
         from .sensorimotor import SensorimotorController
         from .body_exchange import NativeTissueExchange
@@ -97,15 +102,16 @@ class EmbodiedRuntime:
         reference_raw=reference_path.read_bytes();reference_manifest=json.loads(reference_raw)
         base_variant=reference_manifest['configuration']['engine_variant']
         if base_variant!='whole_body_integrity_evaporation_humidity':raise ValueError('Expected retained final thermal-corrected research variant')
-        engine_variant='whole_body_integrity_gi_absorption'
+        engine_variant='whole_body_integrity_regional_skin_graph_v2' if regional_skin else 'whole_body_integrity_gi_absorption'
         state=Path(state_path) if state_path else Path(reference_manifest['configuration']['state_path'])
         if state_path is None and hashlib.sha256(state.read_bytes()).hexdigest()!=reference_manifest['state_sha256']:
             raise ValueError('Paired native initial state changed')
         names=(__name__,'ihm.assembly.articulated','ihm.native.mechanical_stream','ihm.native.coupled_session',
             'ihm.native.session','ihm.assembly.sensorimotor','ihm.assembly.sensorimotor_catalog',
-            'ihm.assembly.brain','ihm.assembly.body_exchange','ihm.assembly.body_microstructure',
+            'ihm.assembly.brain','ihm.assembly.body_exchange','ihm.assembly.regional_exchange','ihm.assembly.body_microstructure',
             'ihm.assembly.cutaneous_feedback','ihm.brain.causal','ihm.brain.ibm_backend','ihm.brain.port_mapping',
             'ihm.assembly.respiratory_feedback','ihm.assembly.embodied_respiration','ihm.assembly.intake_schedule','ihm.app.embodied')
+        if regional_skin:names+=('ihm.native.regional_session',)
         receipts=[_loaded_source(sys.modules[name]) for name in names if name in sys.modules]
         frozen={r['path']:r['bytes'] for r in receipts}
         frozen[reference_path]=reference_raw
@@ -130,7 +136,7 @@ class EmbodiedRuntime:
             hashes[str(relative)]=hashlib.sha256(raw).hexdigest()
         native=plant=None
         try:
-            native=SignedCoupledNativeSession(SessionConfig(state_path=state,engine_variant=engine_variant,horizon_s=120),output/'physiology')
+            native=native_session_type(SessionConfig(state_path=state,engine_variant=engine_variant,horizon_s=120),output/'physiology')
             manifest=json.loads((output/'physiology/manifest.json').read_text())
             if manifest['library_sha256']!=json.loads(frozen[variant_dir/engine_variant/'manifest.json'])['library_sha256']:raise ValueError('Signed native library changed')
             weight=manifest['patient_identity']['Weight']
@@ -152,7 +158,7 @@ class EmbodiedRuntime:
             (output/'manifest.json').write_text(json.dumps({'schema':'ihm.embodied-runtime.v1','sources':hashes,
                 'loaded_code':{str(r['path'].relative_to(root)):r['loaded_code_sha256'] for r in receipts},
                 'source_receipts':{str(r['path'].relative_to(root)):{k:v for k,v in r.items() if k not in ('path','bytes')} for r in receipts},
-                'environment':environment,'cutaneous_materialization':None if cutaneous is None else cutaneous.audit,'native_identity':identity,'effective_mechanical_mass_kg':mass,
+                'environment':environment,'regional_skin':regional_skin,'cutaneous_materialization':None if cutaneous is None else cutaneous.audit,'native_identity':identity,'effective_mechanical_mass_kg':mass,
                 'physiology_scope':'Paired retained thermal-corrected research initial state/library; known long-run glucose and acid-base failures remain unresolved',
                 'mass_mapping':'Initial native patient mass, including native initial GI contents, uniformly scales source segment inertia; local mass distribution is an engineering prior',
                 'native_checkpoint_exact':False,'exchange_dt_s':.02},indent=2)+'\n')

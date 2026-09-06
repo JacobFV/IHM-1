@@ -1,0 +1,11 @@
+# Opt-in regional Skin factory
+
+`EmbodiedRuntime.from_workspace(root, output, regional_skin=True)` selects the separately built `RegionalSignedNativeSession` and immutable `whole_body_integrity_regional_skin_graph_v2` variant. The default remains `regional_skin=False`, using the existing GI-corrected signed session. The flag accepts only a Python bool and rejects other values before filesystem or native-owner work.
+
+The existing retained-state check, native variant ancestry checks, source capture, library identity checks and partial-initialization cleanup remain active. The regional branch explicitly imports and retains `ihm/native/regional_session.py` in both source and loaded-code receipts. The factory also retains the regional exchange observer source and records the selected boolean in its manifest.
+
+This selection installs the native engineering regions `region_a`, `region_b` and `residual`, with fixed fractions 0.2, 0.3 and 0.5. It does not assign those regions to anatomical contact locations or infer pressures from canonical geometry. Region pressure commands remain explicit native-owner boundaries; whole-Skin compression and native save remain unsupported by this topology. Enabling the factory does not establish support equilibrium or authorize a coupled advance whose mechanical support has not been validated.
+
+`verify_regional_embodied_factory.py` has three lightweight tests for default/opt-in routing and source capture, strict flag validation, and unchanged lineage rejection before native creation. These tests deliberately use fake native/mechanical owners and fake source attestation, so they establish factory control flow rather than native physiology or authentic runtime source binding. All three and the existing eleven embodied-runtime checks pass.
+
+The same script's explicit `--native` mode is prepared for a coordinated native slot. It initializes the actual regional factory, takes an initial snapshot with zero advances, verifies native regional ownership availability and retained source receipts, and checks that cleanup reaps both native owners. Actual acceptance results will be retained separately; no equilibrium or integrated-step acceptance is implied.
