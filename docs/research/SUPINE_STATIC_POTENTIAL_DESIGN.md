@@ -57,3 +57,10 @@ The new header evaluates separate gravity, joint, skin, mattress, native passive
 The native fixture is capped at 65 evaluations/45s. It plans one base, two source-bounded perturbations for each of 31 independent coordinates and one repeat (64 actual requests). It reconstructs a second-order directional gradient using the *actual assembled* coordinate-difference matrix, rejecting ill-conditioning. It independently checks muscle length/moment-arm derivatives, muscle energy/work, gravity, joint and combined skin/mattress work. It verifies native N=I instead of assuming coordinate rates equal mobilities, and explicitly pulls back both knee and dependent beta residuals. Ideal coupler reaction work must cancel; actuator forces outside the documented merit must be zero.
 
 The preregistered diagnostic gradient gate is 1e−4 in each native generalized-force unit, with length/moment-arm error <=1e−6m, positive interior branch stiffness, fiber minimum margin >1e−10m and fiber velocity <=1e−5m/s across sampled states. These are numerical prerequisite tolerances, not relaxed physical equilibrium criteria. Actual errors and branch failures are retained regardless of gate outcome. A passed diagnostic alone does not activate an optimizer, certify global branch uniqueness, or promote an initial physiological reference. Further trust-region implementation remains conditional on actual results.
+
+
+## Isolated compilation result
+
+The first compile (`effective-potential-build-pqbqcago`) failed because OpenSim `PathActuator::computeMomentArm` requires a mutable Coordinate reference; its failed log is retained. The API-only correction obtains that reference through `model.updCoordinateSet().get(name)`, without changing q or the physical force model. One authorized retry (`effective-potential-build-3a9juno_`) compiled successfully under the existing4GiB/60s, nice10/single-thread limits. The compiler was reaped and the slot released; the native gradient fixture has not yet run.
+
+Build manifest SHA-256: `8df1d4a894bf80ee52c1cc27a851d477b3ecfa41da6668e5166fc633c2b456da`; executable SHA-256: `f4d387bde698a4074fddf383d4df792bc798fd82f628e5a82bf37962415bb9a0`.
