@@ -134,3 +134,31 @@ def build_skin_electric(root, *, dt_s=.05, duration_s=2.):
             'Deterministic mean trajectory; source Gaussian covariance is not propagated or claimed as parameter uncertainty.',
             'Pinned planar line is a regional alternative materialization, not curved skin coverage or whole-body skin activation.',
             'Human field measurements support the observable only and do not calibrate this patch or its membrane voltage.'])
+
+
+def native_skin_ionic_boundary(exchange):
+    """Observed bulk native skin concentrations and their Nernst potentials.
+
+    This does not replace keratinocyte concentrations or infer membrane voltage.
+    No current or ion mass is returned to native state. Any epithelial transfer
+    requires an explicit additional constitutive assumption.
+    """
+    import math
+    tissue = exchange['native_compartments']
+    inside = tissue['Skin.intracellular']['ionic_molarity_mmol_per_l']
+    outside = tissue['Skin.extracellular']['ionic_molarity_mmol_per_l']
+    celsius = exchange['thermal_boundary_c']['skin']
+    if isinstance(celsius, bool) or not isinstance(celsius, (int, float)) or not math.isfinite(celsius) or celsius <= -273.15:
+        raise ValueError('Native skin temperature is missing or invalid')
+    kelvin = celsius + 273.15
+    nernst = {}
+    for ion, charge in [('Sodium', 1), ('Potassium', 1), ('Chloride', -1)]:
+        a, b = inside.get(ion), outside.get(ion)
+        if any(isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(v) or v <= 0 for v in (a, b)):
+            raise ValueError('Positive native intracellular and extracellular '+ion+' are required')
+        nernst[ion] = 8.314462618 * kelvin / (charge * 96485.33212) * math.log(b / a)
+    return {'time_s': exchange['time_s'], 'temperature_k': kelvin,
+            'inside_mmol_per_l': dict(inside), 'outside_mmol_per_l': dict(outside),
+            'nernst_potential_v': nernst, 'owner': 'native bulk Skin tissue',
+            'membrane_voltage_predicted': False, 'native_mass_mutated': False,
+            'limitation': 'Bulk tissue gradients are not measured keratinocyte or nerve membrane states.'}

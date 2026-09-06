@@ -1,0 +1,51 @@
+{
+  "id": "native-tissue-exchange",
+  "status": "native_owned_observations_and_short_uniform_skin_compression_verified",
+  "source_files": [
+    {
+      "path": "data/raw/physiology/biogears/projects/biogears/libBiogears/src/engine/Systems/Tissue.cpp",
+      "sha256": "5557f75fe19946ea680b054bf1549b7bb331a518ab36f03d9b8fcde578a0e389"
+    },
+    {
+      "path": "data/raw/physiology/biogears/projects/biogears/libBiogears/src/engine/Systems/Diffusion.cpp",
+      "sha256": "9f90e429a87ae1ba3b7071fc14525905e768d23a27a0f21d15a2581a49b7d48b"
+    },
+    {
+      "path": "data/raw/physiology/biogears/projects/biogears/libBiogears/src/engine/Controller/BioGears.cpp",
+      "sha256": "451ddda942a26e547a0ed4f1d5ba875fa7ca9e2c6275895b791f9c81e7a39166"
+    },
+    {
+      "path": "data/raw/physiology/biogears/projects/biogears/libBiogears/src/engine/Controller/BioGearsEngine.cpp",
+      "sha256": "5c29a09c536a876d569069625bbe4ef2c9e375e3ba12c48c64b94ceed49cbc95"
+    },
+    {
+      "path": "data/raw/physiology/biogears/projects/biogears/libBiogears/include/biogears/cdm/circuit/SECircuitCalculator.inl",
+      "sha256": "bb592a55ade9d51d0f570ec126acab2dae75edff9714ef47133617c842fc2d46"
+    },
+    {
+      "path": "data/raw/physiology/biogears/projects/biogears/libBiogears/include/biogears/cdm/properties/SEScalarQuantity.h",
+      "sha256": "672aa5c24c7b247cd6c1b361aa54fec2d8ff68dd0fcac9b86e7bbedabf809bfd"
+    },
+    {
+      "path": "data/derived/canonical/anatomy.json",
+      "sha256": "ee4494e43893d81d9798071d9228e201be62f009ee3e1374e522d1670250f64c"
+    },
+    {
+      "path": "data/derived/canonical/microvascular.json",
+      "sha256": "bced04a8686b928207eb1add90be5a6a928b56f69be34b2991cb023a67176bd7"
+    },
+    {
+      "path": "data/derived/audits/native-skin-compression-s725ktdm/verification.json",
+      "sha256": "2802bf381c6f0ea5695ef8c0a26b2cf5d77df23ca9ee23abbbc2a35b113f70e8"
+    }
+  ],
+  "data_acquisition": "Reuses retained primary BioGears source and source-derived canonical geometry; no new bulk data acquired",
+  "physiological_state_owner": "BioGears",
+  "new_independent_fluid_stores": false,
+  "spatial_calibration": "inferred native territory association and normalized surface-area allocation, not measured perfusion fractions",
+  "unlocalized_native_organs": [
+    "Fat"
+  ],
+  "compression_scope": "uniform whole-Skin extracellular boundary; no local contact projection or checkpoint validation",
+  "whole_body_validated": false
+}
