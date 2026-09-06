@@ -52,12 +52,15 @@ engineering dropout policy. It is never interpreted as a physical return to the
 reference temperature. Scalar native skin temperature is transferred uniformly to
 sites; this is not a locally resolved temperature measurement.
 
-For runtime integration, add validated additional sensory inputs to the existing
-controller's regional-input sum immediately before its sole `brain.step` call.
+`SensorimotorController.step(..., additional_sensory_inputs_hz=previous_inputs)`
+now validates exact canonical population IDs and finite rates in [0, 1000] Hz,
+then adds these inputs to the existing regional sum before its sole `brain.step`
+call. The report includes both `additional_sensory_inputs_hz` and pooled
+`brain_sensory_inputs_hz` (each region capped at 1000 Hz).
 Use the cutaneous endpoint from the previous exchange. Thus a physical sample held
 on `[t, t+dt]` produces receptor output at `t+dt`, available to the next shared brain
 interval. Do not run a second `BodyBrain` instance as part of the body session.
-Root runtime/controller wiring is a separate integration responsibility.
+Root body-session wiring is a separate integration responsibility.
 
 ## Physical and neural conversions
 
@@ -111,3 +114,27 @@ contact compliance, regional thermal fields, receptor distributions and threshol
 nonlinear temperature tuning, pain, axon topology, anatomical somatotopy and
 calibrated cortical recruitment. No IBM-1 source is edited. No force or heat is
 fed back into mechanics or systemic physiology by this receptor adapter.
+
+## Native deformation integration contract
+
+When a native material foundation already solves contact indentation, its actual
+normal deformation should be supplied directly to the receptor as
+`indentation_um = native_indentation_m * 1e6`. Do not apply the linear Pa/m
+foundation conversion again. Preserve native triangle force, known area, pressure,
+material/triangle ID, sample time, and deformation provenance alongside it.
+
+A future direct-indentation contact port should provide `id`, `force_n`,
+`indentation_m`, and `indentation_basis`, tied to the stable registered material
+site and physical coordinate frame. Native triangle area can support a pressure
+audit without becoming the input to a second deformation model. This payload is
+an integration proposal; the current contact port implements force/area/stiffness
+only. Moving supports and native endpoint field binding require agreement with the
+foundation owner.
+
+The controller integration is tested by
+`PYTHONPATH=. .venv/bin/python scripts/verify_sensorimotor.py`. The matched fixture
+holds all mechanical and descending inputs equal, supplies real skin-force-driven
+IBM receptor output to one controller, and blocks the other receptor. After forty
+10 ms exchanges the shared brain activity and actual controller motor excitation
+differ, while both brain and receptor clocks equal 0.4 s. The first exchange is
+identical, confirming that future receptor endpoints are not injected early.

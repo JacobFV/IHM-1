@@ -75,4 +75,48 @@ class SensorimotorTests(unittest.TestCase):
         self.assertEqual(x['descending_drive']['tibant_l'],0.)
         self.assertFalse(x['biological_validation'])
 
+    def test_additional_sensory_inputs_validate_and_preserve_single_clock(self):
+        c=SensorimotorController.from_root(ROOT)
+        for bad in ({'missing-region':1.}, {'brain-rh-postcentral':float('nan')},
+                    {'brain-rh-postcentral':-1.}, {'brain-rh-postcentral':1001.},
+                    {'brain-rh-postcentral':True}, []):
+            before=c.checkpoint()
+            with self.assertRaises(ValueError):
+                c.step(.01,observation(c.time_s),additional_sensory_inputs_hz=bad)
+            self.assertEqual(before,c.checkpoint())
+        result=c.step(.01,observation(),additional_sensory_inputs_hz={'brain-rh-postcentral':1000.})
+        self.assertEqual(c.brain.time_s,.01)
+        self.assertEqual(result['additional_sensory_inputs_hz'],{'brain-rh-postcentral':1000.})
+        self.assertLessEqual(result['brain_sensory_inputs_hz']['brain-rh-postcentral'],1000.)
+
+    def test_skin_force_shared_brain_motor_path_against_blocked_control(self):
+        from ihm.assembly.cutaneous_feedback import CutaneousFeedback
+        site={'id':'left-skin-fixture','position_m':[0.,0.,0.],'normal':[0.,0.,1.],
+            'contact_area_m2':.001,'stiffness_pa_per_m':1e7,
+            'sensory_region':'brain-rh-postcentral','reference_temperature_C':33.,
+            'support_basis':'explicit synthetic causal fixture'}
+        skin=[CutaneousFeedback(ROOT,sites=[site],recruitment_hz_per_response=1.,delay_s=.01)
+              for _ in range(2)]
+        controllers=[SensorimotorController.from_root(ROOT) for _ in range(2)]
+        pending=[{},{}];outputs=[]
+        for step in range(40):
+            outputs=[]
+            for i,(receptors,controller) in enumerate(zip(skin,controllers)):
+                # Only previous receptor endpoint can drive this brain interval.
+                output=controller.step(.01,observation(controller.time_s),
+                    descending={'addbrev_l':.5},additional_sensory_inputs_hz=pending[i])
+                contact=receptors.step(.01,{'time_s':receptors.time_s,
+                    'contacts':[{'id':site['id'],'force_n':[0.,0.,-1.]}],
+                    'skin_temperature_C':33.},sensory_blocks=[site['id']] if i else [])
+                pending[i]=contact['sensory_inputs_hz'];outputs.append(output)
+                self.assertAlmostEqual(controller.brain.time_s,(step+1)*.01)
+                self.assertAlmostEqual(controller.brain.time_s,receptors.time_s)
+            if step==0:
+                self.assertEqual(outputs[0]['brain'],outputs[1]['brain'])
+        self.assertNotEqual(outputs[0]['brain']['regional_state']['activity_hz'],
+                            outputs[1]['brain']['regional_state']['activity_hz'])
+        self.assertNotEqual(outputs[0]['motor_excitations']['addbrev_l'],
+                            outputs[1]['motor_excitations']['addbrev_l'])
+        self.assertEqual(outputs[1]['additional_sensory_inputs_hz'],{})
+
 if __name__=='__main__':unittest.main()

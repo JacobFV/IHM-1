@@ -44,6 +44,8 @@ class SensorimotorController:
     subtracted from measured time. Blocks discard in-flight signals immediately.
     ``descending`` contains per-effector requested drive fractions: these enter
     the corresponding precentral population and gate an explicit rate decoder.
+    Additional sensory inputs are already-delayed external receptor endpoints
+    from the previous exchange; they share this brain integration and saturation.
     """
     @classmethod
     def from_root(cls,root,**kwargs):
@@ -109,19 +111,22 @@ class SensorimotorController:
     def _queue(self,arrival,kind,key,value):
         self.serial+=1;heapq.heappush(self.events,(arrival,self.serial,kind,key,deepcopy(value)))
 
-    def step(self,dt_s,mechanical_observation,*,descending=None,sensory_blocks=(),motor_blocks=(),physiology=None):
+    def step(self,dt_s,mechanical_observation,*,descending=None,sensory_blocks=(),motor_blocks=(),physiology=None,additional_sensory_inputs_hz=None):
         dt=finite(dt_s,1e-9,.1,'dt_s');sensors=self._validate_observation(mechanical_observation)
         sb=self._blocks(sensory_blocks,'sensory block');mb=self._blocks(motor_blocks,'motor block')
         descending={} if descending is None else descending
         if not isinstance(descending,dict) or set(descending)-set(self.muscles):raise ValueError('Unknown descending effector')
         descending={k:finite(v,0,1,'descending drive fraction') for k,v in descending.items()}
+        additional={} if additional_sensory_inputs_hz is None else additional_sensory_inputs_hz
+        if not isinstance(additional,dict) or set(additional)-set(self.brain.ids):raise ValueError('Unknown additional sensory population')
+        additional={k:finite(v,0,1000,'additional sensory rate Hz') for k,v in additional.items()}
         saved=self.checkpoint()
-        try:return self._step(dt,sensors,descending,sb,mb,physiology)
+        try:return self._step(dt,sensors,descending,sb,mb,physiology,additional)
         except Exception:
             self.restore(saved)
             raise
 
-    def _step(self,dt,sensors,descending,sb,mb,physiology):
+    def _step(self,dt,sensors,descending,sb,mb,physiology,additional):
         p=self.parameters;end=self.time_s+dt
         if end<=self.time_s:raise ValueError('Clock must advance')
         self.events=[e for e in self.events if not(e[2]=='sensor' and e[3] in sb or e[2]=='motor' and e[3] in mb)]
@@ -139,6 +144,10 @@ class SensorimotorController:
         for key,value in descending.items():
             region=self.bindings[key]['motor_region']
             inputs[region]=min(1000.,inputs.get(region,0)+p.cortical_command_hz*value)
+        # Caller supplies already-delayed receptor output from the previous exchange.
+        # Pool here so the existing shared brain advances exactly once.
+        for region,rate in additional.items():
+            inputs[region]=min(1000.,inputs.get(region,0)+rate)
         neural=self.brain.step(dt,physiology=physiology,sensory_inputs_hz=inputs)
         while self.events and self.events[0][0]<=end+1e-12:
             _,_,kind,key,value=heapq.heappop(self.events)
@@ -174,7 +183,7 @@ class SensorimotorController:
         self.time_s=end
         return {'schema':'ihm.sensorimotor.v1','time_s':end,'motor_excitations':dict(self.excitations),
             'requested_excitations':targets,'sensors':deepcopy(sensors),'delayed_sensors':deepcopy(self.arrived),
-            'brain':neural,'descending_gain':gains,'descending_drive':drives,'pending_events':len(self.events),
+            'brain':neural,'additional_sensory_inputs_hz':dict(additional),'brain_sensory_inputs_hz':dict(inputs),'descending_gain':gains,'descending_drive':drives,'pending_events':len(self.events),
             'sensory_blocks':sorted(sb),'motor_blocks':sorted(mb),'exchange_interval_s':dt,
             'neural_delay_s':p.afferent_delay_s+p.efferent_delay_s,'activation_owner':'mechanical_plant',
             'biological_validation':False,'decoder_basis':'engineered regional-rate gain and effector-gated drive; not identified motor recruitment',
