@@ -287,3 +287,20 @@ Evidence SHA-256:
 - `data/derived/constrained-supine-895l3gi5/report.json`: `45cd6dead73c1ecae65f5a3ccea67c5bbd8734e52aa49f1451e9e8c93216a894`
 - `data/derived/constrained-supine-895l3gi5/last_optimizer_iterate.json`: `c03cb954c29bd4e246c068127508b6c6a97a2a492509d6c9d96cf7269c48cc02`
 - `data/derived/constrained-supine-895l3gi5/candidates.jsonl`: `c215b93c9c9acbc4f1e7f77ae61bd43575377b972f82ba10687ad55c3ea15786`
+
+
+## Sixth supported continuation and Jacobian reuse caution
+
+`constrained-supine-a073o9cu` used 200 new calls in 43.145 s, recovering 1436 responses with 39 cache hits and confirming the frozen archive after cleanup. Seven accepted objectives decreased 104.50324 → 95.08991 → 88.15377 → 86.11736 → 83.68385 → 81.54585 → 78.93341, a 25.0% reduction from the preceding accepted pose. The descent is slower but continues across accepted steps. Maximum acceleration is 4.58583 rad/s² (right arm adduction), followed by left arm adduction 4.52352, right arm flexion −3.76223 and right arm rotation 2.73343 rad/s². This remains far above the unchanged equilibrium threshold.
+
+Support is 761.38842 N; normalized force/pitch/roll residuals are −1.66978e−5, 1.18197e−5, −7.91074e−6. Gauge residuals are −3.73294e−17, 1.86647e−17, 1.73870e−6. Native position/velocity constraint errors are zero and acceleration error 2.05989e−14. Skin compression is 1.47880 mm, bed deflection 82.79666 mm, and no optimized coordinate lies within 1e−5 of a source bound. Physical time remains zero; no equilibrium, forward acceptance or metabolic-reference promotion is claimed.
+
+The lower best-supported objective 78.91107 is a finite-difference sample. The accepted q has eight of 29 exact Jacobian evaluations cached, so 21 new calls would complete that Jacobian. There are 1636 successful retained responses.
+
+An offline numerical check used the complete Jacobians and actual accepted transitions retained in `895l3gi5`. Fresh Jacobians predicted 34.6–75.3% realized objective reduction relative to their predicted decrease. For five consecutive transitions, replacing the fresh Jacobian with the preceding Jacobian plus a single good-Broyden rank-one secant update, J_new = J_old + (Δa − J_old Δq) Δqᵀ/(ΔqᵀΔq), worsened acceleration prediction in every case: errors 7.945/10.362/8.154/7.509/7.290 versus fresh 3.553/7.004/1.953/4.431/1.528. The reused Jacobians incorrectly predicted objective increases along each actual next accepted step. This is retrospective prediction evidence, not a simulation of alternate solver trajectories, but it does not justify introducing plain rank-one reuse into native continuations. The tested full-Jacobian solver remains unchanged.
+
+Evidence SHA-256:
+
+- `data/derived/constrained-supine-a073o9cu/report.json`: `f8d37c6d02dc449f708c8c42740697a14e27081061ff9bf484fb34c8e1873505`
+- `data/derived/constrained-supine-a073o9cu/last_optimizer_iterate.json`: `33e07de0b5409c231e21708dc7c2a3446db573a9408c61702808ce247b76f2ff`
+- `data/derived/constrained-supine-a073o9cu/candidates.jsonl`: `b1a6c22293d67dd047298acfca01e988a1b59067d36b20c9b7b717ac853c65ca`
