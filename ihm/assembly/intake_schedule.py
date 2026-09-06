@@ -80,6 +80,40 @@ class IntakeSchedule:
         self._receipts = []
         self._uncertain = False
 
+    def add_events(self, events, current_tick):
+        """Atomically append future/current-clock events while retaining all IDs."""
+        if type(current_tick) is not int or not self._last_tick <= current_tick <= self.horizon_ticks:
+            raise ValueError('current_tick must be a bounded monotonic integer tick')
+        if self._pending is not None or self._uncertain:
+            raise RuntimeError('Cannot modify unresolved or uncertain intake schedule')
+        candidate = IntakeSchedule(events, horizon_s=self.horizon_ticks * STEP_S)
+        existing = {e.event_id for e in self.events}
+        if len(self.events) + len(candidate.events) > MAX_EVENTS:
+            raise ValueError('Too many intake events')
+        if any(e.event_id in existing for e in candidate.events):
+            raise ValueError('Duplicate intake event identity')
+        if any(e.due_tick < current_tick for e in candidate.events):
+            raise ValueError('Cannot add intake events in the past')
+        self.events = self.events[:self._cursor] + tuple(sorted(
+            self.events[self._cursor:] + candidate.events, key=lambda e: (e.due_tick, e.event_id)))
+        self._last_tick = current_tick
+
+    def snapshot(self):
+        """JSON-compatible observation, never a resumable native checkpoint."""
+        receipts = {r.event_id: r for r in self._receipts}
+        result = []
+        for event in sorted(self.events, key=lambda e: (e.due_tick, e.event_id)):
+            entry = asdict(event)
+            entry['state'] = 'queued'
+            if event.event_id in receipts:
+                receipt = asdict(receipts[event.event_id])
+                entry.update(receipt)
+                entry['state'] = receipt['outcome']
+            elif self._pending is not None and self._pending[0].event_id == event.event_id:
+                entry.update(state='issued', issued_tick=self._pending[1], scheduled_tick=event.due_tick)
+            result.append(entry)
+        return {'events': result}
+
     @property
     def receipts(self):
         return tuple(self._receipts)
@@ -168,7 +202,5 @@ class IntakeSchedule:
         tick = checkpoint['body_tick']
         if type(tick) is not int or not 0 <= tick <= result.horizon_ticks:
             raise ValueError('Invalid checkpoint body_tick')
-        if any(e.due_tick <= tick for e in events) and tick != 0:
-            raise ValueError('Unissued checkpoint has past-due events')
         result._last_tick = tick
         return result

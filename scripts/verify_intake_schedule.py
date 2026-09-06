@@ -61,6 +61,24 @@ def main():
     accepted.record_accepted('water', {'status': 'ok', 'sequence': 5, 'elapsed_s': .08, 'pending_meal': True})
     assert accepted.due(50) == ()
     assert accepted.receipts[0].scheduled_tick == 2 and accepted.receipts[0].issued_tick == 3
+    live = IntakeSchedule([], horizon_s=1)
+    live.add_events([food], 2)
+    assert IntakeSchedule.from_checkpoint(live.checkpoint()).snapshot() == live.snapshot()
+    assert live.snapshot()['events'][0]['state'] == 'queued'
+    live.due(2)
+    assert live.snapshot()['events'][0]['state'] == 'issued'
+    rejects(lambda: live.add_events([water], 2))
+    live.record_accepted('food', {'status': 'ok', 'sequence': 1, 'elapsed_s': .04, 'pending_meal': True})
+    before = live.snapshot()
+    rejects(lambda: live.add_events([water, food], 2))
+    assert live.snapshot() == before
+    live.add_events([water], 3)
+    assert [e['state'] for e in live.snapshot()['events']] == ['accepted', 'queued']
+    rejects(lambda: live.add_events([IntakeEvent('old', 0, water.meal)], 3))
+    live.due(4)
+    live.record_uncertain('water', 'unknown delivery')
+    assert live.snapshot()['events'][1]['state'] == 'uncertain'
+    rejects(lambda: live.add_events([], 4))
     print('PASS: timed food/water, identity, validation, monotonic ticks, explicit receipts, uncertainty, checkpoint boundary')
 
 
