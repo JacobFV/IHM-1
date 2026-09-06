@@ -88,3 +88,25 @@ the logged OOM kills. Reducing frame rate and using nice does not cap memory.
 
 The immediate lesson is to budget **memory and simultaneous workload**, not just
 CPU thread count, while separately enforcing shared-file freeze/build windows.
+
+## Later protocol interruption: preserve the physical error
+
+The static-pose stream wrote its JSON marker before evaluating the requested
+pose. A native diagnostic could therefore interrupt the protocol record. The
+original malformed line was not retained, so its exact contents are unknown.
+A replay of the retained pending coordinate request after the framing fix
+returned a clean material-domain rejection; it did not reproduce a host crash.
+See `SUPINE_INITIALIZATION.md` and receipt
+`data/derived/pending-static-pose-rssrue1z` for the bounded replay.
+
+The fix builds the complete response before emitting its marker (`ac4ddcd`).
+Pending commands, successful responses and rejected trials are now retained,
+and continuing native state is checked after rejected evaluations. Reusing
+cached responses across that rebuild required an explicit framing-only source
+comparison; physical headers, libraries and inputs still had to match.
+
+Operational lesson: do not rerun a long optimization merely because transport
+failed. Retain the exact pending request, distinguish protocol failure from a
+physical model rejection, replay the smallest failing case, and preserve source
+identity before resuming cached work. This incident is separate from the earlier
+resource-contention evidence.
