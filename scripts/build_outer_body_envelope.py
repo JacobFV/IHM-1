@@ -12,7 +12,11 @@ SKIN='body-bp3d-FJ2810'
 DETECT_H=0.002
 PROBE_DEPTHS_M=(0.0008,0.0012,0.0016,0.0020,0.0026,0.0034,0.0045,0.0060,0.0080,0.0120)
 BULK_SEED_M=(0.0,0.05,0.0)
-UNVERIFIED=('triangle_self_intersection_not_exhaustively_tested',
+# Measured after the fact: the envelope carries 27 self-intersecting face pairs and
+# TetGen refuses it. Watertight, manifold and consistently wound is not tet-ready.
+# data/derived/entity-tet-ready-skin-probe-v1/ holds a repaired candidate that meshes
+# to 419,125 tets at 1.15e-9 relative volume drift.
+UNVERIFIED=('triangle_self_intersection_present_27_pairs_envelope_is_not_tetrahedralizable_as_written',
             'aperture_caps_are_fan_surfaces_not_anatomical_geometry',
             'sheet_assignment_oracle_is_a_2mm_voxel_flood_fill_not_an_exact_visibility_test',
             'envelope_is_the_outer_face_of_an_authored_1.8mm_skin_slab_not_a_measured_body_surface')

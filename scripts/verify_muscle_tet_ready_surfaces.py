@@ -86,9 +86,18 @@ def tetrahedralize(v,f,flags):
         outcome.update(status=None,exception='NoResult',message='TetGen child exited without a result')
     outcome['tetgen_stdout']=Path(name).read_text(errors='replace').strip().splitlines()
     Path(name).unlink()
-    outcome['succeeded']=outcome.get('status')==0 and outcome.get('tets',0)>0
+    # A run can return status 0 having meshed almost nothing: the right inferior lung
+    # lobe yields 9 tets over 4.77e-12 m3 against a 6.66e-4 m3 surface. Gate on the
+    # volume the tets actually account for, not merely on a zero exit and a tet count.
+    outcome['volume_gate']=VOLUME_GATE
+    error=outcome.get('tet_volume_vs_surface_relative_error')
+    outcome['succeeded']=(outcome.get('status')==0 and outcome.get('tets',0)>0
+                          and (error is None or abs(error)<=VOLUME_GATE))
     outcome['seconds']=time.monotonic()-started
     return outcome
+
+
+VOLUME_GATE=.05
 
 
 def strata(records,count):
@@ -123,6 +132,10 @@ def self_test():
     assert not bad['succeeded'] and bad['tetgen_stdout'],'a failing run must retain its native message'
     open_shell=tetrahedralize(v,f[:3],'pYq1.414')
     assert not open_shell['succeeded']
+    starved=dict(good,tet_volume_vs_surface_relative_error=-.9999999928)
+    starved['succeeded']=(starved['status']==0 and starved['tets']>0
+                          and abs(starved['tet_volume_vs_surface_relative_error'])<=VOLUME_GATE)
+    assert not starved['succeeded'],'a zero-exit run that meshed no volume is not a success'
     original=tetgen.tetrahedralize
     try:
         tetgen.tetrahedralize=lambda *args,**kwargs:os.abort()
