@@ -59,6 +59,13 @@ class ContractTests(unittest.TestCase):
  def test_namespace_lexical_type_preserved(self):
   raw=XML.replace(b'xmlns:xsi=',b'xmlns:cdm="uri:/mil/tatrc/physiology/datamodel" xmlns:xsi=').replace(b'xsi:type="BioGears',b'xsi:type="cdm:BioGears')
   output=seed_legacy(raw,SEED);ET.fromstring(output);self.assertIn(b'xmlns:cdm=',output);self.assertIn(b'cdm:BioGearsNervousSystemData',output)
+ def test_sleeping_xml_uses_native_schema_asleep(self):
+  from prepare_native_nervous_sleep_patch import SOURCE
+  result=ET.fromstring(seed_legacy(XML,{**SEED,'sleep_state':'Sleeping'}));ns='{uri:/mil/tatrc/physiology/datamodel}'
+  self.assertEqual(result.find('.//'+ns+'SleepState').text,'Asleep')
+  self.assertTrue(result.find('.//'+ns+'IHMSleepState').text.startswith('IHM_SLEEP_V1:1:'))
+  mapper=(SOURCE/'projects/biogears/libBiogears/src/io/cdm/Physiology.cpp').read_text()
+  self.assertIn('case CDM::enumSleepState::Asleep:\n        out = SESleepState::Sleeping;',mapper)
  def test_native_default_precision_is_not_lossless(self):
   x=math.nextafter(3.,4.);self.assertNotEqual(float(format(x,'.15g')),x)
 

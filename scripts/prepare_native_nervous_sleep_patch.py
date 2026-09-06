@@ -77,7 +77,7 @@ def seed_legacy(raw,seed):
   if unit:field.set('unit',unit)
  mode=n.find(ns+'SleepState')
  if mode is None:raise ValueError('Missing legacy SleepState')
- mode.text=seed['sleep_state'];ET.SubElement(n,ns+'IHMSleepState').text=payload
+ mode.text='Asleep' if seed['sleep_state']=='Sleeping' else 'Awake';ET.SubElement(n,ns+'IHMSleepState').text=payload
  # ElementTree does not track prefixes used only inside xsi:type values.
  declarations={}
  for _,(prefix,uri) in ET.iterparse(__import__('io').BytesIO(raw),events=['start-ns']):
