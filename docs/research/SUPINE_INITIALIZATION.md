@@ -180,3 +180,26 @@ The opt-in `balanced-root` mode solves a bounded linearized acceleration least-s
 Actual trial poses receive at most three root-coordinate corrections using the current force/moment Jacobian block, inside the same local/source bounds, and at most six half-step trials. A step is accepted only if the actual acceleration objective decreases and all actual normalized support and held-gauge residuals are ≤1e−4. The exact material-domain rejection triggers a recorded half-step; all other errors stop. Final all-acceleration/constraint thresholds and mandatory forward acceptance remain unchanged. This corrects the preceding mode's ability to lower ankle acceleration by increasing total bed support.
 
 The already evaluated supported origin is retained in `supported-newton-origin-hus45aso/candidate.json`, with original journal/hash/line provenance. It uses the complete-Jacobian supported seed immediately neighboring the prior best-supported finite-difference point; no new native evaluation constructed it. On the retained 33×28 Jacobian, six bounded constrained steps predict acceleration norm 2654.38 → 1380.48 on the first step → 303.16 after six, with linear equality errors at most 2.53e−12 and 0.03 maximum coordinate changes. The three-root support block has condition number 195.39. These are linear-surrogate predictions, not achieved native poses. Source fixtures cover exact support equalities, nonlinear root-coordinate correction, held-gauge rejection and local/source bounds. Evaluation-cache mode remains the same all-acceleration response profile; actual optimizer mode is reported separately.
+
+
+## First force-balanced local-Newton native result
+
+One `balanced-root` run (`constrained-supine-n7sam99n`) reached its 200-new-call cap in 40.565 s, recovering 436 native responses with 44 cache hits. Seven accepted support-filtered iterates reduced acceleration objective monotonically: 1,910,282 → 707,195 → 465,422 → 394,611 → 326,098 → 280,729 → 230,158. The best supported candidate is exactly the last accepted iterate; the lower unrestricted objective 226,373 fails support filtering and must not be used for continuation.
+
+The accepted static candidate has maximum acceleration 312.308 rad/s² (ankles −312.308/−306.292), with hip flexion near −90.4 and pelvis pitch 51.79 rad/s². Bed support is 761.44754 N versus weight 761.37571 N. Normalized normal/pitch/roll residuals are −9.43476e−5, −4.63569e−5, 1.21656e−6; held heading is −1.61820e−7 and translation gauges are near zero. Maximum skin compression is 1.64986 mm, bed deflection 99.53710 mm. Support feasibility has improved substantially, but the unchanged all-acceleration equilibrium criterion still fails. There was no forward run or reference promotion.
+
+The journal now retains 636 successful responses. Five of the 29 evaluations for the last accepted pose's next Jacobian are already present; 24 new calls are needed to complete it. This supports a bounded continuation from the actual accepted candidate without an unconstrained restart or repeated full warmup.
+
+### Source mass versus assembled mass correction
+
+The 30.383239 kg torso figure used in earlier source analysis is the **unscaled input XML** torso, not the actual runtime torso. Input source mass totals 85.26984854 kg; native initialization uniformly scales masses and inertias by 0.9101951537 to 77.6122029 kg total, yielding torso 27.6546769653 kg. Both the first supine reference observation and current support run already use this scaled value. Earlier conversational labeling of 30.383239 as native mass was incorrect.
+
+An exact XML-record comparison of all 22 assembled body masses, local COMs and inertias between production `cutaneous-factory-ylro2d66` and this support run found no differences. The production registration's entire `global_rigid_fit` dictionary also exactly equals the surface-contact manifest's neutral registration, including its transform and all landmark residuals. Their source model hash is identical (`e697dc40b2939f5edbc2879bcbd7e5954ffbabbb234032c403d57f5c39ea3810`). No mass-distribution or registration harmonization change is needed for these artifacts. Different bed-material scenarios remain explicit, and any future cervical/mass-instance changes still require fresh physics identity checks.
+
+Evidence SHA-256:
+
+- `data/derived/constrained-supine-n7sam99n/report.json`: `d7817636f209fcddefe5b909b5f0d09161d6118360e3a2ab4a23d9cde54dfed5`
+- `data/derived/constrained-supine-n7sam99n/best_supported_candidate.json`: `6eb55dcd00ca94af0bb74900444f263835f20589114ac17f7612db7ca1672f6d`
+- `data/derived/constrained-supine-n7sam99n/last_optimizer_iterate.json`: `6eb55dcd00ca94af0bb74900444f263835f20589114ac17f7612db7ca1672f6d`
+- `data/derived/constrained-supine-n7sam99n/candidates.jsonl`: `40e5e7a5beac75aa2f353f677f4a41500eedfddeb1e83ce986d7a9733c3b41d9`
+- `data/derived/constrained-supine-n7sam99n/mass_registration_comparison.json`: `130282afa2102c73f203ecc46abbe341148eed2cd5059d20d1cf500d41fd948c`
