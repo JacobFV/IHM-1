@@ -56,3 +56,38 @@ Actual asset verification and small CPU timing receipts live beside the material
 The viewer integration keeps strand dynamics **opt-in and off by default** under the current competing IBM workload; static physical strands remain visible. Final optimized warm scalp timings were 37.6, 313.3 and 14.0 ms, with body timings 0.66, 42.6 and 11.2 ms. The large variation prevents a sustained 10 Hz claim. No more performance loops were run. Off-thread execution would reduce UI blocking but would not eliminate the underlying CPU cost.
 
 `scripts/verify_hair_registration.py` passes four lightweight acceptance branches: valid public materialization, changed geometry rejection, changed module rejection, and frozen public module rejection. `scripts/acquire_hair_sources.py` rechecks all five retained PDF byte hashes and can reacquire exact source bytes if absent; publisher byte changes fail visibly.
+
+## Bounded worker execution (2026-09-05)
+
+The opt-in viewer now runs the same controller in one shared dedicated module
+worker (`app/src/hair-worker.js`). A single solve runs at once; each hair region
+holds at most one newest pending request. Only skin inputs and the strand/root/
+guide data cross the worker boundary. Tube coordinates return by transferable
+buffer. The controller keeps its own cache; transferred coordinates are a copy.
+Disabled or hidden regions cannot apply stale worker results. Worker failures
+are displayed and do not trigger a synchronous solver fallback.
+
+Coalescing queued frames does not advance an invented animation clock. Submitted
+timestamps drive the existing fixed-substep solver with endpoint root
+interpolation. Intermediate input samples are discarded under backpressure;
+this is an input-sampling assumption, not preservation of every forcing history.
+Existing gaps over 0.25 s, resume, rewind, and record changes still reset. The
+readout marks reset intervals **NOT physically integrated**, and reports the
+accumulated forward `unsimulated_total_s`. The model computes no follicle/body
+reaction impulses and has no body, garment, or self-contact. Adding coupled
+impulse exchange would require a different queue protocol that conserves it.
+
+Small source-only checks:
+
+```
+node --max-old-space-size=256 --test --test-concurrency=1 app/test/hair-worker.test.js app/test/hair-view.test.js app/test/hair_dynamics.test.js app/test/hair_dynamics_scratch.test.js
+node --max-old-space-size=256 scripts/benchmark_hair_worker.mjs
+```
+
+One 128-guide, seven-node, 40-update fixture run used 273.33 ms for synchronous
+main-thread solving versus 0.476 ms for main-thread worker dispatch; worker round
+trips took 257.00 ms, excluding startup. The main event loop executed 201 timer
+ticks during worker execution. Final tube coordinates matched exactly, with no
+unintegrated intervals. Process RSS was 121.54 MiB. These are noisy fixture
+measurements, not a full-viewer responsiveness guarantee. Normals, bounds, and
+GPU uploads remain on the main thread; the off-thread solver still costs CPU.

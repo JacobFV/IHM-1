@@ -935,7 +935,8 @@ function applyBodyFrame(frame,trajectory){
     objects.forEach((object, id) => {
       if(updateElasticHair(object,{frame,referenceCentroids:trajectory?.centroids_m,
           recordKey:liveSceneFrame?'live-scene':systemicSelection||activeRun,enabled:$('hair-dynamics-toggle').checked,
-          visible:object.visible&&!document.hidden,gravity_m_s2:frame?.environment?.gravity||[0,-9.81,0]})){
+          visible:object.visible&&!document.hidden,gravity_m_s2:frame?.environment?.gravity||[0,-9.81,0],
+          onDiagnostics:hairObject=>{if(selected?.id===id)updateHairReadout(hairObject);}})){
         if(selected?.id===id)updateHairReadout(object);
         return;
       }
@@ -972,6 +973,7 @@ function updateHairReadout(object){
   if(!panel){panel=document.createElement('div');panel.id='hair-dynamics-readout';$('details').append(panel);}
   if(d.mode==='static'){panel.textContent='Static generated strands · elastic guide solver off. Physical diameter unchanged; whole skin-entity transform only. Local skin deformation, strand dynamics and strand/body collisions are not simulated. Enable experimental hair simulation in View → Hair to run the guide solver.';panel.className='muted';return;}
   panel.textContent=`Elastic hair: ${d.simulated_guides??'not advanced'} guides · ${d.rendered_fibers??'reference'} rendered fibers. ${d.maximum_update_hz??10} Hz maximum; actual mechanical clock ${Number(d.time_s??0).toFixed(3)} s. ${d.reset_reason?'State reset: '+d.reset_reason+'. ':''}${d.paused?'Paused. ':''}Physical diameter unchanged. ${d.within_small_deflection===false?'Outside small-deflection range; quantitative interpretation is unsupported. ':'Linear beam guide model. '}No strand/body collision or follicle reaction feedback. ${liveSceneFrame?'Gravity from scene environment.':'Upright gravity prior applied to recorded root motion; view rotation is not a changed mechanical posture.'}`;
+  panel.textContent+=` Worker: ${d.worker_error?'FAILED — '+d.worker_error:d.worker_pending?'pending; retaining last completed coordinates':'idle'}. ${d.physical_interval_status==='not_integrated'?'This reset interval was NOT physically integrated. ':''}${d.unsimulated_total_s>0?Number(d.unsimulated_total_s).toFixed(3)+' s total unintegrated time. ':''}${d.coalesced_updates?d.coalesced_updates+' queued frames coalesced; roots interpolate between submitted endpoints. ':''}No body/garment/self contact or reaction impulses.`;
   panel.className='muted';
 }
 function updateSourceFrame(){

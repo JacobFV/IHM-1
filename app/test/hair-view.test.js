@@ -1,7 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
-import {attachElasticHair,updateElasticHair} from '../src/hair-view.js';
+import {attachElasticHair,updateElasticHair as updateView} from '../src/hair-view.js';
+import {createHairController} from '../src/hair_dynamics.js';
+const updateElasticHair=(object,options)=>updateView(object,{...options,controllerFactory:createHairController});
 function fixture(){
  const g={strands:{centerlines_m:[0,0,0,.005,0,0,.01,0,0],strand_offsets:[0,3],radius_m:[40e-6],tensile_modulus_pa:7.11e9,bending_modulus_pa:5.7e9,density_kg_m3:1312},
  attachment:{kind:'ElasticHairMaterialPoint',skin_entity_id:'skin',barycentric:[[1,0,0]],reference_triangles_m:[0,0,0,0,1,0,0,0,1]}};
@@ -48,4 +50,21 @@ test('default static strands never construct or advance an elastic controller',(
  updateElasticHair(object,{frame:{time_s:.1,entities:{}},visible:true,enabled:false});
  assert.equal(object.userData.elasticHair,undefined);
  assert.deepEqual(object.geometry.attributes.position.array,reference);
+});
+
+test('worker results update the view asynchronously and cannot revive disabled dynamics',()=>{
+ const {g,object}=fixture();attachElasticHair(object,g);
+ let deliver,disposed=0,notified=0,submitted;
+ const controllerFactory=(_,callback)=>{deliver=callback;return {update:request=>{submitted=request;},dispose:()=>disposed++};};
+ const frame={time_s:0,entities:{skin:{translation_m:[.1,.2,.3]},unrelated:{large:'omitted'}}};
+ const referenceCentroids={skin:[0,0,0]};
+ updateView(object,{frame,referenceCentroids,enabled:true,controllerFactory,onDiagnostics:()=>notified++});
+ assert.equal(object.geometry.attributes.position.version,0);
+ assert.equal(submitted.frame.entities.unrelated,undefined);
+ assert.equal(object.userData.hairDiagnostics.worker_pending,true);
+ const result=createHairController(g).update({frame,referenceCentroids,simulationTime:0});
+ deliver(result);assert.equal(notified,1);assert.deepEqual(object.geometry.attributes.position.array,result.positions);
+ updateView(object,{frame,referenceCentroids,enabled:false});const version=object.geometry.attributes.position.version;
+ deliver(result);assert.equal(disposed,1);assert.equal(object.geometry.attributes.position.version,version);
+ assert.equal(object.userData.hairDiagnostics.mode,'static');
 });
