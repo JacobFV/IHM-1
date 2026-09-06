@@ -1,0 +1,38 @@
+{
+  "schema": "thoracic-native-api-evidence-v1",
+  "headers": [
+    {
+      "source_path": "data/raw/mechanics/simbody/Simbody/include/simbody/internal/SimbodyMatterSubsystem.h",
+      "source_sha256": "5b59cb31096e333fafacfcdb45981579fb188d3b44db208798ec082b16d2fd67",
+      "bytes": 156481,
+      "retained_copy": "SimbodyMatterSubsystem.h.gz",
+      "installed_path": "data/runtime/opensim/install/simbody/include/simbody/simbody/internal/SimbodyMatterSubsystem.h",
+      "installed_sha256": "5b59cb31096e333fafacfcdb45981579fb188d3b44db208798ec082b16d2fd67",
+      "installed_equals_held_source": true
+    },
+    {
+      "source_path": "data/raw/mechanics/simbody/Simbody/include/simbody/internal/MobilizedBody_Custom.h",
+      "source_sha256": "015cc46463b557ce7c46064c4fe0231f3778001c9afd17403ade7aeca13f2360",
+      "bytes": 27686,
+      "retained_copy": "MobilizedBody_Custom.h.gz",
+      "installed_path": "data/runtime/opensim/install/simbody/include/simbody/simbody/internal/MobilizedBody_Custom.h",
+      "installed_sha256": "015cc46463b557ce7c46064c4fe0231f3778001c9afd17403ade7aeca13f2360",
+      "installed_equals_held_source": true
+    },
+    {
+      "source_path": "data/raw/mechanics/simbody/Simbody/include/simbody/internal/Body.h",
+      "source_sha256": "6171c1309603dc2ffbc49ec327f86b359d830efa1ab22d73fb930f458bcceb05",
+      "bytes": 12962,
+      "retained_copy": "Body.h.gz",
+      "installed_path": "data/runtime/opensim/install/simbody/include/simbody/simbody/internal/Body.h",
+      "installed_sha256": "6171c1309603dc2ffbc49ec327f86b359d830efa1ab22d73fb930f458bcceb05",
+      "installed_equals_held_source": true
+    }
+  ],
+  "license": "Apache-2.0; original notices retained",
+  "source_git_pin_in_builder": "59c6e7b89b3bdf266a2f3d54c611599d964205f7",
+  "native_code_executed": false,
+  "proof_scope": "Installed headers and held source, not compiled ABI or runtime extraction acceptance",
+  "license_sha256": "73ba74dfaa520b49a401b5d21459a8523a146f3b7518a833eea5efa85130bf68",
+  "license_bytes": 10273
+}
