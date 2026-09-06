@@ -147,3 +147,47 @@ sensitivity scaling and unchanged physical acceleration/support acceptance.
 A scalar path-length potential cannot supply an exact gradient for this native
 force mapping until a separate wrap tangent-construction correction is validated.
 No muscle, wrap, force law, source bound or acceptance threshold was changed.
+
+### Actual-force trust region implementation (source-only preparation)
+
+`scripts/solve_native_force_supine.py` uses the attested 98-muscle/seam-omitted
+probe to solve the 31 independent generalized-force equations. Native tree
+residuals are pulled back through the actual linear knee couplings; ideal
+coupler reactions are not fitted as applied forces. The 28 optimization
+coordinates exclude the same three plane translation/heading gauges as prior
+work. All 31 force equations remain in the merit, and all native accelerations
+and gauge reactions remain in physical acceptance.
+
+Coordinate scales start from XML coordinate spans and are equilibrated using
+actual Jacobian column sensitivity. Residual scales are the resulting row
+sensitivity norms, with explicit N/Nm and m/rad units. Scales freeze within a
+chunk. The source fixture verifies invariance to changing residual units from
+N to mN. A exactly zero-sensitivity equation is retained in its native unit;
+a zero-sensitivity free coordinate rejects the formulation. The actual retained
+98-muscle Jacobian is rank 28, with scaled singular values 3.50355 to 0.00681764.
+Its initial bounded model predicts numerical cost 1.78885e-5 to 1.04091e-5.
+This is a local model prediction, not native improvement or equilibrium.
+
+Each iteration obtains a fresh actual-coordinate Jacobian and solves bounded
+linear least squares in the scaled trust box. The original XML bounds and
+0.03 native-unit maximum coordinate step hold. Trial acceptance requires a
+positive actual reduction and actual/predicted reduction at least 0.1; poor
+agreement shrinks the box and recomputes its step. SVD/rank, linearized residual
+floor, active bounds, gradient and prediction errors are retained. No scalar
+mechanical energy or KKT-bound force is invented. Intermediate numerical
+iterates may lose support; each retains its full unaccepted physical gate.
+
+A source-bounded 200-call/60 s chunk performs at most six fresh-Jacobian
+iterations with eight attempts each, counts domain rejections, records every
+requested and actual q plus native response, and kills/reaps its owned process
+group at the wall cap. Only the exact known skin/bed-domain rejection permits
+backtracking; other errors stop. All native responses are from the new 98-muscle
+identity; historical 92-muscle responses are never reused. Existing 98-muscle
+samples are used for offline scaling design, not substituted for live responses.
+
+Original final limits remain unchanged: every native acceleration <=1e-4,
+normalized support and gauge residuals <=1e-4, and native position/velocity/
+acceleration constraint errors <=1e-5. A bound-stationary nonzero residual
+fails. Even a passed static gate requires separate forward acceptance before
+an immutable startup reference can be adopted. No native run of this solver
+has occurred at this preparation checkpoint.
