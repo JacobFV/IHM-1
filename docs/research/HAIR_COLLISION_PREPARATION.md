@@ -11,3 +11,7 @@ The proposed isolated pose query targets the center of one such face 10 micromet
 Support's `scripts/effective_passive_energy_observation.py` supplies the source-bound Thelen correction. Native `model.calcPotentialEnergy` already contains raw muscle passive potential: add **only** `source_passive_correction_j` to the native total. Do not add the complete corrected muscle total again. Raw native energy remains retained. The known getter defect and the still-investigated wrapped-path virtual-work mismatch are distinct; correcting one does not close the entire energy ledger.
 
 Prepared scripts pass parsing and the existing one-owner source fixture. Native compilation, pose feasibility and subsequent collision acceptance remain separately gated steps. None of this preparation enables a live model or establishes a 20 ms interval domain.
+
+## Actual bounded pose feasibility
+
+The isolated observer compiled in 12.97 s with 1,228,880 KiB peak RSS. The copied-state native pose query then passed in 1.82 s with 94,844 KiB peak RSS. `data/research/hair_hand_pose_acceptance.json` retains the exact source face, scalp sample, solved coordinate values, all queries, build identities and limits. Final center error was 8.48e-11 m and normal error 1.76e-10. A final native observation verified unchanged continuing body transforms, coordinates and time. Both children exited and the shared slot was released. No collision or trajectory was advanced. The solved pose remains an engineered test initial condition, not a whole-body clearance or muscle-strain certificate.
