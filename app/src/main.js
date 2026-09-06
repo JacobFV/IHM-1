@@ -88,7 +88,8 @@ async function loadSystemicIndex(){
 $('systemic-refresh').onclick=loadSystemicIndex;
 $('systemic-study').onchange=async()=>{
   const id=$('systemic-study').value,request=++systemicRequest;
-  if(sceneInteraction)await sceneInteraction.reset();
+  try{if(sceneInteraction)await sceneInteraction.reset();}
+  catch(error){if(request===systemicRequest){$('systemic-study').value=systemicSelection;$('systemic-note').textContent='Body cleanup must complete before playback: '+error.message;}return;}
   if(request!==systemicRequest)return;
   regionalRequest++;closeRegional();$('regional-study').value='body';
   systemicSelection=id;activeSystemic=null;playing=false;activeRun='body';
@@ -235,7 +236,7 @@ const colors = {
 };
 const viewport = $("viewport");
 let renderer, scene, camera, controls, group, webglError;
-let sceneInteraction=null,liveSceneFrame=null;
+let sceneInteraction=null,liveSceneFrame=null,modelSelectionRequest=0,lastLiveVisual=0;
 let lastRenderTime=0;
 document.addEventListener('visibilitychange',()=>{lastRenderTime=0;lastTick=performance.now();});
 let regionalView, regionalRequest=0, regionalSpectra=[], regionalReturnPhys=null,regionalReturnLabels=null;
@@ -408,7 +409,11 @@ function rebuildSystems() {
   });
   syncLayers();
 }
-function chooseModel() {
+async function chooseModel() {
+  const request=++modelSelectionRequest,chosen=$('model').value;
+  try{if(sceneInteraction)await sceneInteraction.reset();}
+  catch(error){if(request===modelSelectionRequest){$('model').value=modelId;$('model-note').textContent='Body cleanup must complete before changing source: '+error.message;}return;}
+  if(request!==modelSelectionRequest)return;
   sceneInteraction?.dispose();sceneInteraction=null;liveSceneFrame=null;
   if($('live-scene-signal-note'))$('live-scene-signal-note').hidden=true;
   clearSystemic();
@@ -416,7 +421,7 @@ function chooseModel() {
   closeRegional();
   $('regional-study').value='body';
   $('regional-condition').hidden=true;
-  modelId = $("model").value;
+  modelId = chosen;
   $("total").textContent = manifest.structures.filter(s => s.model_id === modelId).length.toLocaleString();
   playing = false;
   $("patient").disabled = modelId === "ihm-body";
@@ -476,15 +481,19 @@ function mountBodySceneInteraction(){
   $('scene-controls').hidden=modelId!=='ihm-body';
   if(modelId!=='ihm-body'||!renderer)return;
   let note=$('live-scene-signal-note');
-  if(!note){note=document.createElement('p');note.id='live-scene-signal-note';note.className='muted';note.textContent='Signal graph shows a separate recorded run. Live mechanics values are in Scene forces.';$('chart-note').after(note);}
+  if(!note){note=document.createElement('p');note.id='live-scene-signal-note';note.className='muted';note.textContent='This graph shows a separate recorded run. Current unified physiology is in Live body and Live signal cards.';$('chart-note').after(note);}
   note.hidden=true;
   sceneInteraction=mountSceneInteraction({scene,camera,renderer,controls,group,
     getObjects:()=>objects,getSelected:()=>selected,onSelect:selectStructure,
     onPauseReplay:()=>{playing=false;$('play').textContent='▶';
       if(regionalView?.active){regionalRequest++;closeRegional();$('regional-study').value='body';setupFrames();}
+      $('play').disabled=true;$('time').disabled=true;
     },
     onFrame:frame=>{const first=frame&&!liveSceneFrame;liveSceneFrame=frame;note.hidden=!frame;
-      if(frame){if(first)monitorWorkspace.show('scene');if(!document.hidden)updateFrame();}
+      if(frame){
+        if(first){monitorWorkspace.show('scene');if(frame.schema==='ihm.embodied-frame.v1'){monitorWorkspace.show('live');monitorWorkspace.show('live-signal-1');monitorWorkspace.show('motor');}}
+        const now=performance.now();if(!document.hidden&&(first||now-lastLiveVisual>=200)){lastLiveVisual=now;updateFrame();}
+      }
       else {setupFrames();updateFrame();}
     }});
 }
@@ -838,6 +847,7 @@ function updateDisplay() {
 }
 function setupFrames() {
   $('posture').disabled=!!regionalView?.active;
+  if(sceneInteraction?.active&&modelId==='ihm-body'){playing=false;$('play').disabled=true;$('time').disabled=true;if(liveSceneFrame)updateFrame();else $('time-value').textContent='Live body initialization pending';return;}
   if (modelId === "ihm-body") {
     flowFrames = regionalView?.active ? regionalView.data.frames.length : $('regional-study').value!=='body'?0:spatialTrajectory()?.frames.length || 0;
     $("flow-field").hidden = true;
@@ -881,8 +891,8 @@ function updateFrame() {
   if(liveSceneFrame&&modelId==='ihm-body'){
     const reference=Object.fromEntries(Object.entries(liveSceneFrame.entities).map(([id,state])=>[id,state.centroid_m.map((x,i)=>x-(state.translation_m?.[i]||0))]));
     applyBodyFrame(liveSceneFrame,{centroids_m:reference});
-    $('time').disabled=true;$('play').disabled=true;$('time-value').textContent=`${liveSceneFrame.time_s.toFixed(3)} s · live mechanics`;
-    $('flow-legend').hidden=false;$('flow-legend').textContent='Live mechanics · constrained body orientations · recorded physiology is separate';
+    $('time').disabled=true;$('play').disabled=true;$('time-value').textContent=`${liveSceneFrame.time_s.toFixed(3)} s · ${liveSceneFrame.schema==='ihm.embodied-frame.v1'?'live body':'reduced mechanics'}`;
+    $('flow-legend').hidden=false;$('flow-legend').textContent=liveSceneFrame.schema==='ihm.embodied-frame.v1'?'Unified live body · articulated state + neural/native physiology · 5 Hz view budget · calibration incomplete':'Reduced mechanics experiment · constrained orientations · recorded physiology is separate';
     return;
   }
   if(regionalView instanceof GarmentContactView&&regionalView.active){
@@ -938,12 +948,13 @@ function applyBodyFrame(frame,trajectory){
         object.geometry.computeVertexNormals();
         object.geometry.computeBoundingSphere();
       }
-      if (positions && (skinIds.has(id) || object.userData.skinReference)) {
+      if (positions && (skinIds.has(id) || object.userData.skinDeformationActive)) {
         object.userData.skinReference ||= positions.array.slice();
         deformSkinVertices(object.userData.skinReference, skinIds.has(id) ? skinField : null, positions.array);
         positions.needsUpdate = true;
         object.geometry.computeVertexNormals();
         object.geometry.computeBoundingSphere();
+        object.userData.skinDeformationActive=skinIds.has(id);
         if (skinIds.has(id)) deformedSkins++;
       }
       const motionId = hair?.skin_entity_id || id;
@@ -1314,6 +1325,7 @@ $("scenario-form").onsubmit = async (e) => {
         config.body_interventions=[event];
       }
     }
+    if(sceneInteraction?.active)await sceneInteraction.reset();
     const run = await api(modelId === "ihm-body" ? "/api/body/scenarios" : "/api/scenarios", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -1342,10 +1354,11 @@ $("posture").onclick = () => {
 };
 $("model").onchange = chooseModel;
 $('regional-study').onchange=async()=>{
-  const wasSystemic=!!systemicSelection;clearSystemic();if(wasSystemic)useBodyPhysiology();
   const request=++regionalRequest,kind=$('regional-study').value;
-  if(sceneInteraction)await sceneInteraction.reset();
+  try{if(sceneInteraction)await sceneInteraction.reset();}
+  catch(error){if(request===regionalRequest){$('regional-study').value=regionalView instanceof GarmentContactView?'garment-contact':regionalView instanceof ElectricRegionalView?'skin-electric':regionalView?.active?'forearm-touch':'body';$('regional-note').textContent='Body cleanup must complete before regional playback: '+error.message;}return;}
   if(request!==regionalRequest)return;
+  const wasSystemic=!!systemicSelection;clearSystemic();if(wasSystemic)useBodyPhysiology();
   playing=false;
   closeRegional();
   if(kind==='body'){

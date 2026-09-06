@@ -1,17 +1,19 @@
 import * as THREE from 'three';
 import { TransformControls } from 'three/addons/controls/TransformControls.js';
 import './scene-interaction.css';
-import {cursorSpring,rotateOffset,advanceScene} from './scene-forces.js';
+import {cursorSpring,advanceScene} from './scene-forces.js';
+import {bodyEndpoint,bodyEnvironment,bodyCommand,frameScope,materialOffset,materialPoint,createBodyOwner,closeBodyOwner} from './embodied-live.js';
+import {mountEmbodiedPanels} from './embodied-panels.js';
 
 export function mountSceneInteraction({scene,camera,renderer,controls,group,getObjects,getSelected,onSelect,onFrame,onPauseReplay}) {
   const mount=document.getElementById('scene-controls'),monitor=document.getElementById('scene-monitor');
   if(!mount||!monitor)throw Error('Scene interaction mounts missing');
   mount.innerHTML=`<label class="field-label" for="scene-environment">Environment</label>
-    <select id="scene-environment"><option value="studio">Studio</option><option value="floor">Floor · supported stance</option><option value="bed">Bed · supported supine</option></select>
+    <select id="scene-environment"><option value="bed">Bed · supine contact</option><option value="floor">Floor · upright contact</option><option value="studio">Free space · no gravity</option></select>
     <div class="scene-modes" role="group" aria-label="Cursor mode"><button data-scene-mode="select" aria-pressed="true">Select</button><button data-scene-mode="gimbal" aria-pressed="false">Gimbal</button><button data-scene-mode="force" aria-pressed="false">Force</button></div>
-    <div class="scene-actions"><button id="scene-play">Start mechanics</button><button id="scene-reset">Reset</button></div>
-    <p id="scene-status-note" class="muted" role="status">Select a part to inspect. Force mode applies a physical cursor spring.</p>`;
-  monitor.innerHTML=`<div class="scene-values"><span>Time <b id="scene-clock">0.00 s</b></span><span>Applied force <b id="scene-force-value">0 N</b></span></div><p id="scene-target" class="muted">No force target</p><details class="evidence-fold"><summary>Mechanics and supports</summary><p id="scene-scope">Linked body translations and affine tissues; reference orientations constrained. Free objects have ground contact. Whole-body surface contact remains in development.</p></details>`;
+    <div class="scene-actions"><button id="scene-play">Start Body</button><button id="scene-reset">Reset</button></div>
+    <p id="scene-status-note" class="muted" role="status">Select a part to inspect. Start Body initializes the unified native body.</p><details class="scene-advanced"><summary>Advanced execution</summary><label class="field-label" for="scene-owner">Execution owner</label><button id="scene-reconnect" type="button">Reconnect existing body</button><select id="scene-owner"><option value="embodied">Unified body · native + neural</option><option value="reduced">Reduced mechanics experiment</option></select><p class="muted">The reduced experiment has no coupled native physiology. No automatic fallback occurs.</p></details>`;
+  monitor.innerHTML=`<div class="scene-values"><span>Time <b id="scene-clock">0.00 s</b></span><span>Applied force <b id="scene-force-value">0 N</b></span></div><p id="scene-target" class="muted">No force target</p><details class="evidence-fold"><summary>Mechanics and supports</summary><p id="scene-scope">The unified body advances articulation, muscle sensors, pinned neural dynamics and physiology together. Calibration and full tissue/garment integration remain incomplete.</p></details>`;
   const $=id=>document.getElementById(id);
   const environmentGroup=new THREE.Group();environmentGroup.name='Interactive environment';group.add(environmentGroup);
   const objectMeshes=new Map(),ray=new THREE.Raycaster(),plane=new THREE.Plane(),cursor=new THREE.Vector3();
@@ -20,12 +22,16 @@ export function mountSceneInteraction({scene,camera,renderer,controls,group,getO
   scene.add(gizmo.getHelper());
   const arrow=new THREE.ArrowHelper(new THREE.Vector3(0,1,0),new THREE.Vector3(),0,0xe9b979,.02,.009);group.add(arrow);arrow.visible=false;
   let mode='select',session=null,state=null,running=false,pending=false,creating=null,drag=null,gizmoDragging=false;
-  let lastStep=0,disposed=false,environment='studio',selectedId=null,lastError='',resetting=false,resetTask=null;
+  let lastStep=0,lastPoll=0,disposed=false,environment='bed',kind='embodied',initializing=false,faulted=false,selectedId=null,lastError='',resetting=false,resetTask=null;
+  const panels=mountEmbodiedPanels();
+  const endpoint=()=>bodyEndpoint(kind);
+  const playText=(text)=>{if(!disposed)$('scene-play').textContent=text;};
+  const label=()=>kind==='embodied'?'Body':'reduced mechanics';
   const status=text=>{if(!disposed)$('scene-status-note').textContent=text;};
 
   async function request(path,data) {
     const response=await fetch(path,data===undefined?{cache:'no-store'}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
-    const payload=await response.json();if(!response.ok)throw Error(payload.error||'Scene request failed');return payload;
+    const payload=await response.json();if(!response.ok){const error=Error(payload.error||'Scene request failed');error.httpStatus=response.status;throw error;}return payload;
   }
   function allObjects() {
     const raw=getObjects();return [...(raw instanceof Map?raw.values():raw||[]),...objectMeshes.values()].filter(x=>x.visible);
@@ -53,7 +59,7 @@ export function mountSceneInteraction({scene,camera,renderer,controls,group,getO
   function environmentMeshes() {
     while(environmentGroup.children.length){const o=environmentGroup.children[0];environmentGroup.remove(o);o.geometry?.dispose();o.material?.dispose();}
     objectMeshes.clear();
-    if(environment!=='studio'){
+    if(kind==='reduced'&&environment!=='studio'){
       const bed=environment==='bed';
       const mesh=new THREE.Mesh(new THREE.BoxGeometry(bed?1.05:3,bed?2.1:.06,bed?.08:3),new THREE.MeshStandardMaterial({color:bed?0x718680:0x344646,roughness:.95}));
       if(bed)mesh.position.set(0,0,-.28);else mesh.position.set(0,-.99,0);
@@ -61,12 +67,11 @@ export function mountSceneInteraction({scene,camera,renderer,controls,group,getO
     }
   }
   function accept(frame) {
-    state=frame;onFrame(frame);
-    const scope=frame.scope;
-    if(scope)$('scene-scope').textContent=[scope.body_mechanics,scope.body_rotations,scope.body_gravity,scope.body_environment,
-      scope.body_object_contact===false?'Body–object contact is not coupled.':null,
-      scope.clothing_contact===false?'Clothing contact is not coupled to this scene.':null,
-      scope.physiology_feedback===false?'This scene does not feed forces back into physiology.':null].filter(Boolean).join('. ');
+    if(!frame?.entities||!Number.isFinite(frame.time_s)||!Number.isInteger(frame.sequence)||(kind==='embodied'&&frame.schema!=='ihm.embodied-frame.v1')){faulted=true;throw Error(frame?.error||'Body owner has no valid live frame; Reset required.');}
+    panels.update(session,frame);state=frame;onFrame(frame);
+    const currentEnvironment={free:'studio',supine:'bed',upright:'floor'}[frame.mechanics?.body_environment?.kind];
+    if(kind==='embodied'&&currentEnvironment){environment=currentEnvironment;$('scene-environment').value=environment;}
+    $('scene-scope').textContent=frameScope(frame);
     for(const item of frame.objects||[]){
       let mesh=objectMeshes.get(item.id);
       if(!mesh){mesh=new THREE.Mesh(new THREE.SphereGeometry(item.radius_m,24,16),new THREE.MeshStandardMaterial({color:0xd6a16e,roughness:.6}));mesh.userData.sceneObject=item.id;environmentGroup.add(mesh);objectMeshes.set(item.id,mesh);}
@@ -75,42 +80,79 @@ export function mountSceneInteraction({scene,camera,renderer,controls,group,getO
     $('scene-clock').textContent=frame.time_s.toFixed(2)+' s';
     if(selectedId&&!gizmoDragging)gizmoTarget.position.copy(centroid(selectedId));
   }
+  function initialized(frame) {
+    initializing=false;onPauseReplay();accept(frame);
+    if(drag?.initialAnchor){
+      if(drag.gimbal)drag.target.sub(drag.initialAnchor).add(centroid(drag.id));
+      else drag.offset.fromArray(materialOffset(drag.initialAnchor.toArray(),materialEntity(drag.id)));
+      delete drag.initialAnchor;
+    }
+    status(kind==='embodied'?'Unified body ready · live inputs act on the next body tick.':'Reduced mechanics experiment ready · no native physiology feedback.');
+    playText(running?'Pause '+label():'Resume '+label());
+  }
+  function pendingStatus(frame) {
+    if(frame?.schema==='ihm.embodied-frame.v1'){initialized(frame);return;}
+    if(frame?.error||frame?.closed||frame?.status==='error')throw Error(frame.error||'Body closed before initialization completed.');
+    if(!['initializing','ready','closing'].includes(frame?.status))throw Error('Unexpected body startup state');
+    initializing=true;status('Body initializing · waiting for the native resource slot. Reset requests cleanup.');
+    panels.status('Body initializing · no live physiological frame yet.');
+  }
   async function start() {
     if(disposed||resetting)return;
+    if(faulted){status('Reset is required before this body can restart.');return;}
     if(creating)return creating;
     if(!session){
-      creating=(async()=>{onPauseReplay();status('Initializing canonical mechanics…');const frame=await request('/api/scene/sessions',{environment});
-        if(disposed){await request(`/api/scene/sessions/${frame.id}/close`,{});return;}
-        session=frame.id;accept(frame);
-        if(drag?.initialAnchor){
-          if(drag.gimbal)drag.target.sub(drag.initialAnchor).add(centroid(drag.id));
-          else drag.offset.copy(drag.initialAnchor).sub(centroid(drag.id));
-          delete drag.initialAnchor;
-        }
-        status('Mechanics ready · supports and force records are retained.');})();
-      try{await creating;}finally{creating=null;}
-    }
-    if(!disposed&&session){running=true;$('scene-play').textContent='Pause mechanics';}
+      creating=(async()=>{
+        onPauseReplay();running=true;playText('Initializing '+label()+'…');status('Initializing '+label()+'…');
+        let frame;
+        if(kind==='embodied'){
+          frame=await createBodyOwner(request,endpoint(),{environment:bodyEnvironment(environment,kind)});
+        }else frame=await request(endpoint(),{environment:bodyEnvironment(environment,kind)});
+        session=frame.id;
+        if(!session)throw Error('Body startup returned no session identity');
+        if(disposed){await request(endpoint()+'/'+session+'/close',{});return;}
+        if(kind==='embodied')pendingStatus(frame);else initialized(frame);
+      })();
+      try{await creating;}catch(error){running=false;if(session)faulted=true;playText(session?'Reset required':'Start '+label());throw error;}finally{creating=null;}
+    }else if(!initializing){running=true;playText('Pause '+label());panels.status('Body resumed · awaiting the next accepted native frame.');}
   }
   function reset() {
     if(resetTask)return resetTask;
     resetting=true;running=false;drag=null;gizmoDragging=false;arrow.visible=false;gizmo.detach();controls.enabled=true;
     resetTask=Promise.resolve().then(async()=>{
     try{
-      if(creating)await creating;
+      if(creating){try{await creating;}catch(error){if(!session)throw error;}}
       while(pending)await new Promise(resolve=>setTimeout(resolve,10));
       running=false;
-      if(session)await request(`/api/scene/sessions/${session}/close`,{});
+      if(session){
+        if(kind==='embodied')await closeBodyOwner(request,endpoint()+'/'+session,async()=>{
+          status('Closing body · waiting for native cleanup before changing views.');panels.status('Closing body · last accepted state remains shown until cleanup completes.');
+          await new Promise(resolve=>setTimeout(resolve,500));
+        });
+        else if((await request(endpoint()+'/'+session+'/close',{})).closed!==true)throw Error('Reduced scene did not confirm closure');
+      }
       if(disposed)return;
-      session=null;state=null;selectedId=null;environment=$('scene-environment').value;environmentMeshes();
-      $('scene-play').textContent='Start mechanics';$('scene-clock').textContent='0.00 s';$('scene-force-value').textContent='0 N';
-      onFrame(null);status('Scene reset. Start mechanics to apply forces.');
+      session=null;state=null;initializing=false;faulted=false;selectedId=null;environment=$('scene-environment').value;kind=$('scene-owner').value;environmentMeshes();panels.clear();
+      $('scene-play').textContent='Start '+label();$('scene-clock').textContent='0.00 s';$('scene-force-value').textContent='0 N';
+      onFrame(null);status('Body reset. Start '+label()+' to advance.');
     }catch(e){status(e.message);throw e;}finally{resetting=false;resetTask=null;}
     });
     return resetTask;
   }
+  $('scene-reconnect').onclick=async()=>{
+    if(disposed||resetting||pending||creating)return;
+    if(kind!=='embodied'){status('Select Unified body before reconnecting.');return;}
+    running=false;pending=true;
+    try{
+      const list=await request(endpoint());const active=list.sessions.filter(s=>!s.closed);
+      if(active.length!==1)throw Error(active.length?'More than one body owner exists; no automatic choice made.':'No existing live body is available.');
+      session=active[0].id;const frame=await request(endpoint()+'/'+session);if(disposed||resetting)return;faulted=false;onPauseReplay();pendingStatus(frame);
+      status('Existing body reconnected and paused. Resume only from this controlling view.');
+    }catch(error){status(error.message);}finally{pending=false;}
+  };
+  $('scene-owner').onchange=()=>reset().catch(e=>status(e.message));
   $('scene-environment').onchange=()=>reset().catch(e=>status(e.message));$('scene-reset').onclick=()=>reset().catch(e=>status(e.message));
-  $('scene-play').onclick=()=>{if(running){running=false;$('scene-play').textContent='Resume mechanics';}else start().catch(e=>status(e.message));};
+  $('scene-play').onclick=()=>{if(running){running=false;$('scene-play').textContent='Resume '+label();panels.status('Paused · last accepted body state. Inputs take effect on resume.');}else start().catch(e=>status(e.message));};
   mount.querySelectorAll('[data-scene-mode]').forEach(button=>button.onclick=()=>{
     mode=button.dataset.sceneMode;mount.querySelectorAll('[data-scene-mode]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));
     drag=null;arrow.visible=false;gizmo.detach();controls.enabled=true;
@@ -119,7 +161,7 @@ export function mountSceneInteraction({scene,camera,renderer,controls,group,getO
   });
   gizmo.addEventListener('dragging-changed',event=>{
     gizmoDragging=event.value;controls.enabled=!event.value;
-    if(event.value&&selectedId){drag={id:selectedId,offset:new THREE.Vector3(),target:gizmoTarget.position.clone(),initialAnchor:session?null:gizmoTarget.position.clone(),gimbal:true};start().catch(e=>{status(e.message);gizmoDragging=false;drag=null;});}
+    if(event.value&&selectedId){drag={id:selectedId,offset:new THREE.Vector3(),target:gizmoTarget.position.clone(),initialAnchor:session&&!initializing?null:gizmoTarget.position.clone(),gimbal:true};start().catch(e=>{status(e.message);gizmoDragging=false;drag=null;});}
     else {drag=null;arrow.visible=false;}
   });
   gizmo.addEventListener('objectChange',()=>{if(gizmoDragging&&drag)drag.target.copy(gizmoTarget.position);});
@@ -129,11 +171,11 @@ export function mountSceneInteraction({scene,camera,renderer,controls,group,getO
     if(mode==='gimbal'&&gizmo.axis)return;
     const hit=pick(event);if(!hit)return;selected(hit);
     if(mode==='gimbal')return;
+    let offset;try{offset=session&&!initializing?materialOffset(hit.point.toArray(),materialEntity(hit.id)):[0,0,0];}catch(error){status(error.message);return;}
     event.preventDefault();event.stopImmediatePropagation();controls.enabled=false;
     renderer.domElement.setPointerCapture(event.pointerId);
     plane.setFromNormalAndCoplanarPoint(camera.getWorldDirection(new THREE.Vector3()),hit.world);
-    const rotation=state?.objects?.find(o=>o.id===hit.id)?.rotation_matrix;
-    drag={id:hit.id,offset:new THREE.Vector3(...rotateOffset(hit.point.clone().sub(centroid(hit.id,hit.mesh)).toArray(),rotation,true)),target:hit.point.clone(),initialAnchor:session?null:hit.point.clone(),pointer:event.pointerId};
+    drag={id:hit.id,offset:new THREE.Vector3(...offset),target:hit.point.clone(),initialAnchor:session&&!initializing?null:hit.point.clone(),pointer:event.pointerId};
     start().catch(e=>{status(e.message);drag=null;controls.enabled=true;});
   }
   function move(event) {
@@ -149,29 +191,42 @@ export function mountSceneInteraction({scene,camera,renderer,controls,group,getO
   }
   renderer.domElement.addEventListener('pointerdown',down,true);renderer.domElement.addEventListener('pointermove',move,true);
   renderer.domElement.addEventListener('pointerup',up,true);renderer.domElement.addEventListener('pointercancel',up,true);
+  function materialEntity(id) {
+    const entity=state?.entities?.[id];if(entity)return entity;
+    const object=state?.objects?.find(o=>o.id===id);
+    if(object)return {...object,centroid_m:object.position_m};
+    throw Error('Selected structure has no live mechanical owner');
+  }
   function forceCommand() {
     if(!drag)return [];
-    const rotation=state?.objects?.find(o=>o.id===drag.id)?.rotation_matrix;
-    const point=centroid(drag.id).add(new THREE.Vector3(...rotateOffset(drag.offset.toArray(),rotation))),force=cursorSpring(point.toArray(),drag.target.toArray());
+    const point=new THREE.Vector3(...materialPoint(drag.offset.toArray(),materialEntity(drag.id))),force=cursorSpring(point.toArray(),drag.target.toArray());
     const magnitude=Math.hypot(...force);$('scene-force-value').textContent=magnitude.toFixed(2)+' N';
     arrow.position.copy(point);arrow.visible=magnitude>1e-5;
     if(arrow.visible){arrow.setDirection(new THREE.Vector3(...force).normalize());arrow.setLength(Math.min(.3,magnitude*.015),.018,.009);}
     return [{id:drag.id,force_n:force,point_m:point.toArray()}];
   }
   async function update(now) {
-    if(disposed||resetting||!running||pending||!session||now-lastStep<20)return;
+    if(disposed||resetting||pending||!session)return;
+    if(initializing){
+      if(now-lastPoll<500)return;lastPoll=now;pending=true;
+      try{const frame=await request(endpoint()+'/'+session);if(!disposed)pendingStatus(frame);}
+      catch(error){running=false;initializing=false;faulted=true;playText('Reset required');status(error.message);if(!disposed)panels.status('Body startup stopped: '+error.message);}
+      finally{pending=false;}
+      return;
+    }
+    if(!running||now-lastStep<20)return;
     pending=true;lastStep=now;
     try {
-      const result=await advanceScene(request,`/api/scene/sessions/${session}`,{seconds:.02,sequence:state.sequence,forces:forceCommand()});
+      const result=await advanceScene(request,endpoint()+'/'+session,bodyCommand(kind,state.sequence,forceCommand(),panels.inputs));
       if(!disposed)accept(result.frame);
       if(result.recovered)throw Error(`${result.error.message}. Recorded state restored; resume when ready.`);
     }
-    catch(e){running=false;drag=null;arrow.visible=false;controls.enabled=true;if(!disposed){$('scene-play').textContent='Resume mechanics';if(e.message!==lastError)status(e.message);}lastError=e.message;}
+    catch(e){running=false;drag=null;arrow.visible=false;controls.enabled=true;if(!disposed){panels.status('Stopped · last accepted body frame. '+e.message);$('scene-play').textContent=faulted?'Reset required':'Resume '+label();if(e.message!==lastError)status(e.message);}lastError=e.message;}
     finally{pending=false;}
   }
-  function unload(){if(session)navigator.sendBeacon(`/api/scene/sessions/${session}/close`,new Blob(['{}'],{type:'application/json'}));}
+  function unload(){if(session)navigator.sendBeacon(endpoint()+'/'+session+'/close',new Blob(['{}'],{type:'application/json'}));}
   window.addEventListener('pagehide',unload);environmentMeshes();
-  return {update,reset,createControls:()=>mount,get state(){return state;},get active(){return !!session;},
+  return {update,reset,createControls:()=>mount,get state(){return state;},get active(){return !!session||!!creating||pending;},
     dispose(){disposed=true;running=false;unload();window.removeEventListener('pagehide',unload);gizmo.dispose();scene.remove(gizmo.getHelper());group.remove(environmentGroup,gizmoTarget,arrow);
       renderer.domElement.removeEventListener('pointerdown',down,true);renderer.domElement.removeEventListener('pointermove',move,true);renderer.domElement.removeEventListener('pointerup',up,true);renderer.domElement.removeEventListener('pointercancel',up,true);}};
 }

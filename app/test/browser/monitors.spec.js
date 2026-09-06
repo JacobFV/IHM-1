@@ -3,6 +3,8 @@ import { test, expect } from "@playwright/test";
 test("full-height scene with configurable monitor cards and preserved widgets", async ({
   page,
 }) => {
+  // Existing saved workspaces keep their recorded widgets after live cards arrive.
+  await page.addInitScript(()=>{if(!localStorage.getItem('ihm.monitors.v1'))localStorage.setItem('ihm.monitors.v1',JSON.stringify({active:['selection','signals','playback','experiments'],collapsed:[],compact:[]}));});
   await page.goto("/");
   await expect(page.locator("#viewport canvas")).toBeVisible();
   await expect(page.locator("body > #app > header")).toHaveCount(0);

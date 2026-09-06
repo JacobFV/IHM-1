@@ -1,6 +1,9 @@
 // Every card owns one existing, live widget. Removing a card parks its DOM;
 // simulation subscriptions and user inputs survive without duplicated controls.
 export const MONITORS = [
+  {id:'live',title:'Live body',description:'Current unified native physiology and neural/mechanical clock.',tags:['live','physiology','signals']},
+  ...[1,2,3].map(i=>({id:`live-signal-${i}`,title:`Live signal ${i}`,description:'An independently selected signal from the active body, using actual recorded live samples.',tags:['live','physiology','signals']})),
+  {id:'motor',title:'Motor & skin inputs',description:'Named muscle descending drive, selective sensory/motor blocks and whole-Skin pressure.',tags:['live','controls','neural','muscle','skin']},
   {
     id: "selection",
     title: "Selection",
@@ -49,9 +52,9 @@ export const MONITORS = [
   },
   {
     id: "scene",
-    title: "Scene forces",
+    title: "Body interaction",
     description:
-      "Applied forces and environment interaction from the mechanics adapter.",
+      "Applied forces, current body time and environment limits.",
     tags: ["mechanics", "environment", "controls"],
   },
 ];
@@ -177,7 +180,14 @@ export function mountMonitors() {
       "Select the shorts-panel study in Experiments to inspect computed local mechanics.",
     ),
   );
+  const liveContents={};
+  for(const id of ['live','motor','live-signal-1','live-signal-2','live-signal-3']){
+    const mount=node('div');mount.id=id==='live'?'live-body-monitor':id==='motor'?'live-motor-monitor':`${id}-monitor`;
+    mount.append(node('p','muted','Start Body to inspect its current computed state.'));
+    liveContents[id]=mount;
+  }
   const contents = {
+    ...liveContents,
     selection: $("details"),
     signals,
     experiments,
@@ -203,7 +213,7 @@ export function mountMonitors() {
   try {
     saved = JSON.parse(localStorage.getItem("ihm.monitors.v1"));
   } catch {}
-  const defaults = ["selection", "signals", "playback", "experiments"];
+  const defaults = ["live", "live-signal-1", "selection", "motor"];
   let active = Array.isArray(saved?.active)
     ? [...new Set(saved.active)].filter((id) => contents[id])
     : defaults;
