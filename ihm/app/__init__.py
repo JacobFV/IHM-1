@@ -270,12 +270,19 @@ def create_server(root=None,port=8765,host='127.0.0.1'):
             if not self._authorized(post=True):return self._error('Only local workbench requests are accepted',403)
             scene_request=self.path=='/api/scene/sessions' or re.fullmatch(r'/api/scene/sessions/[a-f0-9]{32}/(step|close)',self.path)
             embodied_request=self.path=='/api/embodied/sessions' or re.fullmatch(r'/api/embodied/sessions/[a-f0-9]{32}/(step|close|intakes)',self.path)
-            if self.path not in ('/api/scenarios','/api/body/scenarios') and not scene_request and not embodied_request:return self._error('Endpoint not found',404)
+            if self.path not in ('/api/scenarios','/api/body/scenarios','/api/body/microvascular-patch') and not scene_request and not embodied_request:return self._error('Endpoint not found',404)
             if self.headers.get('Content-Type','').split(';')[0]!='application/json':return self._error('Expected application/json',415)
             try:
                 length=int(self.headers.get('Content-Length','0'))
                 if not 0<length<=32768:raise ValueError('JSON request must be 1–32768 bytes')
                 data=json.loads(self.rfile.read(length),parse_constant=lambda v:(_ for _ in ()).throw(ValueError('Nonfinite JSON number')))
+                if self.path=='/api/body/microvascular-patch':
+                    from ihm.app.microvascular_patch import MicrovascularPatchService,PatchRequestError
+                    with self.server.microvascular_lock:
+                        if self.server.microvascular_patches is None:
+                            self.server.microvascular_patches=MicrovascularPatchService(root)
+                    try:return self._send(self.server.microvascular_patches.materialize(data))
+                    except PatchRequestError as error:return self._send({'error':str(error),'code':error.code},error.status)
                 if embodied_request:
                     if self.path=='/api/embodied/sessions':return self._send(self.server.embodied.create(data),201)
                     parts=self.path.split('/')
@@ -292,7 +299,7 @@ def create_server(root=None,port=8765,host='127.0.0.1'):
     server_class=type('IPv6Server',(Server,),{'address_family':socket.AF_INET6}) if host=='::1' else Server
     from ihm.assembly.interactive_scene import SceneSessions
     from ihm.app.embodied import EmbodiedSessions
-    server=server_class((host,port),Handler);server.root=root;server.jobs=Jobs(root);server.scenes=SceneSessions(root);server.embodied=EmbodiedSessions(root);server.manifest_lock=threading.Lock();return server
+    server=server_class((host,port),Handler);server.root=root;server.jobs=Jobs(root);server.scenes=SceneSessions(root);server.embodied=EmbodiedSessions(root);server.manifest_lock=threading.Lock();server.microvascular_lock=threading.Lock();server.microvascular_patches=None;return server
 
 def serve(root=None,port=8765):
     server=create_server(root,port)
