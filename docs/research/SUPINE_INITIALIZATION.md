@@ -150,3 +150,24 @@ Evidence SHA-256:
 - `data/derived/constrained-supine-vmmvo7v_/reconstructed_pending_request.json`: `2936fb69f27127e50f8cff8b59605ecf0ef749c2b890d92cecb976b0f2e33501`
 - `data/derived/pending-static-pose-rssrue1z/report.json`: `731e5d9969bdb0dbeed539e293e2b148771b5bb0d49773e2f083a0b2581a7eba`
 - `data/derived/pending-static-pose-rssrue1z/request.json`: `2936fb69f27127e50f8cff8b59605ecf0ef749c2b890d92cecb976b0f2e33501`
+
+
+## Exact-domain backtracking and final MM continuation
+
+Commit `15ccecd` permits only the exact native rejection `equal-pressure skin/bed solution exceeds retained domains` to reject a copied-state local trial and try the next half-step. Every rejected request retains its full coordinates, command and error in `rejected_trials.jsonl`, counts against the 200-new-call cap, and never enters the accepted-response cache. All other exceptions stop execution. A source fixture verifies the domain half-step and unrelated-error propagation.
+
+Cross-build cache migration checks the exact retained C++ source replacement from pre-evaluation prefix emission to post-evaluation emission. All 21 normalized physical header/library entries and every input/material/coordinate identity must remain identical; retained source and executable hashes are verified. This narrow audit allowed all 349 prior responses to be recovered across the framing-only rebuild. It does not permit arbitrary native build changes.
+
+One authorized continuation, `constrained-supine-0hpzsu5p`, completed 102 new native requests in 20.488 s, including 15 recorded domain rejections, with 349 recovered responses and 37 cache hits. Three local steps were accepted before all six backtracks failed the material domain. The final continuing-state observation was unchanged, checkpoint restore completed, and no physical time advanced. The solver ended normally with `No decreasing valid local Newton step`; equilibrium was not accepted.
+
+Final maximum acceleration remained 423.922 rad/s² (ankles −423.922/−416.088). Final acceleration objective was 400,622.03; a finite-difference sample had best objective 400,568.14. Support was 1151.969 N against weight 761.376 N, an excess of 51.301%. Normalized support residuals were −0.513010 (normal), 0.177716 (pitch), −0.00619664 (roll). Held heading gauge residual was 0.000198782, while held translation residuals were near zero. The source-defined balance/gauge acceptance therefore failed independently of the large joint accelerations.
+
+Maximum skin compression was 2.46282 mm on the torso contact owner, which carried 669.841 N. Maximum bed deflection was 132.12978 mm, only 0.76877 mm below the measured curve's 132.89855 mm limit. Further full and half-steps exceeded the retained domain and were rejected. The remaining difficulty is not the repaired initial trust radius: unconstrained acceleration minimization has increased total support while reducing distal accelerations. Further use of this mode alone is not justified by these results; acceleration conditioning needs explicit external force/moment balance or root-coordinate balance elimination. No material extrapolation, threshold relaxation, forward run or resting-reference promotion occurred.
+
+Evidence SHA-256:
+
+- `data/derived/constrained-supine-0hpzsu5p/report.json`: `279dd610c2c51de43bd145b866327f6fea6da3b8b5dedc8740d602b7e9a5c38e`
+- `data/derived/constrained-supine-0hpzsu5p/final_candidate.json`: `46a94ad449fc00cb69879070ccb12ca38aeda353cd1bb9fa0b97427b775b384d`
+- `data/derived/constrained-supine-0hpzsu5p/candidates.jsonl`: `71e1fd4968fedb795d38cd29cf71be2f4d99e143e01fbf53cf3c98c3d5818b49`
+- `data/derived/constrained-supine-0hpzsu5p/rejected_trials.jsonl`: `9c2784dafef57720e269c6bf21614907c66f8656a6d3e9e1cc3c5da4f04ccecd`
+- `data/derived/constrained-supine-0hpzsu5p/cache_recovery.json`: `0e80c9737469fbcce8bb08583b2c6e583aec9b83a90470b11862d65b47fb856e`
