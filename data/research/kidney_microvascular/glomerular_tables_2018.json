@@ -1,0 +1,30 @@
+{
+  "T1": [
+    "Arteriole (AA)Vascular Chamber (AVC)First-Order (Conduit) Vessels",
+    "Diameter (2 r), \u00b5mMin Diam (2 r\u2032), \u00b5mSecn Depth Diam (2 r\u2032\u2032), \u00b5mMax Diam (2 r\u2032\u2032\u2032), \u00b5mDiameter (2 r), \u00b5mn",
+    "Mean21.532.149.448.015.96.6",
+    "SE1.21.53.43.60.70.6"
+  ],
+  "T2": [
+    "Arteriole (EA)Vascular Chamber (EVC)First-Order Vessels (E1)",
+    "Diameter (2 r), \u00b5mMin Diam (2 r\u2032), \u00b5mSecn Depth Diam (2 r\u2032\u2032), \u00b5mMax Diam (2 r\u2032\u2032\u2032), \u00b5mDiameter (2 r), \u00b5mn",
+    "Mean15.926.245.943.19.912.6",
+    "SE1.21.49.14.30.41.4"
+  ],
+  "T3": [
+    "AAAAAVCAVC CollConduitE1EVCEAEA",
+    "nDiameter, \u00b5mWall Thickness, \u00b5mDiameter, \u00b5mWall Thickness, \u00b5mDiameter, \u00b5mDiameter, \u00b5mDiameter, \u00b5mDiameter, \u00b5mWall Thickness, \u00b5m",
+    "Fixed Resin Reconstruction14G, 4K21.5 \u00b1 1.26.6 \u00b1 0.343.2 \u00b1 2.8*15.9 \u00b1 0.79.9 \u00b1 0.438.4 \u00b1 4.915.9 \u00b1 1.23.0 \u00b1 0.1",
+    "Fixed Aq. Confocal4G*, 1K28.4 \u00b1 1.96.3 \u00b1 0.835.8 \u00b1 3.5*16.0 \u00b1 1.28.224.212.8*",
+    "Fixed Aq. Multiphoton3G*, 1K**50.2 \u00b1 3.74.2 \u00b1 0.812.8 \u00b1 1.66.928.17.4*",
+    "Fresh Aq. Multiphoton3G*, 2K13.83.035.8 \u00b1 4.14.1 \u00b1 1.914.4 \u00b1 0.9****",
+    "Fresh Aq. MultiphotonIsolated 1 G*, 1K23.0*54.22.527.4****"
+  ],
+  "TA.1": [
+    "Subscript Abbreviation\u0394P, mmHgr, \u00b5mt, \u00b5mSh, kPa",
+    "Afferent VCAVC23220.5\u20134.0\u22648\u201366",
+    "Mesangial conduitMC2380.5\u20134.0\u22646\u201348",
+    "GFB conduitGC3880.3133*",
+    "Filtration capillaryFC383.50.358"
+  ]
+}

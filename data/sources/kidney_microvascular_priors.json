@@ -1,0 +1,173 @@
+{
+  "schema": "ihm.kidney_microvascular_priors.v1",
+  "species": "Homo sapiens",
+  "source_receipts": {
+    "glomerular_2018.xml": {
+      "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC6293306/fullTextXML",
+      "http_status": 200,
+      "bytes": 172769,
+      "sha256": "58ba8c766ab8fc700c28fb2e6181f692c8cee778db1ea13a137d79ce4aaa1013",
+      "acquired_utc": "2026-09-06T05:12:07.295873+00:00"
+    },
+    "peritubular_2023.xml": {
+      "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC10640592/fullTextXML",
+      "http_status": 200,
+      "bytes": 144131,
+      "sha256": "3a76b1c8218d187052fe7be44632bb9144d123ed72d33eed19bf88c4144f6569",
+      "acquired_utc": "2026-09-06T05:12:08.433045+00:00"
+    },
+    "human_topology_1988.json": {
+      "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:3185306%20AND%20SRC:MED&format=json&resultType=core",
+      "http_status": 200,
+      "bytes": 3787,
+      "sha256": "28648992f108006f6901a0bfd8125abedaedac5baa476433dcb5ee9f82a62152",
+      "acquired_utc": "2026-09-06T05:12:09.048107+00:00"
+    },
+    "human_structure_1998.json": {
+      "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:9736285%20AND%20SRC:MED&format=json&resultType=core",
+      "http_status": 200,
+      "bytes": 5670,
+      "sha256": "4b9a787425bf7e84540e0cbceb20f5826bbe0086ba9ed0b5bf58b2951d006b29",
+      "acquired_utc": "2026-09-06T05:12:09.685394+00:00"
+    },
+    "peritubular_supplement_attempt": {
+      "url": "https://media.springernature.com/original/springer-static/esm/art%3A10.1038%2Fs41598-023-46146-4/MediaObjects/41598_2023_46146_MOESM1_ESM.pdf",
+      "http_status": 200,
+      "content_type": "application/pdf",
+      "content_length": "13587560",
+      "acquired": false,
+      "retained_bytes": 0,
+      "reason": "Bounded GET failed size-or-PDF-header acceptance check; no payload retained",
+      "checked_utc": "2026-09-06T05:19:42.150885+00:00"
+    },
+    "peritubular_supplement_2023.pdf": {
+      "url": "https://media.springernature.com/original/springer-static/esm/art%3A10.1038%2Fs41598-023-46146-4/MediaObjects/41598_2023_46146_MOESM1_ESM.pdf",
+      "http_status": 200,
+      "bytes": 13587560,
+      "sha256": "68f570773f40445cac3836afa558c7eed05d34a0517448957e78dc5be70afdcf",
+      "acquired_utc": "2026-09-06T05:20:31.146069+00:00"
+    }
+  },
+  "diameter_source": "glomerular_2018.xml Tables 1\u20133 fixed resin reconstruction",
+  "specimen": "14 perfusion-fixed resin-section reconstructed glomeruli from 4 human kidneys; not same donor as IHM kidney arterial example",
+  "uncertainty": "2018 tables report mean +/- SE, not capillary population SD",
+  "diameters_um": {
+    "afferent_arteriole": {
+      "mean": 21.5,
+      "se": 1.2
+    },
+    "afferent_chamber": {
+      "mean": 43.2,
+      "se": 2.8
+    },
+    "afferent_conduit": {
+      "mean": 15.9,
+      "se": 0.7
+    },
+    "efferent_first_order": {
+      "mean": 9.9,
+      "se": 0.4
+    },
+    "efferent_chamber": {
+      "mean": 38.4,
+      "se": 4.9
+    },
+    "efferent_arteriole": {
+      "mean": 15.9,
+      "se": 1.2
+    }
+  },
+  "counts": {
+    "afferent_conduit": {
+      "mean": 6.6,
+      "se": 0.6,
+      "observed_range": [
+        2,
+        11
+      ]
+    },
+    "efferent_first_order": {
+      "mean": 12.6,
+      "se": 1.4,
+      "observed_range": [
+        3,
+        22
+      ]
+    }
+  },
+  "glomerular_xy_diameter_um": {
+    "mean": 194.4,
+    "plusminus": 5.1,
+    "n": 28,
+    "scope": "in-plane max/min measurements pooled from14glomeruli"
+  },
+  "filtration_capillary_radius_um": {
+    "value": 3.5,
+    "tier": "published_model_assumption",
+    "source": "2018 Table A1 hoop stress calculation; not measured radius distribution"
+  },
+  "lobules": {
+    "value": 7,
+    "source": "1998 human structure abstract; population variability unknown"
+  },
+  "total_filtration_capillary_length_m": {
+    "value": 0.0095,
+    "source": "1998 abstract total capillary length per glomerulus; operationally transferred to filtration-edge budget, source does not resolve conduit inclusion",
+    "uncertainty": null
+  },
+  "peritubular": {
+    "source": "peritubular_2023.xml",
+    "human_scope": "10 renal allograft and 30 IgA-nephropathy biopsies; preserved control regions 27, injured 37",
+    "human_3d_graph_acquired": false,
+    "radius_distribution": null,
+    "reason": "Human 2D Table S6 now held; equivalent-area transform available, individual circular radii and human 3D geometry unresolved",
+    "two_d_stats": {
+      "control": {
+        "regions": 27,
+        "luminal_area_um2": {
+          "mean": 71.0,
+          "sd": 63.3
+        },
+        "major_ellipse_diameter_um": {
+          "mean": 12.8,
+          "sd": 4.1
+        },
+        "minor_ellipse_diameter_um": {
+          "mean": 5.0,
+          "sd": 1.8
+        },
+        "total_area_fraction_percent": {
+          "mean": 10.3,
+          "sd": 3.2
+        }
+      },
+      "injured": {
+        "regions": 37,
+        "luminal_area_um2": {
+          "mean": 45.0,
+          "sd": 46.9
+        },
+        "major_ellipse_diameter_um": {
+          "mean": 9.2,
+          "sd": 3.8
+        },
+        "minor_ellipse_diameter_um": {
+          "mean": 4.8,
+          "sd": 2.1
+        },
+        "total_area_fraction_percent": {
+          "mean": 7.4,
+          "sd": 2.5
+        }
+      }
+    },
+    "uncertainty": "Mean +/- SD of biopsy-and-region mean measurements, not vessel-level distribution; control regions in diseased/transplanted kidneys",
+    "radius_transform": "sqrt(group mean luminal area / pi), in um; equal-area circle of mean area, not measured mean radius or hydraulic equivalence"
+  },
+  "raw_graph_acquired": false,
+  "license": {
+    "2018_article": "CC-BY-4.0",
+    "2023_article": "CC-BY-4.0",
+    "1988_1998_abstracts": "Bibliographic abstract evidence; full article licenses not established"
+  }
+}
