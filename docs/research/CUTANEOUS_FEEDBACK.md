@@ -1,0 +1,113 @@
+# Executable cutaneous feedback
+
+`ihm.assembly.cutaneous_feedback.CutaneousFeedback` converts explicitly registered
+material-site contact forces and caller-supplied native skin temperature into
+causal pinned IBM receptor responses. It returns `sensory_inputs_hz` for the
+existing `BodyBrain` operator. It never advances that shared brain itself.
+
+This is implemented neural stimulation with declared engineering conversions, not
+an anatomically identified axon graph, receptor census or calibrated perception.
+The tests invoke the actual preserved IBM transfer functions through `CausalIBM`
+and show that their output changes the existing `BodyBrain` population activity.
+
+## Interface and ownership
+
+```python
+feedback = CutaneousFeedback(
+    root,
+    sites=[{
+        'id': 'caller-registered-material-site',
+        'position_m': [x, y, z],
+        'normal': [nx, ny, nz],  # unit outward normal
+        'contact_area_m2': area,  # None means no pressure transduction
+        'stiffness_pa_per_m': foundation_stiffness,
+        'sensory_region': 'brain-rh-postcentral',
+        'reference_temperature_C': reference_temperature,
+        'support_basis': 'caller material registration and provenance',
+    }],
+    recruitment_hz_per_response=explicit_gain,
+    delay_s=explicit_delay,
+)
+result = feedback.step(dt_s, {
+    'time_s': feedback.time_s,
+    'contacts': [{'id': site_id, 'force_n': force_vector_n}],
+    'skin_temperature_C': native_skin_temperature,
+}, sensory_blocks=[])
+```
+
+Every force ID must name a constructor site. If a contact also supplies `point_m`,
+it must equal that registered site's position within 1 nm; silently retargeting a
+material point is forbidden. Moving body support requires an explicit registration
+update/materialization; this bounded module does not infer a moving surface normal.
+Missing contacts mean released contact. Duplicate contacts are rejected: aggregate
+physical forces explicitly before this boundary. The caller owns spatial registration,
+area, the outward normal and physical provenance. Synthetic fixture supports must
+remain labeled as such; a site is not registered merely because an arbitrary force
+payload includes coordinates.
+
+The report preserves physical units, sample and response times, per-site signed
+responses, block status, support provenance and cortical assignments. An omitted or
+`None` skin temperature disables and resets the thermal channel with an explicit
+engineering dropout policy. It is never interpreted as a physical return to the
+reference temperature. Scalar native skin temperature is transferred uniformly to
+sites; this is not a locally resolved temperature measurement.
+
+For runtime integration, add validated additional sensory inputs to the existing
+controller's regional-input sum immediately before its sole `brain.step` call.
+Use the cutaneous endpoint from the previous exchange. Thus a physical sample held
+on `[t, t+dt]` produces receptor output at `t+dt`, available to the next shared brain
+interval. Do not run a second `BodyBrain` instance as part of the body session.
+Root runtime/controller wiring is a separate integration responsibility.
+
+## Physical and neural conversions
+
+Compression is `max(0, -force_n dot outward_normal)`. Tangential force does not
+become normal pressure. Known area permits `pressure_pa = compression_n / area_m2`.
+The existing `pressure_to_indentation_um` operator applies the explicit linear
+foundation assumption `indentation_m = pressure_pa / stiffness_pa_per_m`, then
+converts metres to micrometres. Foundation stiffness has units Pa/m and is not a
+Young modulus. Unknown area yields null pressure and indentation, preserves raw
+force, and supplies no mechanical receptor stimulus.
+
+Rapid and slow receptor channels use the existing pinned `CausalIBM` exact
+zero-order-hold realization and source prior medians. The thermal channel selects
+the actual registry implementation `thermoreceptor_static_dynamic`, whose transfer
+is the same source static/dynamic operator supported by the slow realization.
+Its own source parameter medians are used; the adapter verifies frequency-domain
+parity with the actual selected donor function. Thermal stimulus is degrees Celsius
+relative to the explicitly supplied reference. This reference subtraction is an
+engineering operating-point assumption. Source parameters for nonlinear warm/cold
+bells are not used by the source LTI law and are not invented here.
+
+Each source response remains signed, including release undershoot. The explicit
+cortical recruitment prior pools the absolute response magnitudes, multiplies by
+`recruitment_hz_per_response`, and caps each region at 1000 Hz. This pooling is an
+inferred observation law, not identified receptor firing; it can recruit the
+caller-assigned canonical population on both onset and release. Gain, spatial
+assignment, area, foundation stiffness, reference temperature and delay are all
+visible in materialization identity. Zero recruitment gain disables cortical input
+while retaining physical and receptor observations.
+
+A sensory block immediately clears the blocked site's queued stimuli and resets
+its receptor state. Unblocking starts fresh and observes the configured delay.
+This is an explicit engineering ablation, not a detailed local-anesthetic model.
+No refractory period, spikes or additional adaptation are invented. Adaptation
+comes solely from the selected pinned source transfers.
+
+## Verification and remaining scope
+
+```sh
+PYTHONPATH=. .venv/bin/python scripts/verify_cutaneous_feedback.py
+```
+
+Eight bounded tests cover dimensional conversion, source parity, actual population
+response, conduction delay, queued-signal block purge, release undershoot, thermal
+transients, missing temperature, unknown area, normal orientation, point identity,
+nonfinite input rejection, checkpoint replay and failed-restore atomicity. They do
+not launch native mechanics, browser sessions or heavy jobs.
+
+Remaining limitations include moving/deforming skin registration, calibrated
+contact compliance, regional thermal fields, receptor distributions and thresholds,
+nonlinear temperature tuning, pain, axon topology, anatomical somatotopy and
+calibrated cortical recruitment. No IBM-1 source is edited. No force or heat is
+fed back into mechanics or systemic physiology by this receptor adapter.
