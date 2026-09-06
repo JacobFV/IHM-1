@@ -52,6 +52,33 @@ def bind_cutaneous(root,contacts,configuration,*,source_pin=None):
     return CutaneousFeedback(root,sites=sites,recruitment_hz_per_response=configuration['recruitment_hz_per_response'],source_pin=source_pin)
 
 
+def bind_intake_mass(plant,initial_intake,canonical_raw):
+    """Bind the retained neutral canonical stomach centroid to its native torso."""
+    import hashlib,json
+    import numpy as np
+    from .intake_mass import IntakeMassBridge
+    if plant.snapshot()['time_s']!=0:raise ValueError('Fresh neutral mechanical reference required for intake binding')
+    if (plant.output/'canonical_mechanics.json').read_bytes()!=canonical_raw:
+        raise ValueError('Mechanical canonical reference differs from frozen intake source')
+    canonical=json.loads(canonical_raw)
+    candidates=[e for e in canonical['entities'] if e.get('name')=='stomach']
+    if len(candidates)!=1:raise ValueError('Exactly one retained canonical stomach required')
+    stomach=candidates[0];registration=plant.registration
+    if registration.rows[stomach['id']]['body']!='torso':raise ValueError('Canonical stomach must be bound to native torso')
+    transform=np.array(plant.native.snapshot()['bodies']['torso']['transform_ground'])
+    station=(np.linalg.inv(transform)@np.linalg.inv(registration.global_map)@np.r_[stomach['centroid_m'],1.])[:3].tolist()
+    registration_raw=(plant.output/'registration.json').read_bytes()
+    registration_hash=hashlib.sha256(registration_raw).hexdigest()
+    binding={'canonical_entity_id':stomach['id'],'body':'torso','station_source_m':station,
+        'canonical_sha256':hashlib.sha256(canonical_raw).hexdigest(),'registration_sha256':registration_hash,
+        'registration_basis':deepcopy(registration.rows[stomach['id']]),
+        'incoming_velocity_basis':'co_moving_at_ingestion_assumption',
+        'scope':'Neutral canonical stomach centroid on inferred rigid torso support; no internal organ deformation or measured swallowing momentum'}
+    bridge=IntakeMassBridge(plant,initial_intake,body='torso',station_m=station,
+        registration_identity=registration_hash,incoming_velocity_basis=binding['incoming_velocity_basis'])
+    return bridge,binding
+
+
 def _prepare_brain_candidate(root,source_pin):
     """Verify/load one candidate before native startup and freeze its exact bytes."""
     if source_pin is None:return {},{}
@@ -106,8 +133,9 @@ class CleanupOwners:
 
 class EmbodiedRuntime:
     @classmethod
-    def from_workspace(cls,root,output,*,environment='supine',state_path=None,surface_contact_manifest=None,cutaneous_configuration=None,bed_material=None,regional_skin=False,source_pin=None):
+    def from_workspace(cls,root,output,*,environment='supine',state_path=None,surface_contact_manifest=None,cutaneous_configuration=None,bed_material=None,regional_skin=False,source_pin=None,intake_mass=False):
         if type(regional_skin) is not bool:raise ValueError('regional_skin must be a bool')
+        if type(intake_mass) is not bool:raise ValueError('intake_mass must be a bool')
         from pathlib import Path
         import hashlib,json,sys
         from ihm.native.session import SessionConfig
@@ -117,6 +145,8 @@ class EmbodiedRuntime:
             from ihm.native.regional_session import RegionalSignedNativeSession
             native_session_type=RegionalSignedNativeSession
         from .articulated import ArticulatedBodyPlant
+        if intake_mass:
+            from .intake_mass import IntakeMassBridge
         from .sensorimotor import SensorimotorController
         from .body_exchange import NativeTissueExchange
         from .embodied_respiration import EmbodiedRespiration
@@ -149,6 +179,7 @@ class EmbodiedRuntime:
             'ihm.assembly.cutaneous_feedback','ihm.brain.causal','ihm.brain.ibm_backend','ihm.brain.port_mapping',
             'ihm.assembly.respiratory_feedback','ihm.assembly.embodied_respiration','ihm.assembly.intake_schedule','ihm.app.embodied')
         if regional_skin:names+=('ihm.native.regional_session',)
+        if intake_mass:names+=('ihm.assembly.intake_mass','ihm.native.instance_mass',)
         if source_pin is not None:names+=('ihm.brain.candidate','ihm.brain.source_loader',)
         receipts=[_loaded_source(sys.modules[name]) for name in names if name in sys.modules]
         frozen={r['path']:r['bytes'] for r in receipts}
@@ -183,22 +214,30 @@ class EmbodiedRuntime:
             mass=finite(float(weight['value']),'native initial body mass',1,500)
             plant=ArticulatedBodyPlant(root,output/'mechanics',environment=environment,target_mass_kg=mass,
                 augmented_registration='data/derived/mechanics/whole_body_arm26_v2/registration.json',
-                surface_contact_manifest=surface_contact_manifest,surface_sensor_indices=sensor_indices,bed_material=bed_material)
+                surface_contact_manifest=surface_contact_manifest,surface_sensor_indices=sensor_indices,bed_material=bed_material,
+                instance_mass_variant='data/runtime/opensim/variants/instance_mass_v1' if intake_mass else None)
             neural=SensorimotorController.from_root(root,muscle_catalog=plant.muscle_catalog,source_pin=source_pin)
             reference=native.snapshot()
+            intake_bridge=intake_binding=None
+            if intake_mass:
+                intake_bridge,intake_binding=bind_intake_mass(plant,reference['intake'],frozen[root/'data/derived/canonical/mechanics.json'])
+                (output/'intake_mass_binding.json').write_text(json.dumps(intake_binding,indent=2,allow_nan=False)+'\n')
             identity={key:manifest[key] for key in ('library_sha256','executable_sha256','state_sha256')}
             identity['manifest_sha256']=hashlib.sha256((output/'physiology/manifest.json').read_bytes()).hexdigest()
             exchange=NativeTissueExchange.from_workspace(root,reference,identity)
             respiratory_path=root/'data/derived/canonical/respiration.json'
             respiratory=EmbodiedRespiration(json.loads(frozen[respiratory_path]),reference['values']['lung_volume_ml'])
             cutaneous=None if cutaneous_configuration is None else bind_cutaneous(root,plant.snapshot().get('cutaneous_contacts'),cutaneous_configuration,source_pin=source_pin)
-            body=cls(plant,neural,native,exchange,respiratory,cutaneous=cutaneous,reference_identity=hashlib.sha256((output/'mechanics/native/execution.json').read_bytes()).hexdigest())
+            body=cls(plant,neural,native,exchange,respiratory,cutaneous=cutaneous,intake_mass_bridge=intake_bridge,intake_mass_binding=intake_binding,reference_identity=hashlib.sha256((output/'mechanics/native/execution.json').read_bytes()).hexdigest())
             if any(p.read_bytes()!=raw for p,raw in frozen.items()):raise ValueError('Embodied source changed during initialization; reopen with a stable revision')
             (output/'manifest.json').write_text(json.dumps({'schema':'ihm.embodied-runtime.v1','sources':hashes,
                 'loaded_code':{str(r['path'].relative_to(root)):r['loaded_code_sha256'] for r in receipts},
                 'source_receipts':{str(r['path'].relative_to(root)):{k:v for k,v in r.items() if k not in ('path','bytes')} for r in receipts},
                 'brain_source_pin':None if source_pin is None else source_pin.to_dict(),'brain_candidate_loaded_modules':candidate_loaded,
-                'environment':environment,'regional_skin':regional_skin,'cutaneous_materialization':None if cutaneous is None else cutaneous.audit,'native_identity':identity,'effective_mechanical_mass_kg':mass,
+                'environment':environment,'regional_skin':regional_skin,'intake_mass':intake_mass,'intake_mass_binding':intake_binding,
+                'intake_mass_initial_bridge':None if intake_bridge is None else intake_bridge.snapshot(),
+                'intake_mass_variant':None if intake_bridge is None else plant.native.instance_mass_variant,
+                'intake_mass_binding_sha256':None if intake_binding is None else hashlib.sha256((output/'intake_mass_binding.json').read_bytes()).hexdigest(),'cutaneous_materialization':None if cutaneous is None else cutaneous.audit,'native_identity':identity,'effective_mechanical_mass_kg':mass,
                 'physiology_scope':'Paired retained thermal-corrected research initial state/library; known long-run glucose and acid-base failures remain unresolved',
                 'mass_mapping':'Initial native patient mass, including native initial GI contents, uniformly scales source segment inertia; local mass distribution is an engineering prior',
                 'native_checkpoint_exact':False,'exchange_dt_s':.02},indent=2)+'\n')
@@ -211,10 +250,19 @@ class EmbodiedRuntime:
                 error.add_note(str(cleanup_error))
             raise
 
-    def __init__(self,plant,neural,native,exchange,respiratory_load,*,reference_identity=None,cutaneous=None):
+    def __init__(self,plant,neural,native,exchange,respiratory_load,*,reference_identity=None,cutaneous=None,intake_mass_bridge=None,intake_mass_binding=None):
         self.plant,self.neural,self.native,self.exchange,self.respiratory_load=plant,neural,native,exchange,respiratory_load
         self.time_s=0.;self.sequence=0;self.failed=False;self.closed=False;self.next_excitation={};self.frame=None
         self.native_state=native.snapshot();self.mechanical_state=plant.snapshot()
+        self.intake_mass_bridge=intake_mass_bridge;self.intake_mass_binding=deepcopy(intake_mass_binding)
+        if intake_mass_bridge is not None:
+            if intake_mass_bridge.plant is not plant or intake_mass_bridge.previous!=self.native_state.get('intake'):
+                raise ValueError('Intake bridge must bind these exact fresh owners')
+            if intake_mass_bridge.failed or intake_mass_bridge.sequence!=0 or intake_mass_bridge.applied_mass!=0 or self.native_state['intake'].get('consumed_count')!=0:
+                raise ValueError('Fresh unused intake bridge required')
+            if not isinstance(intake_mass_binding,dict) or intake_mass_binding.get('registration_sha256')!=intake_mass_bridge.registration_identity:
+                raise ValueError('Intake binding provenance differs from bridge')
+        elif intake_mass_binding is not None:raise ValueError('Intake binding requires enabled bridge')
         self.cutaneous=cutaneous;self.cutaneous_state=None
         if cutaneous is not None and abs(cutaneous.time_s)>1e-9:raise ValueError('Fresh cutaneous clock required')
         self.cleanup_owner=CleanupOwners(native,plant)
@@ -338,13 +386,19 @@ class EmbodiedRuntime:
             if unmet>1e-12:raise RuntimeError('Native muscle energy demand is unmet; mechanical supply feedback is not yet supported')
             native['signal_metadata']=native_field_metadata(native['values'])
             if abs(native['elapsed_s']-end)>1e-8:raise RuntimeError('Native exchange clock diverged')
+            if self.intake_mass_bridge is not None:
+                self.intake_mass_bridge.apply(native['intake'])
+                refreshed=self.plant.snapshot()
+                for key in ('time_s','muscle_metabolic_energy_j','signed_active_fiber_work_j','muscle_heat_energy_j','metabolic_reference','positive_muscle_work_j'):
+                    if refreshed[key]!=mechanical[key]:raise RuntimeError('Intake endpoint changed completed mechanical interval '+key)
+                mechanical=refreshed
             tissue=self.exchange.observe(native)
             geometry=self.respiratory_load.geometry(native['values']['lung_volume_ml'],mechanical['entities'],end)
             self.next_excitation=deepcopy(neural['motor_excitations'])
             self.native_state=native;self.mechanical_state=mechanical;self.time_s=end;self.sequence+=1
             self.frame={'schema':'ihm.embodied-frame.v1','time_s':end,'sequence':self.sequence,
                 'entities':geometry['entities'],'skin_field':geometry['skin_field'],'respiration':geometry,'mechanics':mechanical,'neural':neural,'physiology':native,
-                'cutaneous':cutaneous,'tissue_exchange':tissue,'respiratory_load':load,'intake_schedule':self.intakes.snapshot(),
+                'cutaneous':cutaneous,'intake_mass':self._intake_mass_audit(),'tissue_exchange':tissue,'respiratory_load':load,'intake_schedule':self.intakes.snapshot(),
                 'coupling':{'exchange_interval_s':dt,'motor_exchange_latency_s':dt,
                     'positive_muscle_work_j':work,'native_extra_metabolic_demand_w':incremental_w,
                     'muscle_metabolic_reference_w':self.reference_metabolic_w,'interval_muscle_metabolic_w':metabolic_w,
@@ -369,16 +423,20 @@ class EmbodiedRuntime:
                 except BaseException:self._abort()
             raise
 
+    def _intake_mass_audit(self):
+        if self.intake_mass_bridge is None:return {'enabled':False}
+        return {'enabled':True,'binding':deepcopy(self.intake_mass_binding),'bridge':self.intake_mass_bridge.snapshot()}
+
     def snapshot(self):
         if self.frame:
-            frame=deepcopy(self.frame);frame.update(sequence=self.sequence,intake_schedule=self.intakes.snapshot())
+            frame=deepcopy(self.frame);frame.update(sequence=self.sequence,intake_schedule=self.intakes.snapshot(),intake_mass=self._intake_mass_audit())
             return frame
         native=deepcopy(self.native_state);native['signal_metadata']=native_field_metadata(native['values'])
         geometry=self.respiratory_load.geometry(native['values']['lung_volume_ml'],self.mechanical_state['entities'],0.)
         return {'schema':'ihm.embodied-frame.v1','time_s':0.,'sequence':self.sequence,
             'entities':geometry['entities'],'skin_field':geometry['skin_field'],'respiration':geometry,
             'mechanics':deepcopy(self.mechanical_state),'physiology':native,
-            'tissue_exchange':self.exchange.observe(self.native_state),'intake_schedule':self.intakes.snapshot()}
+            'tissue_exchange':self.exchange.observe(self.native_state),'intake_schedule':self.intakes.snapshot(),'intake_mass':self._intake_mass_audit()}
 
     def close(self):
         if self.closed:return
