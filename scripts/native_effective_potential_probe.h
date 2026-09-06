@@ -82,7 +82,7 @@ inline std::string evaluate(OpenSim::Model& model,const SimTK::State& continuing
   field("length_m",muscle.getLength(s));field("fiber_length_m",lf);field("minimum_fiber_length_m",minimum);field("fiber_velocity_m_s",muscle.getFiberVelocity(s));field("activation",activation);
   field("cos_pennation",std::cos(muscle.getPennationAngle(s)));field("normalized_fiber_length",x);field("internal_stiffness_n_m",(muscle.getTendonStiffness(s)+muscle.getFiberStiffnessAlongTendon(s))/std::pow(std::cos(muscle.getPennationAngle(s)),2));field("tendon_force_n",muscle.getTendonForce(s));field("fiber_force_along_tendon_n",muscle.getFiberForceAlongTendon(s));field("fiso_n",muscle.getMaxIsometricForce());
   field("passive_energy_j",passive_energy);field("active_effective_energy_j",active_energy);muscles<<",\"moment_arms_m\":[";
-  for(size_t i=0;i<independent.size();i++){if(i)muscles<<',';number(muscles,muscle.computeMomentArm(s,*independent[i]));}muscles<<"]}";
+  for(size_t i=0;i<independent.size();i++){if(i)muscles<<',';number(muscles,muscle.computeMomentArm(s,model.updCoordinateSet().get(independent[i]->getName())));}muscles<<"]}";
  }muscles<<']';if(muscle_count!=98)throw std::runtime_error("effective probe needs98 muscles");
  const double skin=surface.skin_energy,bed=surface.bed_energy;
  std::ostringstream out;out<<"{\"kind\":\"effective_pose_evaluated\",\"numerical_merit_only\":true,\"physical_time_advanced_s\":0,\"continuing_state_unchanged\":true,\"coordinate_velocity_map_error\":";number(out,nerror);
