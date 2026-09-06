@@ -2,8 +2,25 @@
 from pathlib import Path
 from concurrent.futures import Future
 from unittest.mock import patch
-import tempfile,threading,unittest
+import json,shutil,tempfile,threading,unittest
 from ihm.app.embodied import BodyActor,EmbodiedSessions
+
+ROOT=Path(__file__).resolve().parents[1]
+
+
+def workspace(base):
+    """A session workspace carrying the server-owned active candidate.
+
+    Session creation resolves the active IBM source inside the selected
+    workspace, so a synthetic one must install it; the pin binds an absolute
+    artifact directory, so the copy is rebound to the fixture location.
+    """
+    from ihm.brain.active_source import ACTIVE_COMMIT
+    root=Path(base);relative=Path('data/derived/ibm-candidates')/ACTIVE_COMMIT
+    target=root/relative;shutil.copytree(ROOT/relative,target)
+    pin=json.loads((target/'source_pin.json').read_text());pin['artifact_dir']=str(target)
+    (target/'source_pin.json').write_text(json.dumps(pin,indent=2)+'\n')
+    return root
 
 class FakeBody:
     def __init__(self):self.owner=threading.get_ident();self.sequence=0;self.failed=False
@@ -17,7 +34,7 @@ class FakeBody:
 class Tests(unittest.TestCase):
     def test_intake_mass_configuration_is_explicit_bool_and_forwarded(self):
         with tempfile.TemporaryDirectory() as p:
-            sessions=EmbodiedSessions(p)
+            sessions=EmbodiedSessions(workspace(p))
             with patch('ihm.app.embodied.BodyActor') as actor:
                 for value in (1,None,'true',[]):
                     with self.subTest(value=value),self.assertRaisesRegex(ValueError,'intake_mass must be boolean'):
@@ -33,7 +50,7 @@ class Tests(unittest.TestCase):
 
     def test_regional_configuration_validates_before_starting_owner(self):
         with tempfile.TemporaryDirectory() as p:
-            sessions=EmbodiedSessions(p)
+            sessions=EmbodiedSessions(workspace(p))
             with patch('ihm.app.embodied.BodyActor') as actor:
                 for value in (1,0,None,'true',{},[]):
                     with self.subTest(value=value),self.assertRaisesRegex(ValueError,'regional_skin must be boolean'):
@@ -44,7 +61,7 @@ class Tests(unittest.TestCase):
     def test_regional_configuration_reaches_single_owner_factory(self):
         for config,expected in (({},False),({'regional_skin':True},True)):
             with self.subTest(config=config),tempfile.TemporaryDirectory() as p:
-                sessions=EmbodiedSessions(p)
+                sessions=EmbodiedSessions(workspace(p))
                 with patch('ihm.assembly.embodied.EmbodiedRuntime.from_workspace',side_effect=lambda *args,**kwargs:FakeBody()) as factory:
                     try:
                         result=sessions.create(config)
@@ -68,7 +85,7 @@ class Tests(unittest.TestCase):
     def test_shutdown_tracks_creation_before_actor_registration(self):
         with tempfile.TemporaryDirectory() as p:
             entered=threading.Event();release=threading.Event();result=Future()
-            sessions=EmbodiedSessions(p)
+            sessions=EmbodiedSessions(workspace(p))
             def delayed_actor(factory,output):
                 entered.set();release.wait(2);return BodyActor(FakeBody,output)
             def create():
@@ -85,7 +102,7 @@ class Tests(unittest.TestCase):
 
     def test_shutdown_prevents_new_native_startup(self):
         with tempfile.TemporaryDirectory() as p:
-            sessions=EmbodiedSessions(p);sessions.close()
+            sessions=EmbodiedSessions(workspace(p));sessions.close()
             with self.assertRaisesRegex(RuntimeError,'shutting down'):sessions.create({})
 
     def test_cancellation_is_not_lost_when_command_queue_is_full(self):
@@ -149,7 +166,7 @@ class Tests(unittest.TestCase):
             gate=threading.Event()
             def factory():gate.wait(2);return FakeBody()
             actor=BodyActor(factory,Path(p)/'actor')
-            sessions=EmbodiedSessions(p);sessions.actors['a']=actor
+            sessions=EmbodiedSessions(workspace(p));sessions.actors['a']=actor
             try:
                 with self.assertRaisesRegex(RuntimeError,'termination unconfirmed'):sessions.close(timeout=.01)
                 self.assertFalse(actor.closed)
@@ -165,7 +182,7 @@ class Tests(unittest.TestCase):
                     super().close()
                     if not self.allow_close:raise RuntimeError('termination unconfirmed')
             actor=BodyActor(RetryBody,Path(p)/'actor');actor.ready.result(2)
-            sessions=EmbodiedSessions(p);sessions.actors['a']=actor
+            sessions=EmbodiedSessions(workspace(p));sessions.actors['a']=actor
             try:
                 with self.assertRaisesRegex(RuntimeError,'termination unconfirmed'):sessions.command('a','close',{})
                 actor.thread.join(.02)

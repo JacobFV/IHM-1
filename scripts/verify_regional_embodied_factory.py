@@ -62,7 +62,7 @@ class FactoryTests(unittest.TestCase):
                 root,manifests=self.fixture(temporary);calls=[]
                 with self.patches(root,manifests,calls):
                     options={'regional_skin':True} if enabled else {}
-                    body=EmbodiedRuntime.from_workspace(root,root/'output',**options)
+                    body=EmbodiedRuntime.from_workspace(root,root/'output',source_pin=None,**options)
                 self.assertEqual([(k,c.engine_variant) for k,c in calls],[(kind,variant)])
                 self.assertIsNone(body.plant.arguments['surface_contact_manifest'])
                 receipt=json.loads((root/'output/manifest.json').read_text())
@@ -87,7 +87,7 @@ class FactoryTests(unittest.TestCase):
             path=root/'data/runtime/physiology/variants/whole_body_integrity_regional_skin_graph_v2/manifest.json'
             bad=json.loads(path.read_text());bad['parent_manifest_sha256']='changed';path.write_text(json.dumps(bad))
             with self.patches(root,manifests,calls),self.assertRaisesRegex(ValueError,'lineage manifest changed'):
-                EmbodiedRuntime.from_workspace(root,root/'output',regional_skin=True)
+                EmbodiedRuntime.from_workspace(root,root/'output',source_pin=None,regional_skin=True)
             self.assertEqual(calls,[])
             self.assertFalse((root/'output').exists())
 

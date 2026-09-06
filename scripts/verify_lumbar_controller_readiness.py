@@ -46,7 +46,7 @@ class Tests(unittest.TestCase):
             with fixture.patches(root,manifests,calls):
                 from ihm.assembly.articulated import ArticulatedBodyPlant
                 ArticulatedBodyPlant.muscle_catalog=rows
-                body=EmbodiedRuntime.from_workspace(root,root/'out',augmented_registration=REGISTRATION)
+                body=EmbodiedRuntime.from_workspace(root,root/'out',source_pin=None,augmented_registration=REGISTRATION)
                 self.assertEqual(body.plant.arguments['augmented_registration'],REGISTRATION)
                 receipt=json.loads((root/'out/manifest.json').read_text())
                 self.assertEqual(receipt['mechanical_registration_override']['model_sha256'],manifest['model_sha256'])
@@ -55,7 +55,7 @@ class Tests(unittest.TestCase):
             model=root/manifest['model_path'];raw=model.read_bytes();model.write_bytes(raw+b'changed')
             with patch('ihm.native.coupled_session.SignedCoupledNativeSession') as native:
                 with self.assertRaisesRegex(ValueError,'hash differs'):
-                    EmbodiedRuntime.from_workspace(root,root/'bad',augmented_registration=REGISTRATION)
+                    EmbodiedRuntime.from_workspace(root,root/'bad',source_pin=None,augmented_registration=REGISTRATION)
                 native.assert_not_called();self.assertFalse((root/'bad').exists())
             model.write_bytes(raw)
             outside=root/'outside';outside.write_bytes(raw);model.unlink();model.symlink_to(outside)

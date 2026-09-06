@@ -3,6 +3,7 @@
 Sites, contact areas, foundation stiffness and cortical recruitment are supplied
 by the caller. This adapter owns receptor state only, never the shared brain clock.
 """
+from ihm.brain.active_source import DEFAULT_SOURCE,resolve_source
 from copy import deepcopy
 import hashlib
 import inspect
@@ -59,7 +60,7 @@ class CutaneousFeedback:
     A temperature sample is a caller-supplied native skin temperature in degC,
     applied to each explicit site as a declared spatially uniform transfer prior.
     """
-    def __init__(self, root, *, sites, recruitment_hz_per_response, delay_s=0., source_pin=None):
+    def __init__(self, root, *, sites, recruitment_hz_per_response, delay_s=0., source_pin=DEFAULT_SOURCE):
         self.root = Path(root).resolve()
         self.recruitment = _number(recruitment_hz_per_response, 'recruitment gain', 0., 1e6)
         self.delay_s = _number(delay_s, 'conduction delay', 0., 10.)
@@ -108,7 +109,8 @@ class CutaneousFeedback:
                         raise ValueError(f'Explicit native {field} required')
             site['reference_temperature_C'] = _number(site.get('reference_temperature_C'), 'reference temperature', -100., 100.)
             self.sites[key] = site
-        backend = IBMBackend(self.root / 'data/derived/canonical/ibm-backend') if source_pin is None else IBMBackend(source_pin=source_pin)
+        source_pin=resolve_source(self.root,source_pin)
+        backend = IBMBackend(self.root / 'data/derived/canonical/ibm-backend',source_pin=None) if source_pin is None else IBMBackend(source_pin=source_pin)
         thermal = _ThermalBackend(backend)
         self.models, self.initial = {}, {}
         for key, site in self.sites.items():

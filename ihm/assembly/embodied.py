@@ -4,6 +4,7 @@ Mechanical/neural checkpoints are exact for their adapters. Native serializer
 exactness is not established: an uncertain native command aborts this runtime
 instead of claiming a whole-body rollback. The caller retains its native journal.
 """
+from ihm.brain.active_source import DEFAULT_SOURCE,resolve_source
 from copy import deepcopy
 import math
 from .intake_schedule import IntakeSchedule,IntakeEvent
@@ -32,7 +33,7 @@ def native_field_metadata(values):
     return result
 
 
-def bind_cutaneous(root,contacts,configuration,*,source_pin=None):
+def bind_cutaneous(root,contacts,configuration,*,source_pin=DEFAULT_SOURCE):
     """Bind explicit cortical recruitment priors to exact native material sites."""
     from .cutaneous_feedback import CutaneousFeedback
     if not isinstance(configuration,dict) or set(configuration)!={'regions','recruitment_hz_per_response','reference_temperature_C'}:
@@ -175,7 +176,7 @@ def _prepare_mechanical_registration(root,relative):
 
 class EmbodiedRuntime:
     @classmethod
-    def from_workspace(cls,root,output,*,environment='supine',state_path=None,surface_contact_manifest=None,cutaneous_configuration=None,bed_material=None,regional_skin=False,source_pin=None,intake_mass=False,augmented_registration=None,native_afferent_allocation=None):
+    def from_workspace(cls,root,output,*,environment='supine',state_path=None,surface_contact_manifest=None,cutaneous_configuration=None,bed_material=None,regional_skin=False,source_pin=DEFAULT_SOURCE,intake_mass=False,augmented_registration=None,native_afferent_allocation=None):
         if type(regional_skin) is not bool:raise ValueError('regional_skin must be a bool')
         if type(intake_mass) is not bool:raise ValueError('intake_mass must be a bool')
         from pathlib import Path
@@ -199,6 +200,7 @@ class EmbodiedRuntime:
         from .cutaneous_feedback import CutaneousFeedback
         root=Path(root).resolve();output=Path(output).resolve()
         if not output.is_relative_to(root) or output.exists():raise ValueError('Fresh retained embodied output required')
+        source_pin=resolve_source(root,source_pin)
         mechanical_frozen,mechanical_manifest,mechanical_catalog=({},None,None) if augmented_registration is None else _prepare_mechanical_registration(root,augmented_registration)
         candidate_frozen,candidate_loaded=_prepare_brain_candidate(root,source_pin)
         if native_afferent_allocation is not None:
@@ -230,7 +232,7 @@ class EmbodiedRuntime:
             'ihm.native.session','ihm.assembly.sensorimotor','ihm.assembly.sensorimotor_catalog',
             'ihm.assembly.brain','ihm.assembly.body_exchange','ihm.assembly.regional_exchange','ihm.assembly.body_microstructure',
             'ihm.assembly.cutaneous_feedback','ihm.brain.causal','ihm.brain.ibm_backend','ihm.brain.port_mapping',
-            'ihm.assembly.respiratory_feedback','ihm.assembly.embodied_respiration','ihm.assembly.intake_schedule','ihm.app.embodied')
+            'ihm.brain.active_source','ihm.assembly.respiratory_feedback','ihm.assembly.embodied_respiration','ihm.assembly.intake_schedule','ihm.app.embodied')
         if regional_skin:names+=('ihm.native.regional_session',)
         if intake_mass:names+=('ihm.assembly.intake_mass','ihm.native.instance_mass',)
         if native_afferent_allocation is not None:names+=('ihm.assembly.native_afferents','ihm.native.afferent_session',)

@@ -3,6 +3,7 @@
 Excitation is dimensionless. Native mechanics owns activation, fiber dynamics,
 force and work. No cortical label is treated as an identified motor policy.
 """
+from ihm.brain.active_source import DEFAULT_SOURCE,resolve_source
 from copy import deepcopy
 from dataclasses import asdict, dataclass
 import hashlib
@@ -48,8 +49,9 @@ class SensorimotorController:
     from the previous exchange; they share this brain integration and saturation.
     """
     @classmethod
-    def from_root(cls,root,*,source_pin=None,**kwargs):
+    def from_root(cls,root,*,source_pin=DEFAULT_SOURCE,**kwargs):
         root=Path(root)
+        source_pin=resolve_source(root,source_pin)
         paper=root/'data/raw/sensorimotor/geyer_herr_2010.pdf'
         if hashlib.sha256(paper.read_bytes()).hexdigest()!=SOURCE_SHA256:
             raise ValueError('Reflex primary source hash mismatch')

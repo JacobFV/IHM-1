@@ -70,12 +70,25 @@ class Tests(unittest.TestCase):
                 native.assert_not_called()
             finally:self.sessions.close(timeout=2)
 
-    def test_default_omits_candidate_pin(self):
+    def test_default_forwards_and_discloses_the_active_candidate(self):
+        from ihm.brain.active_source import ACTIVE_COMMIT,ACTIVE_MANIFEST_SHA256,ACTIVE_PACKAGE_SHA256
         with patch('ihm.assembly.embodied.EmbodiedRuntime.from_workspace',side_effect=lambda *a,**kw:FakeBody()) as factory:
             try:
                 result=self.sessions.create({});self.sessions.actors[result['id']].ready.result(2)
-                self.assertNotIn('source_pin',factory.call_args.kwargs)
-                self.assertNotIn('brain_source_selection',result)
+                pin=factory.call_args.kwargs['source_pin']
+                self.assertEqual(pin.artifact_dir,self.path)
+                self.assertEqual(result['brain_source_selection'],
+                    {'mode':'active_default','commit':ACTIVE_COMMIT,'manifest_sha256':ACTIVE_MANIFEST_SHA256,
+                     'package_sha256':ACTIVE_PACKAGE_SHA256,'neural_source_sha256':pin.neural_source_sha256})
+                for response in (self.sessions.list()['sessions'][0],self.sessions.command(result['id'],'snapshot')):
+                    self.assertEqual(response['brain_source_selection'],result['brain_source_selection'])
             finally:self.sessions.close(timeout=2)
+
+    def test_default_fails_closed_without_the_installed_active_candidate(self):
+        shutil.rmtree(self.path)
+        with patch('ihm.app.embodied.BodyActor') as actor:
+            with self.assertRaises(ValueError):self.sessions.create({})
+            actor.assert_not_called()
+        self.assertFalse((self.root/'data/derived/embodied-sessions').exists())
 
 if __name__=='__main__':unittest.main()

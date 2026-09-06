@@ -54,8 +54,8 @@ def run_touch(root,*,divisions=(32,32,16),indentation_m=.0001,dt_s=.002,duration
     if not np.isfinite(values).all() or not 0<indentation_m<=.0003 or not 0<dt_s<=.01 or not 0<=onset_s<release_s<duration_s<=10 or delay_s<0:
         raise ValueError('Invalid bounded regional pulse')
     if any(abs(x/dt_s-round(x/dt_s))>1e-8 for x in [onset_s,release_s,duration_s]):raise ValueError('Pulse boundaries must align to sample clock')
-    root=Path(root)
-    backend=IBMBackend(root/'data/derived/canonical/ibm-backend')
+    root=Path(root).resolve()
+    backend=IBMBackend(root=root)
     anchor=forearm_anchor(root);config=material_config()
     x,t=tetra_box((.01,.01,.003),divisions)
     solid=DeformableRegion(x,t,**{k:config[k] for k in ['mu_pa','lambda_pa','density_kg_m3']})
@@ -81,7 +81,8 @@ def run_touch(root,*,divisions=(32,32,16),indentation_m=.0001,dt_s=.002,duration
         response={kind:model.advance([indentation],dt_s)[0] for kind,model in receptors.items()}
         frames.append(sample((i+1)*dt_s,state,response))
     states={name:{**state,'positions_m':world(state['positions_m']).tolist()} for name,state in [('reference',reference),('loaded',loaded),('released',released)]}
-    paths=['ihm/assembly/regional_touch.py','ihm/assembly/mechanics_backend.py','ihm/brain/causal.py','ihm/brain/ibm_backend.py','ihm/brain/source_loader.py']
+    paths=['ihm/assembly/regional_touch.py','ihm/assembly/mechanics_backend.py','ihm/brain/causal.py','ihm/brain/ibm_backend.py','ihm/brain/source_loader.py','ihm/brain/active_source.py','ihm/brain/candidate.py']
+    _manifest=backend.artifact_dir/'manifest.json'
     return {'schema_version':1,'id':'forearm-contact-ibm','anchor':anchor,'material':config,
         'geometry':{'reference_positions_m':world(x).tolist(),'tetrahedra':t.tolist(),'local_dimensions_m':[.01,.01,.003],
             'domain_kind':'homogeneous reference volume tangent to pinned skin face; inferred thickness and planar footprint'},
@@ -89,7 +90,8 @@ def run_touch(root,*,divisions=(32,32,16),indentation_m=.0001,dt_s=.002,duration
         'states':states,'frames':frames,'receptors':{k:v.audit for k,v in receptors.items()},
         'checkpoints':{k:v.checkpoint() for k,v in receptors.items()},
         'runtime_sources':{p:hashlib.sha256((root/p).read_bytes()).hexdigest() for p in paths},
-        'source_hashes':{'data/derived/canonical/ibm-backend/manifest.json':hashlib.sha256((backend.artifact_dir/'manifest.json').read_bytes()).hexdigest()},
+        'source_hashes':{str(_manifest.relative_to(root)):hashlib.sha256(_manifest.read_bytes()).hexdigest()},
+        'executed_source':backend.identity_summary(),
         'coupling':{'solid_owner':'regional neo-Hookean reference solve','input':'computed normal surface displacement in m, converted exactly to um',
             'output':'signed donor response','native_blood_storage_connected':False,'whole_body_force_feedback':False,'calibrated_afferent_firing':False},
         'limitations':['Local planar homogeneous patch is an explicitly synthesized alternative materialization; no claim of exact layer partition or curved-surface conformity.',

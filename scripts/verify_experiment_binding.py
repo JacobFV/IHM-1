@@ -9,7 +9,9 @@ from ihm.assembly.regional_touch import run_touch
 with tempfile.TemporaryDirectory() as td:
     root=Path(td)
     try: run_touch(root,divisions=(2,2,2))
-    except FileNotFoundError as error: assert 'IBM artifact missing' in str(error),str(error)
+    # The active default is resolved inside the selected workspace, so an empty one
+    # must name that workspace in its refusal rather than reach the installed source.
+    except ValueError as error: assert 'Invalid server-owned IBM candidate' in str(error) and str(root.resolve()) in str(error),str(error)
     else: raise AssertionError('A workspace without an IBM import used another workspace')
     directory=root/'data/derived/canonical';directory.mkdir(parents=True)
     source=root/'mechanics.py';source.write_text('original')

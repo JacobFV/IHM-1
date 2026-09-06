@@ -108,7 +108,7 @@ class FactoryTests(unittest.TestCase):
                         super().__init__();self.config=config;calls.append(config.engine_variant);output.mkdir(parents=True)
                         (output/'manifest.json').write_text(json.dumps({'library_sha256':manifests[config.engine_variant]['library_sha256'],'executable_sha256':'fixture','state_sha256':'fixture','patient_identity':{'Weight':{'unit':'kg','value':70}}}))
                 with fixtures.patches(root,manifests,[]),patch('ihm.assembly.articulated.ArticulatedBodyPlant',FactoryPlant),patch('ihm.native.coupled_session.SignedCoupledNativeSession',FactoryNative),patch('ihm.native.regional_session.RegionalSignedNativeSession',FactoryNative):
-                    body=EmbodiedRuntime.from_workspace(root,root/'out',intake_mass=True,regional_skin=regional)
+                    body=EmbodiedRuntime.from_workspace(root,root/'out',source_pin=None,intake_mass=True,regional_skin=regional)
                 receipt=json.loads((root/'out/manifest.json').read_text());binding_raw=(root/'out/intake_mass_binding.json').read_bytes()
                 self.assertTrue(receipt['intake_mass']);self.assertEqual(receipt['regional_skin'],regional)
                 self.assertEqual(body.plant.options['instance_mass_variant'],'data/runtime/opensim/variants/instance_mass_v1')

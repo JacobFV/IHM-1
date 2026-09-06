@@ -205,11 +205,19 @@ class ImplicitHuman:
             if not path.is_relative_to(self.root) or digest(path)!=asset['sha256']:raise ValueError('Evidence changed: '+key+'; reopen or rebuild the substrate')
             self._cache[key]=json.loads(path.read_text())
         return deepcopy(self._cache[key])
+    def _executed_neural_source(self):
+        """Identity of the law the brain materializations execute, not the baseline asset."""
+        from ihm.brain.active_source import resolve_source
+        try:pin=resolve_source(self.root)
+        except ValueError as error:return {'available':False,'reason':str(error)}
+        return {'available':True,**pin.to_dict()}
+
     def describe(self):
         result=dict(schema_version=1,kind='heterogeneous_implicit_human',coverage=self._read('coverage')['summary'] if 'coverage' in self.assets else {},
             materializations=[name for name,key in [('population','population'),('skin-field','skin_field'),('skin-lymph','skin_lymph'),('temporal','temporal'),('native','native'),('opensim','opensim'),('reproductive','reproductive'),('csf','csf'),('thermal','thermal'),('body','canonical_body'),('ibm-causal','ibm_source'),('body-touch','canonical_microvascular'),('body-skin-transport','canonical_microvascular'),('body-skin-electric','canonical_microvascular'),('kidney-arterial-geometry','kidney_graph')] if key in self.assets and all(k in self.assets for k in {'body':CANONICAL_ASSETS,'body-touch':('ibm_source','canonical_anatomy'),'body-skin-transport':('skin_lymph','canonical_anatomy'),'body-skin-electric':('skin_field','canonical_anatomy'),'kidney-arterial-geometry':('kidney_card','kidney_statistics')}.get(name,()))],
             temporal_runs=[r['id'] for r in self._read('temporal')['runs']] if 'temporal' in self.assets else [],
             assets=deepcopy(self.assets),independently_validated_whole_human=False,
+            executed_neural_source=self._executed_neural_source(),
             coupling='Native systems are coupled inside their source engine. The canonical body assembles registered anatomy, mechanics and brain state with explicit physiological drivers and source assumptions.',
             limitations=['No universal coefficient calibration or complete patient digital twin.',
                 'Population covariance predicts concurrent measured states; it does not identify causal dynamics.',
@@ -298,11 +306,16 @@ class ImplicitHuman:
                 if key not in self.assets:raise ValueError('Required evidence unavailable: '+key)
                 if digest(self.root/self.assets[key]['path'])!=self.assets[key]['sha256']:
                     raise ValueError('Evidence changed: '+key+'; reopen the implicit body')
+            if kind in ('ibm-causal','body-touch'):
+                # The ibm_source asset is the retained baseline; these two kinds execute
+                # the active source, so gate on the artifact that actually runs as well.
+                from ihm.brain.active_source import resolve_source
+                resolve_source(self.root)
             if kind=='ibm-causal':
                 from ihm.brain.ibm_backend import IBMBackend
                 from ihm.brain.causal import CausalIBM
                 response_kind=options.pop('response_kind','rapid')
-                return CausalIBM(IBMBackend(self.root/'data/derived/canonical/ibm-backend'),kind=response_kind,**options)
+                return CausalIBM(IBMBackend(root=self.root),kind=response_kind,**options)
             sources={self.assets[key]['path']:self.assets[key]['sha256'] for key in required}
             if kind=='body-touch':return RegionalTouchPredictor(self.root,deepcopy(options),sources)
             if kind=='body-skin-electric':return RegionalElectricPredictor(self.root,deepcopy(options),sources)

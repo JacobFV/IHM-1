@@ -160,6 +160,8 @@ class CanonicalBody:
         result=dict(runtime_sources=self.payload['runtime_sources'],schema_version=2,model_id='ihm-body',body_interventions=protocol,frames=frames,centroids_m={id:e['centroid_m'] for id,e in self.entities.items()},
             clock={'start_s':series['time_s'][0],'end_s':series['time_s'][-1],'native_samples':len(series['time_s']),'requested_output_hz':output_hz,'integration':'transactional reduced body intervals; motor/sensory outputs applied on subsequent interval','coupling_mode':'native_replay','interpolation':'native compartments linear only at intervention boundaries; physiology held from native interval endpoint; output on first native sample at/after display interval','playback':'recorded finite trajectory; no extrapolation'},
             sources={**self.payload['sources'],'native_run':{'directory':str(native_directory.resolve()),'files':series['input_hashes']}},
+            executed_neural_source=dict(runtime.brain.source_identity),
+            executed_neural_source_basis='The brain asset declares a retained baseline path; this records the law that actually integrated these frames.',
             volume_bindings=self.payload['volume_bindings'],coupling_contract=self.payload['coupling_contract'],
             display_numerics={'sparse_transform_component_tolerance':tolerance,'missing_entity_transform':'identity at reference centroid, never hold last value','geometry_reduction_applied':False,'biological_accuracy':None},
             audit={'maximum_internal_force_residual_n':max_force_residual,'maximum_internal_torque_residual_nm':max_torque_residual,'validated_digital_twin':False},limitations=self.payload['limitations'])

@@ -5,6 +5,7 @@ y_hat=H*x_hat/(i*omega+1). It is not a causal online filter or a calibrated
 receptor voltage. No copied IHM transfer formula is used to generate output.
 """
 from dataclasses import dataclass
+from ihm.brain.active_source import DEFAULT_SOURCE,resolve_source
 from pathlib import Path
 import hashlib
 import inspect
@@ -24,7 +25,12 @@ class WindowResult:
 
 
 class IBMBackend:
-    def __init__(self, artifact_dir=None, *, source_pin=None):
+    def __init__(self, artifact_dir=None, *, source_pin=DEFAULT_SOURCE, root=None):
+        # Naming an artifact directory selects that artifact. Only an unaddressed
+        # backend takes the active default, so a positional legacy caller keeps
+        # reaching the legacy verification instead of a pin-mismatch error.
+        if source_pin is DEFAULT_SOURCE and artifact_dir is not None:source_pin=None
+        source_pin=resolve_source(root or Path(__file__).resolve().parents[2],source_pin)
         self.source_pin = source_pin
         if source_pin is not None:
             from .candidate import verify_pin
@@ -62,6 +68,14 @@ class IBMBackend:
         import ibm
         ibm.load_all()
         self.registry = ibm.REGISTRY
+
+    def identity_summary(self):
+        """The law this backend actually executed, independent of any declared path."""
+        return {'selection':'legacy independently preserved regional law' if self.source_pin is None
+                    else 'active immutable candidate',
+                'artifact_dir':str(self.artifact_dir),
+                'package_sha256':self.identity['package_sha256'],
+                'source_pin':None if self.source_pin is None else self.source_pin.to_dict()}
 
     @staticmethod
     def basis(n, dt_s):

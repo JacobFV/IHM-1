@@ -8,6 +8,7 @@ from __future__ import annotations
 import ast
 import hashlib
 import math
+from ihm.brain.active_source import DEFAULT_SOURCE,resolve_source
 from pathlib import Path
 import numpy as np
 
@@ -31,6 +32,9 @@ def verify_sources(data, root=None):
 
 
 def _load_rate_law(data, root, source_pin=None):
+    # verify_sources checks the retained baseline bytes. When a pin is active that
+    # baseline is NOT what executes, so the caller must resolve before arriving here.
+    if source_pin is DEFAULT_SOURCE:raise ValueError('Unresolved source selection reached the rate law')
     verify_sources(data, root)
     if source_pin is not None:
         from ihm.brain.ibm_backend import IBMBackend
@@ -56,12 +60,13 @@ class BodyBrain:
     """Reusable regional ODE with independent state and explicit input/output ports."""
 
     @classmethod
-    def from_dict(cls, data, *, root=None, max_step_s=.001, source_pin=None):
+    def from_dict(cls, data, *, root=None, max_step_s=.001, source_pin=DEFAULT_SOURCE):
         return cls(data, root=root, max_step_s=max_step_s, source_pin=source_pin)
 
-    def __init__(self, data, *, root=None, max_step_s=.001, source_pin=None):
+    def __init__(self, data, *, root=None, max_step_s=.001, source_pin=DEFAULT_SOURCE):
         if not math.isfinite(max_step_s) or not 0 < max_step_s <= .002:
             raise ValueError('max_step_s must be in (0, 0.002] for the 5 ms source rate relaxation')
+        source_pin=resolve_source(root or ROOT,source_pin)
         self.data = data
         self.max_step_s = max_step_s
         self.source_rate_law, self.source_inhibition_law = _load_rate_law(data, Path(root or ROOT), source_pin)

@@ -38,7 +38,7 @@ def probe(hot_swap=False):
         pin=capture_candidate(ROOT.parent/'IBM-1',root/'candidate')
         calls=[]
         if hot_swap:
-            IBMBackend()
+            IBMBackend(source_pin=None)
             with fixture.patches(root,manifests,calls):
                 try:EmbodiedRuntime.from_workspace(root,root/'out',source_pin=pin)
                 except RuntimeError as error:assert 'fresh process' in str(error)

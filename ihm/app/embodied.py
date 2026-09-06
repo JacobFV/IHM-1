@@ -1,44 +1,10 @@
 """Demand-stepped native body actors: one controller thread per live body."""
 from concurrent.futures import Future
 from pathlib import Path
-import gzip,hashlib,json,os,queue,re,threading,time,uuid
+import gzip,hashlib,json,os,queue,threading,time,uuid
 
 
-def resolve_ibm_candidate(root,selector):
-    """Resolve only server-installed commit directories; never import candidate code."""
-    from ihm.brain.candidate import SourcePin,verify_pin
-    if (not isinstance(selector,dict) or set(selector)!={'commit','manifest_sha256'}
-        or not isinstance(selector['commit'],str) or not re.fullmatch('[0-9a-f]{40}',selector['commit'])
-        or not isinstance(selector['manifest_sha256'],str) or not re.fullmatch('[0-9a-f]{64}',selector['manifest_sha256'])):
-        raise ValueError('ibm_candidate requires exact commit and manifest_sha256 identities')
-    root=Path(root).absolute()
-    candidate=root/'data/derived/ibm-candidates'/selector['commit']
-    try:
-        # Check before resolve: SourcePin canonicalizes paths and would hide links.
-        if any(path.is_symlink() for path in (candidate,*candidate.parents)):
-            raise ValueError('Candidate directory ancestors may not be symlinks')
-        entries=list(candidate.rglob('*'))
-        if any(path.is_symlink() or not (path.is_file() or path.is_dir()) for path in entries):
-            raise ValueError('Candidate entries must be ordinary files and directories')
-        if {path.name for path in candidate.iterdir()}!={'source','manifest.json','source_pin.json'}:
-            raise ValueError('Candidate root has missing or extra entries')
-        raw=json.loads((candidate/'source_pin.json').read_bytes())
-        if raw.get('artifact_dir')!=str(candidate) or raw.get('manifest_sha256')!=selector['manifest_sha256']:
-            raise ValueError('Candidate pin does not match server location and requested identity')
-        pin=SourcePin.load(candidate/'source_pin.json')
-        if raw!=pin.to_dict():raise ValueError('Candidate pin has unexpected fields')
-        manifest,_=verify_pin(pin)
-        if manifest.get('donor_commit')!=selector['commit']:
-            raise ValueError('Candidate commit does not match requested identity')
-        expected={Path('source'),Path('manifest.json'),Path('source_pin.json')}
-        for name in manifest['files']:
-            relative=Path('source')/name
-            expected.add(relative);expected.update(p for p in relative.parents if p!=Path('.'))
-        if {path.relative_to(candidate) for path in entries}!=expected:
-            raise ValueError('Candidate contains unexpected directories or files')
-        return pin
-    except (OSError,KeyError,TypeError,ValueError) as error:
-        raise ValueError('Invalid server-owned IBM candidate: '+str(error)) from error
+from ihm.brain.active_source import resolve_ibm_candidate,resolve_source,ACTIVE_COMMIT
 
 
 class BodyActor:
@@ -168,7 +134,8 @@ class EmbodiedSessions:
         if type(regional_skin) is not bool:raise ValueError('regional_skin must be boolean')
         environment=data.get('environment','supine')
         if environment not in ('free','supine','upright'):raise ValueError('Unknown articulated environment')
-        source_pin=resolve_ibm_candidate(self.root,data['ibm_candidate']) if 'ibm_candidate' in data else None
+        explicit='ibm_candidate' in data
+        source_pin=resolve_ibm_candidate(self.root,data['ibm_candidate']) if explicit else resolve_source(self.root)
         with self.lock:
             if self.shutting_down:raise RuntimeError('Embodied service is shutting down')
             if self.creating or any(not a.closed for a in self.actors.values()):raise ValueError('One native body at a time while sharing machine resources')
@@ -176,18 +143,18 @@ class EmbodiedSessions:
         try:
             from ihm.assembly.embodied import EmbodiedRuntime
             ident=uuid.uuid4().hex;output=self.root/'data/derived/embodied-sessions'/ident
-            options={'environment':environment,'regional_skin':regional_skin,'intake_mass':intake_mass}
-            if source_pin is not None:options['source_pin']=source_pin
-            selected=dict(data['ibm_candidate']) if source_pin is not None else None
+            options={'environment':environment,'regional_skin':regional_skin,'intake_mass':intake_mass,'source_pin':source_pin}
+            # The active default is a candidate like any other: re-resolved on the
+            # owner thread and disclosed, never an unreported implicit selection.
+            selected=dict(data['ibm_candidate']) if explicit else {'commit':ACTIVE_COMMIT,'manifest_sha256':source_pin.manifest_sha256}
             def factory():
-                if selected is not None and resolve_ibm_candidate(self.root,selected)!=source_pin:
+                if resolve_ibm_candidate(self.root,selected)!=source_pin:
                     raise ValueError('Candidate source pin changed before initialization')
                 return EmbodiedRuntime.from_workspace(self.root,output/'runtime',**options)
             actor=BodyActor(factory,output)
-            if source_pin is not None:
-                actor.brain_source_selection={'mode':'immutable_candidate','commit':selected['commit'],
-                    'manifest_sha256':source_pin.manifest_sha256,'package_sha256':source_pin.package_sha256,
-                    'neural_source_sha256':source_pin.neural_source_sha256}
+            actor.brain_source_selection={'mode':'immutable_candidate' if explicit else 'active_default',
+                'commit':selected['commit'],'manifest_sha256':source_pin.manifest_sha256,
+                'package_sha256':source_pin.package_sha256,'neural_source_sha256':source_pin.neural_source_sha256}
 
             # Timeout must not orphan initialization or free its resource slot.
             with self.lock:

@@ -65,7 +65,7 @@ def probe(path):
         microcircuit_prior.HUMAN,microcircuit_prior.KINETICS,vascular_prior.MEASURED))
     from ihm.assembly.sensorimotor import SensorimotorController
     controller=SensorimotorController.from_root(ROOT,source_pin=pin)
-    legacy=SensorimotorController.from_root(ROOT)
+    legacy=SensorimotorController.from_root(ROOT,source_pin=None)
     assert controller.model_sha256!=legacy.model_sha256
     before=controller.checkpoint()
     try:controller.restore(legacy.checkpoint())
@@ -95,7 +95,7 @@ def probe(path):
     result=skin.step(.01,{'time_s':0.,'contacts':[{'id':'fixture','force_n':[0,0,-1]}],'skin_temperature_C':33.})
     output=brain.step(.01,sensory_inputs_hz=result['sensory_inputs_hz'])
     assert np.isfinite(output['regional_state']['activity_hz']).all()
-    try:IBMBackend()
+    try:IBMBackend(source_pin=None)
     except RuntimeError:pass
     else:raise AssertionError('Source identity hot-swap accepted')
     print(json.dumps({'package_sha256':pin.package_sha256,'inhibition_probe_old_mV_s':old,'inhibition_probe_candidate_mV_s':new,'shared_identity':brain.source_identity['package_sha256']==skin.audit['package_sha256']==backend.identity['package_sha256']}))
