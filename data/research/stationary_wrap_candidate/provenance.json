@@ -1,0 +1,95 @@
+{
+  "schema": "ihm.stationary-wrap-evidence.v1",
+  "files": {
+    "data/derived/stationary-wrap-candidate-4xo9l1c6/manifest.json": "551123d5c49fdd232495c4344ae50b1721216a2aebd195ebe44a5eca47699802",
+    "data/derived/stationary-wrap-candidate-4xo9l1c6/models/manifest.json": "a39f5d23db7a3ad2a5165373c811816fd5ae4a09a22d67d5bd9d93237bd9d9d1",
+    "data/derived/stationary-wrap-candidate-4xo9l1c6/models/candidate.osim": "5224bf46aa87c20665d153dfe0c0c35f828ad08a9c1cada1bbe337cb8fac303a",
+    "data/derived/stationary-wrap-candidate-4xo9l1c6/models/observed.osim": "39da82e489d5b7dd9869b0b258e3f2050501d1dfa1f73636965f1fdfaa57321b",
+    "data/derived/stationary-wrap-candidate-4xo9l1c6/observed.csv": "296342467ae3a0113cac6c504bde9e692c66f672971555a76c6efff12e191f15",
+    "data/derived/stationary-wrap-candidate-4xo9l1c6/candidate.csv": "d8cf1e76ccc9e35593486e9b503c68ff9c39ed6b6e7e34acb98f32913b2720dc",
+    "data/derived/stationary-wrap-candidate-4xo9l1c6/observed.jsonl": "96b9e5a90eb7964541f258474f972e2619b058f8395101d3cecfd9759b23fb89",
+    "data/derived/stationary-wrap-candidate-4xo9l1c6/candidate.jsonl": "7f92eee713a401d7b4f7a4f68c8d69f51b1fd8d42ace022a58faf55f6d78394c",
+    "data/derived/stationary-wrap-candidate-4xo9l1c6/compile.log": "22788f467bc253bfac66d82fd81f811df20f645dfd513922ba81f2b0f0f94fea",
+    "data/derived/stationary-wrap-candidate-4xo9l1c6/observed.log": "60eeba44cc7885deb02ee804926bbbcaa51d1143ae94a43badb06127fe933eca",
+    "data/derived/stationary-wrap-candidate-4xo9l1c6/candidate.log": "60eeba44cc7885deb02ee804926bbbcaa51d1143ae94a43badb06127fe933eca"
+  },
+  "rejections": [
+    {
+      "case": "range_arm_flex_r_0.25:arm26_BIClong_r",
+      "rejection": "unsupported ellipsoid no-wrap branch"
+    },
+    {
+      "case": "range_arm_flex_r_1:arm26_BIClong_r",
+      "rejection": "geodesic quadrant/surface/speed drift"
+    },
+    {
+      "case": "range_arm_add_r_0:arm26_BIClong_r",
+      "rejection": "geodesic quadrant/surface/speed drift"
+    },
+    {
+      "case": "range_arm_add_r_0.25:arm26_BIClong_r",
+      "rejection": "geodesic left native contact branch neighborhood"
+    },
+    {
+      "case": "range_arm_add_r_1:arm26_BIClong_r",
+      "rejection": "geodesic quadrant/surface/speed drift"
+    },
+    {
+      "case": "range_arm_rot_r_0:arm26_BIClong_r",
+      "rejection": "unsupported ellipsoid no-wrap branch"
+    },
+    {
+      "case": "range_arm_rot_r_0.25:arm26_BIClong_r",
+      "rejection": "unsupported ellipsoid no-wrap branch"
+    },
+    {
+      "case": "range_arm_rot_r_1:arm26_BIClong_r",
+      "rejection": "unsupported ellipsoid no-wrap branch"
+    },
+    {
+      "case": "range_arm_flex_l_0.25:arm26_BIClong_l",
+      "rejection": "unsupported ellipsoid no-wrap branch"
+    },
+    {
+      "case": "range_arm_flex_l_1:arm26_BIClong_l",
+      "rejection": "geodesic quadrant/surface/speed drift"
+    },
+    {
+      "case": "range_arm_add_l_0:arm26_BIClong_l",
+      "rejection": "geodesic quadrant/surface/speed drift"
+    },
+    {
+      "case": "range_arm_add_l_0.25:arm26_BIClong_l",
+      "rejection": "geodesic left native contact branch neighborhood"
+    },
+    {
+      "case": "range_arm_add_l_1:arm26_BIClong_l",
+      "rejection": "geodesic quadrant/surface/speed drift"
+    },
+    {
+      "case": "range_arm_rot_l_0:arm26_BIClong_l",
+      "rejection": "unsupported ellipsoid no-wrap branch"
+    },
+    {
+      "case": "range_arm_rot_l_0.25:arm26_BIClong_l",
+      "rejection": "unsupported ellipsoid no-wrap branch"
+    },
+    {
+      "case": "range_arm_rot_l_1:arm26_BIClong_l",
+      "rejection": "unsupported ellipsoid no-wrap branch"
+    }
+  ],
+  "rejection_counts": {
+    "unsupported ellipsoid no-wrap branch": 8,
+    "geodesic quadrant/surface/speed drift": 6,
+    "geodesic left native contact branch neighborhood": 2
+  },
+  "source_files": {
+    "scripts/arm26_stationary_ellipsoid.h": "85f2d74112144c83444447f2f8481deae7fed29cd96f5004cfecba7a89badfaf",
+    "scripts/native_stationary_wrap_probe.cpp": "fc98de0b70cd15bc922a73ad0611ddeb2924d4427013062f935174db0dfab841",
+    "scripts/materialize_stationary_wrap_probe.py": "e537bae6008c7ae96efc83bc10c0b3fb78b54f85e65f013d2423a3f521442f24",
+    "scripts/run_stationary_wrap_probe.py": "b6f17714253c12cd39b618eab93f49168686ae4be261299a0e99ba985afd37d5",
+    "scripts/ellipsoid_geodesic_reference.py": "4b9b84a22a2cd634475cfbb85e017fc010eed98c64194f304596241cffca8246"
+  },
+  "native_promoted": false
+}

@@ -1,0 +1,79 @@
+{
+  "status": "analyzed",
+  "output": "data/derived/stationary-wrap-candidate-4xo9l1c6",
+  "cases_per_variant": 104,
+  "unchanged_other_muscle_observations": 9776,
+  "accepted_corrected_wrap_observations": 400,
+  "rejected_observations": [
+    {
+      "case": "range_arm_flex_r_0.25",
+      "muscle": "arm26_BIClong_r"
+    },
+    {
+      "case": "range_arm_flex_r_1",
+      "muscle": "arm26_BIClong_r"
+    },
+    {
+      "case": "range_arm_add_r_0",
+      "muscle": "arm26_BIClong_r"
+    },
+    {
+      "case": "range_arm_add_r_0.25",
+      "muscle": "arm26_BIClong_r"
+    },
+    {
+      "case": "range_arm_add_r_1",
+      "muscle": "arm26_BIClong_r"
+    },
+    {
+      "case": "range_arm_rot_r_0",
+      "muscle": "arm26_BIClong_r"
+    },
+    {
+      "case": "range_arm_rot_r_0.25",
+      "muscle": "arm26_BIClong_r"
+    },
+    {
+      "case": "range_arm_rot_r_1",
+      "muscle": "arm26_BIClong_r"
+    },
+    {
+      "case": "range_arm_flex_l_0.25",
+      "muscle": "arm26_BIClong_l"
+    },
+    {
+      "case": "range_arm_flex_l_1",
+      "muscle": "arm26_BIClong_l"
+    },
+    {
+      "case": "range_arm_add_l_0",
+      "muscle": "arm26_BIClong_l"
+    },
+    {
+      "case": "range_arm_add_l_0.25",
+      "muscle": "arm26_BIClong_l"
+    },
+    {
+      "case": "range_arm_add_l_1",
+      "muscle": "arm26_BIClong_l"
+    },
+    {
+      "case": "range_arm_rot_l_0",
+      "muscle": "arm26_BIClong_l"
+    },
+    {
+      "case": "range_arm_rot_l_0.25",
+      "muscle": "arm26_BIClong_l"
+    },
+    {
+      "case": "range_arm_rot_l_1",
+      "muscle": "arm26_BIClong_l"
+    }
+  ],
+  "maximum_accepted_wrap_virtual_work_error_m": 2.7755575142194085e-10,
+  "candidate_gradient_gate_passed": true,
+  "whole_source_range_certified": false,
+  "native_time_advanced_s": 0,
+  "wall_s": 12.759858427991276,
+  "executable_sha256": "6415684a3a8ff7affdd9fa9ee75616ab3396a563f830fe7295e2fafa5e49d018"
+}

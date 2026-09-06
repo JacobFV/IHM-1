@@ -1,0 +1,22 @@
+{
+  "passed": true,
+  "wall_s": 0.9086998629936716,
+  "native_seed_cases": [
+    {
+      "side": "r",
+      "length_m": 0.046619715930366186,
+      "arc_m": 0.018536844311512805,
+      "maximum_endpoint_gradient_error": 5.0690007746823085e-11,
+      "shooting_residual": 6.294528242633925e-16,
+      "seed_shift_m": 7.900056872527233e-05
+    },
+    {
+      "side": "l",
+      "length_m": 0.04788416732208424,
+      "arc_m": 0.019492777982116204,
+      "maximum_endpoint_gradient_error": 6.73585631716378e-11,
+      "shooting_residual": 2.2030848849218738e-15,
+      "seed_shift_m": 0.00018130151486972452
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "passed": true,
+  "native_corrected_observations": 400,
+  "maximum_speed_vs_length_derivative_error_m_s": 1.9428902786655994e-11,
+  "maximum_unit_tension_power_error_W": 1.2462468484717934e-17,
+  "maximum_unit_resultant_force_N": 1.5700924586837752e-16,
+  "maximum_unit_resultant_moment_Nm": 5.662749647834299e-16,
+  "independent_geodesic_and_repeat_checks": [
+    {
+      "side": "r",
+      "native_DOP853_reference_error_m": 2.873881688181257e-13,
+      "repeated_seed_contact_span_m": 2.6393177864558606e-15,
+      "repeated_seed_cases": 8
+    },
+    {
+      "side": "l",
+      "native_DOP853_reference_error_m": 3.5548994303802317e-13,
+      "repeated_seed_contact_span_m": 2.7499178382149962e-15,
+      "repeated_seed_cases": 8
+    }
+  ]
+}
