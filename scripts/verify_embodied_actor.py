@@ -15,6 +15,22 @@ class FakeBody:
     def close(self):assert threading.get_ident()==self.owner
 
 class Tests(unittest.TestCase):
+    def test_intake_mass_configuration_is_explicit_bool_and_forwarded(self):
+        with tempfile.TemporaryDirectory() as p:
+            sessions=EmbodiedSessions(p)
+            with patch('ihm.app.embodied.BodyActor') as actor:
+                for value in (1,None,'true',[]):
+                    with self.subTest(value=value),self.assertRaisesRegex(ValueError,'intake_mass must be boolean'):
+                        sessions.create({'intake_mass':value})
+                actor.assert_not_called()
+            with patch('ihm.assembly.embodied.EmbodiedRuntime.from_workspace',side_effect=lambda *args,**kwargs:FakeBody()) as factory:
+                try:
+                    result=sessions.create({'intake_mass':True,'regional_skin':True})
+                    sessions.actors[result['id']].ready.result(2)
+                    self.assertIs(factory.call_args.kwargs['intake_mass'],True)
+                    self.assertIs(factory.call_args.kwargs['regional_skin'],True)
+                finally:sessions.close(timeout=2)
+
     def test_regional_configuration_validates_before_starting_owner(self):
         with tempfile.TemporaryDirectory() as p:
             sessions=EmbodiedSessions(p)
