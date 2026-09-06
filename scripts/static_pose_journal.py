@@ -14,13 +14,23 @@ def digest(value):
 
 
 class PoseJournal:
-    def __init__(self,directory,identity,resume=None):
+    def __init__(self,directory,identity,resume=None,reuse_native_only=False):
         self.directory=Path(directory);self.directory.mkdir(parents=True,exist_ok=True)
         self.identity=identity;self.cache={}
         (self.directory/'cache_identity.json').write_text(json.dumps(identity,indent=2,allow_nan=False)+'\n')
         if resume is not None:
             resume=Path(resume)
-            if json.loads((resume/'cache_identity.json').read_text())!=identity:
+            previous=json.loads((resume/'cache_identity.json').read_text())
+            if reuse_native_only:
+                if previous.get('schema')!='ihm.static-pose-cache.v1' or not previous.get('source_sha256') or not previous.get('build_files'):
+                    raise ValueError('Unrecognized native evaluation cache schema')
+                omitted={'protocol_sha256','journal_sha256','solver_sha256'}
+                native_identity=lambda value:{k:v for k,v in value.items() if k not in omitted}
+                if native_identity(previous)!=native_identity(identity):raise ValueError('Native evaluation identity changed during solver migration')
+                (self.directory/'cache_recovery.json').write_text(json.dumps(dict(previous_identity=previous,
+                    current_identity=identity,ignored_solver_metadata=sorted(omitted),
+                    scope='Reuse exact native responses; unchanged native build/input/protocol and coordinate domain required'),indent=2)+'\n')
+            elif previous!=identity:
                 raise ValueError('Static cache source/protocol identity mismatch')
             for line in (resume/'candidates.jsonl').read_text().splitlines():
                 record=json.loads(line);payload=record['payload']

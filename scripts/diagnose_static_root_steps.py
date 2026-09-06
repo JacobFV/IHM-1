@@ -4,6 +4,7 @@ import argparse,json,sys
 import numpy as np
 from scipy.optimize import least_squares
 from static_pose_journal import digest
+from bounded_static_root import interior_origin,local_step
 
 
 def compare(directory):
@@ -29,6 +30,11 @@ def compare(directory):
                 ftol=None,xtol=None,gtol=1e-10,max_nfev=6,callback=lambda d:history.append(d.tolist()))
             results[origin_name+'_'+method]={'residual_norm':float(np.linalg.norm(result.fun)),'evaluations':result.nfev,
                  'maximum_q_change':float(np.max(np.abs(result.x))),'first_step_max':None if not history else float(np.max(np.abs(history[0])))}
+    bounded_q=interior_origin(q,bounds);steps=[]
+    for _ in range(6):
+        residual=a+matrix@(bounded_q-q);step=local_step(matrix,residual,bounded_q,bounds);bounded_q+=step
+        steps.append(dict(maximum_step=float(np.max(np.abs(step))),surrogate_residual_norm=float(np.linalg.norm(a+matrix@(bounded_q-q)))))
+    results['bounded_local_newton']=steps
     return dict(native_run=False,scope='Frozen first-Jacobian linear surrogate only; no actual changed-pose physics or material-domain verification',
         source_cache_identity=digest(identity),initial_residual_norm=float(np.linalg.norm(a)),comparison=results)
 

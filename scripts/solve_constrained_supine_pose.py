@@ -6,6 +6,7 @@ from scipy.optimize import minimize,NonlinearConstraint,Bounds,least_squares
 ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT));sys.path.insert(0,str(ROOT/'scripts'))
 from build_supine_initial_state import analyze,recipe
 from static_pose_journal import PoseJournal,pose_key
+from bounded_static_root import interior_origin,local_step
 
 
 def dynamic_metric(native):
@@ -104,13 +105,14 @@ def run(seed_path,material,resume_path=None,resume_cache=None,mode='constrained'
         execution=json.loads((output/'native/execution.json').read_text())
         identity=dict(schema='ihm.static-pose-cache.v1',protocol_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
             journal_sha256=hashlib.sha256((ROOT/'scripts/static_pose_journal.py').read_bytes()).hexdigest(),
+            solver_sha256=hashlib.sha256((ROOT/'scripts/bounded_static_root.py').read_bytes()).hexdigest(),
             source_sha256=execution['source_sha256'],build_files=execution['build']['files'],
             material=material,mass_kg=77.6122029,environment='supine',mode=mode,coordinate_order=names,
             held_gauges={n:seed[n] for n in gauges},bounds=bounds,
             surface_manifest_sha256=hashlib.sha256(manifest_path.read_bytes()).hexdigest())
         # JSON normalization keeps tuples/lists identical after disk round-trip.
         identity=json.loads(json.dumps(identity))
-        journal=PoseJournal(output,identity,resume_cache);cache=journal.cache
+        journal=PoseJournal(output,identity,resume_cache,reuse_native_only=resume_cache is not None);cache=journal.cache
         report['recovered_evaluations']=len(cache)
         for entry in cache.values():
             dynamic_metric(entry['native'])
@@ -138,21 +140,30 @@ def run(seed_path,material,resume_path=None,resume_cache=None,mode='constrained'
             write('last_optimizer_iterate.json',entry)
             return False
         if mode=='acceleration-root':
-            # Zero-origin displacement gives the bounded TRF method a local first
-            # step (~.03 in coordinate units), independent of absolute pelvis q.
-            def root_jacobian(delta):
-                q=x0+delta;base=acceleration_residual(evaluate(q)['native'])
-                jac=np.zeros((len(base),len(q)))
+            q=interior_origin(x0,bounds)
+            report['local_solver']=dict(method='bounded variable least-squares Newton step plus backtracking',
+                maximum_coordinate_step=.03,interior_margin=1e-12,maximum_iterations=10,
+                maximum_backtracks=6,origin_coordinate_changes={name:float(v-x0[i]) for i,(name,v) in enumerate(zip(names,q)) if v!=x0[i]})
+            success=False;message='Local Newton iteration cap'
+            for iteration in range(10):
+                current=evaluate(q)
+                if static_converged(current):success=True;message='All static checks passed';break
+                acceleration=acceleration_residual(current['native']);jac=np.zeros((len(acceleration),len(q)))
                 for index,(lo,hi) in enumerate(bounds):
                     step=1e-5 if q[index]+1e-5<=hi else -1e-5
                     shifted=q.copy();shifted[index]+=step
-                    jac[:,index]=(acceleration_residual(evaluate(shifted)['native'])-base)/step
-                return jac
-            result=least_squares(lambda delta:acceleration_residual(evaluate(x0+delta)['native']),np.zeros(len(x0)),
-                jac=root_jacobian,bounds=(np.array(bounds)[:,0]-x0,np.array(bounds)[:,1]-x0),
-                method='trf',x_scale=.03,ftol=1e-10,xtol=1e-10,gtol=1e-10,max_nfev=200,
-                callback=lambda delta:retain_iterate(x0+delta))
-            final=evaluate(x0+result.x)
+                    jac[:,index]=(acceleration_residual(evaluate(shifted)['native'])-acceleration)/step
+                direction=local_step(jac,acceleration,q,bounds)
+                accepted=False
+                for backtrack in range(6):
+                    candidate=np.clip(q+direction*(.5**backtrack),np.array(bounds)[:,0],np.array(bounds)[:,1])
+                    trial=evaluate(candidate)
+                    if trial['cost']<current['cost']:
+                        q=candidate;retain_iterate(q);accepted=True;break
+                if not accepted:message='No decreasing valid local Newton step';break
+            final=evaluate(q)
+            from types import SimpleNamespace
+            result=SimpleNamespace(success=success,message=message)
         else:
             result=minimize(lambda q:evaluate(q)['cost'],x0,method='trust-constr',jac=lambda q:derivatives(q)[0],
                  bounds=Bounds(*np.array(bounds).T,keep_feasible=True),constraints=[constraint],callback=retain_iterate,

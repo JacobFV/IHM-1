@@ -16,6 +16,14 @@ def main():
         try:journal.PoseJournal(root/'bad',{'protocol':'changed'},root/'first')
         except ValueError:pass
         else:raise AssertionError('Source-incompatible cache accepted')
+        old={'schema':'ihm.static-pose-cache.v1','protocol_sha256':'old','journal_sha256':'old','source_sha256':{'model':'abc'},'build_files':{'native':'def'}}
+        migrated_first=journal.PoseJournal(root/'migration-source',old);migrated_first.append([.25],entry)
+        updated={**old,'protocol_sha256':'new','journal_sha256':'new'}
+        recovered=journal.PoseJournal(root/'migration-target',updated,root/'migration-source',reuse_native_only=True)
+        assert len(recovered.cache)==1
+        try:journal.PoseJournal(root/'migration-bad',{**updated,'source_sha256':{'model':'changed'}},root/'migration-source',reuse_native_only=True)
+        except ValueError:pass
+        else:raise AssertionError('Changed native input accepted during solver migration')
         with (root/'first'/'candidates.jsonl').open('a') as stream:stream.write('{truncated')
         try:journal.PoseJournal(root/'broken',identity,root/'first')
         except ValueError:pass
