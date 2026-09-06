@@ -109,13 +109,13 @@ class CanonicalRegistration:
             'scope':'One global ground frame preserves native joint and environment consistency. Canonical source meshes have fixed segment-local embeddings; their anatomical boundaries are not guaranteed to coincide with native joint locations. No anatomical registration precision is fabricated.'})
 
 class ArticulatedBodyPlant:
-    def __init__(self,root,output,*,environment='supine',target_mass_kg=None,augmented_registration=None,enable_garments=False,surface_contact_manifest=None,surface_sensor_indices=(),bed_material=None):
+    def __init__(self,root,output,*,environment='supine',target_mass_kg=None,augmented_registration=None,enable_garments=False,surface_contact_manifest=None,surface_sensor_indices=(),bed_material=None,instance_mass_variant=None):
         self.root=Path(root).resolve();self.output=Path(output).resolve()
         if self.output.exists() or not self.output.is_relative_to(self.root):raise ValueError('Fresh owned articulated output required')
         path=self.root/'data/derived/canonical/mechanics.json';raw=path.read_bytes();payload=json.loads(raw)
         canonical_mass=sum(e['mass_kg'] for e in payload['entities']);target=canonical_mass if target_mass_kg is None else finite(target_mass_kg)
         self.output.mkdir(parents=True);(self.output/'canonical_mechanics.json').write_bytes(raw)
-        self.native=NativeMechanicalStream(self.root,self.output/'native',environment=environment,target_mass_kg=target,augmented_registration=augmented_registration,surface_contact_manifest=surface_contact_manifest,surface_sensor_indices=surface_sensor_indices,bed_material=bed_material)
+        self.native=NativeMechanicalStream(self.root,self.output/'native',environment=environment,target_mass_kg=target,augmented_registration=augmented_registration,surface_contact_manifest=surface_contact_manifest,surface_sensor_indices=surface_sensor_indices,bed_material=bed_material,instance_mass_variant=instance_mass_variant)
         try:
             self.registration=CanonicalRegistration(payload,self.native.snapshot());self.muscle_catalog=self.native.muscle_catalog or native_muscle_catalog(self.root)
             self.source_registration_manifest=self.registration.manifest();(self.output/'registration.json').write_text(json.dumps(self.source_registration_manifest,indent=2)+'\n')
@@ -130,7 +130,7 @@ class ArticulatedBodyPlant:
             self.state=self._project(self.native.snapshot(),0.)
         except BaseException:self.native.close();raise
     def _project(self,native,positive_work):
-        frame={'model_id':'ihm-body','time_s':native['time_s'],'entities':self.registration.project(native),'muscles':copy.deepcopy(native['muscles']),
+        frame={'model_id':'ihm-body','effective_native_body_mass_kg':native['mass_kg'],'mass_transfer':copy.deepcopy(native['mass_transfer']),'time_s':native['time_s'],'entities':self.registration.project(native),'muscles':copy.deepcopy(native['muscles']),
                 'foot_contact_force_n':copy.deepcopy(native['foot_contact_force_n']),'positive_muscle_work_j':float(positive_work),
                 'total_muscle_metabolic_w':native.get('total_muscle_metabolic_w'),'muscle_metabolic_energy_j':native.get('muscle_metabolic_energy_j'),
                 'signed_active_fiber_work_j':native['signed_active_fiber_work_j'],'muscle_heat_energy_j':native['muscle_heat_energy_j'],
@@ -173,6 +173,20 @@ class ArticulatedBodyPlant:
             if self.garments is not None:self.garments.restore(garment_checkpoint)
             raise
         finally:self.native.release(checkpoint)
+    def body_point(self,**query):
+        """Native source frame station query; no canonical-frame conversion."""
+        return self.native.body_point(**query)
+    def transfer_mass(self,**payload):
+        """Explicit native-frame endpoint material port with projected rollback."""
+        checkpoint=self.checkpoint()
+        try:
+            result=self.native.transfer_mass(**payload)
+            self.state=self._project(result,self.state['positive_muscle_work_j']);return self.snapshot()
+        except BaseException:
+            if not self.native.closed:self.restore(checkpoint)
+            raise
+        finally:
+            if not self.native.closed:self.release(checkpoint)
     def checkpoint(self):return {'native':self.native.checkpoint(),'frame':self.snapshot(),'garments':None if self.garments is None else self.garments.checkpoint()}
     def restore(self,checkpoint):
         self.native.restore(checkpoint['native']);self.state=copy.deepcopy(checkpoint['frame'])

@@ -52,7 +52,7 @@ def main():
     if not a.run_native:raise SystemExit('Requires coordinated compile + baseline/variant native slot')
     variant=(ROOT/a.variant).resolve();vm=json.loads((variant/'manifest.json').read_text());assert vm['complete'];validate(variant,vm);assert sha(variant/'libSimTKsimbody.so.3.9')==vm['library_sha256']
     out=Path(tempfile.mkdtemp(prefix='opensim-instance-mass-',dir=ROOT/'data/derived'));build=out/'build';build.mkdir();started=time.monotonic()
-    names=('native_mechanical_stream.cpp','native_muscle_metabolism.h','native_static_pose.h','native_surface_foundation.h','native_bed_compression.h','native_opensim_mass_validation.h')
+    names=('native_mechanical_stream.cpp','native_muscle_metabolism.h','native_static_pose.h','native_surface_foundation.h','native_bed_compression.h','native_local_mass_port.h','native_opensim_mass_validation.h')
     frozen={str((ROOT/'scripts'/n).relative_to(ROOT)):sha(ROOT/'scripts'/n) for n in names}
     for n in names:(build/n).write_bytes((ROOT/'scripts'/n).read_bytes())
     source=build/'native_mechanical_stream.cpp';text=source.read_text();anchor='   if(command=="close")break;'

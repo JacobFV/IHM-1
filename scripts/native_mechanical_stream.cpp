@@ -5,6 +5,7 @@
 #include "native_muscle_metabolism.h"
 #include "native_static_pose.h"
 #include "native_surface_foundation.h"
+#include "native_local_mass_port.h"
 #include <filesystem>
 #include <sstream>
 #include <iomanip>
@@ -37,7 +38,7 @@ public:
   for(int i=0;i<(int)socket.getNumConnectees();i++){const auto& a=socket.getConnectee(i);a.addInControls(SimTK::Vector(1,values.at(a.getName())),controls);}
  }
 };
-struct Saved {SimTK::State state;std::vector<Load> loads;std::map<std::string,double> excitations;double work,positive_work,metabolic_energy,signed_work,heat_energy;};
+struct Saved {SimTK::State state;std::vector<Load> loads;std::map<std::string,double> excitations;double work,positive_work,metabolic_energy,signed_work,heat_energy;ihm_mass_port::Ledger mass_port;};
 int main(int argc,char** argv){try{
  if(argc!=5)throw std::runtime_error("source_dir output_dir environment(free|supine|upright) target_mass required");
  fs::path source=argv[1],out=argv[2];std::string environment=argv[3];
@@ -97,11 +98,16 @@ int main(int argc,char** argv){try{
  model.finalizeConnections();SimTK::State state=model.initSystem();state.setTime(0);
  for(const auto& m:model.getComponentList<Muscle>())m.setActivation(state,excitation->values.at(m.getName()));
  model.equilibrateMuscles(state);model.realizeDynamics(state);model.print((out/"assembled_model.osim").string());
+ const char* mass_mode=std::getenv("IHM_INSTANCE_MASS_MODE");
+ const bool mass_enabled=mass_mode&&std::string(mass_mode)=="1";
+ const char* mass_reference=std::getenv("IHM_MASS_REFERENCE_ID");
+ ihm_mass_port::Ledger mass_port(mass_enabled,mass_enabled&&mass_reference?mass_reference:"");
  const auto reference=metabolism.sample(state);
  double work=0,positive_work=0,metabolic_energy=0,signed_work=0,heat_energy=0;std::map<std::string,Saved> checkpoints;
  auto active_power=[&](){model.realizeDynamics(state);double power=0;for(const auto& m:model.getComponentList<Muscle>())power+=std::max(0.,-m.getActiveFiberForce(state)*m.getFiberVelocity(state));return power;};
  auto emit=[&](const std::string& kind){
   model.realizeAcceleration(state);auto metabolic=metabolism.sample(state);std::ostringstream o;o<<"{\"kind\":";str(o,kind);o<<",\"time_s\":";num(o,state.getTime());
+  o<<",\"mass_transfer\":"<<mass_port.json();
   o<<",\"mass_kg\":";num(o,model.getTotalMass(state));o<<",\"gravity_m_s2\":";vec(o,model.getGravity());
   o<<",\"kinetic_energy_j\":";num(o,model.calcKineticEnergy(state));o<<",\"potential_energy_j\":";num(o,model.calcPotentialEnergy(state));o<<",\"external_work_j\":";num(o,work);o<<",\"positive_active_fiber_work_j\":";num(o,positive_work);o<<",\"external_power_w\":";num(o,external->power(state));
   o<<",\"muscle_metabolic_energy_j\":";num(o,metabolic_energy);o<<",\"total_muscle_metabolic_w\":";num(o,metabolic.total_muscle_metabolic_w);o<<",\"signed_active_fiber_power_w\":";num(o,metabolic.active_fiber_work_w);o<<",\"muscle_heat_w\":";num(o,metabolic.muscle_heat_w);o<<",\"metabolic_analysis_mass_kg\":";num(o,metabolic.analysis_mass_kg);
@@ -115,7 +121,9 @@ int main(int argc,char** argv){try{
   SimTK::Vector_<SimTK::SpatialVec> reactions;model.getMatterSubsystem().calcMobilizerReactionForces(state,reactions);
   for(const auto& b:model.getComponentList<Body>()){
    if(!first)bodies<<',';first=false;str(bodies,b.getName());bodies<<":{\"transform_ground\":";matrix(bodies,b.getTransformInGround(state));
-   bodies<<",\"mass_kg\":";num(bodies,b.getMass());bodies<<",\"mass_center_local_m\":";vec(bodies,b.getMassCenter());bodies<<",\"inertia_moments_kg_m2\":";vec(bodies,b.getInertia().getMoments());
+   const auto effective=b.getMobilizedBody().getBodyMassProperties(state);
+   bodies<<",\"mass_properties_basis\":\"effective Simbody State instance\",\"mass_kg\":";num(bodies,effective.getMass());bodies<<",\"mass_center_local_m\":";vec(bodies,effective.getMassCenter());bodies<<",\"inertia_moments_kg_m2\":";vec(bodies,effective.calcCentralInertia().getMoments());bodies<<",\"inertia_products_kg_m2\":";vec(bodies,effective.calcCentralInertia().getProducts());
+   bodies<<",\"model_baseline_mass_properties\":{\"mass_kg\":";num(bodies,b.getMass());bodies<<",\"mass_center_local_m\":";vec(bodies,b.getMassCenter());bodies<<",\"inertia_moments_kg_m2\":";vec(bodies,b.getInertia().getMoments());bodies<<",\"inertia_products_kg_m2\":";vec(bodies,b.getInertia().getProducts());bodies<<'}';
    auto v=b.getMobilizedBody().getBodyVelocity(state);bodies<<",\"angular_velocity_rad_s\":";vec(bodies,v[0]);bodies<<",\"origin_velocity_m_s\":";vec(bodies,v[1]);
    auto reaction=reactions[b.getMobilizedBodyIndex()];bodies<<",\"joint_reaction_force_n\":";vec(bodies,reaction[1]);bodies<<",\"joint_reaction_moment_nm\":";vec(bodies,reaction[0]);bodies<<'}';
   }bodies<<'}';
@@ -170,13 +178,20 @@ int main(int argc,char** argv){try{
  };
  emit("initialized");std::string line;
  while(std::getline(std::cin,line)){
-  Saved before{state,external->loads,excitation->values,work,positive_work,metabolic_energy,signed_work,heat_energy};
+  Saved before{state,external->loads,excitation->values,work,positive_work,metabolic_energy,signed_work,heat_energy,mass_port};
   try{
    std::istringstream in(line);std::string command;in>>command;
    if(command=="close")break;
+   if(command=="mass_transfer"){mass_port.apply(model,state,in);emit("mass_transferred");continue;}
+   if(command=="body_point"){
+    std::string name,extra;SimTK::Vec3 station;in>>name;for(int k=0;k<3;++k)in>>station[k];
+    if(!in||in>>extra||!station.isFinite())throw std::runtime_error("invalid body point query");
+    model.realizeVelocity(state);const auto& body=model.getBodySet().get(name).getMobilizedBody();
+    std::ostringstream o;o<<"{\"kind\":\"body_point\",\"body\":";str(o,name);o<<",\"station_m\":";vec(o,station);o<<",\"time_s\":";num(o,state.getTime());o<<",\"point_source_m\":";vec(o,body.findStationLocationInGround(state,station));o<<",\"velocity_source_m_s\":";vec(o,body.findStationVelocityInGround(state,station));o<<'}';std::cout<<"@IHM "<<o.str()<<std::endl;continue;
+   }
    if(command=="observe"){emit("observed");continue;}
    if(command=="checkpoint"){std::string key;in>>key;if(key.empty()||checkpoints.size()>=64||checkpoints.count(key))throw std::runtime_error("invalid checkpoint id/capacity");checkpoints.emplace(key,before);std::cout<<"@IHM {\"kind\":\"checkpointed\"}"<<std::endl;continue;}
-   if(command=="restore"){std::string key;in>>key;const auto& old=checkpoints.at(key);state=old.state;external->loads=old.loads;excitation->values=old.excitations;work=old.work;positive_work=old.positive_work;metabolic_energy=old.metabolic_energy;signed_work=old.signed_work;heat_energy=old.heat_energy;model.markControlsAsInvalid(state);state.invalidateAllCacheAtOrAbove(SimTK::Stage::Dynamics);emit("restored");continue;}
+   if(command=="restore"){std::string key;in>>key;const auto& old=checkpoints.at(key);state=old.state;external->loads=old.loads;excitation->values=old.excitations;work=old.work;positive_work=old.positive_work;metabolic_energy=old.metabolic_energy;signed_work=old.signed_work;heat_energy=old.heat_energy;mass_port=old.mass_port;model.markControlsAsInvalid(state);state.invalidateAllCacheAtOrAbove(SimTK::Stage::Instance);emit("restored");continue;}
    if(command=="drop"){std::string key;in>>key;if(!checkpoints.erase(key))throw std::runtime_error("unknown checkpoint");std::cout<<"@IHM {\"kind\":\"dropped\"}"<<std::endl;continue;}
    if(command=="evaluate_static_pose"){const auto payload=ihm_static_pose::evaluate(model,state,in,environment,!external->loads.empty(),support_plane,surface_foundation);std::cout<<"@IHM "<<payload<<std::endl;continue;}
    if(command!="advance")throw std::runtime_error("unknown command");double dt;int count;in>>dt>>count;if(!in||!std::isfinite(dt)||dt<=0||dt>.02||count<0||count>10000)throw std::runtime_error("invalid native step/force count");
@@ -192,7 +207,7 @@ int main(int argc,char** argv){try{
    metabolic_energy+=dt*.5*(metabolic0.total_muscle_metabolic_w+metabolic1.total_muscle_metabolic_w);
    signed_work+=dt*.5*(metabolic0.active_fiber_work_w+metabolic1.active_fiber_work_w);
    heat_energy=metabolic_energy-signed_work;emit("advanced");
-  }catch(const std::exception& error){state=before.state;external->loads=before.loads;excitation->values=before.excitations;work=before.work;positive_work=before.positive_work;metabolic_energy=before.metabolic_energy;signed_work=before.signed_work;heat_energy=before.heat_energy;std::ostringstream o;o<<"{\"error\":";str(o,error.what());o<<'}';std::cout<<"@IHM "<<o.str()<<std::endl;}
+  }catch(const std::exception& error){state=before.state;external->loads=before.loads;excitation->values=before.excitations;work=before.work;positive_work=before.positive_work;metabolic_energy=before.metabolic_energy;signed_work=before.signed_work;heat_energy=before.heat_energy;mass_port=before.mass_port;state.invalidateAllCacheAtOrAbove(SimTK::Stage::Instance);model.markControlsAsInvalid(state);std::ostringstream o;o<<"{\"error\":";str(o,error.what());o<<'}';std::cout<<"@IHM "<<o.str()<<std::endl;}
  }
  return 0;
 }catch(const std::exception& e){std::cerr<<"MECHANICAL_STREAM_ERROR="<<e.what()<<std::endl;return 2;}}
