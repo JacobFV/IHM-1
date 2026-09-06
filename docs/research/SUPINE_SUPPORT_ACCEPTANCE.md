@@ -29,3 +29,18 @@ A stage stops immediately on a sampled support magnitude above 10 weights, COM a
 The retained short acceptance used 1.32 wall seconds and approximately 99 MiB peak child RSS for initialization plus four 2 ms advances. This diagnostic makes at most 200 advances and five checkpoint/restore checks. Provisional full-run budget is 15–60 wall seconds; the hard deadline is 60 seconds, and the existing native adapter enforces a 4 GiB address-space ceiling. This is an estimate, not an extrapolated timing guarantee. One authorized native run should provide the next decision; repeated long runs or coefficient sweeps are outside this protocol.
 
 Source-only checks cover exact static balance, free fall with a perfect dynamic audit, insufficient initial observation, sustained synthetic equilibrium, nonzero kinetic energy, penetration divergence, kinetic growth divergence, penetration sign, and nonfinite rejection. The retained 2 ms result is checked only for its failure to meet static balance. No actual support-convergence result is claimed by these fixtures.
+
+## Authorized native result — 2026-09-05
+
+One bounded run retained at `data/derived/supine-support-2qf4zcjh` stopped after **0.6487 wall seconds**, before completing its first 0.02 s stage. The first 5 ms advance succeeded; the attempted second 5 ms advance raised `ValueError: Out-of-domain native muscle metabolism`. The exact traceback and interrupted checkpoint receipt are retained. The stage-start restore matched its native observation. The owned process was closed and no native mechanical stream remained running afterward. This run fails equilibrium acceptance and does not justify extending the horizon.
+
+At the last successful sample (0.005 s), normal support was **0.026236 weights**, static imbalance was **0.973781 weights**, COM acceleration was **0.973781 g**, and independently differenced COM acceleration was **0.973163 g**. Kinetic energy rose from zero to **0.029936 J/kg**, COM speed reached **0.047734 m/s**, and maximum segment angular speed was **9.725908 rad/s**. Sampled proxy penetration was zero and aggregate constraint error was 7.85e-17. The dynamic momentum audit was only 9.09e-17 weights; that excellent force-accounting residual coexists with near-free-fall acceleration and therefore cannot establish support equilibrium.
+
+The stopped native metabolism guard is a separate blocker requiring diagnosis before further support runs. No solver/contact coefficient tuning or additional native run was performed. The original native output remains untouched. Evidence SHA-256 values:
+
+- `report.json`: `8abaa30b71d154ba43adc7cacfdfbc415efa103ca416f8ab878a6261f5be8753`
+- `failure.json`: `5ec19ff17ec5a8f37bc53d4025bdedf33ed2fe68b46ab7b051a593c066bdecab`
+- `checkpoint_receipts.json`: `99ec22932b7e99b67c53904fd81ad1d545e892d039902f4f7c07135b74bf3078`
+- `samples.json`: `5c81bdf52653cd06c760cdd15feb0ca9e83e6f8b984bcfa604cb321ed44f6402`
+- `initial_native.json`: `6e2b9bb9b68c4a8b02a6b83a0f3e1137a7989bdb097762326e3109fefa48ae39`
+- `plant/native/execution.json`: `858addb1c17250ebeabef7c939dd782930539fbb76ef51a2a7911c6a9dd95a87`
