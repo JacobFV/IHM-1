@@ -100,3 +100,23 @@ Optimizer callback iterates are retained in `optimizer_iterates.jsonl` and `last
 `--mode acceleration-root` uses bounded trust-region nonlinear least squares of all 33 native mobility accelerations against 28 independent coordinates, retaining dependent and held-gauge accelerations in the residual. Each acceleration is divided by one unit of its own coordinate type (1 rad/s² or 1 m/s²); no inertia weighting can hide a distal acceleration. The signed mass identity is still checked at every candidate. The local optimization variable is displacement from the supplied q, starting at zero, with 0.03 coordinate-unit scaling; finite differences use bounded 1e−5 coordinate steps. These are solver parameters, not constitutive changes.
 
 Intermediate root iterations may lose support balance; they are never accepted on optimizer success or objective decrease alone. Final static eligibility requires every absolute mobility acceleration ≤1e−4 in its native units, all normalized support and held-gauge residuals ≤1e−4, and native position/velocity/acceleration constraint errors ≤1e−5. Source q bounds and both material domains remain enforced; a native domain exception stops the experiment. Forward verification is still separate and mandatory, and `accepted_equilibrium` remains false. The hard 200 actual-call / 60-second limits and full candidate journal apply unchanged. No native root experiment has yet been performed.
+
+
+## Authorized MM acceleration-root outcome
+
+One native root experiment, `data/derived/constrained-supine-_ha29yc1`, stopped at 200 actual evaluations in 40.877 s. It retained all 200 native candidate responses and five optimizer iterates, with 12 exact cache hits. No physical time advanced; native cleanup released the heavy slot. No candidate passed static acceptance.
+
+The best unrestricted sum of squared acceleration residuals fell from 7,045,716.74 to 6,839,988.31; maximum acceleration fell from 1515.71 to 1482.74 rad/s². This candidate lost support: normalized normal-force residual 0.158182 (about 120.4 N deficit), pitch 0.0116333, roll −5.286e−5; held-gauge normalized residuals were near zero except heading 4.95e−6. Its maximum skin compression was 1.325 mm and bed deflection 58.715 mm. The best support-feasible candidate scarcely changed (maximum acceleration 1515.45 rad/s²). No forward or reference promotion followed.
+
+The retained journal permits diagnosis without more native calls. The first complete 33×28 finite-difference Jacobian has full column rank, singular values 28,753.90 to 0.72403 (condition number 39,713.74). An unconstrained linear Newton step would reduce residual norm 2654.38 to 8.638, but its maximum coordinate change is 3.299 rad and is not a valid local/source-domain candidate. These linearized numbers are not an achieved pose.
+
+A computational initialization problem further limited progress: SciPy TRF first moves the near-lower-bound forearm coordinates from approximately 5e−13 to 1e−10. This makes the intended zero-displacement start nonzero and determines a tiny initial trust radius. The first accepted maximum q step was only 8.45e−5, followed by five gradual radius expansions within the call cap. The earlier description of a roughly 0.03 first step was an intended scale, not the actual native outcome. A next solver change must test bound-adjacent initialization explicitly; the journal retains enough data for source-only comparison before another authorized experiment.
+
+Evidence SHA-256:
+
+- `data/derived/constrained-supine-_ha29yc1/report.json`: `b21efe8fbd91792d106f7759b50f08764f7376a1c728eb9b313b82a9e9e8a10b`
+- `data/derived/constrained-supine-_ha29yc1/best_candidate.json`: `7b29e0c28402d6eb0358996aaad9a8dd3612cf42585ebae057c69765dd079f5d`
+- `data/derived/constrained-supine-_ha29yc1/best_supported_candidate.json`: `135b1a1fbb075a0c973a7dd32be94ed18510f4de917f1a0911d74642c362dc3b`
+- `data/derived/constrained-supine-_ha29yc1/candidates.jsonl`: `0a15f965da71144a267e20430d62a60e538be46e7be1d836aad2d44284872309`
+- `data/derived/constrained-supine-_ha29yc1/optimizer_iterates.jsonl`: `0fa358e459a5e095e5d1eaa7795a82ce8a78c14ef8fa6b30bb678cbd224845d8`
+- `data/derived/constrained-supine-_ha29yc1/jacobian_analysis.json`: `03dc04bcfac710192b1685a49fb1ac3eec1fac203a8a0d9b31c62ca6d553b799`
