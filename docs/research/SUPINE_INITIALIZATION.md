@@ -243,3 +243,25 @@ Evidence SHA-256:
 - `data/derived/frozen-static-acceptance-57u8erpr/report.json`: `8d0cf82567512fc43f40eda2d541c608cd744ccfbab37060ab1587b1a99f33d1`
 - `data/derived/frozen-static-acceptance-57u8erpr/observed.json`: `d3eb3bea3ac9477bb44921c778e40e48ada2d3c4594f5668466af884106eab76`
 - `data/derived/frozen-static-acceptance-57u8erpr/roundoff_jacobian_analysis.json`: `dea4b308b3186d11a7e4688821d0bbe6f8c57867bee1985eeb1116a344cc0edc`
+
+
+## Source-scaled frozen numerical compatibility and first continuation
+
+The bounded investigation `frozen-equivalence-investigation-xgwccay8` passed 39 native copied-state evaluations in 7.749 s, with unchanged continuing state and intact archive. It measured a current-pose Jacobian over all 31 independent coordinates using actual assembled coordinate differences (matrix condition 1.2775), and repeated the same requested q after Jacobian probes, a different supported pose and backward root probes.
+
+The predeclared numerical comparison groups heterogeneous quantities by physical units. Its operational first-order envelope is twice native assembly accuracy (2×1e−10 in each coordinate's units) propagated through each current-Jacobian row's absolute sum; the maximum within each output-unit group is compared. For cached versus fresh replay: angular acceleration difference 7.067e−8 rad/s² versus envelope 6.161e−6; translational acceleration 2.828e−8 m/s² versus 1.152e−6; torque difference 2.444e−8 N·m versus 1.015e−6; force difference 2.216e−7 N versus 4.326e−6. All history comparisons passed this declared envelope. This establishes local numerical compatibility at the investigated pose, not bitwise identity or a global nonlinear guarantee. The earlier generic 1e−9 comparison remains failed and retained. Physical static and forward acceptance thresholds are unchanged.
+
+The following authorized frozen continuation (`constrained-supine-mbmlqx0h`) binds the equivalence receipt and separate archive attestation in its report. It used 200 new calls in 39.790 s, recovered 836 responses with 23 cache hits, preserved input q exactly and verified the archive after cleanup. Six accepted support-filtered objectives decreased 9423.30 → 4269.86 → 3230.75 → 1942.75 → 1366.54 → 1177.46.
+
+The last accepted pose has maximum acceleration 16.1260 rad/s² (right arm flexion), lumbar extension 15.7090 rad/s² and left arm flexion −13.0999 rad/s². Support is 761.37173 N, about 0.00398 N below weight. Normalized force/pitch/roll residuals are 5.22887e−6, −1.58008e−7, 1.27901e−5; held heading is −1.17171e−6 and translation gauges zero. Skin compression is 1.53004 mm and bed deflection 87.65674 mm. It remains unaccepted as equilibrium; no forward/reference promotion occurred.
+
+The best-supported objective 1177.30 is a finite-difference sample, so continuation uses the actual last accepted objective 1177.46. Its next Jacobian has 21/29 exact evaluations cached (eight new calls required); the complete response cache holds 1036 evaluations.
+
+Evidence SHA-256:
+
+- `data/derived/frozen-equivalence-investigation-xgwccay8/report.json`: `c755893266319441d4d5d6c3fbef0ae31049461b8891a25c2b2089febd0464b9`
+- `data/derived/frozen-equivalence-investigation-xgwccay8/observations.jsonl`: `b7310f9a7fc8196344bf9c73ad9155c1a1823d2f3836ae523af78488c1106e6c`
+- `data/derived/frozen-equivalence-investigation-xgwccay8/current_jacobians.json`: `d5e397e1a5ff2ed9705bc6f21492bf426f6871e0e2f6bf9c70caa02694e33a8a`
+- `data/derived/constrained-supine-mbmlqx0h/report.json`: `e928c18b1d88627a9f6d2c0e0c5fdd2403bf36f214dd95f9e3070f004d1d1466`
+- `data/derived/constrained-supine-mbmlqx0h/last_optimizer_iterate.json`: `15b10d2575f128d1b026af6ae69d9040da40705ad88bfedd1dae3a2bba30817f`
+- `data/derived/constrained-supine-mbmlqx0h/candidates.jsonl`: `ad9461cbf22cf7001fef271d1dbf7a44b5a62e714e65c546f72c2ee7d214883f`
