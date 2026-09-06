@@ -1,0 +1,25 @@
+# Missing meal-lumen transit and colonic water ownership
+
+The native meal pathway has a single `SmallIntestineChyme` fluid compartment and no downstream colon/rectum meal-water pool or fecal water/electrolyte sink. This differs from the nine-position drug CAT model: its cecum/colon volumes and rates parameterize per-drug solid/dissolved vectors and `TotalMassExcreted`, not shared lumen water. Reusing those arrays as additional meal-fluid stores would duplicate ownership and import drug-model priors without validation.
+
+Native `BioGears.cpp::SetupGastrointestinal` creates `SmallIntestineC1`, maps its volume to the chyme compartment, and creates `SmallIntestineC1ToSmallIntestine1`. Its substance graph link is intentionally disabled because GI manually transfers solutes. `AbsorbNutrients()` sets a flow source and manually debits the source's next volume; solute updates happen separately. Large-intestine blood already exists at `LargeIntestine1`/`LargeIntestineVasculature`; it is not a colon lumen. Colon blood proceeds toward the liver through the existing portal pathway.
+
+Anatomical colon surfaces are present in `data/derived/canonical/anatomy.json` and the BodyParts3D index (e.g. ascending-colon mesh FJ2566, concept FMA14545), including descending colon and rectum. Surface identity does not supply lumen capacity, motility, epithelial area or an existing physiological pool. `data/research/gi_colon/source_inventory.json` records inspected source/anatomy hashes.
+
+## Native-compatible single-owner design
+
+* Keep stomach nutrition and current small-intestine chyme as their existing authoritative stores. Add native colon and rectum lumen compartments once, with explicit initialization; do not populate a persistent Python mirror beside them.
+* Add SI→colon, colon→rectum and rectum→external fecal ports. Transfer a donor-bounded fluid packet and its dissolved species together. The receiving lumen gains exactly the debit; fecal output is cumulative external mass, never an unrecorded ground sink. Initialize every unused next-flow source to zero each step.
+* GI PreProcess can calculate requests after meal digestion/secretion, but a single native transaction must arbitrate competing wall absorption and downstream transit against the same starting donor. Volume must be updated once: either the circuit handles both sides or the manual path owns both sides, not both. The existing manual-solute arrangement means adding a graph solute link without removing manual handling would double transport.
+* Colon wall uptake/secretion exchanges with the existing large-intestine vascular/interstitial owners. Na, K, Cl, bicarbonate and water require separate measured signed fluxes; a lumen-to-lumen packet is not epithelial uptake. Do not attach the independent finite epithelial preparation as a duplicate blood or lumen reservoir. Native tissue/energy retains pump work and thermal ownership.
+* Keep luminal dry residue/particulates distinct from dissolved aqueous cargo. Fecal solids, microbial conversion, gas and defecation mechanics require additional explicit conservation states, not removal proportional to water by assumption.
+
+`scripts/verify_gi_lumen_transit.py` tests the small stateless foundation `ihm/assembly/gi_lumen_transit.py`. A caller supplies three requested aqueous volumes and snapshot inventories; all payloads are computed from that snapshot, preventing accidental same-tick multi-hop transit. It returns paired edge payloads and a fecal-boundary receipt, mutating no native stores. It has no rate coefficients. Tests cover partial/full/zero donors, dry retention, repeated passage, finite positivity and water/species closure including external output. This is a conservative foundation, not a calibrated gut transit simulation.
+
+## Conditional empirical lane
+
+Primary human intact-colon perfusion shows that sodium concentration and osmotic composition change both magnitude and direction of water/electrolyte flux. Under isotonic NaCl/mannitol solutions the reported sodium range is 23–150 mEq/L; below about 20 mEq/L water absorption was absent. Hypertonic mannitol can induce secretion. These observations prohibit a universal positive absorption constant. [Billich and Levitan, 1969](https://doi.org/10.1172/JCI106100).
+
+Human rectal perfusion/instillation found no sodium, chloride or water uptake from isotonic solutions even after 90 minutes, whereas the remaining colon absorbed about 1% of infused load per minute of mucosal contact. That is a protocol-level descriptive result, not a calibrated first-order rate for arbitrary in-vivo contents. [Devroede and Phillips, 1970](https://doi.org/10.1136/gut.11.5.438).
+
+The two small official metadata records total 11,404 acquired bytes; URLs, hashes, retrieval date and license status are in `data/research/gi_colon/manifest.json`. No open reuse license is asserted for these older articles. Conditional numerical fitting requires the actual concentration/flux observations and protocol, rather than treating the abstract's rough percentage as universal. That acquisition and fit are the next increment.

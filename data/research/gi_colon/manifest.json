@@ -1,0 +1,25 @@
+{
+  "retrieved_utc": "2026-09-06T06:45:06.325161+00:00",
+  "sources": [
+    {
+      "file": "rectum_1970.json",
+      "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID%3A5428047%20AND%20SRC%3AMED&format=json&resultType=core",
+      "bytes": 4761,
+      "sha256": "de3f3f34541cd37886c04eff80ef8599471bac9919c94e8492da933de04cf30f",
+      "title": "Failure of the human rectum to absorb electrolytes and water.",
+      "doi": "10.1136/gut.11.5.438",
+      "license": "No reuse license asserted; publisher copyright applies",
+      "isOpenAccess": "N"
+    },
+    {
+      "file": "colon_1969.json",
+      "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI%3A10.1172/JCI106100&format=json&resultType=core",
+      "bytes": 6643,
+      "sha256": "534a34b603289cfb1691fe9166f58411356e01b0c6e1365a93a38026ea09ba1a",
+      "title": "Effects of sodium concentration and osmolality on water and electrolyte absorption form the intact human colon.",
+      "doi": "10.1172/jci106100",
+      "license": "No reuse license asserted; publisher copyright applies",
+      "isOpenAccess": "N"
+    }
+  ]
+}
