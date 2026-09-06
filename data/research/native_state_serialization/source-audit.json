@@ -1,0 +1,125 @@
+{
+  "schema_version": 1,
+  "kind": "reviewed_source_control_flow_audit",
+  "native_execution": false,
+  "source_defects_confirmed": [
+    "gi_missing_transit_map",
+    "gi_direct_codec_stale_map_and_cleanup",
+    "gi_wrong_excreted_member",
+    "tissue_burn_history_reset"
+  ],
+  "evidence": {
+    "gi_missing_transit_map": [
+      {
+        "path": "data/raw/physiology/biogears/projects/biogears/libBiogears/src/io/biogears/BioGearsPhysiology.cpp",
+        "line": 475,
+        "token": "void BiogearsPhysiology::Marshall(const Gastrointestinal&"
+      },
+      {
+        "path": "data/raw/physiology/biogears/projects/biogears/libBiogears/src/io/cdm/Physiology.cpp",
+        "line": 410,
+        "token": "void Physiology::Marshall(const SEGastrointestinalSystem&"
+      },
+      {
+        "path": "data/raw/physiology/biogears/projects/biogears/libBiogears/src/engine/Systems/Gastrointestinal.cpp",
+        "line": 817,
+        "token": "void Gastrointestinal::ProcessDrugCAT()"
+      }
+    ],
+    "gi_direct_codec_stale_map_and_cleanup": [
+      {
+        "path": "data/raw/physiology/biogears/projects/biogears/libBiogears/src/cdm/system/physiology/SEGastrointestinalSystem.cpp",
+        "line": 48,
+        "token": "void SEGastrointestinalSystem::Invalidate()"
+      },
+      {
+        "path": "data/raw/physiology/biogears/projects/biogears/libBiogears/src/cdm/system/physiology/SEGastrointestinalSystem.cpp",
+        "line": 155,
+        "token": "SEDrugTransitState* SEGastrointestinalSystem::NewDrugTransitState"
+      }
+    ],
+    "gi_wrong_excreted_member": [
+      {
+        "path": "data/raw/physiology/biogears/projects/biogears/libBiogears/src/io/cdm/Physiology.cpp",
+        "line": 459,
+        "token": "io::Property::Marshall(*in.m_TotalMassMetabolized, out.MassExcreted());"
+      }
+    ],
+    "tissue_burn_history_reset": [
+      {
+        "path": "data/raw/physiology/biogears/projects/biogears/libBiogears/src/engine/Systems/Tissue.cpp",
+        "line": 382,
+        "token": "m_leftArmDeltaResistance_mmHg_s_Per_mL = 0.0;"
+      },
+      {
+        "path": "data/raw/physiology/biogears/projects/biogears/libBiogears/src/engine/Systems/Tissue.cpp",
+        "line": 560,
+        "token": "void Tissue::CalculateCompartmentalBurn()"
+      },
+      {
+        "path": "data/raw/physiology/biogears/projects/biogears/libBiogears/src/io/biogears/BioGearsPhysiology.cpp",
+        "line": 747,
+        "token": "void BiogearsPhysiology::UnMarshall(const CDM::BioGearsTissueSystemData&"
+      }
+    ]
+  },
+  "burn_history_members": [
+    "m_trunkDeltaResistance_mmHg_s_Per_mL",
+    "m_leftArmDeltaResistance_mmHg_s_Per_mL",
+    "m_rightArmDeltaResistance_mmHg_s_Per_mL",
+    "m_leftLegDeltaResistance_mmHg_s_Per_mL",
+    "m_rightLegDeltaResistance_mmHg_s_Per_mL",
+    "m_compartmentSyndromeCount",
+    "m_baselineECFluidVolume_mL",
+    "m_trunkEscharotomy",
+    "m_leftArmEscharotomy",
+    "m_rightArmEscharotomy",
+    "m_leftLegEscharotomy",
+    "m_rightLegEscharotomy"
+  ],
+  "branch_witnesses": {
+    "burn_baseline": {
+      "before_reload": 5.4,
+      "after_setup_rebaseline": 1.0
+    },
+    "burn_resistance": {
+      "accumulated_prior": 2.0,
+      "new_increment": 0.1,
+      "continuous_next_increment": 2.1,
+      "reloaded_next_increment": 0.1
+    },
+    "excreted_copy": {
+      "metabolized_ug": 3.0,
+      "excreted_ug": 7.0,
+      "emitted_excreted_ug": 3.0
+    },
+    "fresh_gi_map": {
+      "source_entries": 1,
+      "serialized_entries": 0,
+      "fresh_loaded_entries": 0
+    },
+    "disclaimer": "Branch-level source witnesses only; no native engine or serialization roundtrip executed"
+  },
+  "negative_controls": [
+    "Full engine load recreates GI: stale-map issue applies to direct same-system decode/cleanup, while full engine suffers omitted-state loss.",
+    "GI digestion/transit parameter arrays are SetUp constants, stomach contents serialized, decrement flag explicitly enabled after load.",
+    "Renal running averages and afferent feedback state serialized; permeability multipliers recomputed in PreProcess before transport.",
+    "Energy pack history and blood averages serialized; m_Test only debug probe.",
+    "Endocrine private substance pointers/setup constants are caches; AverageBiologicalDebt has assignment but no active read.",
+    "Tissue metabolic averages/stored nutrients serialized; hepatic O2/CO2 scratch transfer consumed/reset after Hepatic::Process within full tick; not a settled checkpoint gap.",
+    "Tissue totalFatConsumed_g only disabled debug probe; lastFatigueTime unused; not demonstrated physiology history gaps."
+  ],
+  "source_hashes": {
+    "data/raw/physiology/biogears/projects/biogears/libBiogears/src/io/biogears/BioGearsPhysiology.cpp": "31106e2fc683a2b7490b2ebd06e024d826b0278bdde17a4c6ff426dfb3e506cc",
+    "data/raw/physiology/biogears/projects/biogears/libBiogears/src/io/cdm/Physiology.cpp": "13bc49121c01c0685b34f5496f67dcaebea6347d7dc78bbdeb4ae642633f45d3",
+    "data/raw/physiology/biogears/projects/biogears/libBiogears/src/cdm/system/physiology/SEGastrointestinalSystem.cpp": "be41dc880944a78f4be921814fbb138079ac84c04795fa7228194a1c7d008e26",
+    "data/raw/physiology/biogears/projects/biogears/libBiogears/src/engine/Systems/Tissue.cpp": "5557f75fe19946ea680b054bf1549b7bb331a518ab36f03d9b8fcde578a0e389",
+    "data/raw/physiology/biogears/projects/biogears/libBiogears/src/engine/Systems/Gastrointestinal.cpp": "7a3f00270e1a18e3402cf0d4276f0143b39a554695edc5dbe78fd692e0278758",
+    "data/raw/physiology/biogears/projects/biogears/libBiogears/src/engine/Systems/Renal.cpp": "2eeb59b030def647a51497b724c2b078f01e26aac8c0ce1afd415dc3a3d2c0fb",
+    "data/raw/physiology/biogears/projects/biogears/libBiogears/src/engine/Systems/Energy.cpp": "8f2c5102747c4e8d0ababf9b2810e71b20b9feedf2f57c52fe1f32a7f2418e89",
+    "data/raw/physiology/biogears/projects/biogears/libBiogears/src/engine/Systems/Endocrine.cpp": "674fc692f3e9cb33273ec3167467cabc8ab37314e286c38715dc0a1f570c6c2b",
+    "data/raw/physiology/biogears/projects/biogears/libBiogears/src/io/biogears/BioGears.cpp": "5b854f18cb99a49cc024cf53d86749506ed7758684cdb5143d5aeb04fde0d537",
+    "data/raw/physiology/biogears/projects/biogears/libBiogears/include/biogears/engine/Controller/BioGearsSystem.h": "ea576368acca2723717abf91e3d2e2a760a54461cfb6421aac90affe714fb1c5",
+    "data/raw/physiology/biogears/projects/biogears/libBiogears/src/engine/Controller/BioGears.cpp": "451ddda942a26e547a0ed4f1d5ba875fa7ca9e2c6275895b791f9c81e7a39166"
+  }
+}
