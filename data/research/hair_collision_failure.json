@@ -1,0 +1,785 @@
+{
+  "schema": "ihm.hair-collision-failure-audit.v1",
+  "accepted_physical_time_s": 0,
+  "collision_exercised": false,
+  "failure": {
+    "error_type": "ValueError",
+    "error": "Root rotation over 90 degrees needs smaller coupled intervals",
+    "accepted_intervals": [],
+    "native_time_s": 0,
+    "status": "Incomplete acceptance; no collision or closure claim"
+  },
+  "passive_coordinate_forces": [
+    {
+      "name": "PassiveShoulderDampingZ_r",
+      "coordinate": "arm_rot_r",
+      "expression": "-0.43*exp(14.94*(q-0.15))+0.43*exp(-14.93*(q+0.15))-1.0*qdot",
+      "q_rad": 1.6653099595095426,
+      "qdot_rad_s": 0.5920722531297097,
+      "generalized_force_nm": -2919740925.0161285
+    },
+    {
+      "name": "PassiveShoulderDampingY_r",
+      "coordinate": "arm_add_r",
+      "expression": "-15.03*exp(20.94*(q-0.10))+5.03*exp(-14.93*(q+1.57))-1.0*qdot",
+      "q_rad": 0.9952458486006286,
+      "qdot_rad_s": -0.11785824461027067,
+      "generalized_force_nm": -2081794862.8729491
+    },
+    {
+      "name": "PassiveShoulderDampingX_r",
+      "coordinate": "arm_flex_r",
+      "expression": "-2.44*exp(5.05*(q-1.81))+1.51*exp(-11.88*(q+0.50))-1.0*qdot",
+      "q_rad": -0.833808345905643,
+      "qdot_rad_s": 0.43867009940516927,
+      "generalized_force_nm": 79.22014884654304
+    },
+    {
+      "name": "PassiveElbowDamping_l",
+      "coordinate": "elbow_flex_l",
+      "expression": "6.09*exp(-6.94*(q-0.30))-11.03*exp(11.33*(q-2.40))-1.0*qdot",
+      "q_rad": 0,
+      "qdot_rad_s": 0,
+      "generalized_force_nm": 48.844807678883974
+    },
+    {
+      "name": "PassiveElbowDamping_r",
+      "coordinate": "elbow_flex_r",
+      "expression": "6.09*exp(-6.94*(q-0.30))-11.03*exp(11.33*(q-2.40))-1.0*qdot",
+      "q_rad": 2.490539831835086,
+      "qdot_rad_s": 0.03598111054004762,
+      "generalized_force_nm": -30.802747020105663
+    },
+    {
+      "name": "PassiveShoulderDampingY_l",
+      "coordinate": "arm_add_l",
+      "expression": "-15.03*exp(20.94*(q-0.10))+5.03*exp(-14.93*(q+1.57))-1.0*qdot",
+      "q_rad": 0,
+      "qdot_rad_s": 0,
+      "generalized_force_nm": -1.8515964327301018
+    },
+    {
+      "name": "PassiveKneeDamping_r",
+      "coordinate": "knee_angle_r",
+      "expression": "6.09*exp(33.94*(-q-0.13))-11.03*exp(-11.33*(-q+2.40))-0.1*qdot",
+      "q_rad": 0,
+      "qdot_rad_s": 0,
+      "generalized_force_nm": 0.07386235994209785
+    },
+    {
+      "name": "PassiveKneeDamping_l",
+      "coordinate": "knee_angle_l",
+      "expression": "6.09*exp(33.94*(-q-0.13))-11.03*exp(-11.33*(-q+2.40))-0.1*qdot",
+      "q_rad": 0,
+      "qdot_rad_s": 0,
+      "generalized_force_nm": 0.07386235994209785
+    },
+    {
+      "name": "PassiveShoulderDampingX_l",
+      "coordinate": "arm_flex_l",
+      "expression": "-2.44*exp(5.05*(q-1.81))+1.51*exp(-11.88*(q+0.50))-1.0*qdot",
+      "q_rad": 0,
+      "qdot_rad_s": 0,
+      "generalized_force_nm": 0.0037127145468461836
+    },
+    {
+      "name": "PassiveHipDampingX_r",
+      "coordinate": "hip_flexion_r",
+      "expression": "-2.44*exp(5.05*(q-1.81))+1.51*exp(-21.88*(q+0.47))-0.1*qdot",
+      "q_rad": 0,
+      "qdot_rad_s": 0,
+      "generalized_force_nm": -0.00021002449529712296
+    },
+    {
+      "name": "PassiveHipDampingX_l",
+      "coordinate": "hip_flexion_l",
+      "expression": "-2.44*exp(5.05*(q-1.81))+1.51*exp(-21.88*(q+0.47))-0.1*qdot",
+      "q_rad": 0,
+      "qdot_rad_s": 0,
+      "generalized_force_nm": -0.00021002449529712296
+    },
+    {
+      "name": "PassiveShoulderDampingZ_l",
+      "coordinate": "arm_rot_l",
+      "expression": "-0.43*exp(14.94*(q-0.15))+0.43*exp(-14.93*(q+0.15))-1.0*qdot",
+      "q_rad": 0,
+      "qdot_rad_s": 0,
+      "generalized_force_nm": 6.86485774721926e-05
+    },
+    {
+      "name": "PassiveHipDampingY_r",
+      "coordinate": "hip_adduction_r",
+      "expression": "-0.03*exp(14.94*(q-0.50))+0.03*exp(-14.94*(q+0.50))-0.1*qdot",
+      "q_rad": 0,
+      "qdot_rad_s": 0,
+      "generalized_force_nm": 0.0
+    },
+    {
+      "name": "PassiveHipDampingZ_r",
+      "coordinate": "hip_rotation_r",
+      "expression": "-0.03*exp(14.94*(q-0.92))+0.03*exp(-14.94*(q+0.92))-0.1*qdot",
+      "q_rad": 0,
+      "qdot_rad_s": 0,
+      "generalized_force_nm": 0.0
+    },
+    {
+      "name": "PassiveHipDampingY_l",
+      "coordinate": "hip_adduction_l",
+      "expression": "-0.03*exp(14.94*(q-0.50))+0.03*exp(-14.94*(q+0.50))-0.1*qdot",
+      "q_rad": 0,
+      "qdot_rad_s": 0,
+      "generalized_force_nm": 0.0
+    },
+    {
+      "name": "PassiveHipDampingZ_l",
+      "coordinate": "hip_rotation_l",
+      "expression": "-0.03*exp(14.94*(q-0.92))+0.03*exp(-14.94*(q+0.92))-0.1*qdot",
+      "q_rad": 0,
+      "qdot_rad_s": 0,
+      "generalized_force_nm": 0.0
+    },
+    {
+      "name": "PassiveAnkleDamping_r",
+      "coordinate": "ankle_angle_r",
+      "expression": "-0.1*qdot",
+      "q_rad": 0,
+      "qdot_rad_s": 0,
+      "generalized_force_nm": -0.0
+    },
+    {
+      "name": "PassiveAnkleDamping_l",
+      "coordinate": "ankle_angle_l",
+      "expression": "-0.1*qdot",
+      "q_rad": 0,
+      "qdot_rad_s": 0,
+      "generalized_force_nm": -0.0
+    },
+    {
+      "name": "PassiveToeDamping_r",
+      "coordinate": "mtp_angle_r",
+      "expression": "-25.0*q-2.0*qdot",
+      "q_rad": 0,
+      "qdot_rad_s": 0,
+      "generalized_force_nm": -0.0
+    },
+    {
+      "name": "PassiveToeDamping_l",
+      "coordinate": "mtp_angle_l",
+      "expression": "-25.0*q-2.0*qdot",
+      "q_rad": 0,
+      "qdot_rad_s": 0,
+      "generalized_force_nm": -0.0
+    }
+  ],
+  "initial_passive_energy_observation": {
+    "provenance": {
+      "model_sha256": "7df12320c481b35a3045576aab830a989e2d802c030632bc23ddf0e8fccae98d",
+      "thelen_source_sha256": "9210fba43346531f9114b0c1d7c16b587a948269c98160c872611711c34fd882",
+      "correction_basis": "Thelen source calcfpefisoPE: normalized fiber length replaces erroneous metre argument; tendon primitive unchanged",
+      "scope": "Diagnostic passive potential observation only; native getter, forces and physiological ledger unchanged"
+    },
+    "muscles": [
+      {
+        "name": "addbrev_r",
+        "raw_native_passive_energy_j": 0.000630287669209562,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.000630287669209562
+      },
+      {
+        "name": "addlong_r",
+        "raw_native_passive_energy_j": 0.008675021055928836,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.008675021055928836
+      },
+      {
+        "name": "addmagDist_r",
+        "raw_native_passive_energy_j": 0.0002681849829883703,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.0002681849829883703
+      },
+      {
+        "name": "addmagIsch_r",
+        "raw_native_passive_energy_j": 0.0006907947498968756,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.0006907947498968756
+      },
+      {
+        "name": "addmagMid_r",
+        "raw_native_passive_energy_j": 0.0001319275427874779,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.0001319275427874779
+      },
+      {
+        "name": "addmagProx_r",
+        "raw_native_passive_energy_j": 0.000124162158371729,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.000124162158371729
+      },
+      {
+        "name": "bflh_r",
+        "raw_native_passive_energy_j": 0.002825418064829305,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.002825418064829305
+      },
+      {
+        "name": "bfsh_r",
+        "raw_native_passive_energy_j": 0.12149571198916416,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.12149571198916416
+      },
+      {
+        "name": "edl_r",
+        "raw_native_passive_energy_j": 0.0017615258642766497,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.0017615258642766497
+      },
+      {
+        "name": "ehl_r",
+        "raw_native_passive_energy_j": 0.0035179146886885624,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.0035179146886885624
+      },
+      {
+        "name": "fdl_r",
+        "raw_native_passive_energy_j": 0.0014815894102918072,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.0014815894102918072
+      },
+      {
+        "name": "fhl_r",
+        "raw_native_passive_energy_j": 0.0025120309806922316,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.0025120309806922316
+      },
+      {
+        "name": "gaslat_r",
+        "raw_native_passive_energy_j": 0.12832665333671356,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.12832665333671356
+      },
+      {
+        "name": "gasmed_r",
+        "raw_native_passive_energy_j": 0.15753387790518725,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.15753387790518725
+      },
+      {
+        "name": "glmax1_r",
+        "raw_native_passive_energy_j": 0.0004457429370180546,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.0004457429370180546
+      },
+      {
+        "name": "glmax2_r",
+        "raw_native_passive_energy_j": 0.0007621346917629267,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.0007621346917629267
+      },
+      {
+        "name": "glmax3_r",
+        "raw_native_passive_energy_j": 0.0004754999368797368,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.0004754999368797368
+      },
+      {
+        "name": "glmed1_r",
+        "raw_native_passive_energy_j": 0.0004423159730067763,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.0004423159730067763
+      },
+      {
+        "name": "glmed2_r",
+        "raw_native_passive_energy_j": 0.0004122184436132316,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.0004122184436132316
+      },
+      {
+        "name": "glmed3_r",
+        "raw_native_passive_energy_j": 0.00029891771852552423,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.00029891771852552423
+      },
+      {
+        "name": "glmin1_r",
+        "raw_native_passive_energy_j": 5.455597700682684e-05,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 5.455597700682684e-05
+      },
+      {
+        "name": "glmin2_r",
+        "raw_native_passive_energy_j": 0.0001373358697909755,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.0001373358697909755
+      },
+      {
+        "name": "glmin3_r",
+        "raw_native_passive_energy_j": 0.00016347908700094354,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.00016347908700094354
+      },
+      {
+        "name": "grac_r",
+        "raw_native_passive_energy_j": 0.2012975524455641,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.2012975524455641
+      },
+      {
+        "name": "iliacus_r",
+        "raw_native_passive_energy_j": 0.04506297360291112,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.04506297360291112
+      },
+      {
+        "name": "perbrev_r",
+        "raw_native_passive_energy_j": 0.009807436121258352,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.009807436121258352
+      },
+      {
+        "name": "perlong_r",
+        "raw_native_passive_energy_j": 0.024696335516840827,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.024696335516840827
+      },
+      {
+        "name": "piri_r",
+        "raw_native_passive_energy_j": 0.0008329139028734973,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.0008329139028734973
+      },
+      {
+        "name": "psoas_r",
+        "raw_native_passive_energy_j": 0.20679701789983082,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.20679701789983082
+      },
+      {
+        "name": "recfem_r",
+        "raw_native_passive_energy_j": 0.005687525395809808,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.005687525395809808
+      },
+      {
+        "name": "sart_r",
+        "raw_native_passive_energy_j": 0.1808864537396672,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.1808864537396672
+      },
+      {
+        "name": "semimem_r",
+        "raw_native_passive_energy_j": 0.004680899776100787,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.004680899776100787
+      },
+      {
+        "name": "semiten_r",
+        "raw_native_passive_energy_j": 0.08991421593777386,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.08991421593777386
+      },
+      {
+        "name": "soleus_r",
+        "raw_native_passive_energy_j": 0.01291833608156607,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.01291833608156607
+      },
+      {
+        "name": "tfl_r",
+        "raw_native_passive_energy_j": 0.004971397148476619,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.004971397148476619
+      },
+      {
+        "name": "tibant_r",
+        "raw_native_passive_energy_j": 0.002367973469986716,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.002367973469986716
+      },
+      {
+        "name": "tibpost_r",
+        "raw_native_passive_energy_j": 0.010151426079210905,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.010151426079210905
+      },
+      {
+        "name": "vasint_r",
+        "raw_native_passive_energy_j": 0.0015324459360651647,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.0015324459360651647
+      },
+      {
+        "name": "vaslat_r",
+        "raw_native_passive_energy_j": 0.0048895640967564135,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.0048895640967564135
+      },
+      {
+        "name": "vasmed_r",
+        "raw_native_passive_energy_j": 0.0020484873950381956,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.0020484873950381956
+      },
+      {
+        "name": "addbrev_l",
+        "raw_native_passive_energy_j": 0.0006309402140345196,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.0006309402140345196
+      },
+      {
+        "name": "addlong_l",
+        "raw_native_passive_energy_j": 0.008658855571205788,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.008658855571205788
+      },
+      {
+        "name": "addmagDist_l",
+        "raw_native_passive_energy_j": 0.0002682199182797615,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.0002682199182797615
+      },
+      {
+        "name": "addmagIsch_l",
+        "raw_native_passive_energy_j": 0.000690078347295617,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.000690078347295617
+      },
+      {
+        "name": "addmagMid_l",
+        "raw_native_passive_energy_j": 0.0001316620852725637,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.0001316620852725637
+      },
+      {
+        "name": "addmagProx_l",
+        "raw_native_passive_energy_j": 0.00012407906001807311,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.00012407906001807311
+      },
+      {
+        "name": "bflh_l",
+        "raw_native_passive_energy_j": 0.002826452642243556,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.002826452642243556
+      },
+      {
+        "name": "bfsh_l",
+        "raw_native_passive_energy_j": 0.1217688447073919,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.1217688447073919
+      },
+      {
+        "name": "edl_l",
+        "raw_native_passive_energy_j": 0.0017615111409111422,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.0017615111409111422
+      },
+      {
+        "name": "ehl_l",
+        "raw_native_passive_energy_j": 0.0035054666014394495,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.0035054666014394495
+      },
+      {
+        "name": "fdl_l",
+        "raw_native_passive_energy_j": 0.0014810089098040969,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.0014810089098040969
+      },
+      {
+        "name": "fhl_l",
+        "raw_native_passive_energy_j": 0.0025120253327462986,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.0025120253327462986
+      },
+      {
+        "name": "gaslat_l",
+        "raw_native_passive_energy_j": 0.14583207378628749,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.14583207378628749
+      },
+      {
+        "name": "gasmed_l",
+        "raw_native_passive_energy_j": 0.1568153795204492,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.1568153795204492
+      },
+      {
+        "name": "glmax1_l",
+        "raw_native_passive_energy_j": 0.0004462654641211245,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.0004462654641211245
+      },
+      {
+        "name": "glmax2_l",
+        "raw_native_passive_energy_j": 0.0007624894958128696,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.0007624894958128696
+      },
+      {
+        "name": "glmax3_l",
+        "raw_native_passive_energy_j": 0.0004755596972820375,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.0004755596972820375
+      },
+      {
+        "name": "glmed1_l",
+        "raw_native_passive_energy_j": 0.0004419065441139808,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.0004419065441139808
+      },
+      {
+        "name": "glmed2_l",
+        "raw_native_passive_energy_j": 0.0004122457969680464,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.0004122457969680464
+      },
+      {
+        "name": "glmed3_l",
+        "raw_native_passive_energy_j": 0.0002990160407108388,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.0002990160407108388
+      },
+      {
+        "name": "glmin1_l",
+        "raw_native_passive_energy_j": 5.455445641950141e-05,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 5.455445641950141e-05
+      },
+      {
+        "name": "glmin2_l",
+        "raw_native_passive_energy_j": 0.00015443434555663737,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.00015443434555663737
+      },
+      {
+        "name": "glmin3_l",
+        "raw_native_passive_energy_j": 0.0001634791972205225,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.0001634791972205225
+      },
+      {
+        "name": "grac_l",
+        "raw_native_passive_energy_j": 0.20196162842211557,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.20196162842211557
+      },
+      {
+        "name": "iliacus_l",
+        "raw_native_passive_energy_j": 0.04792035943322448,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.04792035943322448
+      },
+      {
+        "name": "perbrev_l",
+        "raw_native_passive_energy_j": 0.009800582799281777,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.009800582799281777
+      },
+      {
+        "name": "perlong_l",
+        "raw_native_passive_energy_j": 0.024674573241909026,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.024674573241909026
+      },
+      {
+        "name": "piri_l",
+        "raw_native_passive_energy_j": 0.0008290923314612732,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.0008290923314612732
+      },
+      {
+        "name": "psoas_l",
+        "raw_native_passive_energy_j": 0.2134018830778593,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.2134018830778593
+      },
+      {
+        "name": "recfem_l",
+        "raw_native_passive_energy_j": 0.0056936349193299285,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.0056936349193299285
+      },
+      {
+        "name": "sart_l",
+        "raw_native_passive_energy_j": 0.18084701365477668,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.18084701365477668
+      },
+      {
+        "name": "semimem_l",
+        "raw_native_passive_energy_j": 0.004671149467049513,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.004671149467049513
+      },
+      {
+        "name": "semiten_l",
+        "raw_native_passive_energy_j": 0.08932585474181833,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.08932585474181833
+      },
+      {
+        "name": "soleus_l",
+        "raw_native_passive_energy_j": 0.012917889330345099,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.012917889330345099
+      },
+      {
+        "name": "tfl_l",
+        "raw_native_passive_energy_j": 0.004953234034749872,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.004953234034749872
+      },
+      {
+        "name": "tibant_l",
+        "raw_native_passive_energy_j": 0.002367920468079994,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.002367920468079994
+      },
+      {
+        "name": "tibpost_l",
+        "raw_native_passive_energy_j": 0.010143721462570506,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.010143721462570506
+      },
+      {
+        "name": "vasint_l",
+        "raw_native_passive_energy_j": 0.0015329928346492624,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.0015329928346492624
+      },
+      {
+        "name": "vaslat_l",
+        "raw_native_passive_energy_j": 0.004891745511070552,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.004891745511070552
+      },
+      {
+        "name": "vasmed_l",
+        "raw_native_passive_energy_j": 0.002049724608878275,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.002049724608878275
+      },
+      {
+        "name": "arm26_TRIlong_r",
+        "raw_native_passive_energy_j": 0.05478419100235755,
+        "source_passive_correction_j": 0.38290671110564134,
+        "corrected_passive_energy_j": 0.4376909021079989
+      },
+      {
+        "name": "arm26_TRIlat_r",
+        "raw_native_passive_energy_j": 0.015046814437310934,
+        "source_passive_correction_j": 0.019917320000860255,
+        "corrected_passive_energy_j": 0.03496413443817119
+      },
+      {
+        "name": "arm26_TRImed_r",
+        "raw_native_passive_energy_j": 0.011810053176088239,
+        "source_passive_correction_j": 0.0012733381893782513,
+        "corrected_passive_energy_j": 0.01308339136546649
+      },
+      {
+        "name": "arm26_BIClong_r",
+        "raw_native_passive_energy_j": 0.017257295321124636,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.017257295321124636
+      },
+      {
+        "name": "arm26_BICshort_r",
+        "raw_native_passive_energy_j": 0.012532912180137615,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.012532912180137615
+      },
+      {
+        "name": "arm26_BRA_r",
+        "raw_native_passive_energy_j": 0.005738573151106887,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.005738573151106887
+      },
+      {
+        "name": "arm26_TRIlong_l",
+        "raw_native_passive_energy_j": 0.022965779252538874,
+        "source_passive_correction_j": 0.002003445796441927,
+        "corrected_passive_energy_j": 0.0249692250489808
+      },
+      {
+        "name": "arm26_TRIlat_l",
+        "raw_native_passive_energy_j": 0.007480650540920125,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.007480650540920125
+      },
+      {
+        "name": "arm26_TRImed_l",
+        "raw_native_passive_energy_j": 0.006201194470318633,
+        "source_passive_correction_j": 0.0,
+        "corrected_passive_energy_j": 0.006201194470318633
+      },
+      {
+        "name": "arm26_BIClong_l",
+        "raw_native_passive_energy_j": 0.13373707417270478,
+        "source_passive_correction_j": 0.8088392595936241,
+        "corrected_passive_energy_j": 0.9425763337663289
+      },
+      {
+        "name": "arm26_BICshort_l",
+        "raw_native_passive_energy_j": 0.026072026474431687,
+        "source_passive_correction_j": 0.0685939560350471,
+        "corrected_passive_energy_j": 0.09466598250947879
+      },
+      {
+        "name": "arm26_BRA_l",
+        "raw_native_passive_energy_j": 0.014513400576555919,
+        "source_passive_correction_j": 0.054383416091661786,
+        "corrected_passive_energy_j": 0.0688968166682177
+      }
+    ],
+    "raw_native_passive_energy_j": 2.838049769549712,
+    "source_passive_correction_j": 1.337917446812655,
+    "corrected_passive_energy_j": 4.175967216362367
+  },
+  "raw_native_kinetic_energy_j": 0.025084599923324086,
+  "raw_native_potential_energy_j": 2.838049769549711,
+  "native_joint_reaction_force_norm_n": {
+    "pelvis": 4.003728776871363e-06,
+    "femur_r": 4254837640.0504193,
+    "tibia_r": 1404431430.2764094,
+    "patella_r": 17900381.743653875,
+    "talus_r": 325082668.79401135,
+    "calcn_r": 296778970.67678416,
+    "toes_r": 29128698.3211405,
+    "femur_l": 3725936619.792376,
+    "tibia_l": 1228192075.236328,
+    "patella_l": 15686803.006276073,
+    "talus_l": 286043681.309271,
+    "calcn_l": 261347503.61127847,
+    "toes_l": 24903187.179552693,
+    "torso": 11475116795.994127,
+    "humerus_r": 24671107820.23083,
+    "ulna_r": 18464551188.416927,
+    "radius_r": 12867543517.883217,
+    "hand_r": 6420551689.357377,
+    "humerus_l": 1739935768.9548132,
+    "ulna_l": 798271702.3981435,
+    "radius_l": 511758835.55052435,
+    "hand_l": 221483517.34470937
+  },
+  "maximum_initial_angular_speed_rad_s": 0.9984670148486838,
+  "maximum_initial_tendon_force_n": 90.7437729254721,
+  "constraint_position_error": 0,
+  "constraint_velocity_error": 0,
+  "cause": "Kinematic-only search admits shoulder coordinates deep inside exponential source passive-limit tails despite legal broad XML ROM; initialized source joint reactions are enormous before hair contact",
+  "reference_check": "Offline exact same-initial snapshot roots/tangents dot minimum0.9999999999999996, clamp residual1.145e-16m; fixed held-surface hair solve succeeds with no contact and maxload0.003644N",
+  "next_requirement": "Force-aware source-domain pose qualification and alternate collision normal/target. No blind timestep shrink or passive force suppression.",
+  "profile": {
+    "elapsed_s": 3.77,
+    "peak_rss_kib": 94392,
+    "native_child_reaped": true
+  },
+  "source_receipts": {
+    "data/derived/hair-collision-native-u93_yi3p/initial.json": "112b5278f9ba241e517dc98fdc76d6c798998b10b1a8a8590666740f07e49815",
+    "data/derived/hair-collision-native-u93_yi3p/failure.json": "cc982e71559d8f5a2cdfb3abf9d639b132a8e59c484e1e168e14036123181784",
+    "data/derived/hair-collision-native-u93_yi3p/inputs/subject_walk_scaled.osim": "7df12320c481b35a3045576aab830a989e2d802c030632bc23ddf0e8fccae98d",
+    "data/derived/hair-collision-native-u93_yi3p/inputs/subject_walk_scaled_ExpressionBasedCoordinateForceSet.xml": "ff09a63fa9c2036a3692214889c87bee28bea6f51a503233692b288c5b28aba0",
+    "scripts/audit_hair_collision_failure.py": "5aa3c99e497292b324c9116bc6ca0793f55b91ab5080e70f7d5b99cd276f6bcc",
+    "scripts/effective_passive_energy_observation.py": "144d8bcf93f75b9adac7710c86a74481f8400f744547a00bd321e1eb8c147cc3"
+  }
+}

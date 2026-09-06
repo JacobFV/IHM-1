@@ -9,9 +9,10 @@ from scripts.materialize_hair_residual_native import materialize
 from scripts.verify_hair_coupled_native import CandidateStream,totals
 from scripts.verify_hair_residual_native import validate
 from scripts.effective_passive_energy_observation import PassiveEnergyObservation
+from scripts.audit_hair_collision_failure import source_joint_forces
 
 
-def initial_condition(output,pose):
+def initial_condition(output,pose,*,enforce_force_budget=True):
     identity=materialize(output/'inputs');q=np.array(list(pose['pose'].values()));center=np.array(pose['evaluations'][-1]['center_native_ground_m']);J=np.zeros((3,5));seen=set()
     for row in pose['evaluations'][-7:]:
         d=np.array(row['q'])-q;nonzero=np.flatnonzero(abs(d)>1e-12)
@@ -24,7 +25,12 @@ def initial_condition(output,pose):
     for (name,value),velocity in zip(pose['pose'].items(),speed):
         coordinate=xml.find(f'.//Coordinate[@name="{name}"]');coordinate.find('default_value').text=format(value,'.17g');coordinate.find('default_speed_value').text=format(velocity,'.17g')
     path.write_bytes(ET.tostring(xml,encoding='utf-8',xml_declaration=True));identity['files'][path.name]=file_sha256(path);identity['collision_initial_condition']={'pose':pose['pose'],'coordinate_speeds_rad_s':dict(zip(pose['pose'],speed.tolist())),'hand_center_velocity_jacobian_m_per_rad':J.tolist(),'desired_hand_relative_approach_m_s':desired.tolist(),'pre_pose_model_sha256':file_sha256(original),'basis':'Declared engineered articulated initial condition; no continuing-state teleport or hair root reattachment'}
-    (output/'inputs/hair_residual_identity.json').write_text(json.dumps(identity,indent=2)+'\n');return identity
+    coordinates={c.get('name'):{'value':float(c.findtext('default_value')),'speed':float(c.findtext('default_speed_value'))} for c in xml.iter('Coordinate')}
+    forces=source_joint_forces(output/'inputs/subject_walk_scaled_ExpressionBasedCoordinateForceSet.xml',coordinates);maximum=max(abs(f['generalized_force_nm']) for f in forces)
+    identity['source_passive_force_screen']={'maximum_abs_generalized_force_nm':maximum,'engineering_acceptance_budget_nm':100.,'passed':maximum<=100.,'basis':'Bounded experiment qualification only; original source force laws unchanged; not anatomical ROM calibration'}
+    (output/'inputs/hair_residual_identity.json').write_text(json.dumps(identity,indent=2)+'\n')
+    if enforce_force_budget and maximum>100:raise ValueError('Initial pose violates source passive-force experiment budget')
+    return identity
 
 
 def passive(port,snapshot):
@@ -36,11 +42,12 @@ def main(build,run):
     if file_sha256(scan_path)!=pose['source_sha256'][str(scan_path)] or not pose['kinematic_feasible']:raise ValueError('Exact source pose dependency mismatch')
     if not run:
         with tempfile.TemporaryDirectory(prefix='hair-collision-light-',dir=ROOT/'data/derived') as tmp:
-            identity=initial_condition(Path(tmp),pose);assert identity['target_native_mass_kg']==77.61218724193209
+            identity=initial_condition(Path(tmp),pose,enforce_force_budget=False);assert identity['target_native_mass_kg']==77.61218724193209
         base=json.loads((ROOT/'data/research/hair_source_factory.json').read_bytes());partition=json.loads((ROOT/'data/research/hair_native_partition.json').read_bytes());registration=json.loads((ROOT/base['actual_frozen_native_inertia']['registration_path']).read_bytes());old=json.loads((ROOT/'data/research/hair_residual_native_acceptance.json').read_bytes());snapshot=json.loads((ROOT/old['output']/'snapshot.json').read_bytes())
         baseline=coupled_candidate(partition,base,registration,snapshot);extra=coupled_candidate(partition,base,registration,snapshot,additional_contact_faces=[pose['face']])
         assert np.array_equal(baseline.hair.position_m,extra.hair.position_m) and np.array_equal(baseline.hair.mass_kg,extra.hair.mass_kg) and len(extra.triangles)==95
-        print('PASS source-bound exact handface pose, fullrank native Jacobian, bounded approach velocities, residual inventory retained; no native run');return
+        assert not identity['source_passive_force_screen']['passed']
+        print('PASS known invalid pose rejected by source force screen; source-bound exact handface pose, fullrank native Jacobian, bounded approach velocities, residual inventory retained; no native run');return
     def expired(sig,frame):raise TimeoutError('45s bounded collision acceptance')
     signal.signal(signal.SIGALRM,expired);signal.alarm(45);output=Path(tempfile.mkdtemp(prefix='hair-collision-native-',dir=ROOT/'data/derived'));identity=initial_condition(output,pose);native=CandidateStream(output/'native',identity,build_path=build);rows=[];started=time.monotonic()
     try:
