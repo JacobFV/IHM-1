@@ -1,0 +1,514 @@
+
+
+
+
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html SYSTEM "http://evolvis.org/DTD/xhtml10t-rdfa10.dtd">
+<html xml:lang="en" lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:doap="http://usefulinc.com/ns/doap#" xmlns:foaf="http://xmlns.com/foaf/0.1/" xmlns:planetforge="http://coclico-project.org/ontology/planetforge#" xmlns:sioc="http://rdfs.org/sioc/ns#">
+	<head>
+		<style id="topStyle">
+		body {
+			display:none !important;
+		}
+		</style>
+
+		<script type="text/javascript">
+		if (self === top) {
+			var elemTopStyle = document.getElementById("topStyle");
+			elemTopStyle.parentNode.removeChild(topStyle);
+		}
+		else {
+			top.location = self.location;
+		}
+		</script>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+                                <meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="description" content="Provides the files associated with a dynamic model of the upper limb for use in SIMM or OpenSim." />
+			<title>SimTK: Upper Extremity Dynamic Model: Project Home</title>
+	<link rel="icon" type="image/png" href="/images/icon.png" />
+	<link rel="shortcut icon" type="image/png" href="/images/icon.png" />
+	<link rel="alternate" title="SimTK - Project News Highlights RSS" href="/export/rss20_news.php" type="application/rss+xml" />
+	<link rel="alternate" title="SimTK - New Projects RSS" href="/export/rss20_projects.php" type="application/rss+xml" />
+	<link rel="alternate" title="SimTK - New Activity RSS" href="/export/rss20_activity.php?group_id=657" type="application/rss+xml" />
+	<link rel="search" title="SimTK" href="/export/search_plugin.php" type="application/opensearchdescription+xml" />
+<script type="text/javascript" src="/js/common.js"></script>	<script type="text/javascript" src="/scripts/jquery/jquery-3.5.1.min.js?1591639933"></script>
+	<script type="text/javascript" src="/scripts/jquery/jquery-migrate-3.3.0.min.js?1591639944"></script>
+	<script type="text/javascript" src="/scripts/jquery-ui/js/jquery-ui.min.js?1591639920"></script>
+	<script type="text/javascript" src="/scripts/jquery-storage/jquery.Storage.js?1422635172"></script>
+		<script type="text/javascript">//<![CDATA[
+		jQuery(window).load(function(){
+			jQuery(".quicknews").hide();
+			setTimeout("jQuery('.feedback').hide('slow')", 5000);
+			setInterval(function() {
+					setTimeout("jQuery('.feedback').hide('slow')", 5000);
+				}, 5000);
+		});
+                $(function(){
+                    // hack to remove documents from the SELECT
+                    $(".search_select").find('[value=alldocs]').remove(); 
+                });
+		//]]></script>
+		<script type="text/javascript" src="https://simtk.org/themes/simtk/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="https://simtk.org/themes/simtk/js/help_ruler.js"></script>
+<script type="text/javascript" src="https://simtk.org/themes/simtk/js/dropdowns-enhancement.js"></script>
+<script type="text/javascript" src="https://simtk.org/themes/simtk/js/jquery.popupWindow.js"></script>
+<script type="text/javascript" src="https://simtk.org/themes/simtk/js/simple-expand.js"></script>
+		
+        	<link rel="stylesheet" type="text/css" href="/themes/css/fusionforge.css?1558221842" />
+	<link rel="stylesheet" type="text/css" href="/themes/simtk/css/theme.css?1700256018" />
+	<link rel="stylesheet" type="text/css" href="/themes/simtk/css/carousel.css?1558222073" />
+	<link rel="stylesheet" type="text/css" href="/scripts/jquery-ui/css/jquery-ui.min.css?1591639913" />
+	<meta name="Forge-Identification" content="FusionForge:6.0.5+autobuilt201805241740-1" />
+	</head>
+			<body>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-76347930-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-76347930-1');
+</script>
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-39MBRCX1ZS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-39MBRCX1ZS');
+</script>
+
+<div class='the_header'>
+<div class='cont_header'>
+
+<script type="text/javascript" src="/announcement.js"></script>
+
+<nav class="navbar navbar-simtk" role="navigation">
+	<div class="navbar-header">
+		<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+			<span class="sr-only">Toggle navigation</span>
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+		</button>
+		<a class="navbar-brand" href="/">		<img alt="FusionForge Home" src="https://simtk.org/themes/simtk/images/header/logo.png" />
+</a>	</div>
+	
+	<!-- HAVE TWO ADDITIONAL CLASSES: intend and action --->
+	<div id="navbar" class="navbar-collapse collapse">
+	    <!-- Decreased width of Search Box and moved to this location --->
+		<ul class="nav navbar-nav navbar-right">
+<div class='the_search_box'>
+
+<form id='searchBox' action='/search/search.php' method='get'>
+	<div class='search_box_inputs'>
+		<input type='text' id='searchBox-words' 
+			placeholder='Search for' name='srch' 
+			value='' required='required' />
+		<input type='submit' name='Search' value='Search' />
+	</div>
+	<span class='search_box_select'>
+		<input type='radio' name='type_of_search' value='soft' checked='checked' />&nbsp;<label>Projects</label>&nbsp;&nbsp; <input type='radio' name='type_of_search' value='people'  />&nbsp;<label>People</label>
+	</span>
+</form>
+	</div>
+
+
+<li class="dropdown">
+	<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Projects<span class="caret"></span></a>
+	<ul class="dropdown-menu" style='min-width:330px;' role="menu">
+		<li class="dropdown-submenu">
+			<a href="#" data-toggle="dropdown" style="padding-left:20px;" >Project categories</a>
+			<ul class="dropdown-menu">
+				<li class="dropdown-header">Biological applications</li>
+				<li class="intend"><a href="/category/category.php?cat=309&sort=date&page=0&srch=&" tabindex="-1">Cardiovascular system</a></li>
+				<li class="intend"><a href="/category/category.php?cat=421&sort=date&page=0&srch=&" tabindex="-1">Cell</a></li>
+				<li class="intend"><a href="/category/category.php?cat=308&sort=date&page=0&srch=&" tabindex="-1">Myosin</a></li>
+				<li class="intend"><a href="/category/category.php?cat=310&sort=date&page=0&srch=&" tabindex="-1">Neuromuscular system</a></li>
+				<li class="intend"><a href="/category/category.php?cat=406&sort=date&page=0&srch=&" tabindex="-1">Protein</a></li>
+				<li class="intend"><a href="/category/category.php?cat=307&sort=date&page=0&srch=&" tabindex="-1">RNA</a></li>
+				<li class="intend"><a href="/category/category.php?cat=420&sort=date&page=0&srch=&" tabindex="-1">Tissue</a></li>
+				<li class="dropdown-header">Biocomputational focus</li>
+				<li class="intend"><a href="/category/category.php?cat=411&sort=date&page=0&srch=&" tabindex="-1">Experimental analysis</a></li>
+				<li class="intend"><a href="/category/category.php?cat=412&sort=date&page=0&srch=&" tabindex="-1">Image processing</a></li>
+				<li class="intend"><a href="/category/category.php?cat=426&sort=date&page=0&srch=&" tabindex="-1">Network modeling and analysis</a></li>
+				<li class="intend"><a href="/category/category.php?cat=409&sort=date&page=0&srch=&" tabindex="-1">Physics-based simulation</a></li>
+				<li class="intend"><a href="/category/category.php?cat=416&sort=date&page=0&srch=&" tabindex="-1">Statistical analysis</a></li>
+				<li class="intend"><a href="/category/category.php?cat=415&sort=date&page=0&srch=&" tabindex="-1">Visualization</a></li>
+			</ul>
+		</li>
+
+		<li class="dropdown-submenu">
+			<a href="#" data-toggle="dropdown" style="padding-left:20px;" >Communities</a>
+			<ul class="dropdown-menu">
+<li class="intend"><a href="/category/communityPage.php?cat=1001&sort=date&page=0&srch=&" tabindex="-1">OpenSim</a></li><li class="intend"><a href="/category/communityPage.php?cat=1002&sort=date&page=0&srch=&" tabindex="-1">Shoulder Modeling</a></li><li class="intend"><a href="/category/communityPage.php?cat=1003&sort=date&page=0&srch=&" tabindex="-1">SimVascular</a></li><li class="intend"><a href="/category/communityPage.php?cat=1004&sort=date&page=0&srch=&" tabindex="-1">IMAG/MSM Consortium</a></li><li class="intend"><a href="/category/communityPage.php?cat=1005&sort=date&page=0&srch=&" tabindex="-1">IMAG-MSM Public Dissemination...</a></li><li class="intend"><a href="/category/communityPage.php?cat=1006&sort=date&page=0&srch=&" tabindex="-1">Biomechanics of Movement</a></li><li class="divider"></li><li class="intend"><a href="/communities.php" tabindex="-1">All Communities</a></li><li class="intend"><a href="/aboutCommunities.php" tabindex="-1">About Communities</a></li><li class="intend"><a href="/sendmessage.php?recipient=admin&subject=Community%20Request" tabindex="-1">Request Community</a></li>			</ul>
+		</li>
+		<li><a class="action" href="/search/search.php?srch=&search=search&type_of_search=soft&sort=date&page=0" style="color:black;padding-left:20px;" >See all projects</a></li>
+		<li><a class="action" href="/register" style="padding-left:20px;" >Create a new project</a></li>
+
+	</ul>
+</li>
+<li class="dropdown">
+	<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">About<span class="caret"></span></a>
+	<ul class="dropdown-menu" role="menu">
+<!--
+		<li role="presentation" class="dropdown-header">What is SimTK?</li>
+		<li class="intend"><a href='/history.html'>History</a></li>
+		<li class="intend"><a href='/features.html'>Features</a></li>
+		<li class="intend"><a href='/case_studies.html'>Case studies</a></li>
+		<li class="intend"><a href='/faq_simtk.html'>FAQ</a></li>
+
+		<li role="presentation" class="dropdown-header">Support</li>
+		<li class="intend"><a href='/how_to_use_simtk.html'>How to use SimTK</a></li>
+		<li class="intend"><a href='/sendmessage.php?recipient=admin'>Contact</a></li>
+-->
+		<li class="intend"><a href="/whatIsSimtk.php">What is SimTK?</a></li>
+		<li class="intend"><a href='/features.php'>Features</a></li>
+		<li class="intend"><a href='/faq.php'>FAQ</a></li>
+		<li class="intend"><a class="contact_href" href='/feedback.php'>Contact</a></li>
+	</ul>
+</li>
+
+<li><a href="/account/register.php">Sign Up</a></li> <li><a href="/account/login.php?return_to=%2Fprojects%2Fupexdyn">Log In</a></li>		</ul>
+	</div>
+</nav>
+
+<script>
+// Safari page cache may cause user login/logout status to be not up-to-date.
+// See http://stackoverflow.com/questions/8788802/prevent-safari-loading-from-cache-when-back-button-is-clicked
+// Use the following to force a reload instead of using cache.
+$(window).bind("pageshow", function(event) {
+	if (event.originalEvent.persisted) {
+		window.location.reload();
+	}
+});
+
+// NOTE: Need to use $(window).load() instead of $(document).load() here to get
+// consistent load behavior between Chrome, Safari, Firefox, and Opera.
+// See: http://stackoverflow.com/questions/12354865/image-onload-event-and-browser-cache
+$(window).load(function() {
+
+	// Set up href for Contact page.
+	$(".contact_href").click(function(event) {
+		// Invoke event.preventDefault() first.
+		event.preventDefault();
+
+		// Get group_id if hidden DIV class "divGroupId" is present.
+		theGroupId = -1;
+		$(".divGroupId").each(function() {
+			theGroupId = $(this).text();
+		});
+		if (theGroupId != -1) {
+			// Has group_id.
+			location.href="/feedback.php?group_id=" + theGroupId;
+		}
+		else {
+			// No group_id from class "divGroupId".
+			// Try extracting from URL.
+			location.href="/feedback.php";
+		}
+	});
+
+	// Find and scale all img logos elements.
+	$("img").each(function() {
+		var theImage = new Image();
+		theImage.src = $(this).attr("src");
+		if (theImage.src.indexOf("/logos/") == -1 &&
+			theImage.src.indexOf("/logos-frs/") == -1) {
+			// Skip.
+			return;
+		}
+
+		var myThis = $(this);
+		theImage.onload = function() {
+			// Image loaded.
+
+			// Get element's dimenions.
+			var elemWidth = myThis.width();
+			var elemHeight = myThis.height();
+
+			// Get image file's dimensions.
+			var theNaturalWidth = theImage.width;
+			var theNaturalHeight =  theImage.height;
+
+			// Use the dimension that is constraining.
+			var ratioH = elemHeight / theNaturalHeight;
+			var ratioW = elemWidth / theNaturalWidth;
+			var theRatio = ratioH;
+			if (ratioH > ratioW) {
+				theRatio = ratioW;
+			}
+
+			// New dimensions of image.
+			// Subtract 2px in dimensions to account for roundoff errors.
+			var theScaledWidth = Math.floor(theRatio * theNaturalWidth) - 2;
+			var theScaledHeight = Math.floor(theRatio * theNaturalHeight) - 2;
+			// Add margin at top/bottom or left/right.
+			var marginTop = Math.floor((elemHeight - theScaledHeight)/2) - 2;
+			if (marginTop < 0) {
+				marginTop = 0;
+			}
+			var marginLeft = Math.floor((elemWidth - theScaledWidth)/2) - 2;
+			if (marginLeft < 0) {
+				marginLeft = 0;
+			}
+
+			// Set CSS for element with new dimensions with margin to center image.
+			myThis.css({
+				'width': theScaledWidth + 'px', 
+				'height': theScaledHeight + 'px',
+				'margin-top': marginTop + 'px',
+				'margin-bottom': marginTop + 'px',
+				'margin-left': marginLeft + 'px',
+				'margin-right': marginLeft + 'px',
+			});
+		};
+	});
+
+	// NOTE: The following is needed for displaying submenu under a menu item.
+	$('.dropdown>.dropdown-menu>.intend>a.dropdown-toggle').on('click', function(e) {
+		$(this).next('ul').toggle();
+		e.stopPropagation();
+		e.preventDefault();
+	});
+});
+
+
+</script>
+		
+</div>
+</div>
+<div class='the_body'>
+<div class='cont_body'>
+<div class='row_body'>
+<div class='maindiv'>
+
+    <div class='row'>
+    <div style="display: table; min-height: 15px; width: 100%;" class="marker">
+
+
+        <div class='project_title'>
+            <div class='project_titletxt'><a href='/projects/upexdyn'>Upper Extremity Dynamic Model</a></div>        </div>
+        <div class="project_share">
+
+		<table>
+		<tr>
+		<td>Share&nbsp;</td>
+		<td>
+	                <a class="popup" href="https://www.facebook.com/sharer/sharer.php?u=https://simtk.org/projects/upexdyn"><img src="/themes/simtk/images/demonstration/social-facebook.png" class="social_icon social_facebook"/></a>
+			<a class="popup" title="twitter" name="windowX" href="https://twitter.com/share"><img src="/themes/simtk/images/demonstration/social-twitter.png" /></a>
+			<a class="popup" href="http://www.linkedin.com/shareArticle?mini=true&url=https://simtk.org/projects/upexdyn&title=Upper Extremity Dynamic Model&summary=Provides the files associated with a dynamic model of the upper limb for use in SIMM or OpenSim." rel="nofollow"><img src="/themes/simtk/images/demonstration/social-linkedin.png" class="social_icon social_linkedin"/></a>
+		</td>
+		</tr>
+
+                <script type="text/javascript"> 
+                 $('.popup').popupWindow({ 
+                  centerBrowser:1
+                  });
+                </script>
+
+<tr><td>Follow&nbsp</td><td><div class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Project<span class="followDropdownCaret"></span></a>&nbsp;<ul class="dropdown-menu" role="menu"><li class='intend'><a href='/plugins/following/index.php?group_id=657&followtype=1'>Follow publicly</a></li><li class='intend'><a href='/plugins/following/index.php?group_id=657&followtype=2'>Follow privately</a></li><li class='intend'><a href='/plugins/following/index.php?group_id=657&unfollow=1'>Unfollow</a></li><li class='intend'><a href='/plugins/following/followersmap.php?group_id=657'>See followers (46)</a></li><div><li class='intend'><a class='share_text_link' href='/plugins/following/index.php?group_id=657'>List</a><li class='intend'><a class='share_text_link' href='/plugins/following/followersmap.php?group_id=657'>Map</a></li></div><li class='intend'><a href='/plugins/following/follow-info.php'>More info</a></li></ul></div></td></tr>
+		<tr>
+		<td></td>
+		<td>
+		</td>
+		</tr>
+		</table>
+
+
+        </div>
+    </div>
+</div>
+
+<div class="divGroupId" style="display:none;">657</div>
+<div class="project_menu_row">
+    <div class="project_menu_col">
+        <div class="project_menu">
+        <a href='/projects/upexdyn'><span id='About' class='btnDropdown'>About</span></a><script>$(function() {$("#About").mouseenter(function() {$(".dropdown").removeClass("open");$("#About-dropdown-menu").addClass("open");});$("#About").mouseleave(function(e) {if ($(e.relatedTarget).is("div")) {$(".dropdown").removeClass("open");}});$("#About-dropdown-menu").mouseleave(function() {$("#About-dropdown-menu").removeClass("open");});});</script><li class="dropdown" id="About-dropdown-menu" ><ul style="left:-100px;border-top-left-radius:0px;border-top-right-radius:0px;" class="dropdown-menu" style="min-width:100px;" role="menu"><li ><a href="/projects/upexdyn">Project summary</a></li><script>$(function() {$("#Projectstatistics-dropdown-submenu").mouseenter(function() {$(".dropdown-submenu").removeClass("open");$("#Projectstatistics-dropdown-submenu").addClass("open");});$("#Projectstatistics-dropdown-submenu").mouseleave(function(e) {if ($(e.relatedTarget).is("div")) {$(".dropdown-submenu").removeClass("open");}});$("#Projectstatistics-dropdown-submenu").mouseleave(function() {$("#Projectstatistics-dropdown-submenu").removeClass("open");});});</script><li class="dropdown-submenu" id="Projectstatistics-dropdown-submenu" ><a href="#" data-toggle="dropdown">Project statistics</a><ul class="dropdown-menu" id="Projectstatistics-dropdown-menu" ><li ><a href="/plugins/reports/index.php?type=group&reports=reports&group_id=657" tabindex="-1" >Downloads Summary</a></li><li ><a href="/project/stats/index.php?group_id=657" tabindex="-1" >Project Activity Plots</a></li><li ><a href="/plugins/reports/usagemap.php?group_id=657" tabindex="-1" >Geography of Use</a></li><li ><a href="/project/stats/forum_stats.php?group_id=657" tabindex="-1" >Forum Statistics</a></li></ul></li><li ><a href="/plugins/publications/index.php?type=group&id=657&pluginname=publications">Publications</a></li><li ><a href="/project/memberlist.php?group_id=657">Team members</a></li></ul></li><a href='/frs/?group_id=657'><span id='Downloads' class='btnDropdown'>Downloads</span></a><script>$(function() {$("#Downloads").mouseenter(function() {$(".dropdown").removeClass("open");$("#Downloads-dropdown-menu").addClass("open");});$("#Downloads").mouseleave(function(e) {if ($(e.relatedTarget).is("div")) {$(".dropdown").removeClass("open");}});$("#Downloads-dropdown-menu").mouseleave(function() {$("#Downloads-dropdown-menu").removeClass("open");});});</script><a href='/docman/?group_id=657'><span id='Documents' class='btnDropdown'>Documents</span></a><script>$(function() {$("#Documents").mouseenter(function() {$(".dropdown").removeClass("open");$("#Documents-dropdown-menu").addClass("open");});$("#Documents").mouseleave(function(e) {if ($(e.relatedTarget).is("div")) {$(".dropdown").removeClass("open");}});$("#Documents-dropdown-menu").mouseleave(function() {$("#Documents-dropdown-menu").removeClass("open");});});</script><a href='/plugins/phpBB/indexPhpbb.php?group_id=657&pluginname=phpBB'><span id='Forums' class='btnDropdown'>Forums</span></a><script>$(function() {$("#Forums").mouseenter(function() {$(".dropdown").removeClass("open");$("#Forums-dropdown-menu").addClass("open");});$("#Forums").mouseleave(function(e) {if ($(e.relatedTarget).is("div")) {$(".dropdown").removeClass("open");}});$("#Forums-dropdown-menu").mouseleave(function() {$("#Forums-dropdown-menu").removeClass("open");});});</script><a href='/scm/?group_id=657'><span id='SourceCode' class='btnDropdown'>Source Code</span></a><script>$(function() {$("#SourceCode").mouseenter(function() {$(".dropdown").removeClass("open");$("#SourceCode-dropdown-menu").addClass("open");});$("#SourceCode").mouseleave(function(e) {if ($(e.relatedTarget).is("div")) {$(".dropdown").removeClass("open");}});$("#SourceCode-dropdown-menu").mouseleave(function() {$("#SourceCode-dropdown-menu").removeClass("open");});});</script><a href='/tracker/?group_id=657'><span id='Issues' class='btnDropdown'>Issues</span></a><script>$(function() {$("#Issues").mouseenter(function() {$(".dropdown").removeClass("open");$("#Issues-dropdown-menu").addClass("open");});$("#Issues").mouseleave(function(e) {if ($(e.relatedTarget).is("div")) {$(".dropdown").removeClass("open");}});$("#Issues-dropdown-menu").mouseleave(function() {$("#Issues-dropdown-menu").removeClass("open");});});</script><li class="dropdown" id="Issues-dropdown-menu" ><ul style="left:-100px;border-top-left-radius:0px;border-top-right-radius:0px;" class="dropdown-menu" style="min-width:100px;" role="menu"><li ><a href="/tracker?group_id=657">View trackers</a></li><script>$(function() {$("#Bugs-dropdown-submenu").mouseenter(function() {$(".dropdown-submenu").removeClass("open");$("#Bugs-dropdown-submenu").addClass("open");});$("#Bugs-dropdown-submenu").mouseleave(function(e) {if ($(e.relatedTarget).is("div")) {$(".dropdown-submenu").removeClass("open");}});$("#Bugs-dropdown-submenu").mouseleave(function() {$("#Bugs-dropdown-submenu").removeClass("open");});});</script><li class="dropdown-submenu" id="Bugs-dropdown-submenu" ><a href="#" data-toggle="dropdown">Bugs</a><ul class="dropdown-menu" id="Bugs-dropdown-menu" ><li ><a href="/tracker/?atid=1311&group_id=657&func=browse" tabindex="-1" >Bugs tracker</a></li><li ><a href="/tracker/?atid=1311&group_id=657&func=add" tabindex="-1" >Submit new</a></li><li ><a href="/tracker/?group_id=657&atid=1311&func=monitor&start=1" tabindex="-1" >Follow</a></li></ul></li><script>$(function() {$("#Features-dropdown-submenu").mouseenter(function() {$(".dropdown-submenu").removeClass("open");$("#Features-dropdown-submenu").addClass("open");});$("#Features-dropdown-submenu").mouseleave(function(e) {if ($(e.relatedTarget).is("div")) {$(".dropdown-submenu").removeClass("open");}});$("#Features-dropdown-submenu").mouseleave(function() {$("#Features-dropdown-submenu").removeClass("open");});});</script><li class="dropdown-submenu" id="Features-dropdown-submenu" ><a href="#" data-toggle="dropdown">Features</a><ul class="dropdown-menu" id="Features-dropdown-menu" ><li ><a href="/tracker/?atid=1312&group_id=657&func=browse" tabindex="-1" >Features tracker</a></li><li ><a href="/tracker/?atid=1312&group_id=657&func=add" tabindex="-1" >Submit new</a></li><li ><a href="/tracker/?group_id=657&atid=1312&func=monitor&start=1" tabindex="-1" >Follow</a></li></ul></li><script>$(function() {$("#SuggestedIdeas-dropdown-submenu").mouseenter(function() {$(".dropdown-submenu").removeClass("open");$("#SuggestedIdeas-dropdown-submenu").addClass("open");});$("#SuggestedIdeas-dropdown-submenu").mouseleave(function(e) {if ($(e.relatedTarget).is("div")) {$(".dropdown-submenu").removeClass("open");}});$("#SuggestedIdeas-dropdown-submenu").mouseleave(function() {$("#SuggestedIdeas-dropdown-submenu").removeClass("open");});});</script><li class="dropdown-submenu" id="SuggestedIdeas-dropdown-submenu" ><a href="#" data-toggle="dropdown">Suggested Ideas</a><ul class="dropdown-menu" id="SuggestedIdeas-dropdown-menu" ><li ><a href="/tracker/?atid=2594&group_id=657&func=browse" tabindex="-1" >Suggested Ideas tracker</a></li><li ><a href="/tracker/?atid=2594&group_id=657&func=add" tabindex="-1" >Submit new</a></li><li ><a href="/tracker/?group_id=657&atid=2594&func=monitor&start=1" tabindex="-1" >Follow</a></li></ul></li></ul></li>         
+        </div>
+
+	<div class="hamburgerContainer">
+		<button class="hamburger" data-toggle="collapse" data-target="#hamburger_menu">
+			<span class="rows_icon"></span>
+		</button>
+		<div class="collapse" id="hamburger_menu">
+			<ul class="nav">
+			<li class="intend"><a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">About<span class="caret"></span></a><ul id="dropdown_About" class="dropdown-menu" role="menu"><li><a style="padding-left:20px;" class="intend" href="/projects/upexdyn">Project summary</a></li><li class='dropdown-header'>Project statistics</li><li class="intend"><a href="/plugins/reports/index.php?type=group&reports=reports&group_id=657" tabindex="-1" >Downloads Summary</a></li><li class="intend"><a href="/project/stats/index.php?group_id=657" tabindex="-1" >Project Activity Plots</a></li><li class="intend"><a href="/plugins/reports/usagemap.php?group_id=657" tabindex="-1" >Geography of Use</a></li><li class="intend"><a href="/project/stats/forum_stats.php?group_id=657" tabindex="-1" >Forum Statistics</a></li><li><a style="padding-left:20px;" class="intend" href="/plugins/publications/index.php?type=group&id=657&pluginname=publications">Publications</a></li><li><a style="padding-left:20px;" class="intend" href="/project/memberlist.php?group_id=657">Team members</a></li></ul></li><li class='intend'><a href='/frs/?group_id=657'>Downloads</a></li><li class='intend'><a href='/docman/?group_id=657'>Documents</a></li><li><a href='/plugins/phpBB/indexPhpbb.php?group_id=657&pluginname=phpBB'>Forums</a></li><li class='intend'><a href='/scm/?group_id=657'>Source Code</a></li><li class="intend"><a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Issues<span class="caret"></span></a><ul id="dropdown_Issues" class="dropdown-menu" role="menu"><li><a style="padding-left:20px;" class="intend" href="/tracker?group_id=657">View trackers</a></li><li class='dropdown-header'>Bugs</li><li class="intend"><a href="/tracker/?atid=1311&group_id=657&func=browse" tabindex="-1" >Bugs tracker</a></li><li class="intend"><a href="/tracker/?atid=1311&group_id=657&func=add" tabindex="-1" >Submit new</a></li><li class="intend"><a href="/tracker/?group_id=657&atid=1311&func=monitor&start=1" tabindex="-1" >Follow</a></li><li class='dropdown-header'>Features</li><li class="intend"><a href="/tracker/?atid=1312&group_id=657&func=browse" tabindex="-1" >Features tracker</a></li><li class="intend"><a href="/tracker/?atid=1312&group_id=657&func=add" tabindex="-1" >Submit new</a></li><li class="intend"><a href="/tracker/?group_id=657&atid=1312&func=monitor&start=1" tabindex="-1" >Follow</a></li><li class='dropdown-header'>Suggested Ideas</li><li class="intend"><a href="/tracker/?atid=2594&group_id=657&func=browse" tabindex="-1" >Suggested Ideas tracker</a></li><li class="intend"><a href="/tracker/?atid=2594&group_id=657&func=add" tabindex="-1" >Submit new</a></li><li class="intend"><a href="/tracker/?group_id=657&atid=2594&func=monitor&start=1" tabindex="-1" >Follow</a></li></ul></li>			</ul>
+		</div>
+	</div>
+
+
+    </div>
+
+</div>
+
+
+
+    <script type="text/javascript">
+	$(function() {
+		$('.expander').simpleexpand();
+	});
+</script>
+
+<div class="project_overview_main">
+    <div style="display: table; width: 100%;"> 
+        <div class="main_col">
+
+            				
+            
+            <div class="project_description">
+						
+                <p>Provides the files associated with a dynamic model of the upper limb for use in SIMM or OpenSim.</p></div>
+
+            
+            <div class="download_widget">
+                <div class="dropdown">
+                    <a class="btn-download dropdown-toggle" data-toggle="dropdown" >
+                        Download Latest Releases
+                        <span class="arrow_icon"></span>
+                    </a>
+                    <ul class="dropdown-menu" role="menu" >
+                                              <li><a role="menuitem" tabindex="-1" href="/frs/download_confirm.php/file/6366/MobL_ARMS_OpenSim3_bimanual_model.zip?group_id=657"><b>MoBL-ARMS Dynamic Upper Limb:</b> MobL_ARMS_OpenSim3_bimanual_model.zip</a></li>
+                                              <li><a role="menuitem" tabindex="-1" href="/frs/download_confirm.php/file/6322/MobL_ARMS_OpenSim41_unimanual_tutorial.zip?group_id=657"><b>MoBL-ARMS Dynamic Upper Limb:</b> MobL_ARMS_OpenSim41_unimanual_tutorial.zip</a></li>
+                                          </ul> 
+                </div>
+            </div>
+
+                <span class="small grey">License: <a href="#" id="package1589" data-content="Copyright (c) 2014-present, North Carolina State University, Northwestern University, Rehabilitation Institute of Chicago, Valparaiso University, Wake Forest University, Stanford University and VA HCS.
+All rights reserved.
+--------------------
+The MoBL-ARMS upper limb model has been open sourced solely for non-commercial purposes (including research, academic, evaluation and personal uses) under the BSD 3-Clause License below. By downloading or using this software, (1) you accept the terms and conditions of the aforementioned open source license, (2) acknowledge that your use of this software is non-commercial and commercial use requires a commercial license, and (3) accept that use of the model software must be acknowledged in all publications, presentations, or documents describing work in which the MoBL-ARMS upper limb model is used by citing the following work:
+
+Saul KR, Hu X, Goehler CM, Daly M, Vidt ME, Velisar A, Murray WM. Benchmarking of dynamic simulation predictions in two software platforms using an upper limb musculoskeletal model. Computer Methods in Biomechanics and Biomedical Engineering. 2015; 18:1445-58.
+
+McFarland, D. C., McCain, E. M., Poppo, M. N., and Saul, K. R. (March 25, 2019). &quot;Spatial Dependency of Glenohumeral Joint Stability During Dynamic Unimanual and Bimanual Pushing and Pulling.&quot; ASME. J Biomech Eng. May 2019; 141(5): 051006. https://doi.org/10.1115/1.4043035 (2019)
+ 
+----------------------------------------------------------------------------------------------------------------------------
+Copyright (c) 2014-present, North Carolina State University, Northwestern University, Rehabilitation Institute of Chicago, Valparaiso University, Wake Forest University, Stanford University and VA HCS.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE." title="Creative Commons ANC Use Agreement" rel="popover">MoBL-ARMS Dynamic Upper Limb</a><script>$("#package1589").popover({ title: 'Use Agreement', html: 'true', trigger: 'focus' });</script></span>
+            
+            <div class="project_section">
+		<hr/>
+                <p>
+                The project releases the MoBL-ARMS dynamic musculoskeletal model of the human upper extremity, implemented in SIMM/SDFast and OpenSIM. Please see the model summary for details of the new model and its use. <br />
+<br />
+New! We have released a new version of the OpenSim models and tutorial, now compatible with releases 3.2 and later. See download page for release and more information.                </p>
+            </div>
+            <div style="clear: both;"></div> 
+        </div>
+        <div class="side_bar">
+
+           <div class="statbox"><a style="color:#5e96e1;font-size:24px;font-weight:400;" href="/plugins/reports/index.php?type=group&group_id=657&reports=reports">13,278</a><p style="font-size:13px;line-height:17px;color:#a7a7a7;margin-top:-5px">downloads</p><a style="color:#5e96e1;font-size:24px;font-weight:400;" href="/plugins/phpBB/indexPhpbb.php?group_id=657&pluginname=phpBB">3</a><p style="font-size:13px;line-height:17px;color:#a7a7a7;margin-top:-5px;">forum posts</p><a style="color:#5e96e1;font-size:24px;font-weight:400;" href="/plugins/following/index.php?group_id=657">46</a><p style="font-size:13px;line-height:17px;color:#a7a7a7;margin-top:-5px;">followers</p><div style="font-size:13px;line-height:17px;color:#a7a7a7; margin-bottom:8px">Last updated<br/>Aug 9, 2021</div><div><a style="font-size:13px;line-height:17px;color:#5e96e1;" href="/plugins/reports/index.php?type=group&group_id=657&reports=reports">Project Statistics</a></div><div style='clear: both;'></div></div><div style="margin:20px 10px 10px 0;min-height:106px;"><div class="share_text"><a class="btn-blue share_text_button" href="/tracker?atid=2594&group_id=657&func=add" style="width:158px;">Suggest Idea</a></div><div style='clear: both;'></div></div>           <div class="team_member"><a href="/users/ksaul"><img src="/userpics/ksaul"  onError="this.onerror=null;this.src='/userpics/user_profile.jpg';" alt="Image not available" /></a><br/><a href="/users/ksaul">Katherine Saul</a></div> <!-- /.team_member --><div class="team_member"><a href="/users/wmmurray"><img src="/userpics/wmmurray"  onError="this.onerror=null;this.src='/userpics/user_profile.jpg';" alt="Image not available" /></a><br/><a href="/users/wmmurray">Wendy Murray</a></div> <!-- /.team_member -->
+        </div> <!-- /.side-bar -->
+    </div>
+</div>
+
+
+   
+
+
+<div class="related_group"><h2>People also viewed</h2><div class="related_item"><div class='related_thumb'><a href='/projects/wristsalvage'><img  onError="this.onerror=null;this.src='/logos/_thumb';" alt='Image not available' src='/logos/wristsalvage'></img></a></div><div class='related_text'><a href='/projects/wristsalvage/'>Nonimpaired and<br/>
+Surgically Salvaged Wrists<br/>
+</a></div></div><div class="related_item"><div class='related_thumb'><a href='/projects/scapulothoracic'><img  onError="this.onerror=null;this.src='/logos/_thumb';" alt='Image not available' src='/logos/scapulothoracic'></img></a></div><div class='related_text'><a href='/projects/scapulothoracic/'>Model of the<br/>
+Scapulothoracic<br/>
+Joint<br/>
+</a></div></div><div class="related_item"><div class='related_thumb'><a href='/projects/armmodel'><img  onError="this.onerror=null;this.src='/logos/_thumb';" alt='Image not available' src='/logos/armmodel'></img></a></div><div class='related_text'><a href='/projects/armmodel/'>Simple Dynamic Arm<br/>
+Model with Muscles<br/>
+</a></div></div><div class="related_item"><div class='related_thumb'><a href='/projects/spine_ribcage'><img  onError="this.onerror=null;this.src='/logos/_thumb';" alt='Image not available' src='/logos/spine_ribcage'></img></a></div><div class='related_text'><a href='/projects/spine_ribcage/'>Thoracolumbar spine and rib cage model<br/>
+in OpenSim<br/>
+</a></div></div><div class="related_item"><div class='related_thumb'><a href='/projects/lowlimbmodel09'><img  onError="this.onerror=null;this.src='/logos/_thumb';" alt='Image not available' src='/logos/lowlimbmodel09'></img></a></div><div class='related_text'><a href='/projects/lowlimbmodel09/'>Lower Limb Model<br/>
+2010<br/>
+</a></div></div><div class="related_item"><div class='related_thumb'><a href='/projects/das'><img  onError="this.onerror=null;this.src='/logos/_thumb';" alt='Image not available' src='/logos/das'></img></a></div><div class='related_text'><a href='/projects/das/'>Dynamic Arm<br/>
+Simulator<br/>
+</a></div></div><div class="related_item"><div class='related_thumb'><a href='/projects/full_body'><img  onError="this.onerror=null;this.src='/logos/_thumb';" alt='Image not available' src='/logos/full_body'></img></a></div><div class='related_text'><a href='/projects/full_body/'>Full Body Model for use in Dynamic<br/>
+Simulations of...<br/>
+</a></div></div><div class="related_item"><div class='related_thumb'><a href='/projects/runningsim'><img  onError="this.onerror=null;this.src='/logos/_thumb';" alt='Image not available' src='/logos/runningsim'></img></a></div><div class='related_text'><a href='/projects/runningsim/'>Muscle-actuated<br/>
+Simulation of Human Running<br/>
+</a></div></div><div class='related_link'><h2><a href="#" onclick="$('.related_more').show();$('.related_link').hide();return false;">See all</a></h2></div><div class='related_more' style='display:none'><div class="related_item"><div class='related_thumb'><a href='/projects/arm_swing'><img  onError="this.onerror=null;this.src='/logos/_thumb';" alt='Image not available' src='/logos/arm_swing'></img></a></div><div class='related_text'><a href='/projects/arm_swing/'>Analysis of arm<br/>
+swing during human<br/>
+walking<br/>
+</a></div></div><div class="related_item"><div class='related_thumb'><a href='/projects/nmblmodels'><img  onError="this.onerror=null;this.src='/logos/_thumb';" alt='Image not available' src='/logos/nmblmodels'></img></a></div><div class='related_text'><a href='/projects/nmblmodels/'>Neuromuscular<br/>
+Models Library<br/>
+</a></div></div><div class="related_item"><div class='related_thumb'><a href='/projects/3d-vh-geometry'><img  onError="this.onerror=null;this.src='/logos/_thumb';" alt='Image not available' src='/logos/3d-vh-geometry'></img></a></div><div class='related_text'><a href='/projects/3d-vh-geometry/'>3D Models of the<br/>
+Visible Human Male<br/>
+and Female<br/>
+</a></div></div><div class="related_item"><div class='related_thumb'><a href='/projects/opensense'><img  onError="this.onerror=null;this.src='/logos/_thumb';" alt='Image not available' src='/logos/opensense'></img></a></div><div class='related_text'><a href='/projects/opensense/'>OpenSense<br/>
+</a></div></div><div class="related_item"><div class='related_thumb'><a href='/projects/arms_hand_model'><img  onError="this.onerror=null;this.src='/logos/_thumb';" alt='Image not available' src='/logos/arms_hand_model'></img></a></div><div class='related_text'><a href='/projects/arms_hand_model/'>ARMS Lab hand and<br/>
+wrist model<br/>
+</a></div></div><div class="related_item"><div class='related_thumb'><a href='/projects/addbiomechanics'><img  onError="this.onerror=null;this.src='/logos/_thumb';" alt='Image not available' src='/logos/addbiomechanics'></img></a></div><div class='related_text'><a href='/projects/addbiomechanics/'>AddBiomechanics<br/>
+</a></div></div><div class="related_item"><div class='related_thumb'><a href='/projects/ceinms'><img  onError="this.onerror=null;this.src='/logos/_thumb';" alt='Image not available' src='/logos/ceinms'></img></a></div><div class='related_text'><a href='/projects/ceinms/'>Calibrated<br/>
+EMG-Informed Neuromusculoskeletal...<br/>
+</a></div></div></div><!-- related_more --></div> <!-- related_group -->
+
+<!--Here the Footer starts--></div>
+</div>
+</div>
+</div>
+<div class="the_footer"><div class="cont_footer"><div class="footer_row"><div class="footer_information"><p>SimTK is maintained through Grant R01GM124443 01A1 from the National Institutes of Health (NIH). It was initially developed as part of the Simbios project funded by the NIH as part of the NIH Roadmap for Medical Research, Grant U54 GM072970.</p></div><div class="footer-right"><a href="/pledge.php">Our Pledge and Your Responsibility</a><br/><br/><a class="feedback_href" href="#">Feedback</a> &emsp; <a href="/whatIsSimtk.php">About</a> &emsp; <a href="/account/register.php">Join</a></div></div><div style="font-size:12px;">Version 5.0.0. Website design by <a href="http://www.viewfarm.com/">Viewfarm</a>. Icons created by SimTK team using art by <a href="http://graphberry.com" title="GraphBerry">GraphBerry</a> from <a href="http://www.flaticon.com" title="Flaticon">www.flaticon.com</a> under a CC BY 3.0 license. Forked from <a href="https://github.com/fusionforge">FusionForge</a>.</div></div></div><script>
+$(document).ready(function() {
+                        $(".recYes").click(function() {
+                            rec_group_id = $(this).parent().parent().attr("id");
+                            $("#" + rec_group_id).text("Thanks!");
+                        });
+                });
+$(document).ready(function() {
+                        $(".recNo").click(function() {
+                            rec_group_id = $(this).parent().parent().attr("id");
+                            $("#" + rec_group_id).text("Thanks!");
+                        });
+                });$(document).ready(function() {
+			$(".feedback_href, .feedback_button").click(function(event) {
+				// Invoke event.preventDefault() first.
+				event.preventDefault();
+				// Get group_id if hidden DIV class "divGroupId" is present.
+				theGroupId = -1;
+				$(".divGroupId").each(function() {
+					theGroupId = $(this).text();
+				});
+				if (theGroupId != -1) {
+					// Has group_id.
+					location.href="/feedback.php?group_id=" + theGroupId;
+				}
+				else {
+					// No group_id from class "divGroupId".
+					location.href="/feedback.php";
+				}
+			});
+                });
+</script>
+            <div class='check_image' style='display: none'> 
+            </div>
+            <div class='palette' style='display: none'>
+                <div class='color light_yellow' ></div> <div class='text'>#FDF8E1 @light_yellow</div>
+                <div style='clear: both;'></div>
+                <div class='color red' ></div> <div class='text'>#F75236 @red</div>
+                <div style='clear: both;'></div>
+                <div class='color orange' ></div> <div class='text'>#F5B563 @orange</div>
+                <div style='clear: both;'></div>
+                <div class='color light_blue' ></div> <div class='text'>#81A5D4 @light_blue</div>
+                <div style='clear: both;'></div>
+                <div class='color dark_blue' ></div> <div class='text'>#5E96E1 @dark_blue</div>
+                <div style='clear: both;'></div>
+                <div class='color dark_grey' ></div> <div class='text'>#505050 @dark_grey</div>
+                <div style='clear: both;'></div>
+                <div class='color black' ></div> <div class='text'>#000000 @black</div>
+                <div style='clear: both;'></div>
+                <div class='color light_grey' ></div> <div class='text'>#A7A7A7 @light_grey</div>
+                <div style='clear: both;'></div>
+            </div>
+            <div class="feedback_button"><div class="text">Feedback</div></div>
+</body>
+</html>

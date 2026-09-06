@@ -1,0 +1,77 @@
+{
+  "retrieved": "2026-09-06",
+  "sources": [
+    {
+      "path": "data/research/shoulder_complement/LICENSE",
+      "url": "https://raw.githubusercontent.com/CEINMS-RT/UpperLimbModel/459e2ebbf47acb72b0ecbc59950a2d0a983d28db/LICENSE",
+      "bytes": 11357,
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    {
+      "path": "data/research/shoulder_complement/README.md",
+      "url": "https://raw.githubusercontent.com/CEINMS-RT/UpperLimbModel/459e2ebbf47acb72b0ecbc59950a2d0a983d28db/README.md",
+      "bytes": 5359,
+      "sha256": "a47d9b79558806b2bf31d667a02b5f391112cab30634e14e31a2e6b9518d4cc8"
+    },
+    {
+      "path": "data/research/shoulder_complement/MOBL_ARMS_41.osim",
+      "url": "https://raw.githubusercontent.com/CEINMS-RT/UpperLimbModel/459e2ebbf47acb72b0ecbc59950a2d0a983d28db/MOBL_ARMS_41.osim",
+      "bytes": 868277,
+      "sha256": "58bacbc1c61d1d42cff9a48b0a9dced9c648893f44adc7d9817cca56441a9fcf"
+    },
+    {
+      "path": "data/research/shoulder_complement/simtk_project.html",
+      "url": "https://simtk.org/projects/upexdyn",
+      "bytes": 43148,
+      "sha256": "3daf4d41abf667cd60d01fce70990bba3bfd969e7447dae1f5f6f2247552e1a5"
+    },
+    {
+      "path": "data/research/shoulder_complement/simtk_downloads.html",
+      "url": "https://simtk.org/frs/?group_id=657",
+      "bytes": 58045,
+      "sha256": "98f557f2cd05dd7e3de3c4b79f3131fa71607303eb18f065a25b43e55dbb6312"
+    },
+    {
+      "path": "data/research/shoulder_complement/simtk_download_confirm.html",
+      "url": "https://simtk.org/frs/download_confirm.php/file/6322/MobL_ARMS_OpenSim41_unimanual_tutorial.zip?group_id=657",
+      "bytes": 216,
+      "sha256": "3697292d2250d3572086a875622beadddcd57ab69d69ac9f770087d830d8db5f"
+    },
+    {
+      "path": "data/research/shoulder_complement/ceinms_repository.json",
+      "url": "https://api.github.com/repos/CEINMS-RT/UpperLimbModel",
+      "bytes": 6450,
+      "sha256": "60882bb1d4da96d66efda191edee9f029f0d399f54e8e52bfe84fb062c87082b"
+    },
+    {
+      "path": "data/research/shoulder_complement/ceinms_contents.json",
+      "url": "https://api.github.com/repos/CEINMS-RT/UpperLimbModel/contents",
+      "bytes": 8778,
+      "sha256": "8258c77a5ccda259b1945d692b095262dffdc654fd76289abad40f45b3ca31fc"
+    },
+    {
+      "path": "data/research/shoulder_complement/ceinms_commit.json",
+      "url": "https://api.github.com/repos/CEINMS-RT/UpperLimbModel/commits/main",
+      "bytes": 5369,
+      "sha256": "516c7c8ccda565ff9fad97a644e0875a8936dba74888bb1d3a7efece6d63a209"
+    },
+    {
+      "path": "data/research/shoulder_complement/saul_2015.html",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC4282829/?pdf=0",
+      "bytes": 258329,
+      "sha256": "948f4608d0ec12ab7c8738d4cd51158e8356e351ee529f4d0234372c90d54dea"
+    },
+    {
+      "path": "data/research/shoulder_complement/mcfarland_2019_metadata.json",
+      "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:30835272%20AND%20SRC:MED&format=json&resultType=core",
+      "bytes": 5193,
+      "sha256": "bb0b569d16a1ad41eba85ce16be5d1e9795a3e5c71e33df7b6e2459fed42bd2c"
+    }
+  ],
+  "new_source_bytes": 1270521,
+  "official_model_zip_held": false,
+  "mirror_equals_official_release_verified": false,
+  "bulk_geometry_held": false,
+  "original_download_requires_login": true,
+  "budget_bytes": 26214400
+}

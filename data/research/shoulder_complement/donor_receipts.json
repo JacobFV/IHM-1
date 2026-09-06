@@ -1,0 +1,20 @@
+[
+  {
+    "path": "data/research/shoulder_complement/LICENSE",
+    "url": "https://raw.githubusercontent.com/CEINMS-RT/UpperLimbModel/459e2ebbf47acb72b0ecbc59950a2d0a983d28db/LICENSE",
+    "bytes": 11357,
+    "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+  },
+  {
+    "path": "data/research/shoulder_complement/README.md",
+    "url": "https://raw.githubusercontent.com/CEINMS-RT/UpperLimbModel/459e2ebbf47acb72b0ecbc59950a2d0a983d28db/README.md",
+    "bytes": 5359,
+    "sha256": "a47d9b79558806b2bf31d667a02b5f391112cab30634e14e31a2e6b9518d4cc8"
+  },
+  {
+    "path": "data/research/shoulder_complement/MOBL_ARMS_41.osim",
+    "url": "https://raw.githubusercontent.com/CEINMS-RT/UpperLimbModel/459e2ebbf47acb72b0ecbc59950a2d0a983d28db/MOBL_ARMS_41.osim",
+    "bytes": 868277,
+    "sha256": "58bacbc1c61d1d42cff9a48b0a9dced9c648893f44adc7d9817cca56441a9fcf"
+  }
+]

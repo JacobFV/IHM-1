@@ -1,0 +1,2206 @@
+{
+  "schema": "ihm.shoulder-complement-source.v1",
+  "donor": {
+    "path": "data/research/shoulder_complement/MOBL_ARMS_41.osim",
+    "url": "https://raw.githubusercontent.com/CEINMS-RT/UpperLimbModel/459e2ebbf47acb72b0ecbc59950a2d0a983d28db/MOBL_ARMS_41.osim",
+    "bytes": 868277,
+    "sha256": "58bacbc1c61d1d42cff9a48b0a9dced9c648893f44adc7d9817cca56441a9fcf",
+    "document_version": "40000",
+    "model_name": "Right",
+    "muscle_count": 50,
+    "body_count": 12,
+    "credits": "Katherine R. Saul, Wendy M. Murray, Craig M. Goehler, Melissa Daly, Meghan E. Vidt, Dustin L. Crouch"
+  },
+  "acquisition_bytes": 1270521,
+  "mirror_equals_official_release_verified": false,
+  "official_model_zip_held": false,
+  "license": {
+    "mirror_repository": "Apache-2.0 file retained; does not establish upstream rights",
+    "current_primary_project": "noncommercial use conditions plus BSD-3-clause wording; citation required",
+    "older_catalog": "MIT listed in older OpenSim model catalog; not relied upon",
+    "scope": "local research candidate; no public publication or deployment authorization inferred"
+  },
+  "units": {
+    "position": "m",
+    "force": "N",
+    "mass": "kg",
+    "inertia": "kg m2",
+    "angle": "rad"
+  },
+  "muscles": [
+    {
+      "name": "DELT1",
+      "law_type": "Millard2012EquilibriumMuscle",
+      "parameter_evidence": "exact supplied donor model values; population/model prior, not this body measurement",
+      "parameters": {
+        "max_isometric_force": {
+          "value": 1218.9,
+          "unit": "N"
+        },
+        "optimal_fiber_length": {
+          "value": 0.0976,
+          "unit": "m"
+        },
+        "tendon_slack_length": {
+          "value": 0.093,
+          "unit": "m"
+        },
+        "pennation_angle_at_optimal": {
+          "value": 0.38397244,
+          "unit": "rad"
+        },
+        "max_contraction_velocity": {
+          "value": 10.0,
+          "unit": "optimal_fiber_lengths/s"
+        },
+        "default_activation": {
+          "value": 1.0,
+          "unit": "dimensionless"
+        }
+      },
+      "path_points": [
+        {
+          "name": "DELT1-P1",
+          "type": "PathPoint",
+          "source_frame": "/bodyset/humerus",
+          "fixed_location_m": [
+            0.00896,
+            -0.11883,
+            0.00585
+          ],
+          "coordinate_dependencies": [],
+          "complete_source_xml": "<PathPoint name=\"DELT1-P1\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/humerus</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>0.0089599999999999992 -0.11883000000000001 0.0058500000000000002</location>\n\t\t\t\t\t\t\t\t</PathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "DELT1-P2",
+          "type": "PathPoint",
+          "source_frame": "/bodyset/humerus",
+          "fixed_location_m": [
+            0.01623,
+            -0.11033,
+            0.00412
+          ],
+          "coordinate_dependencies": [],
+          "complete_source_xml": "<PathPoint name=\"DELT1-P2\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/humerus</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>0.016230000000000001 -0.11033 0.0041200000000000004</location>\n\t\t\t\t\t\t\t\t</PathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "DELT1-P3",
+          "type": "PathPoint",
+          "source_frame": "/bodyset/scapula",
+          "fixed_location_m": [
+            0.04347,
+            -0.03202,
+            0.00499
+          ],
+          "coordinate_dependencies": [],
+          "complete_source_xml": "<PathPoint name=\"DELT1-P3\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/scapula</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>0.043470000000000002 -0.03202 0.0049899999999999996</location>\n\t\t\t\t\t\t\t\t</PathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "DELT1-P4",
+          "type": "PathPoint",
+          "source_frame": "/bodyset/clavicle",
+          "fixed_location_m": [
+            -0.014,
+            0.01106,
+            0.08021
+          ],
+          "coordinate_dependencies": [],
+          "complete_source_xml": "<PathPoint name=\"DELT1-P4\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/clavicle</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>-0.014 0.01106 0.080210000000000004</location>\n\t\t\t\t\t\t\t\t</PathPoint>\n\t\t\t\t\t\t\t"
+        }
+      ],
+      "path_wraps": [
+        {
+          "name": "pathwrap",
+          "source_wrap_name": "delt2hum",
+          "source_body": "humerus",
+          "method": "hybrid",
+          "range": "-1 -1",
+          "complete_source_xml": "<PathWrap name=\"pathwrap\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>delt2hum</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>-1 -1</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "pathwrap_0",
+          "source_wrap_name": "DELT1hh",
+          "source_body": "humerus",
+          "method": "hybrid",
+          "range": "2 3",
+          "complete_source_xml": "<PathWrap name=\"pathwrap_0\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>DELT1hh</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>2 3</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t"
+        }
+      ],
+      "complete_muscle_subtree_sha256": "c54f54382c83598131df2fd9f4b653fa22facaaeb250733851575a69f0bffbb2"
+    },
+    {
+      "name": "DELT2",
+      "law_type": "Millard2012EquilibriumMuscle",
+      "parameter_evidence": "exact supplied donor model values; population/model prior, not this body measurement",
+      "parameters": {
+        "max_isometric_force": {
+          "value": 1103.5,
+          "unit": "N"
+        },
+        "optimal_fiber_length": {
+          "value": 0.1078,
+          "unit": "m"
+        },
+        "tendon_slack_length": {
+          "value": 0.1095,
+          "unit": "m"
+        },
+        "pennation_angle_at_optimal": {
+          "value": 0.26179939,
+          "unit": "rad"
+        },
+        "max_contraction_velocity": {
+          "value": 10.0,
+          "unit": "optimal_fiber_lengths/s"
+        },
+        "default_activation": {
+          "value": 1.0,
+          "unit": "dimensionless"
+        }
+      },
+      "path_points": [
+        {
+          "name": "DELT2-P1",
+          "type": "PathPoint",
+          "source_frame": "/bodyset/humerus",
+          "fixed_location_m": [
+            0.00461,
+            -0.13611,
+            0.0056
+          ],
+          "coordinate_dependencies": [],
+          "complete_source_xml": "<PathPoint name=\"DELT2-P1\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/humerus</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>0.0046100000000000004 -0.13611000000000001 0.0055999999999999999</location>\n\t\t\t\t\t\t\t\t</PathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "default",
+          "type": "MovingPathPoint",
+          "source_frame": "/bodyset/humerus",
+          "fixed_location_m": null,
+          "coordinate_dependencies": [
+            "shoulder_rot"
+          ],
+          "complete_source_xml": "<MovingPathPoint name=\"default\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/humerus</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_x_coordinate>/jointset/shoulder2/shoulder_rot</socket_x_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_y_coordinate>/jointset/shoulder2/shoulder_rot</socket_y_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_z_coordinate>/jointset/shoulder2/shoulder_rot</socket_z_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<x_location>\n\t\t\t\t\t\t\t\t\t\t<PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<x> -1.5708 0.349066</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> 0.03804 0</y>\n\t\t\t\t\t\t\t\t\t\t</PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t</x_location>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<y_location>\n\t\t\t\t\t\t\t\t\t\t<PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<x> -1.5708 0.349066</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> -0.0619 -0.06012</y>\n\t\t\t\t\t\t\t\t\t\t</PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t</y_location>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<z_location>\n\t\t\t\t\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t\t\t\t\t<x> -1.5708 -0.851248 0.349066</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> 0.00208 0.0203027 0.02532</y>\n\t\t\t\t\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t\t\t\t\t</z_location>\n\t\t\t\t\t\t\t\t</MovingPathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "DELT2-P3",
+          "type": "PathPoint",
+          "source_frame": "/bodyset/scapula",
+          "fixed_location_m": [
+            5e-05,
+            0.00294,
+            0.02233
+          ],
+          "coordinate_dependencies": [],
+          "complete_source_xml": "<PathPoint name=\"DELT2-P3\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/scapula</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>5.0000000000000002e-05 0.0029399999999999999 0.022329999999999999</location>\n\t\t\t\t\t\t\t\t</PathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "DELT2-P4",
+          "type": "PathPoint",
+          "source_frame": "/bodyset/scapula",
+          "fixed_location_m": [
+            -0.01078,
+            -0.00034,
+            0.0062
+          ],
+          "coordinate_dependencies": [],
+          "complete_source_xml": "<PathPoint name=\"DELT2-P4\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/scapula</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>-0.01078 -0.00034000000000000002 0.0061999999999999998</location>\n\t\t\t\t\t\t\t\t</PathPoint>\n\t\t\t\t\t\t\t"
+        }
+      ],
+      "path_wraps": [
+        {
+          "name": "pathwrap",
+          "source_wrap_name": "Deltoid2",
+          "source_body": "scapula",
+          "method": "hybrid",
+          "range": "-1 -1",
+          "complete_source_xml": "<PathWrap name=\"pathwrap\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>Deltoid2</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>-1 -1</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "pathwrap_0",
+          "source_wrap_name": "delt2hum",
+          "source_body": "humerus",
+          "method": "hybrid",
+          "range": "-1 -1",
+          "complete_source_xml": "<PathWrap name=\"pathwrap_0\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>delt2hum</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>-1 -1</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "pathwrap_1",
+          "source_wrap_name": "DELT_TMAJ_LAT_PEC_CORBhh",
+          "source_body": "humerus",
+          "method": "hybrid",
+          "range": "-1 -1",
+          "complete_source_xml": "<PathWrap name=\"pathwrap_1\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>DELT_TMAJ_LAT_PEC_CORBhh</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>-1 -1</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t"
+        }
+      ],
+      "complete_muscle_subtree_sha256": "86329df5319ea5d63700bd16b1a0e0dc500e6cc740fc7eaa886d074936e0ce19"
+    },
+    {
+      "name": "DELT3",
+      "law_type": "Millard2012EquilibriumMuscle",
+      "parameter_evidence": "exact supplied donor model values; population/model prior, not this body measurement",
+      "parameters": {
+        "max_isometric_force": {
+          "value": 201.6,
+          "unit": "N"
+        },
+        "optimal_fiber_length": {
+          "value": 0.1367,
+          "unit": "m"
+        },
+        "tendon_slack_length": {
+          "value": 0.038,
+          "unit": "m"
+        },
+        "pennation_angle_at_optimal": {
+          "value": 0.31415927,
+          "unit": "rad"
+        },
+        "max_contraction_velocity": {
+          "value": 10.0,
+          "unit": "optimal_fiber_lengths/s"
+        },
+        "default_activation": {
+          "value": 1.0,
+          "unit": "dimensionless"
+        }
+      },
+      "path_points": [
+        {
+          "name": "DELT3-P1",
+          "type": "PathPoint",
+          "source_frame": "/bodyset/scapula",
+          "fixed_location_m": [
+            -0.05573,
+            0.00122,
+            -0.02512
+          ],
+          "coordinate_dependencies": [],
+          "complete_source_xml": "<PathPoint name=\"DELT3-P1\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/scapula</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>-0.055730000000000002 0.0012199999999999999 -0.02512</location>\n\t\t\t\t\t\t\t\t</PathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "DELT3-P2",
+          "type": "PathPoint",
+          "source_frame": "/bodyset/scapula",
+          "fixed_location_m": [
+            -0.07247,
+            -0.03285,
+            0.01233
+          ],
+          "coordinate_dependencies": [],
+          "complete_source_xml": "<PathPoint name=\"DELT3-P2\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/scapula</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>-0.072470000000000007 -0.032849999999999997 0.012330000000000001</location>\n\t\t\t\t\t\t\t\t</PathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "DELT3-P3",
+          "type": "PathPoint",
+          "source_frame": "/bodyset/humerus",
+          "fixed_location_m": [
+            0.00206,
+            -0.07602,
+            0.01045
+          ],
+          "coordinate_dependencies": [],
+          "complete_source_xml": "<PathPoint name=\"DELT3-P3\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/humerus</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>0.0020600000000000002 -0.076020000000000004 0.010449999999999999</location>\n\t\t\t\t\t\t\t\t</PathPoint>\n\t\t\t\t\t\t\t"
+        }
+      ],
+      "path_wraps": [
+        {
+          "name": "pathwrap",
+          "source_wrap_name": "Delt3",
+          "source_body": "scapula",
+          "method": "hybrid",
+          "range": "1 2",
+          "complete_source_xml": "<PathWrap name=\"pathwrap\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>Delt3</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>1 2</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "pathwrap_0",
+          "source_wrap_name": "delt3hum",
+          "source_body": "humerus",
+          "method": "hybrid",
+          "range": "-1 -1",
+          "complete_source_xml": "<PathWrap name=\"pathwrap_0\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>delt3hum</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>-1 -1</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "pathwrap_1",
+          "source_wrap_name": "DELT_TMAJ_LAT_PEC_CORBhh",
+          "source_body": "humerus",
+          "method": "hybrid",
+          "range": "-1 -1",
+          "complete_source_xml": "<PathWrap name=\"pathwrap_1\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>DELT_TMAJ_LAT_PEC_CORBhh</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>-1 -1</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t"
+        }
+      ],
+      "complete_muscle_subtree_sha256": "58d4c87c6b3bf66993cab3c206c66ea92e2e0f4fd8e6a01a51bed69cfb1f821c"
+    },
+    {
+      "name": "SUPSP",
+      "law_type": "Millard2012EquilibriumMuscle",
+      "parameter_evidence": "exact supplied donor model values; population/model prior, not this body measurement",
+      "parameters": {
+        "max_isometric_force": {
+          "value": 499.2,
+          "unit": "N"
+        },
+        "optimal_fiber_length": {
+          "value": 0.0682,
+          "unit": "m"
+        },
+        "tendon_slack_length": {
+          "value": 0.0395,
+          "unit": "m"
+        },
+        "pennation_angle_at_optimal": {
+          "value": 0.12217305,
+          "unit": "rad"
+        },
+        "max_contraction_velocity": {
+          "value": 10.0,
+          "unit": "optimal_fiber_lengths/s"
+        },
+        "default_activation": {
+          "value": 1.0,
+          "unit": "dimensionless"
+        }
+      },
+      "path_points": [
+        {
+          "name": "SUPSP-P1",
+          "type": "PathPoint",
+          "source_frame": "/bodyset/humerus",
+          "fixed_location_m": [
+            0.00256,
+            0.01063,
+            0.02593
+          ],
+          "coordinate_dependencies": [],
+          "complete_source_xml": "<PathPoint name=\"SUPSP-P1\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/humerus</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>0.0025600000000000002 0.010630000000000001 0.025930000000000002</location>\n\t\t\t\t\t\t\t\t</PathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "SUPSP-P2",
+          "type": "PathPoint",
+          "source_frame": "/bodyset/scapula",
+          "fixed_location_m": [
+            -0.01918,
+            0.00127,
+            -0.01271
+          ],
+          "coordinate_dependencies": [],
+          "complete_source_xml": "<PathPoint name=\"SUPSP-P2\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/scapula</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>-0.019179999999999999 0.0012700000000000001 -0.012710000000000001</location>\n\t\t\t\t\t\t\t\t</PathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "SUPSP-P3",
+          "type": "PathPoint",
+          "source_frame": "/bodyset/scapula",
+          "fixed_location_m": [
+            -0.044,
+            -0.01512,
+            -0.05855
+          ],
+          "coordinate_dependencies": [],
+          "complete_source_xml": "<PathPoint name=\"SUPSP-P3\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/scapula</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>-0.043999999999999997 -0.01512 -0.058549999999999998</location>\n\t\t\t\t\t\t\t\t</PathPoint>\n\t\t\t\t\t\t\t"
+        }
+      ],
+      "path_wraps": [
+        {
+          "name": "pathwrap",
+          "source_wrap_name": "SUPSP",
+          "source_body": "humerus",
+          "method": "hybrid",
+          "range": "-1 -1",
+          "complete_source_xml": "<PathWrap name=\"pathwrap\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>SUPSP</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>-1 -1</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t"
+        }
+      ],
+      "complete_muscle_subtree_sha256": "e5a17bc0e8d96a960c5bd1c3eb2bf072c9f9991539c4f5bbfb11984cefa10c38"
+    },
+    {
+      "name": "INFSP",
+      "law_type": "Millard2012EquilibriumMuscle",
+      "parameter_evidence": "exact supplied donor model values; population/model prior, not this body measurement",
+      "parameters": {
+        "max_isometric_force": {
+          "value": 1075.8,
+          "unit": "N"
+        },
+        "optimal_fiber_length": {
+          "value": 0.0755,
+          "unit": "m"
+        },
+        "tendon_slack_length": {
+          "value": 0.0308,
+          "unit": "m"
+        },
+        "pennation_angle_at_optimal": {
+          "value": 0.3316126,
+          "unit": "rad"
+        },
+        "max_contraction_velocity": {
+          "value": 10.0,
+          "unit": "optimal_fiber_lengths/s"
+        },
+        "default_activation": {
+          "value": 1.0,
+          "unit": "dimensionless"
+        }
+      },
+      "path_points": [
+        {
+          "name": "INFSP-P1",
+          "type": "PathPoint",
+          "source_frame": "/bodyset/humerus",
+          "fixed_location_m": [
+            -0.00887,
+            0.00484,
+            0.02448
+          ],
+          "coordinate_dependencies": [],
+          "complete_source_xml": "<PathPoint name=\"INFSP-P1\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/humerus</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>-0.0088699999999999994 0.0048399999999999997 0.024479999999999998</location>\n\t\t\t\t\t\t\t\t</PathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "INFSP-P2",
+          "type": "PathPoint",
+          "source_frame": "/bodyset/scapula",
+          "fixed_location_m": [
+            -0.07382,
+            -0.05476,
+            -0.04781
+          ],
+          "coordinate_dependencies": [],
+          "complete_source_xml": "<PathPoint name=\"INFSP-P2\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/scapula</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>-0.073819999999999997 -0.054760000000000003 -0.047809999999999998</location>\n\t\t\t\t\t\t\t\t</PathPoint>\n\t\t\t\t\t\t\t"
+        }
+      ],
+      "path_wraps": [
+        {
+          "name": "pathwrap",
+          "source_wrap_name": "INFSP",
+          "source_body": "scapula",
+          "method": "hybrid",
+          "range": "-1 -1",
+          "complete_source_xml": "<PathWrap name=\"pathwrap\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>INFSP</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>-1 -1</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "pathwrap_0",
+          "source_wrap_name": "infsp_new",
+          "source_body": "humerus",
+          "method": "hybrid",
+          "range": "-1 -1",
+          "complete_source_xml": "<PathWrap name=\"pathwrap_0\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>infsp_new</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>-1 -1</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t"
+        }
+      ],
+      "complete_muscle_subtree_sha256": "580c6a94830e5eabac1c642c658ebee386abe5401cbb60556804aa849d36fb96"
+    },
+    {
+      "name": "SUBSC",
+      "law_type": "Millard2012EquilibriumMuscle",
+      "parameter_evidence": "exact supplied donor model values; population/model prior, not this body measurement",
+      "parameters": {
+        "max_isometric_force": {
+          "value": 1306.9,
+          "unit": "N"
+        },
+        "optimal_fiber_length": {
+          "value": 0.0873,
+          "unit": "m"
+        },
+        "tendon_slack_length": {
+          "value": 0.033,
+          "unit": "m"
+        },
+        "pennation_angle_at_optimal": {
+          "value": 0.34906585,
+          "unit": "rad"
+        },
+        "max_contraction_velocity": {
+          "value": 10.0,
+          "unit": "optimal_fiber_lengths/s"
+        },
+        "default_activation": {
+          "value": 1.0,
+          "unit": "dimensionless"
+        }
+      },
+      "path_points": [
+        {
+          "name": "SUBSC-P1",
+          "type": "PathPoint",
+          "source_frame": "/bodyset/humerus",
+          "fixed_location_m": [
+            0.01403,
+            0.0084,
+            -0.01331
+          ],
+          "coordinate_dependencies": [],
+          "complete_source_xml": "<PathPoint name=\"SUBSC-P1\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/humerus</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>0.014030000000000001 0.0083999999999999995 -0.013310000000000001</location>\n\t\t\t\t\t\t\t\t</PathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "SUBSC-P2",
+          "type": "PathPoint",
+          "source_frame": "/bodyset/scapula",
+          "fixed_location_m": [
+            -0.01831,
+            -0.05223,
+            -0.02457
+          ],
+          "coordinate_dependencies": [],
+          "complete_source_xml": "<PathPoint name=\"SUBSC-P2\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/scapula</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>-0.01831 -0.052229999999999999 -0.024570000000000002</location>\n\t\t\t\t\t\t\t\t</PathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "SUBSC-P3",
+          "type": "PathPoint",
+          "source_frame": "/bodyset/scapula",
+          "fixed_location_m": [
+            -0.07246,
+            -0.03943,
+            -0.06475
+          ],
+          "coordinate_dependencies": [],
+          "complete_source_xml": "<PathPoint name=\"SUBSC-P3\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/scapula</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>-0.072459999999999997 -0.03943 -0.064750000000000002</location>\n\t\t\t\t\t\t\t\t</PathPoint>\n\t\t\t\t\t\t\t"
+        }
+      ],
+      "path_wraps": [
+        {
+          "name": "pathwrap",
+          "source_wrap_name": "SUBSCAP",
+          "source_body": "humerus",
+          "method": "hybrid",
+          "range": "-1 -1",
+          "complete_source_xml": "<PathWrap name=\"pathwrap\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>SUBSCAP</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>-1 -1</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t"
+        }
+      ],
+      "complete_muscle_subtree_sha256": "ddd6c22af3e60437a910efcb42c4253c5226ffef8478224d353a0d30769d4c18"
+    },
+    {
+      "name": "TMIN",
+      "law_type": "Millard2012EquilibriumMuscle",
+      "parameter_evidence": "exact supplied donor model values; population/model prior, not this body measurement",
+      "parameters": {
+        "max_isometric_force": {
+          "value": 269.5,
+          "unit": "N"
+        },
+        "optimal_fiber_length": {
+          "value": 0.0741,
+          "unit": "m"
+        },
+        "tendon_slack_length": {
+          "value": 0.0713,
+          "unit": "m"
+        },
+        "pennation_angle_at_optimal": {
+          "value": 0.41887902,
+          "unit": "rad"
+        },
+        "max_contraction_velocity": {
+          "value": 10.0,
+          "unit": "optimal_fiber_lengths/s"
+        },
+        "default_activation": {
+          "value": 1.0,
+          "unit": "dimensionless"
+        }
+      },
+      "path_points": [
+        {
+          "name": "TMIN-P1",
+          "type": "PathPoint",
+          "source_frame": "/bodyset/humerus",
+          "fixed_location_m": [
+            -0.00127,
+            -0.01259,
+            0.022
+          ],
+          "coordinate_dependencies": [],
+          "complete_source_xml": "<PathPoint name=\"TMIN-P1\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/humerus</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>-0.0012700000000000001 -0.01259 0.021999999999999999</location>\n\t\t\t\t\t\t\t\t</PathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "TMIN-P2",
+          "type": "PathPoint",
+          "source_frame": "/bodyset/scapula",
+          "fixed_location_m": [
+            -0.09473,
+            -0.07991,
+            -0.04737
+          ],
+          "coordinate_dependencies": [],
+          "complete_source_xml": "<PathPoint name=\"TMIN-P2\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/scapula</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>-0.094729999999999995 -0.079909999999999995 -0.047370000000000002</location>\n\t\t\t\t\t\t\t\t</PathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "TMIN-P3",
+          "type": "PathPoint",
+          "source_frame": "/bodyset/scapula",
+          "fixed_location_m": [
+            -0.09643,
+            -0.08121,
+            -0.05298
+          ],
+          "coordinate_dependencies": [],
+          "complete_source_xml": "<PathPoint name=\"TMIN-P3\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/scapula</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>-0.096430000000000002 -0.081210000000000004 -0.052979999999999999</location>\n\t\t\t\t\t\t\t\t</PathPoint>\n\t\t\t\t\t\t\t"
+        }
+      ],
+      "path_wraps": [
+        {
+          "name": "pathwrap",
+          "source_wrap_name": "TMIN",
+          "source_body": "scapula",
+          "method": "hybrid",
+          "range": "1 2",
+          "complete_source_xml": "<PathWrap name=\"pathwrap\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>TMIN</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>1 2</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "pathwrap_0",
+          "source_wrap_name": "INFSP_and_TMIN_hum_head",
+          "source_body": "humerus",
+          "method": "hybrid",
+          "range": "1 2",
+          "complete_source_xml": "<PathWrap name=\"pathwrap_0\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>INFSP_and_TMIN_hum_head</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>1 2</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "pathwrap_1",
+          "source_wrap_name": "TMINhum",
+          "source_body": "humerus",
+          "method": "hybrid",
+          "range": "1 2",
+          "complete_source_xml": "<PathWrap name=\"pathwrap_1\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>TMINhum</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>1 2</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t"
+        }
+      ],
+      "complete_muscle_subtree_sha256": "9da8fbf208731a7b127fbe11b848fd3d779bb385ed436067a5d289a8f197bdd4"
+    },
+    {
+      "name": "TMAJ",
+      "law_type": "Millard2012EquilibriumMuscle",
+      "parameter_evidence": "exact supplied donor model values; population/model prior, not this body measurement",
+      "parameters": {
+        "max_isometric_force": {
+          "value": 144.0,
+          "unit": "N"
+        },
+        "optimal_fiber_length": {
+          "value": 0.1624,
+          "unit": "m"
+        },
+        "tendon_slack_length": {
+          "value": 0.02,
+          "unit": "m"
+        },
+        "pennation_angle_at_optimal": {
+          "value": 0.27925268,
+          "unit": "rad"
+        },
+        "max_contraction_velocity": {
+          "value": 10.0,
+          "unit": "optimal_fiber_lengths/s"
+        },
+        "default_activation": {
+          "value": 1.0,
+          "unit": "dimensionless"
+        }
+      },
+      "path_points": [
+        {
+          "name": "TMAJ-P1",
+          "type": "PathPoint",
+          "source_frame": "/bodyset/humerus",
+          "fixed_location_m": [
+            0.00998,
+            -0.05419,
+            -0.00568
+          ],
+          "coordinate_dependencies": [],
+          "complete_source_xml": "<PathPoint name=\"TMAJ-P1\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/humerus</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>0.0099799999999999993 -0.054190000000000002 -0.0056800000000000002</location>\n\t\t\t\t\t\t\t\t</PathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "default",
+          "type": "ConditionalPathPoint",
+          "source_frame": "/bodyset/humerus",
+          "fixed_location_m": [
+            0.009,
+            -0.054,
+            -0.009
+          ],
+          "coordinate_dependencies": [
+            "shoulder_rot"
+          ],
+          "complete_source_xml": "<ConditionalPathPoint name=\"default\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/humerus</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>0.0089999999999999993 -0.053999999999999999 -0.0089999999999999993</location>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_coordinate>/jointset/shoulder2/shoulder_rot</socket_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>0.261799 2.0943999999999998</range>\n\t\t\t\t\t\t\t\t</ConditionalPathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "default_0",
+          "type": "ConditionalPathPoint",
+          "source_frame": "/bodyset/humerus",
+          "fixed_location_m": [
+            0.009,
+            -0.054,
+            -0.009
+          ],
+          "coordinate_dependencies": [
+            "elv_angle"
+          ],
+          "complete_source_xml": "<ConditionalPathPoint name=\"default_0\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/humerus</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>0.0089999999999999993 -0.053999999999999999 -0.0089999999999999993</location>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_coordinate>/jointset/shoulder0/elv_angle</socket_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>-1.6580600000000001 -0.17453299999999999</range>\n\t\t\t\t\t\t\t\t</ConditionalPathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "TMAJ-P2",
+          "type": "PathPoint",
+          "source_frame": "/bodyset/scapula",
+          "fixed_location_m": [
+            -0.10264,
+            -0.10319,
+            -0.05829
+          ],
+          "coordinate_dependencies": [],
+          "complete_source_xml": "<PathPoint name=\"TMAJ-P2\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/scapula</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>-0.10264 -0.10319 -0.058290000000000002</location>\n\t\t\t\t\t\t\t\t</PathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "TMAJ-P3",
+          "type": "PathPoint",
+          "source_frame": "/bodyset/scapula",
+          "fixed_location_m": [
+            -0.10489,
+            -0.10895,
+            -0.07117
+          ],
+          "coordinate_dependencies": [],
+          "complete_source_xml": "<PathPoint name=\"TMAJ-P3\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/scapula</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>-0.10489 -0.10895000000000001 -0.071169999999999997</location>\n\t\t\t\t\t\t\t\t</PathPoint>\n\t\t\t\t\t\t\t"
+        }
+      ],
+      "path_wraps": [
+        {
+          "name": "pathwrap",
+          "source_wrap_name": "TMAJ_LAThum",
+          "source_body": "humerus",
+          "method": "hybrid",
+          "range": "-1 -1",
+          "complete_source_xml": "<PathWrap name=\"pathwrap\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>TMAJ_LAThum</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>-1 -1</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "pathwrap_0",
+          "source_wrap_name": "LAT_TMAJhh",
+          "source_body": "humerus",
+          "method": "hybrid",
+          "range": "1 4",
+          "complete_source_xml": "<PathWrap name=\"pathwrap_0\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>LAT_TMAJhh</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>1 4</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "pathwrap_1",
+          "source_wrap_name": "LAT_TMAJ2hh",
+          "source_body": "humerus",
+          "method": "hybrid",
+          "range": "-1 -1",
+          "complete_source_xml": "<PathWrap name=\"pathwrap_1\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>LAT_TMAJ2hh</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>-1 -1</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t"
+        }
+      ],
+      "complete_muscle_subtree_sha256": "02f1795be4fa4d0ace7c185dd23c34e6f6f760f42112801d1b1c2d7bac026014"
+    },
+    {
+      "name": "PECM1",
+      "law_type": "Millard2012EquilibriumMuscle",
+      "parameter_evidence": "exact supplied donor model values; population/model prior, not this body measurement",
+      "parameters": {
+        "max_isometric_force": {
+          "value": 444.3,
+          "unit": "N"
+        },
+        "optimal_fiber_length": {
+          "value": 0.1442,
+          "unit": "m"
+        },
+        "tendon_slack_length": {
+          "value": 0.0028,
+          "unit": "m"
+        },
+        "pennation_angle_at_optimal": {
+          "value": 0.29670597,
+          "unit": "rad"
+        },
+        "max_contraction_velocity": {
+          "value": 10.0,
+          "unit": "optimal_fiber_lengths/s"
+        },
+        "default_activation": {
+          "value": 1.0,
+          "unit": "dimensionless"
+        }
+      },
+      "path_points": [
+        {
+          "name": "PECM1-P1",
+          "type": "PathPoint",
+          "source_frame": "/bodyset/humerus",
+          "fixed_location_m": [
+            0.01169,
+            -0.04191,
+            0.0078
+          ],
+          "coordinate_dependencies": [],
+          "complete_source_xml": "<PathPoint name=\"PECM1-P1\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/humerus</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>0.011690000000000001 -0.041910000000000003 0.0077999999999999996</location>\n\t\t\t\t\t\t\t\t</PathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "default",
+          "type": "MovingPathPoint",
+          "source_frame": "/bodyset/humerus",
+          "fixed_location_m": null,
+          "coordinate_dependencies": [
+            "shoulder_elv"
+          ],
+          "complete_source_xml": "<MovingPathPoint name=\"default\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/humerus</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_x_coordinate>/jointset/shoulder1/shoulder_elv</socket_x_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_y_coordinate>/jointset/shoulder1/shoulder_elv</socket_y_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_z_coordinate>/jointset/shoulder1/shoulder_elv</socket_z_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<x_location>\n\t\t\t\t\t\t\t\t\t\t<PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<x> 0 3.14159</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> 0.01615 0.02205</y>\n\t\t\t\t\t\t\t\t\t\t</PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t</x_location>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<y_location>\n\t\t\t\t\t\t\t\t\t\t<PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<x> 0 3.14159</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> -0.04045 -0.01975</y>\n\t\t\t\t\t\t\t\t\t\t</PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t</y_location>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<z_location>\n\t\t\t\t\t\t\t\t\t\t<PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<x> 0 3.14159</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> -0.00577 0.00863</y>\n\t\t\t\t\t\t\t\t\t\t</PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t</z_location>\n\t\t\t\t\t\t\t\t</MovingPathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "default_0",
+          "type": "MovingPathPoint",
+          "source_frame": "/bodyset/thorax",
+          "fixed_location_m": null,
+          "coordinate_dependencies": [
+            "shoulder_elv"
+          ],
+          "complete_source_xml": "<MovingPathPoint name=\"default_0\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/thorax</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_x_coordinate>/jointset/shoulder1/shoulder_elv</socket_x_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_y_coordinate>/jointset/shoulder1/shoulder_elv</socket_y_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_z_coordinate>/jointset/shoulder1/shoulder_elv</socket_z_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<x_location>\n\t\t\t\t\t\t\t\t\t\t<PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<x> 0 3.14159</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> 0.00958 -0.00972</y>\n\t\t\t\t\t\t\t\t\t\t</PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t</x_location>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<y_location>\n\t\t\t\t\t\t\t\t\t\t<PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<x> 0 3.14159</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> -0.01509 0.03151</y>\n\t\t\t\t\t\t\t\t\t\t</PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t</y_location>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<z_location>\n\t\t\t\t\t\t\t\t\t\t<PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<x> 0 3.14159</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> 0.12664 0.08244</y>\n\t\t\t\t\t\t\t\t\t\t</PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t</z_location>\n\t\t\t\t\t\t\t\t</MovingPathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "PECM1-P2",
+          "type": "PathPoint",
+          "source_frame": "/bodyset/clavicle",
+          "fixed_location_m": [
+            0.00321,
+            -0.00013,
+            0.05113
+          ],
+          "coordinate_dependencies": [],
+          "complete_source_xml": "<PathPoint name=\"PECM1-P2\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/clavicle</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>0.0032100000000000002 -0.00012999999999999999 0.051130000000000002</location>\n\t\t\t\t\t\t\t\t</PathPoint>\n\t\t\t\t\t\t\t"
+        }
+      ],
+      "path_wraps": [
+        {
+          "name": "pathwrap",
+          "source_wrap_name": "Thorax",
+          "source_body": "thorax",
+          "method": "hybrid",
+          "range": "-1 -1",
+          "complete_source_xml": "<PathWrap name=\"pathwrap\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>Thorax</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>-1 -1</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "pathwrap_0",
+          "source_wrap_name": "PEC12hum",
+          "source_body": "humerus",
+          "method": "hybrid",
+          "range": "2 3",
+          "complete_source_xml": "<PathWrap name=\"pathwrap_0\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>PEC12hum</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>2 3</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "pathwrap_1",
+          "source_wrap_name": "PEC1hh",
+          "source_body": "humerus",
+          "method": "hybrid",
+          "range": "-1 -1",
+          "complete_source_xml": "<PathWrap name=\"pathwrap_1\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>PEC1hh</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>-1 -1</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t"
+        }
+      ],
+      "complete_muscle_subtree_sha256": "4ae35804a02b52418c8206332362681b428aa8b3a3493f8c695814d5ec277966"
+    },
+    {
+      "name": "PECM2",
+      "law_type": "Millard2012EquilibriumMuscle",
+      "parameter_evidence": "exact supplied donor model values; population/model prior, not this body measurement",
+      "parameters": {
+        "max_isometric_force": {
+          "value": 658.3,
+          "unit": "N"
+        },
+        "optimal_fiber_length": {
+          "value": 0.1385,
+          "unit": "m"
+        },
+        "tendon_slack_length": {
+          "value": 0.089,
+          "unit": "m"
+        },
+        "pennation_angle_at_optimal": {
+          "value": 0.4537856,
+          "unit": "rad"
+        },
+        "max_contraction_velocity": {
+          "value": 10.0,
+          "unit": "optimal_fiber_lengths/s"
+        },
+        "default_activation": {
+          "value": 1.0,
+          "unit": "dimensionless"
+        }
+      },
+      "path_points": [
+        {
+          "name": "PECM2-P1",
+          "type": "PathPoint",
+          "source_frame": "/bodyset/humerus",
+          "fixed_location_m": [
+            0.01274,
+            -0.04289,
+            0.00785
+          ],
+          "coordinate_dependencies": [],
+          "complete_source_xml": "<PathPoint name=\"PECM2-P1\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/humerus</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>0.01274 -0.042889999999999998 0.0078499999999999993</location>\n\t\t\t\t\t\t\t\t</PathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "default",
+          "type": "MovingPathPoint",
+          "source_frame": "/bodyset/humerus",
+          "fixed_location_m": null,
+          "coordinate_dependencies": [
+            "shoulder_elv"
+          ],
+          "complete_source_xml": "<MovingPathPoint name=\"default\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/humerus</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_x_coordinate>/jointset/shoulder1/shoulder_elv</socket_x_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_y_coordinate>/jointset/shoulder1/shoulder_elv</socket_y_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_z_coordinate>/jointset/shoulder1/shoulder_elv</socket_z_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<x_location>\n\t\t\t\t\t\t\t\t\t\t<PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<x> 0 3.14159</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> 0.01453 0.02043</y>\n\t\t\t\t\t\t\t\t\t\t</PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t</x_location>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<y_location>\n\t\t\t\t\t\t\t\t\t\t<PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<x> 0 3.14159</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> -0.04568 -0.02498</y>\n\t\t\t\t\t\t\t\t\t\t</PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t</y_location>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<z_location>\n\t\t\t\t\t\t\t\t\t\t<PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<x> 0 3.14159</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> -0.00687 0.00753</y>\n\t\t\t\t\t\t\t\t\t\t</PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t</z_location>\n\t\t\t\t\t\t\t\t</MovingPathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "default_0",
+          "type": "MovingPathPoint",
+          "source_frame": "/bodyset/thorax",
+          "fixed_location_m": null,
+          "coordinate_dependencies": [
+            "shoulder_elv"
+          ],
+          "complete_source_xml": "<MovingPathPoint name=\"default_0\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/thorax</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_x_coordinate>/jointset/shoulder1/shoulder_elv</socket_x_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_y_coordinate>/jointset/shoulder1/shoulder_elv</socket_y_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_z_coordinate>/jointset/shoulder1/shoulder_elv</socket_z_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<x_location>\n\t\t\t\t\t\t\t\t\t\t<PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<x> 0 3.14159</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> 0.02018 0.02148</y>\n\t\t\t\t\t\t\t\t\t\t</PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t</x_location>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<y_location>\n\t\t\t\t\t\t\t\t\t\t<PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<x> 0 3.14159</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> -0.04165 0.00155</y>\n\t\t\t\t\t\t\t\t\t\t</PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t</y_location>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<z_location>\n\t\t\t\t\t\t\t\t\t\t<PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<x> 0 3.14159</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> 0.1269 0.1042</y>\n\t\t\t\t\t\t\t\t\t\t</PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t</z_location>\n\t\t\t\t\t\t\t\t</MovingPathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "PECM2-P4",
+          "type": "PathPoint",
+          "source_frame": "/bodyset/thorax",
+          "fixed_location_m": [
+            0.03091,
+            -0.03922,
+            0.09705
+          ],
+          "coordinate_dependencies": [],
+          "complete_source_xml": "<PathPoint name=\"PECM2-P4\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/thorax</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>0.03091 -0.039219999999999998 0.097049999999999997</location>\n\t\t\t\t\t\t\t\t</PathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "PECM2-P5",
+          "type": "PathPoint",
+          "source_frame": "/bodyset/thorax",
+          "fixed_location_m": [
+            0.02769,
+            -0.04498,
+            0.02271
+          ],
+          "coordinate_dependencies": [],
+          "complete_source_xml": "<PathPoint name=\"PECM2-P5\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/thorax</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>0.027689999999999999 -0.044979999999999999 0.022710000000000001</location>\n\t\t\t\t\t\t\t\t</PathPoint>\n\t\t\t\t\t\t\t"
+        }
+      ],
+      "path_wraps": [
+        {
+          "name": "pathwrap",
+          "source_wrap_name": "Thorax",
+          "source_body": "thorax",
+          "method": "hybrid",
+          "range": "-1 -1",
+          "complete_source_xml": "<PathWrap name=\"pathwrap\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>Thorax</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>-1 -1</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "pathwrap_0",
+          "source_wrap_name": "PEC12hum",
+          "source_body": "humerus",
+          "method": "hybrid",
+          "range": "2 3",
+          "complete_source_xml": "<PathWrap name=\"pathwrap_0\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>PEC12hum</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>2 3</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "pathwrap_1",
+          "source_wrap_name": "TMAJ_LAT_PEC_CORBhh",
+          "source_body": "humerus",
+          "method": "hybrid",
+          "range": "-1 -1",
+          "complete_source_xml": "<PathWrap name=\"pathwrap_1\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>TMAJ_LAT_PEC_CORBhh</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>-1 -1</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "pathwrap_2",
+          "source_wrap_name": "PEC23hh",
+          "source_body": "humerus",
+          "method": "hybrid",
+          "range": "-1 -1",
+          "complete_source_xml": "<PathWrap name=\"pathwrap_2\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>PEC23hh</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>-1 -1</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t"
+        }
+      ],
+      "complete_muscle_subtree_sha256": "2581b8e2b14ae736f684650e1c2b60f569d29202bd4852773e4ba443b721b1cf"
+    },
+    {
+      "name": "PECM3",
+      "law_type": "Millard2012EquilibriumMuscle",
+      "parameter_evidence": "exact supplied donor model values; population/model prior, not this body measurement",
+      "parameters": {
+        "max_isometric_force": {
+          "value": 498.1,
+          "unit": "N"
+        },
+        "optimal_fiber_length": {
+          "value": 0.1385,
+          "unit": "m"
+        },
+        "tendon_slack_length": {
+          "value": 0.132,
+          "unit": "m"
+        },
+        "pennation_angle_at_optimal": {
+          "value": 0.43633231,
+          "unit": "rad"
+        },
+        "max_contraction_velocity": {
+          "value": 10.0,
+          "unit": "optimal_fiber_lengths/s"
+        },
+        "default_activation": {
+          "value": 1.0,
+          "unit": "dimensionless"
+        }
+      },
+      "path_points": [
+        {
+          "name": "PECM3-P1",
+          "type": "PathPoint",
+          "source_frame": "/bodyset/humerus",
+          "fixed_location_m": [
+            0.01269,
+            -0.04375,
+            0.0075
+          ],
+          "coordinate_dependencies": [],
+          "complete_source_xml": "<PathPoint name=\"PECM3-P1\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/humerus</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>0.01269 -0.043749999999999997 0.0074999999999999997</location>\n\t\t\t\t\t\t\t\t</PathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "default",
+          "type": "MovingPathPoint",
+          "source_frame": "/bodyset/humerus",
+          "fixed_location_m": null,
+          "coordinate_dependencies": [
+            "shoulder_elv"
+          ],
+          "complete_source_xml": "<MovingPathPoint name=\"default\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/humerus</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_x_coordinate>/jointset/shoulder1/shoulder_elv</socket_x_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_y_coordinate>/jointset/shoulder1/shoulder_elv</socket_y_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_z_coordinate>/jointset/shoulder1/shoulder_elv</socket_z_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<x_location>\n\t\t\t\t\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t\t\t\t\t<x> 0 0.747517 3.14159</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> 0.01243 0.014912 0.01833</y>\n\t\t\t\t\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t\t\t\t\t</x_location>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<y_location>\n\t\t\t\t\t\t\t\t\t\t<PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<x> 0 3.13149</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> -0.05157 -0.040096</y>\n\t\t\t\t\t\t\t\t\t\t</PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t</y_location>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<z_location>\n\t\t\t\t\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t\t\t\t\t<x> 0 0.623056 2.29124 3.12533</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> -0.01807 -0.008102 0.000123 -0.000324</y>\n\t\t\t\t\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t\t\t\t\t</z_location>\n\t\t\t\t\t\t\t\t</MovingPathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "default_0",
+          "type": "MovingPathPoint",
+          "source_frame": "/bodyset/thorax",
+          "fixed_location_m": null,
+          "coordinate_dependencies": [
+            "shoulder_elv"
+          ],
+          "complete_source_xml": "<MovingPathPoint name=\"default_0\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/thorax</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_x_coordinate>/jointset/shoulder1/shoulder_elv</socket_x_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_y_coordinate>/jointset/shoulder1/shoulder_elv</socket_y_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_z_coordinate>/jointset/shoulder1/shoulder_elv</socket_z_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<x_location>\n\t\t\t\t\t\t\t\t\t\t<PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<x> 0 3.14159</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> 0.02984 0.02984</y>\n\t\t\t\t\t\t\t\t\t\t</PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t</x_location>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<y_location>\n\t\t\t\t\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t\t\t\t\t<x> 0.0101016 1.59605 3.14159</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> -0.070778 -0.059781 -0.0269</y>\n\t\t\t\t\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t\t\t\t\t</y_location>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<z_location>\n\t\t\t\t\t\t\t\t\t\t<PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<x> 0 3.14159</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> 0.1151 0.1151</y>\n\t\t\t\t\t\t\t\t\t\t</PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t</z_location>\n\t\t\t\t\t\t\t\t</MovingPathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "PECM3-P4",
+          "type": "PathPoint",
+          "source_frame": "/bodyset/thorax",
+          "fixed_location_m": [
+            0.0525,
+            -0.08417,
+            0.08935
+          ],
+          "coordinate_dependencies": [],
+          "complete_source_xml": "<PathPoint name=\"PECM3-P4\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/thorax</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>0.052499999999999998 -0.084169999999999995 0.089349999999999999</location>\n\t\t\t\t\t\t\t\t</PathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "PECM3-P5",
+          "type": "PathPoint",
+          "source_frame": "/bodyset/thorax",
+          "fixed_location_m": [
+            0.05724,
+            -0.11654,
+            0.03787
+          ],
+          "coordinate_dependencies": [],
+          "complete_source_xml": "<PathPoint name=\"PECM3-P5\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/thorax</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>0.057239999999999999 -0.11654 0.037870000000000001</location>\n\t\t\t\t\t\t\t\t</PathPoint>\n\t\t\t\t\t\t\t"
+        }
+      ],
+      "path_wraps": [
+        {
+          "name": "pathwrap",
+          "source_wrap_name": "Thorax",
+          "source_body": "thorax",
+          "method": "hybrid",
+          "range": "-1 -1",
+          "complete_source_xml": "<PathWrap name=\"pathwrap\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>Thorax</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>-1 -1</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "pathwrap_0",
+          "source_wrap_name": "PEC3hum",
+          "source_body": "humerus",
+          "method": "hybrid",
+          "range": "2 3",
+          "complete_source_xml": "<PathWrap name=\"pathwrap_0\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>PEC3hum</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>2 3</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "pathwrap_1",
+          "source_wrap_name": "PEC23hh",
+          "source_body": "humerus",
+          "method": "hybrid",
+          "range": "-1 -1",
+          "complete_source_xml": "<PathWrap name=\"pathwrap_1\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>PEC23hh</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>-1 -1</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t"
+        }
+      ],
+      "complete_muscle_subtree_sha256": "daa30d99be19707d0f5e7cb6f3a1952aa5228f7d8c9e3bc57f2de5a84698ef11"
+    },
+    {
+      "name": "LAT1",
+      "law_type": "Millard2012EquilibriumMuscle",
+      "parameter_evidence": "exact supplied donor model values; population/model prior, not this body measurement",
+      "parameters": {
+        "max_isometric_force": {
+          "value": 290.5,
+          "unit": "N"
+        },
+        "optimal_fiber_length": {
+          "value": 0.254,
+          "unit": "m"
+        },
+        "tendon_slack_length": {
+          "value": 0.12,
+          "unit": "m"
+        },
+        "pennation_angle_at_optimal": {
+          "value": 0.43633231,
+          "unit": "rad"
+        },
+        "max_contraction_velocity": {
+          "value": 10.0,
+          "unit": "optimal_fiber_lengths/s"
+        },
+        "default_activation": {
+          "value": 1.0,
+          "unit": "dimensionless"
+        }
+      },
+      "path_points": [
+        {
+          "name": "LAT1-P1",
+          "type": "PathPoint",
+          "source_frame": "/bodyset/humerus",
+          "fixed_location_m": [
+            0.0105,
+            -0.03415,
+            -0.00653
+          ],
+          "coordinate_dependencies": [],
+          "complete_source_xml": "<PathPoint name=\"LAT1-P1\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/humerus</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>0.010500000000000001 -0.03415 -0.0065300000000000002</location>\n\t\t\t\t\t\t\t\t</PathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "default",
+          "type": "ConditionalPathPoint",
+          "source_frame": "/bodyset/humerus",
+          "fixed_location_m": [
+            0.01,
+            -0.035,
+            -0.00889323
+          ],
+          "coordinate_dependencies": [
+            "shoulder_rot"
+          ],
+          "complete_source_xml": "<ConditionalPathPoint name=\"default\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/humerus</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>0.01 -0.035000000000000003 -0.0088932300000000002</location>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_coordinate>/jointset/shoulder2/shoulder_rot</socket_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>0.52359900000000004 2.0943999999999998</range>\n\t\t\t\t\t\t\t\t</ConditionalPathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "default_0",
+          "type": "ConditionalPathPoint",
+          "source_frame": "/bodyset/humerus",
+          "fixed_location_m": [
+            0.01,
+            -0.035,
+            -0.009
+          ],
+          "coordinate_dependencies": [
+            "elv_angle"
+          ],
+          "complete_source_xml": "<ConditionalPathPoint name=\"default_0\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/humerus</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>0.01 -0.035000000000000003 -0.0089999999999999993</location>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_coordinate>/jointset/shoulder0/elv_angle</socket_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>-1.6580600000000001 -0.17453299999999999</range>\n\t\t\t\t\t\t\t\t</ConditionalPathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "default_1",
+          "type": "MovingPathPoint",
+          "source_frame": "/bodyset/scapula",
+          "fixed_location_m": null,
+          "coordinate_dependencies": [
+            "shoulder_elv"
+          ],
+          "complete_source_xml": "<MovingPathPoint name=\"default_1\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/scapula</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_x_coordinate>/jointset/shoulder1/shoulder_elv</socket_x_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_y_coordinate>/jointset/shoulder1/shoulder_elv</socket_y_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_z_coordinate>/jointset/shoulder1/shoulder_elv</socket_z_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<x_location>\n\t\t\t\t\t\t\t\t\t\t<PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<x> 0 3.14159</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> -0.07947 -0.08157</y>\n\t\t\t\t\t\t\t\t\t\t</PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t</x_location>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<y_location>\n\t\t\t\t\t\t\t\t\t\t<PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<x> 0 3.14159</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> -0.08581 -0.05061</y>\n\t\t\t\t\t\t\t\t\t\t</PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t</y_location>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<z_location>\n\t\t\t\t\t\t\t\t\t\t<PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<x> 0 3.14159</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> -0.02188 -0.03628</y>\n\t\t\t\t\t\t\t\t\t\t</PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t</z_location>\n\t\t\t\t\t\t\t\t</MovingPathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "default_2",
+          "type": "MovingPathPoint",
+          "source_frame": "/bodyset/scapula",
+          "fixed_location_m": null,
+          "coordinate_dependencies": [
+            "shoulder_elv"
+          ],
+          "complete_source_xml": "<MovingPathPoint name=\"default_2\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/scapula</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_x_coordinate>/jointset/shoulder1/shoulder_elv</socket_x_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_y_coordinate>/jointset/shoulder1/shoulder_elv</socket_y_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_z_coordinate>/jointset/shoulder1/shoulder_elv</socket_z_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<x_location>\n\t\t\t\t\t\t\t\t\t\t<PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<x> 0 3.14159</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> -0.11215 -0.10635</y>\n\t\t\t\t\t\t\t\t\t\t</PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t</x_location>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<y_location>\n\t\t\t\t\t\t\t\t\t\t<PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<x> 0 3.14159</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> -0.09779 -0.04699</y>\n\t\t\t\t\t\t\t\t\t\t</PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t</y_location>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<z_location>\n\t\t\t\t\t\t\t\t\t\t<PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<x> 0 3.14159</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> -0.05322 -0.09522</y>\n\t\t\t\t\t\t\t\t\t\t</PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t</z_location>\n\t\t\t\t\t\t\t\t</MovingPathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "LAT1-P4",
+          "type": "PathPoint",
+          "source_frame": "/bodyset/thorax",
+          "fixed_location_m": [
+            -0.11828,
+            -0.10118,
+            0.03316
+          ],
+          "coordinate_dependencies": [],
+          "complete_source_xml": "<PathPoint name=\"LAT1-P4\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/thorax</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>-0.11828 -0.10118000000000001 0.033160000000000002</location>\n\t\t\t\t\t\t\t\t</PathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "LAT1-P5",
+          "type": "PathPoint",
+          "source_frame": "/bodyset/thorax",
+          "fixed_location_m": [
+            -0.09578,
+            -0.11724,
+            0.00882
+          ],
+          "coordinate_dependencies": [],
+          "complete_source_xml": "<PathPoint name=\"LAT1-P5\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/thorax</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>-0.095780000000000004 -0.11724 0.0088199999999999997</location>\n\t\t\t\t\t\t\t\t</PathPoint>\n\t\t\t\t\t\t\t"
+        }
+      ],
+      "path_wraps": [
+        {
+          "name": "pathwrap",
+          "source_wrap_name": "TMAJ_LAThum",
+          "source_body": "humerus",
+          "method": "hybrid",
+          "range": "-1 -1",
+          "complete_source_xml": "<PathWrap name=\"pathwrap\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>TMAJ_LAThum</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>-1 -1</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "pathwrap_0",
+          "source_wrap_name": "LAT_TMAJhh",
+          "source_body": "humerus",
+          "method": "hybrid",
+          "range": "1 4",
+          "complete_source_xml": "<PathWrap name=\"pathwrap_0\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>LAT_TMAJhh</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>1 4</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "pathwrap_1",
+          "source_wrap_name": "LAT_TMAJ2hh",
+          "source_body": "humerus",
+          "method": "hybrid",
+          "range": "-1 -1",
+          "complete_source_xml": "<PathWrap name=\"pathwrap_1\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>LAT_TMAJ2hh</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>-1 -1</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t"
+        }
+      ],
+      "complete_muscle_subtree_sha256": "76a0969a0ad5e8d4fee7b142fdc7fa007de63396793b0fba3f1dc6b379b3d68c"
+    },
+    {
+      "name": "LAT2",
+      "law_type": "Millard2012EquilibriumMuscle",
+      "parameter_evidence": "exact supplied donor model values; population/model prior, not this body measurement",
+      "parameters": {
+        "max_isometric_force": {
+          "value": 317.5,
+          "unit": "N"
+        },
+        "optimal_fiber_length": {
+          "value": 0.2324,
+          "unit": "m"
+        },
+        "tendon_slack_length": {
+          "value": 0.1765,
+          "unit": "m"
+        },
+        "pennation_angle_at_optimal": {
+          "value": 0.33161256,
+          "unit": "rad"
+        },
+        "max_contraction_velocity": {
+          "value": 10.0,
+          "unit": "optimal_fiber_lengths/s"
+        },
+        "default_activation": {
+          "value": 1.0,
+          "unit": "dimensionless"
+        }
+      },
+      "path_points": [
+        {
+          "name": "LAT2-P1",
+          "type": "PathPoint",
+          "source_frame": "/bodyset/humerus",
+          "fixed_location_m": [
+            0.00968,
+            -0.04071,
+            -0.00611
+          ],
+          "coordinate_dependencies": [],
+          "complete_source_xml": "<PathPoint name=\"LAT2-P1\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/humerus</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>0.0096799999999999994 -0.040710000000000003 -0.00611</location>\n\t\t\t\t\t\t\t\t</PathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "default",
+          "type": "ConditionalPathPoint",
+          "source_frame": "/bodyset/humerus",
+          "fixed_location_m": [
+            0.008,
+            -0.043,
+            -0.01
+          ],
+          "coordinate_dependencies": [
+            "shoulder_rot"
+          ],
+          "complete_source_xml": "<ConditionalPathPoint name=\"default\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/humerus</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>0.0080000000000000002 -0.042999999999999997 -0.01</location>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_coordinate>/jointset/shoulder2/shoulder_rot</socket_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>0.34906599999999999 2.0943999999999998</range>\n\t\t\t\t\t\t\t\t</ConditionalPathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "default_0",
+          "type": "ConditionalPathPoint",
+          "source_frame": "/bodyset/humerus",
+          "fixed_location_m": [
+            0.00799949,
+            -0.0433861,
+            -0.0100971
+          ],
+          "coordinate_dependencies": [
+            "elv_angle"
+          ],
+          "complete_source_xml": "<ConditionalPathPoint name=\"default_0\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/humerus</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>0.0079994899999999997 -0.043386099999999997 -0.010097099999999999</location>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_coordinate>/jointset/shoulder0/elv_angle</socket_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>-1.6580600000000001 -0.17453299999999999</range>\n\t\t\t\t\t\t\t\t</ConditionalPathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "default_1",
+          "type": "MovingPathPoint",
+          "source_frame": "/bodyset/scapula",
+          "fixed_location_m": null,
+          "coordinate_dependencies": [
+            "shoulder_elv"
+          ],
+          "complete_source_xml": "<MovingPathPoint name=\"default_1\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/scapula</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_x_coordinate>/jointset/shoulder1/shoulder_elv</socket_x_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_y_coordinate>/jointset/shoulder1/shoulder_elv</socket_y_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_z_coordinate>/jointset/shoulder1/shoulder_elv</socket_z_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<x_location>\n\t\t\t\t\t\t\t\t\t\t<PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<x> 0 3.14159</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> -0.0764 -0.0905</y>\n\t\t\t\t\t\t\t\t\t\t</PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t</x_location>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<y_location>\n\t\t\t\t\t\t\t\t\t\t<PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<x> 0 3.14159</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> -0.1022 -0.0717</y>\n\t\t\t\t\t\t\t\t\t\t</PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t</y_location>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<z_location>\n\t\t\t\t\t\t\t\t\t\t<PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<x> 0 3.14159</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> -0.01808 -0.03098</y>\n\t\t\t\t\t\t\t\t\t\t</PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t</z_location>\n\t\t\t\t\t\t\t\t</MovingPathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "default_2",
+          "type": "MovingPathPoint",
+          "source_frame": "/bodyset/scapula",
+          "fixed_location_m": null,
+          "coordinate_dependencies": [
+            "shoulder_elv"
+          ],
+          "complete_source_xml": "<MovingPathPoint name=\"default_2\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/scapula</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_x_coordinate>/jointset/shoulder1/shoulder_elv</socket_x_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_y_coordinate>/jointset/shoulder1/shoulder_elv</socket_y_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_z_coordinate>/jointset/shoulder1/shoulder_elv</socket_z_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<x_location>\n\t\t\t\t\t\t\t\t\t\t<PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<x> 0 3.14159</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> -0.10054 -0.12994</y>\n\t\t\t\t\t\t\t\t\t\t</PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t</x_location>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<y_location>\n\t\t\t\t\t\t\t\t\t\t<PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<x> 0 3.14159</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> -0.13969 -0.07529</y>\n\t\t\t\t\t\t\t\t\t\t</PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t</y_location>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<z_location>\n\t\t\t\t\t\t\t\t\t\t<PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<x> 0 3.14159</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> -0.05258 -0.12468</y>\n\t\t\t\t\t\t\t\t\t\t</PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t</z_location>\n\t\t\t\t\t\t\t\t</MovingPathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "LAT2-P4",
+          "type": "PathPoint",
+          "source_frame": "/bodyset/thorax",
+          "fixed_location_m": [
+            -0.10992,
+            -0.16908,
+            0.02878
+          ],
+          "coordinate_dependencies": [],
+          "complete_source_xml": "<PathPoint name=\"LAT2-P4\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/thorax</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>-0.10992 -0.16908000000000001 0.02878</location>\n\t\t\t\t\t\t\t\t</PathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "LAT2-P5",
+          "type": "PathPoint",
+          "source_frame": "/bodyset/thorax",
+          "fixed_location_m": [
+            -0.07186,
+            -0.18818,
+            0.00815
+          ],
+          "coordinate_dependencies": [],
+          "complete_source_xml": "<PathPoint name=\"LAT2-P5\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/thorax</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>-0.071859999999999993 -0.18817999999999999 0.0081499999999999993</location>\n\t\t\t\t\t\t\t\t</PathPoint>\n\t\t\t\t\t\t\t"
+        }
+      ],
+      "path_wraps": [
+        {
+          "name": "pathwrap",
+          "source_wrap_name": "TMAJ_LAThum",
+          "source_body": "humerus",
+          "method": "hybrid",
+          "range": "-1 -1",
+          "complete_source_xml": "<PathWrap name=\"pathwrap\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>TMAJ_LAThum</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>-1 -1</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "pathwrap_0",
+          "source_wrap_name": "LAT_TMAJhh",
+          "source_body": "humerus",
+          "method": "hybrid",
+          "range": "1 4",
+          "complete_source_xml": "<PathWrap name=\"pathwrap_0\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>LAT_TMAJhh</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>1 4</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "pathwrap_1",
+          "source_wrap_name": "LAT_TMAJ2hh",
+          "source_body": "humerus",
+          "method": "hybrid",
+          "range": "-1 -1",
+          "complete_source_xml": "<PathWrap name=\"pathwrap_1\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>LAT_TMAJ2hh</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>-1 -1</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t"
+        }
+      ],
+      "complete_muscle_subtree_sha256": "1ba66faa9418b628b88f091a06f0d4469e1e25cdbc44d1fbf5ce13cf89d3354a"
+    },
+    {
+      "name": "LAT3",
+      "law_type": "Millard2012EquilibriumMuscle",
+      "parameter_evidence": "exact supplied donor model values; population/model prior, not this body measurement",
+      "parameters": {
+        "max_isometric_force": {
+          "value": 189.0,
+          "unit": "N"
+        },
+        "optimal_fiber_length": {
+          "value": 0.2789,
+          "unit": "m"
+        },
+        "tendon_slack_length": {
+          "value": 0.1403,
+          "unit": "m"
+        },
+        "pennation_angle_at_optimal": {
+          "value": 0.36651914,
+          "unit": "rad"
+        },
+        "max_contraction_velocity": {
+          "value": 10.0,
+          "unit": "optimal_fiber_lengths/s"
+        },
+        "default_activation": {
+          "value": 1.0,
+          "unit": "dimensionless"
+        }
+      },
+      "path_points": [
+        {
+          "name": "LAT3-P1",
+          "type": "PathPoint",
+          "source_frame": "/bodyset/humerus",
+          "fixed_location_m": [
+            0.01208,
+            -0.03922,
+            -0.00416
+          ],
+          "coordinate_dependencies": [],
+          "complete_source_xml": "<PathPoint name=\"LAT3-P1\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/humerus</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>0.01208 -0.039219999999999998 -0.0041599999999999996</location>\n\t\t\t\t\t\t\t\t</PathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "default",
+          "type": "ConditionalPathPoint",
+          "source_frame": "/bodyset/humerus",
+          "fixed_location_m": [
+            0.01,
+            -0.041,
+            -0.009
+          ],
+          "coordinate_dependencies": [
+            "shoulder_rot"
+          ],
+          "complete_source_xml": "<ConditionalPathPoint name=\"default\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/humerus</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>0.01 -0.041000000000000002 -0.0089999999999999993</location>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_coordinate>/jointset/shoulder2/shoulder_rot</socket_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>0.17453299999999999 2.0943999999999998</range>\n\t\t\t\t\t\t\t\t</ConditionalPathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "default_0",
+          "type": "ConditionalPathPoint",
+          "source_frame": "/bodyset/humerus",
+          "fixed_location_m": [
+            0.01,
+            -0.041,
+            -0.009
+          ],
+          "coordinate_dependencies": [
+            "elv_angle"
+          ],
+          "complete_source_xml": "<ConditionalPathPoint name=\"default_0\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/humerus</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>0.01 -0.041000000000000002 -0.0089999999999999993</location>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_coordinate>/jointset/shoulder0/elv_angle</socket_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>-1.6580600000000001 -0.087266499999999997</range>\n\t\t\t\t\t\t\t\t</ConditionalPathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "default_1",
+          "type": "MovingPathPoint",
+          "source_frame": "/bodyset/scapula",
+          "fixed_location_m": null,
+          "coordinate_dependencies": [
+            "shoulder_elv"
+          ],
+          "complete_source_xml": "<MovingPathPoint name=\"default_1\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/scapula</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_x_coordinate>/jointset/shoulder1/shoulder_elv</socket_x_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_y_coordinate>/jointset/shoulder1/shoulder_elv</socket_y_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_z_coordinate>/jointset/shoulder1/shoulder_elv</socket_z_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<x_location>\n\t\t\t\t\t\t\t\t\t\t<PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<x> 0 3.14159</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> -0.05678 -0.11198</y>\n\t\t\t\t\t\t\t\t\t\t</PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t</x_location>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<y_location>\n\t\t\t\t\t\t\t\t\t\t<PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<x> 0 3.14159</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> -0.13303 -0.09893</y>\n\t\t\t\t\t\t\t\t\t\t</PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t</y_location>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<z_location>\n\t\t\t\t\t\t\t\t\t\t<PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<x> 0 3.14159</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> -0.0213 -0.0386</y>\n\t\t\t\t\t\t\t\t\t\t</PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t</z_location>\n\t\t\t\t\t\t\t\t</MovingPathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "default_2",
+          "type": "MovingPathPoint",
+          "source_frame": "/bodyset/scapula",
+          "fixed_location_m": null,
+          "coordinate_dependencies": [
+            "shoulder_elv"
+          ],
+          "complete_source_xml": "<MovingPathPoint name=\"default_2\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/scapula</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_x_coordinate>/jointset/shoulder1/shoulder_elv</socket_x_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_y_coordinate>/jointset/shoulder1/shoulder_elv</socket_y_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_z_coordinate>/jointset/shoulder1/shoulder_elv</socket_z_coordinate>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<x_location>\n\t\t\t\t\t\t\t\t\t\t<PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<x> 0 3.14159</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> -0.09449 -0.13109</y>\n\t\t\t\t\t\t\t\t\t\t</PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t</x_location>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<y_location>\n\t\t\t\t\t\t\t\t\t\t<PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<x> 0 3.14159</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> -0.17553 -0.10113</y>\n\t\t\t\t\t\t\t\t\t\t</PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t</y_location>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<z_location>\n\t\t\t\t\t\t\t\t\t\t<PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t\t\t<x> 0 3.14159</x>\n\t\t\t\t\t\t\t\t\t\t\t<y> -0.04406 -0.13416</y>\n\t\t\t\t\t\t\t\t\t\t</PiecewiseLinearFunction>\n\t\t\t\t\t\t\t\t\t</z_location>\n\t\t\t\t\t\t\t\t</MovingPathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "LAT3-P4",
+          "type": "PathPoint",
+          "source_frame": "/bodyset/thorax",
+          "fixed_location_m": [
+            -0.11157,
+            -0.19387,
+            0.05532
+          ],
+          "coordinate_dependencies": [],
+          "complete_source_xml": "<PathPoint name=\"LAT3-P4\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/thorax</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>-0.11157 -0.19386999999999999 0.055320000000000001</location>\n\t\t\t\t\t\t\t\t</PathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "LAT3-P5",
+          "type": "PathPoint",
+          "source_frame": "/bodyset/thorax",
+          "fixed_location_m": [
+            -0.07117,
+            -0.24858,
+            0.00907
+          ],
+          "coordinate_dependencies": [],
+          "complete_source_xml": "<PathPoint name=\"LAT3-P5\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/thorax</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>-0.071169999999999997 -0.24858 0.0090699999999999999</location>\n\t\t\t\t\t\t\t\t</PathPoint>\n\t\t\t\t\t\t\t"
+        }
+      ],
+      "path_wraps": [
+        {
+          "name": "pathwrap",
+          "source_wrap_name": "TMAJ_LAThum",
+          "source_body": "humerus",
+          "method": "hybrid",
+          "range": "-1 -1",
+          "complete_source_xml": "<PathWrap name=\"pathwrap\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>TMAJ_LAThum</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>-1 -1</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "pathwrap_0",
+          "source_wrap_name": "LAT_TMAJhh",
+          "source_body": "humerus",
+          "method": "hybrid",
+          "range": "1 4",
+          "complete_source_xml": "<PathWrap name=\"pathwrap_0\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>LAT_TMAJhh</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>1 4</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "pathwrap_1",
+          "source_wrap_name": "LAT_TMAJ2hh",
+          "source_body": "humerus",
+          "method": "hybrid",
+          "range": "-1 -1",
+          "complete_source_xml": "<PathWrap name=\"pathwrap_1\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>LAT_TMAJ2hh</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>-1 -1</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t"
+        }
+      ],
+      "complete_muscle_subtree_sha256": "83dcd4f4017b7181af17d123db5c90f876401ba3238c4f0fccb6cd274a160acc"
+    },
+    {
+      "name": "CORB",
+      "law_type": "Millard2012EquilibriumMuscle",
+      "parameter_evidence": "exact supplied donor model values; population/model prior, not this body measurement",
+      "parameters": {
+        "max_isometric_force": {
+          "value": 208.2,
+          "unit": "N"
+        },
+        "optimal_fiber_length": {
+          "value": 0.0932,
+          "unit": "m"
+        },
+        "tendon_slack_length": {
+          "value": 0.097,
+          "unit": "m"
+        },
+        "pennation_angle_at_optimal": {
+          "value": 0.4712389,
+          "unit": "rad"
+        },
+        "max_contraction_velocity": {
+          "value": 10.0,
+          "unit": "optimal_fiber_lengths/s"
+        },
+        "default_activation": {
+          "value": 1.0,
+          "unit": "dimensionless"
+        }
+      },
+      "path_points": [
+        {
+          "name": "CORB-P1",
+          "type": "PathPoint",
+          "source_frame": "/bodyset/scapula",
+          "fixed_location_m": [
+            0.0125,
+            -0.04127,
+            -0.02652
+          ],
+          "coordinate_dependencies": [],
+          "complete_source_xml": "<PathPoint name=\"CORB-P1\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/scapula</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>0.012500000000000001 -0.041270000000000001 -0.026519999999999998</location>\n\t\t\t\t\t\t\t\t</PathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "CORB-P2",
+          "type": "PathPoint",
+          "source_frame": "/bodyset/scapula",
+          "fixed_location_m": [
+            0.00483,
+            -0.06958,
+            -0.01563
+          ],
+          "coordinate_dependencies": [],
+          "complete_source_xml": "<PathPoint name=\"CORB-P2\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/scapula</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>0.0048300000000000001 -0.069580000000000003 -0.015630000000000002</location>\n\t\t\t\t\t\t\t\t</PathPoint>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "CORB-P3",
+          "type": "PathPoint",
+          "source_frame": "/bodyset/humerus",
+          "fixed_location_m": [
+            0.00743,
+            -0.15048,
+            -0.00782
+          ],
+          "coordinate_dependencies": [],
+          "complete_source_xml": "<PathPoint name=\"CORB-P3\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<socket_parent_frame>/bodyset/humerus</socket_parent_frame>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<location>0.00743 -0.15048 -0.0078200000000000006</location>\n\t\t\t\t\t\t\t\t</PathPoint>\n\t\t\t\t\t\t\t"
+        }
+      ],
+      "path_wraps": [
+        {
+          "name": "pathwrap",
+          "source_wrap_name": "CORBhum",
+          "source_body": "humerus",
+          "method": "hybrid",
+          "range": "-1 -1",
+          "complete_source_xml": "<PathWrap name=\"pathwrap\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>CORBhum</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>-1 -1</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t\t"
+        },
+        {
+          "name": "pathwrap_0",
+          "source_wrap_name": "TMAJ_LAT_PEC_CORBhh",
+          "source_body": "humerus",
+          "method": "hybrid",
+          "range": "-1 -1",
+          "complete_source_xml": "<PathWrap name=\"pathwrap_0\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>TMAJ_LAT_PEC_CORBhh</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>-1 -1</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t"
+        }
+      ],
+      "complete_muscle_subtree_sha256": "f3b30aedb45d95e3d01ea7480f374f90ef9163a5a307ab576b8ef77b452ffe33"
+    }
+  ],
+  "path_point_type_counts": {
+    "PathPoint": 44,
+    "MovingPathPoint": 13,
+    "ConditionalPathPoint": 8
+  },
+  "attachment_body_names": [
+    "clavicle",
+    "humerus",
+    "scapula",
+    "thorax"
+  ],
+  "referenced_wrap_names": [
+    "CORBhum",
+    "DELT1hh",
+    "DELT_TMAJ_LAT_PEC_CORBhh",
+    "Delt3",
+    "Deltoid2",
+    "INFSP",
+    "INFSP_and_TMIN_hum_head",
+    "LAT_TMAJ2hh",
+    "LAT_TMAJhh",
+    "PEC12hum",
+    "PEC1hh",
+    "PEC23hh",
+    "PEC3hum",
+    "SUBSCAP",
+    "SUPSP",
+    "TMAJ_LAT_PEC_CORBhh",
+    "TMAJ_LAThum",
+    "TMIN",
+    "TMINhum",
+    "Thorax",
+    "delt2hum",
+    "delt3hum",
+    "infsp_new"
+  ],
+  "referenced_wraps": [
+    {
+      "name": "CORBhum",
+      "body": "humerus",
+      "type": "WrapCylinder",
+      "complete_source_xml": "<WrapCylinder name=\"CORBhum\">\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<active>true</active>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<xyz_body_rotation>-1.60832 0.095993099999999998 0.87528300000000003</xyz_body_rotation>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<translation>0.0027000000000000001 -0.1202 -0.0058999999999999999</translation>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<quadrant>x</quadrant>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<Appearance>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<visible>false</visible>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<opacity>0.5</opacity>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<color>0 1 1</color>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<SurfaceProperties>\n\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t<representation>3</representation>\n\t\t\t\t\t\t\t\t\t</SurfaceProperties>\n\t\t\t\t\t\t\t\t</Appearance>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<radius>0.0080000000000000002</radius>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<length>0.10000000000000001</length>\n\t\t\t\t\t\t\t</WrapCylinder>\n\t\t\t\t\t\t\t"
+    },
+    {
+      "name": "DELT1hh",
+      "body": "humerus",
+      "type": "WrapEllipsoid",
+      "complete_source_xml": "<WrapEllipsoid name=\"DELT1hh\">\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<active>true</active>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<xyz_body_rotation>0.0584685 1.00461 0.57037400000000005</xyz_body_rotation>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<translation>-0.013899999999999999 -0.012699999999999999 -0.026200000000000001</translation>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<quadrant>z</quadrant>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<Appearance>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<visible>false</visible>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<opacity>0.5</opacity>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<color>0 1 1</color>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<SurfaceProperties>\n\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t<representation>3</representation>\n\t\t\t\t\t\t\t\t\t</SurfaceProperties>\n\t\t\t\t\t\t\t\t</Appearance>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<dimensions>0.029999999999999999 0.10000000000000001 0.050000000000000003</dimensions>\n\t\t\t\t\t\t\t</WrapEllipsoid>\n\t\t\t\t\t\t\t"
+    },
+    {
+      "name": "DELT_TMAJ_LAT_PEC_CORBhh",
+      "body": "humerus",
+      "type": "WrapSphere",
+      "complete_source_xml": "<WrapSphere name=\"DELT_TMAJ_LAT_PEC_CORBhh\">\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<active>true</active>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<xyz_body_rotation>0 0 0</xyz_body_rotation>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<translation>0.00069999999999999999 0 0.0060000000000000001</translation>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<quadrant>all</quadrant>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<Appearance>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<visible>false</visible>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<opacity>0.5</opacity>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<color>0 1 1</color>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<SurfaceProperties>\n\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t<representation>3</representation>\n\t\t\t\t\t\t\t\t\t</SurfaceProperties>\n\t\t\t\t\t\t\t\t</Appearance>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<radius>0.029999999999999999</radius>\n\t\t\t\t\t\t\t</WrapSphere>\n\t\t\t\t\t\t\t"
+    },
+    {
+      "name": "Delt3",
+      "body": "scapula",
+      "type": "WrapTorus",
+      "complete_source_xml": "<WrapTorus name=\"Delt3\">\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<active>true</active>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<xyz_body_rotation>0.62098799999999998 0.32882 -0.56077399999999999</xyz_body_rotation>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<translation>-0.097299999999999998 -0.042799999999999998 -0.036999999999999998</translation>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<quadrant>all</quadrant>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<Appearance>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<visible>false</visible>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<opacity>0.5</opacity>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<color>0 1 1</color>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<SurfaceProperties>\n\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t<representation>3</representation>\n\t\t\t\t\t\t\t\t\t</SurfaceProperties>\n\t\t\t\t\t\t\t\t</Appearance>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<inner_radius>0.040000000000000001</inner_radius>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<outer_radius>0.059999999999999998</outer_radius>\n\t\t\t\t\t\t\t</WrapTorus>\n\t\t\t\t\t\t\t"
+    },
+    {
+      "name": "Deltoid2",
+      "body": "scapula",
+      "type": "WrapEllipsoid",
+      "complete_source_xml": "<WrapEllipsoid name=\"Deltoid2\">\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<active>true</active>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<xyz_body_rotation>3.13042 -1.54881 -1.31423</xyz_body_rotation>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<translation>-0.0057999999999999996 -0.0378 0.0095999999999999992</translation>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<quadrant>-y</quadrant>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<Appearance>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<visible>false</visible>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<opacity>0.5</opacity>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<color>0 1 1</color>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<SurfaceProperties>\n\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t<representation>3</representation>\n\t\t\t\t\t\t\t\t\t</SurfaceProperties>\n\t\t\t\t\t\t\t\t</Appearance>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<dimensions>0.033000000000000002 0.040000000000000001 0.035000000000000003</dimensions>\n\t\t\t\t\t\t\t</WrapEllipsoid>\n\t\t\t\t\t\t\t"
+    },
+    {
+      "name": "INFSP",
+      "body": "scapula",
+      "type": "WrapTorus",
+      "complete_source_xml": "<WrapTorus name=\"INFSP\">\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<active>true</active>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<xyz_body_rotation>0.025307300000000001 0.58835000000000004 0.15184400000000001</xyz_body_rotation>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<translation>-0.056099999999999997 -0.019900000000000001 -0.0112</translation>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<quadrant>all</quadrant>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<Appearance>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<visible>false</visible>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<opacity>0.5</opacity>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<color>0 1 1</color>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<SurfaceProperties>\n\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t<representation>3</representation>\n\t\t\t\t\t\t\t\t\t</SurfaceProperties>\n\t\t\t\t\t\t\t\t</Appearance>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<inner_radius>0.0080000000000000002</inner_radius>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<outer_radius>0.019</outer_radius>\n\t\t\t\t\t\t\t</WrapTorus>\n\t\t\t\t\t\t\t"
+    },
+    {
+      "name": "INFSP_and_TMIN_hum_head",
+      "body": "humerus",
+      "type": "WrapEllipsoid",
+      "complete_source_xml": "<WrapEllipsoid name=\"INFSP_and_TMIN_hum_head\">\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<active>true</active>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<xyz_body_rotation>-0.28658299999999998 -0.0090757100000000007 -0.068416900000000003</xyz_body_rotation>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<translation>-0.00029999999999999997 0.0025999999999999999 0.0038</translation>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<quadrant>all</quadrant>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<Appearance>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<visible>false</visible>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<opacity>0.5</opacity>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<color>0 1 1</color>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<SurfaceProperties>\n\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t<representation>3</representation>\n\t\t\t\t\t\t\t\t\t</SurfaceProperties>\n\t\t\t\t\t\t\t\t</Appearance>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<dimensions>0.02 0.025000000000000001 0.02</dimensions>\n\t\t\t\t\t\t\t</WrapEllipsoid>\n\t\t\t\t\t\t\t"
+    },
+    {
+      "name": "LAT_TMAJ2hh",
+      "body": "humerus",
+      "type": "WrapSphere",
+      "complete_source_xml": "<WrapSphere name=\"LAT_TMAJ2hh\">\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<active>true</active>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<xyz_body_rotation>-0.12723499999999999 0.276111 0.019722199999999999</xyz_body_rotation>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<translation>-0.0016000000000000001 0.0091999999999999998 0.0051999999999999998</translation>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<quadrant>all</quadrant>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<Appearance>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<visible>false</visible>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<opacity>0.5</opacity>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<color>0 1 1</color>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<SurfaceProperties>\n\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t<representation>3</representation>\n\t\t\t\t\t\t\t\t\t</SurfaceProperties>\n\t\t\t\t\t\t\t\t</Appearance>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<radius>0.029999999999999999</radius>\n\t\t\t\t\t\t\t</WrapSphere>\n\t\t\t\t\t\t\t"
+    },
+    {
+      "name": "LAT_TMAJhh",
+      "body": "humerus",
+      "type": "WrapCylinder",
+      "complete_source_xml": "<WrapCylinder name=\"LAT_TMAJhh\">\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<active>true</active>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<xyz_body_rotation>-0.30508400000000002 -0.018325999999999999 -0.68661300000000003</xyz_body_rotation>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<translation>-0.0224 0.010200000000000001 0.0094000000000000004</translation>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<quadrant>-y</quadrant>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<Appearance>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<visible>false</visible>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<opacity>0.5</opacity>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<color>0 1 1</color>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<SurfaceProperties>\n\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t<representation>3</representation>\n\t\t\t\t\t\t\t\t\t</SurfaceProperties>\n\t\t\t\t\t\t\t\t</Appearance>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<radius>0.0070000000000000001</radius>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<length>0.044999999999999998</length>\n\t\t\t\t\t\t\t</WrapCylinder>\n\t\t\t\t\t\t\t"
+    },
+    {
+      "name": "PEC12hum",
+      "body": "humerus",
+      "type": "WrapCylinder",
+      "complete_source_xml": "<WrapCylinder name=\"PEC12hum\">\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<active>true</active>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<xyz_body_rotation>1.55928 -0.077492599999999995 -0.92589699999999997</xyz_body_rotation>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<translation>0.002 -0.050799999999999998 -0.0016999999999999999</translation>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<quadrant>x</quadrant>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<Appearance>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<visible>false</visible>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<opacity>0.5</opacity>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<color>0 1 1</color>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<SurfaceProperties>\n\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t<representation>3</representation>\n\t\t\t\t\t\t\t\t\t</SurfaceProperties>\n\t\t\t\t\t\t\t\t</Appearance>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<radius>0.0089999999999999993</radius>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<length>0.070000000000000007</length>\n\t\t\t\t\t\t\t</WrapCylinder>\n\t\t\t\t\t\t\t"
+    },
+    {
+      "name": "PEC1hh",
+      "body": "humerus",
+      "type": "WrapEllipsoid",
+      "complete_source_xml": "<WrapEllipsoid name=\"PEC1hh\">\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<active>true</active>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<xyz_body_rotation>-0.62046500000000004 -0.31049399999999999 0.36372700000000002</xyz_body_rotation>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<translation>-0.0037000000000000002 0.00050000000000000001 -0.0025000000000000001</translation>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<quadrant>-z</quadrant>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<Appearance>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<visible>false</visible>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<opacity>0.5</opacity>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<color>0 1 1</color>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<SurfaceProperties>\n\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t<representation>3</representation>\n\t\t\t\t\t\t\t\t\t</SurfaceProperties>\n\t\t\t\t\t\t\t\t</Appearance>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<dimensions>0.029999999999999999 0.02 0.02</dimensions>\n\t\t\t\t\t\t\t</WrapEllipsoid>\n\t\t\t\t\t\t\t"
+    },
+    {
+      "name": "PEC23hh",
+      "body": "humerus",
+      "type": "WrapSphere",
+      "complete_source_xml": "<WrapSphere name=\"PEC23hh\">\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<active>true</active>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<xyz_body_rotation>0 0 0</xyz_body_rotation>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<translation>-0.0086 0.0020999999999999999 -0.00040000000000000002</translation>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<quadrant>all</quadrant>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<Appearance>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<visible>false</visible>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<opacity>0.5</opacity>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<color>0 1 1</color>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<SurfaceProperties>\n\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t<representation>3</representation>\n\t\t\t\t\t\t\t\t\t</SurfaceProperties>\n\t\t\t\t\t\t\t\t</Appearance>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<radius>0.02</radius>\n\t\t\t\t\t\t\t</WrapSphere>\n\t\t\t\t\t\t\t"
+    },
+    {
+      "name": "PEC3hum",
+      "body": "humerus",
+      "type": "WrapCylinder",
+      "complete_source_xml": "<WrapCylinder name=\"PEC3hum\">\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<active>true</active>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<xyz_body_rotation>1.4409400000000001 -0.056199600000000002 1.75196</xyz_body_rotation>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<translation>0.00089999999999999998 -0.055100000000000003 -0.00040000000000000002</translation>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<quadrant>-x</quadrant>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<Appearance>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<visible>false</visible>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<opacity>0.5</opacity>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<color>0 1 1</color>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<SurfaceProperties>\n\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t<representation>3</representation>\n\t\t\t\t\t\t\t\t\t</SurfaceProperties>\n\t\t\t\t\t\t\t\t</Appearance>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<radius>0.0080000000000000002</radius>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<length>0.10000000000000001</length>\n\t\t\t\t\t\t\t</WrapCylinder>\n\t\t\t\t\t\t\t"
+    },
+    {
+      "name": "SUBSCAP",
+      "body": "humerus",
+      "type": "WrapEllipsoid",
+      "complete_source_xml": "<WrapEllipsoid name=\"SUBSCAP\">\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<active>true</active>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<xyz_body_rotation>-0.92450100000000002 0.288852 0.38152900000000001</xyz_body_rotation>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<translation>-0.0025000000000000001 0.00069999999999999999 -0.0044999999999999997</translation>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<quadrant>all</quadrant>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<Appearance>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<visible>false</visible>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<opacity>0.5</opacity>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<color>0 1 1</color>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<SurfaceProperties>\n\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t<representation>3</representation>\n\t\t\t\t\t\t\t\t\t</SurfaceProperties>\n\t\t\t\t\t\t\t\t</Appearance>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<dimensions>0.02 0.017000000000000001 0.028000000000000001</dimensions>\n\t\t\t\t\t\t\t</WrapEllipsoid>\n\t\t\t\t\t\t\t"
+    },
+    {
+      "name": "SUPSP",
+      "body": "humerus",
+      "type": "WrapEllipsoid",
+      "complete_source_xml": "<WrapEllipsoid name=\"SUPSP\">\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<active>true</active>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<xyz_body_rotation>0.038048199999999997 0.0085521099999999999 -1.3067299999999999</xyz_body_rotation>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<translation>0.00020000000000000001 0.0077000000000000002 0.0043</translation>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<quadrant>all</quadrant>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<Appearance>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<visible>false</visible>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<opacity>0.5</opacity>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<color>0 1 1</color>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<SurfaceProperties>\n\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t<representation>3</representation>\n\t\t\t\t\t\t\t\t\t</SurfaceProperties>\n\t\t\t\t\t\t\t\t</Appearance>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<dimensions>0.02 0.02 0.02</dimensions>\n\t\t\t\t\t\t\t</WrapEllipsoid>\n\t\t\t\t\t\t\t"
+    },
+    {
+      "name": "TMAJ_LAT_PEC_CORBhh",
+      "body": "humerus",
+      "type": "WrapSphere",
+      "complete_source_xml": "<WrapSphere name=\"TMAJ_LAT_PEC_CORBhh\">\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<active>true</active>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<xyz_body_rotation>0 0 0</xyz_body_rotation>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<translation>0.00069999999999999999 0 0.0060000000000000001</translation>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<quadrant>all</quadrant>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<Appearance>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<visible>false</visible>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<opacity>0.5</opacity>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<color>0 1 1</color>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<SurfaceProperties>\n\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t<representation>3</representation>\n\t\t\t\t\t\t\t\t\t</SurfaceProperties>\n\t\t\t\t\t\t\t\t</Appearance>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<radius>0.029999999999999999</radius>\n\t\t\t\t\t\t\t</WrapSphere>\n\t\t\t\t\t\t\t"
+    },
+    {
+      "name": "TMAJ_LAThum",
+      "body": "humerus",
+      "type": "WrapCylinder",
+      "complete_source_xml": "<WrapCylinder name=\"TMAJ_LAThum\">\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<active>true</active>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<xyz_body_rotation>1.5364100000000001 -0.063704499999999997 1.4142399999999999</xyz_body_rotation>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<translation>0.00069999999999999999 -0.044299999999999999 -0.0054999999999999997</translation>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<quadrant>-x</quadrant>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<Appearance>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<visible>false</visible>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<opacity>0.5</opacity>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<color>0 1 1</color>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<SurfaceProperties>\n\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t<representation>3</representation>\n\t\t\t\t\t\t\t\t\t</SurfaceProperties>\n\t\t\t\t\t\t\t\t</Appearance>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<radius>0.0070000000000000001</radius>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<length>0.040000000000000001</length>\n\t\t\t\t\t\t\t</WrapCylinder>\n\t\t\t\t\t\t\t"
+    },
+    {
+      "name": "TMIN",
+      "body": "scapula",
+      "type": "WrapEllipsoid",
+      "complete_source_xml": "<WrapEllipsoid name=\"TMIN\">\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<active>true</active>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<xyz_body_rotation>-2.09754 -0.28082299999999999 -1.7634799999999999</xyz_body_rotation>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<translation>-0.041799999999999997 -0.051900000000000002 -0.035900000000000001</translation>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<quadrant>x</quadrant>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<Appearance>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<visible>false</visible>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<opacity>0.5</opacity>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<color>0 1 1</color>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<SurfaceProperties>\n\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t<representation>3</representation>\n\t\t\t\t\t\t\t\t\t</SurfaceProperties>\n\t\t\t\t\t\t\t\t</Appearance>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<dimensions>0.029999999999999999 0.029999999999999999 0.050000000000000003</dimensions>\n\t\t\t\t\t\t\t</WrapEllipsoid>\n\t\t\t\t\t\t\t"
+    },
+    {
+      "name": "TMINhum",
+      "body": "humerus",
+      "type": "WrapCylinder",
+      "complete_source_xml": "<WrapCylinder name=\"TMINhum\">\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<active>true</active>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<xyz_body_rotation>1.47353 0.0229 3.2146300000000001</xyz_body_rotation>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<translation>0.0030000000000000001 -0.025499999999999998 0.0012999999999999999</translation>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<quadrant>x</quadrant>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<Appearance>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<visible>false</visible>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<opacity>0.5</opacity>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<color>0 1 1</color>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<SurfaceProperties>\n\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t<representation>3</representation>\n\t\t\t\t\t\t\t\t\t</SurfaceProperties>\n\t\t\t\t\t\t\t\t</Appearance>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<radius>0.021999999999999999</radius>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<length>0.113</length>\n\t\t\t\t\t\t\t</WrapCylinder>\n\t\t\t\t\t\t\t"
+    },
+    {
+      "name": "Thorax",
+      "body": "thorax",
+      "type": "WrapEllipsoid",
+      "complete_source_xml": "<WrapEllipsoid name=\"Thorax\">\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<active>true</active>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<xyz_body_rotation>0.043458700000000003 -0.33196199999999998 0.18989200000000001</xyz_body_rotation>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<translation>-0.038600000000000002 -0.1273 0.070900000000000005</translation>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<quadrant>all</quadrant>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<Appearance>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<visible>false</visible>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<opacity>0.5</opacity>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<color>0 1 1</color>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<SurfaceProperties>\n\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t<representation>3</representation>\n\t\t\t\t\t\t\t\t\t</SurfaceProperties>\n\t\t\t\t\t\t\t\t</Appearance>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<dimensions>0.10000000000000001 0.13500000000000001 0.080000000000000002</dimensions>\n\t\t\t\t\t\t\t</WrapEllipsoid>\n\t\t\t\t\t\t"
+    },
+    {
+      "name": "delt2hum",
+      "body": "humerus",
+      "type": "WrapCylinder",
+      "complete_source_xml": "<WrapCylinder name=\"delt2hum\">\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<active>true</active>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<xyz_body_rotation>1.5509299999999999 -0.019958199999999999 0.059661800000000001</xyz_body_rotation>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<translation>0.0016999999999999999 -0.095799999999999996 0.0011000000000000001</translation>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<quadrant>all</quadrant>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<Appearance>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<visible>false</visible>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<opacity>0.5</opacity>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<color>0 1 1</color>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<SurfaceProperties>\n\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t<representation>3</representation>\n\t\t\t\t\t\t\t\t\t</SurfaceProperties>\n\t\t\t\t\t\t\t\t</Appearance>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<radius>0.0109</radius>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<length>0.12</length>\n\t\t\t\t\t\t\t</WrapCylinder>\n\t\t\t\t\t\t\t"
+    },
+    {
+      "name": "delt3hum",
+      "body": "humerus",
+      "type": "WrapEllipsoid",
+      "complete_source_xml": "<WrapEllipsoid name=\"delt3hum\">\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<active>true</active>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<xyz_body_rotation>1.7273499999999999 0.075921799999999998 -2.7431299999999998</xyz_body_rotation>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<translation>0.0019 -0.059200000000000003 0.0011000000000000001</translation>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<quadrant>x</quadrant>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<Appearance>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<visible>false</visible>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<opacity>0.5</opacity>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<color>0 1 1</color>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<SurfaceProperties>\n\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t<representation>3</representation>\n\t\t\t\t\t\t\t\t\t</SurfaceProperties>\n\t\t\t\t\t\t\t\t</Appearance>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<dimensions>0.01 0.01 0.050000000000000003</dimensions>\n\t\t\t\t\t\t\t</WrapEllipsoid>\n\t\t\t\t\t\t\t"
+    },
+    {
+      "name": "infsp_new",
+      "body": "humerus",
+      "type": "WrapCylinder",
+      "complete_source_xml": "<WrapCylinder name=\"infsp_new\">\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<active>true</active>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<xyz_body_rotation>1.52911 -0.34499999999999997 -0.65966000000000002</xyz_body_rotation>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<translation>-0.0019 -0.019 0.0022000000000000001</translation>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<quadrant>-x</quadrant>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<Appearance>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<visible>false</visible>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<opacity>0.5</opacity>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<color>0 1 1</color>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<SurfaceProperties>\n\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t<representation>3</representation>\n\t\t\t\t\t\t\t\t\t</SurfaceProperties>\n\t\t\t\t\t\t\t\t</Appearance>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<radius>0.0235</radius>\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<length>0.115</length>\n\t\t\t\t\t\t\t</WrapCylinder>\n\t\t\t\t\t\t\t"
+    }
+  ],
+  "coordinates": [
+    {
+      "name": "r_x",
+      "default_value": 0.0,
+      "locked": "false",
+      "range": "-6.2831853100000004 6.2831853100000004",
+      "complete_source_xml": "<Coordinate name=\"r_x\">\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_value>0</default_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_speed_value>0</default_speed_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<range>-6.2831853100000004 6.2831853100000004</range>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<clamped>false</clamped>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<locked>false</locked>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed_function />\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed>false</prescribed>\n\t\t\t\t\t\t</Coordinate>\n\t\t\t\t\t\t"
+    },
+    {
+      "name": "r_y",
+      "default_value": -1.57079633,
+      "locked": "false",
+      "range": "-6.2831853100000004 6.2831853100000004",
+      "complete_source_xml": "<Coordinate name=\"r_y\">\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_value>-1.5707963300000001</default_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_speed_value>0</default_speed_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<range>-6.2831853100000004 6.2831853100000004</range>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<clamped>false</clamped>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<locked>false</locked>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed_function />\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed>false</prescribed>\n\t\t\t\t\t\t</Coordinate>\n\t\t\t\t\t\t"
+    },
+    {
+      "name": "r_z",
+      "default_value": 0.0,
+      "locked": "false",
+      "range": "-6.2831853100000004 6.2831853100000004",
+      "complete_source_xml": "<Coordinate name=\"r_z\">\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_value>0</default_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_speed_value>0</default_speed_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<range>-6.2831853100000004 6.2831853100000004</range>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<clamped>false</clamped>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<locked>false</locked>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed_function />\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed>false</prescribed>\n\t\t\t\t\t\t</Coordinate>\n\t\t\t\t\t\t"
+    },
+    {
+      "name": "t_x",
+      "default_value": 0.0,
+      "locked": "false",
+      "range": "-100 100",
+      "complete_source_xml": "<Coordinate name=\"t_x\">\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_value>0</default_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_speed_value>0</default_speed_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<range>-100 100</range>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<clamped>true</clamped>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<locked>false</locked>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed_function />\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed>false</prescribed>\n\t\t\t\t\t\t</Coordinate>\n\t\t\t\t\t\t"
+    },
+    {
+      "name": "t_y",
+      "default_value": 0.0,
+      "locked": "false",
+      "range": "-100 100",
+      "complete_source_xml": "<Coordinate name=\"t_y\">\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_value>0</default_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_speed_value>0</default_speed_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<range>-100 100</range>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<clamped>true</clamped>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<locked>false</locked>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed_function />\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed>false</prescribed>\n\t\t\t\t\t\t</Coordinate>\n\t\t\t\t\t\t"
+    },
+    {
+      "name": "t_z",
+      "default_value": 0.0,
+      "locked": "false",
+      "range": "-100 100",
+      "complete_source_xml": "<Coordinate name=\"t_z\">\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_value>0</default_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_speed_value>0</default_speed_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<range>-100 100</range>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<clamped>true</clamped>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<locked>false</locked>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed_function />\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed>false</prescribed>\n\t\t\t\t\t\t</Coordinate>\n\t\t\t\t\t"
+    },
+    {
+      "name": "sternoclavicular_r2",
+      "default_value": -0.126711190176656,
+      "locked": "false",
+      "range": "-99999.899999999994 99999.899999999994",
+      "complete_source_xml": "<Coordinate name=\"sternoclavicular_r2\">\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_value>-0.126711190176656</default_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_speed_value>0</default_speed_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<range>-99999.899999999994 99999.899999999994</range>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<clamped>false</clamped>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<locked>false</locked>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed_function />\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed>false</prescribed>\n\t\t\t\t\t\t</Coordinate>\n\t\t\t\t\t\t"
+    },
+    {
+      "name": "sternoclavicular_r3",
+      "default_value": 0.0536688797165195,
+      "locked": "false",
+      "range": "-99999.899999999994 99999.899999999994",
+      "complete_source_xml": "<Coordinate name=\"sternoclavicular_r3\">\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_value>0.053668879716519499</default_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_speed_value>0</default_speed_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<range>-99999.899999999994 99999.899999999994</range>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<clamped>false</clamped>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<locked>false</locked>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed_function />\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed>false</prescribed>\n\t\t\t\t\t\t</Coordinate>\n\t\t\t\t\t"
+    },
+    {
+      "name": "unrotscap_r3",
+      "default_value": -0.0536688797165195,
+      "locked": "false",
+      "range": "-99999.899999999994 99999.899999999994",
+      "complete_source_xml": "<Coordinate name=\"unrotscap_r3\">\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_value>-0.053668879716519499</default_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_speed_value>0</default_speed_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<range>-99999.899999999994 99999.899999999994</range>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<clamped>false</clamped>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<locked>false</locked>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed_function />\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed>false</prescribed>\n\t\t\t\t\t\t</Coordinate>\n\t\t\t\t\t\t"
+    },
+    {
+      "name": "unrotscap_r2",
+      "default_value": 0.126711190176656,
+      "locked": "false",
+      "range": "-99999.899999999994 99999.899999999994",
+      "complete_source_xml": "<Coordinate name=\"unrotscap_r2\">\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_value>0.126711190176656</default_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_speed_value>0</default_speed_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<range>-99999.899999999994 99999.899999999994</range>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<clamped>false</clamped>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<locked>false</locked>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed_function />\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed>false</prescribed>\n\t\t\t\t\t\t</Coordinate>\n\t\t\t\t\t"
+    },
+    {
+      "name": "acromioclavicular_r2",
+      "default_value": -0.0256564385069043,
+      "locked": "false",
+      "range": "-99999.899999999994 99999.899999999994",
+      "complete_source_xml": "<Coordinate name=\"acromioclavicular_r2\">\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_value>-0.0256564385069043</default_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_speed_value>0</default_speed_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<range>-99999.899999999994 99999.899999999994</range>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<clamped>false</clamped>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<locked>false</locked>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed_function />\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed>false</prescribed>\n\t\t\t\t\t\t</Coordinate>\n\t\t\t\t\t\t"
+    },
+    {
+      "name": "acromioclavicular_r3",
+      "default_value": 0.207346311199255,
+      "locked": "false",
+      "range": "-99999.899999999994 99999.899999999994",
+      "complete_source_xml": "<Coordinate name=\"acromioclavicular_r3\">\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_value>0.20734631119925501</default_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_speed_value>0</default_speed_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<range>-99999.899999999994 99999.899999999994</range>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<clamped>false</clamped>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<locked>false</locked>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed_function />\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed>false</prescribed>\n\t\t\t\t\t\t</Coordinate>\n\t\t\t\t\t\t"
+    },
+    {
+      "name": "acromioclavicular_r1",
+      "default_value": 0.0932007398819235,
+      "locked": "false",
+      "range": "-99999.899999999994 99999.899999999994",
+      "complete_source_xml": "<Coordinate name=\"acromioclavicular_r1\">\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_value>0.093200739881923497</default_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_speed_value>0</default_speed_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<range>-99999.899999999994 99999.899999999994</range>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<clamped>false</clamped>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<locked>false</locked>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed_function />\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed>false</prescribed>\n\t\t\t\t\t\t</Coordinate>\n\t\t\t\t\t"
+    },
+    {
+      "name": "unrothum_r1",
+      "default_value": -0.0932007398819235,
+      "locked": "false",
+      "range": "-99999.899999999994 99999.899999999994",
+      "complete_source_xml": "<Coordinate name=\"unrothum_r1\">\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_value>-0.093200739881923497</default_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_speed_value>0</default_speed_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<range>-99999.899999999994 99999.899999999994</range>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<clamped>false</clamped>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<locked>false</locked>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed_function />\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed>false</prescribed>\n\t\t\t\t\t\t</Coordinate>\n\t\t\t\t\t\t"
+    },
+    {
+      "name": "unrothum_r3",
+      "default_value": -0.207346311199255,
+      "locked": "false",
+      "range": "-99999.899999999994 99999.899999999994",
+      "complete_source_xml": "<Coordinate name=\"unrothum_r3\">\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_value>-0.20734631119925501</default_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_speed_value>0</default_speed_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<range>-99999.899999999994 99999.899999999994</range>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<clamped>false</clamped>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<locked>false</locked>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed_function />\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed>false</prescribed>\n\t\t\t\t\t\t</Coordinate>\n\t\t\t\t\t\t"
+    },
+    {
+      "name": "unrothum_r2",
+      "default_value": 0.0256564385069043,
+      "locked": "false",
+      "range": "-99999.899999999994 99999.899999999994",
+      "complete_source_xml": "<Coordinate name=\"unrothum_r2\">\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_value>0.0256564385069043</default_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_speed_value>0</default_speed_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<range>-99999.899999999994 99999.899999999994</range>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<clamped>false</clamped>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<locked>false</locked>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed_function />\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed>false</prescribed>\n\t\t\t\t\t\t</Coordinate>\n\t\t\t\t\t"
+    },
+    {
+      "name": "elv_angle",
+      "default_value": 1.5707963267949,
+      "locked": "false",
+      "range": "-1.65806279 2.2689280300000001",
+      "complete_source_xml": "<Coordinate name=\"elv_angle\">\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_value>1.5707963267949001</default_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_speed_value>0</default_speed_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<range>-1.65806279 2.2689280300000001</range>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<clamped>true</clamped>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<locked>false</locked>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed_function />\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed>false</prescribed>\n\t\t\t\t\t\t</Coordinate>\n\t\t\t\t\t"
+    },
+    {
+      "name": "shoulder_elv",
+      "default_value": 0.523598785852187,
+      "locked": "false",
+      "range": "0 3.1415926500000002",
+      "complete_source_xml": "<Coordinate name=\"shoulder_elv\">\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_value>0.523598785852187</default_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_speed_value>0</default_speed_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<range>0 3.1415926500000002</range>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<clamped>true</clamped>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<locked>false</locked>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed_function />\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed>false</prescribed>\n\t\t\t\t\t\t</Coordinate>\n\t\t\t\t\t\t"
+    },
+    {
+      "name": "shoulder1_r2",
+      "default_value": -1.5707963267949,
+      "locked": "false",
+      "range": "-99999.899999999994 99999.899999999994",
+      "complete_source_xml": "<Coordinate name=\"shoulder1_r2\">\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_value>-1.5707963267949001</default_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_speed_value>0</default_speed_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<range>-99999.899999999994 99999.899999999994</range>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<clamped>false</clamped>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<locked>false</locked>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed_function />\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed>false</prescribed>\n\t\t\t\t\t\t</Coordinate>\n\t\t\t\t\t"
+    },
+    {
+      "name": "shoulder_rot",
+      "default_value": 0.0,
+      "locked": "false",
+      "range": "-1.5707963300000001 2.0943950999999998",
+      "complete_source_xml": "<Coordinate name=\"shoulder_rot\">\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_value>0</default_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_speed_value>0</default_speed_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<range>-1.5707963300000001 2.0943950999999998</range>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<clamped>true</clamped>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<locked>false</locked>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed_function />\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed>false</prescribed>\n\t\t\t\t\t\t</Coordinate>\n\t\t\t\t\t"
+    },
+    {
+      "name": "elbow_flexion",
+      "default_value": 0.0,
+      "locked": "false",
+      "range": "0 2.2689280300000001",
+      "complete_source_xml": "<Coordinate name=\"elbow_flexion\">\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_value>0</default_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_speed_value>0</default_speed_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<range>0 2.2689280300000001</range>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<clamped>true</clamped>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<locked>false</locked>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed_function />\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed>false</prescribed>\n\t\t\t\t\t\t</Coordinate>\n\t\t\t\t\t"
+    },
+    {
+      "name": "pro_sup",
+      "default_value": -2e-08,
+      "locked": "false",
+      "range": "-1.5707963300000001 1.5707963300000001",
+      "complete_source_xml": "<Coordinate name=\"pro_sup\">\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_value>-2e-08</default_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_speed_value>0</default_speed_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<range>-1.5707963300000001 1.5707963300000001</range>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<clamped>true</clamped>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<locked>false</locked>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed_function />\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed>false</prescribed>\n\t\t\t\t\t\t</Coordinate>\n\t\t\t\t\t"
+    },
+    {
+      "name": "deviation",
+      "default_value": 0.0,
+      "locked": "false",
+      "range": "-0.17453293 0.43633231",
+      "complete_source_xml": "<Coordinate name=\"deviation\">\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_value>0</default_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_speed_value>0</default_speed_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<range>-0.17453293 0.43633231</range>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<clamped>true</clamped>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<locked>false</locked>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed_function />\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed>false</prescribed>\n\t\t\t\t\t\t</Coordinate>\n\t\t\t\t\t\t"
+    },
+    {
+      "name": "flexion",
+      "default_value": 0.0,
+      "locked": "false",
+      "range": "-1.22173048 1.22173048",
+      "complete_source_xml": "<Coordinate name=\"flexion\">\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_value>0</default_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_speed_value>0</default_speed_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<range>-1.22173048 1.22173048</range>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<clamped>true</clamped>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<locked>false</locked>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed_function />\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed>false</prescribed>\n\t\t\t\t\t\t</Coordinate>\n\t\t\t\t\t"
+    },
+    {
+      "name": "wrist_hand_r1",
+      "default_value": 0.0,
+      "locked": "false",
+      "range": "-99999.899999999994 99999.899999999994",
+      "complete_source_xml": "<Coordinate name=\"wrist_hand_r1\">\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_value>0</default_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_speed_value>0</default_speed_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<range>-99999.899999999994 99999.899999999994</range>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<clamped>false</clamped>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<locked>false</locked>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed_function />\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed>false</prescribed>\n\t\t\t\t\t\t</Coordinate>\n\t\t\t\t\t\t"
+    },
+    {
+      "name": "wrist_hand_r3",
+      "default_value": 0.0,
+      "locked": "false",
+      "range": "-99999.899999999994 99999.899999999994",
+      "complete_source_xml": "<Coordinate name=\"wrist_hand_r3\">\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_value>0</default_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<default_speed_value>0</default_speed_value>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<range>-99999.899999999994 99999.899999999994</range>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<clamped>false</clamped>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<locked>false</locked>\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed_function />\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<prescribed>false</prescribed>\n\t\t\t\t\t\t</Coordinate>\n\t\t\t\t\t"
+    }
+  ],
+  "couplers": [
+    {
+      "name": "sternoclavicular_r2_con",
+      "dependent": "sternoclavicular_r2",
+      "independent": "shoulder_elv",
+      "complete_source_xml": "<CoordinateCouplerConstraint name=\"sternoclavicular_r2_con\">\n\t\t\t\t\t\n\t\t\t\t\t<isEnforced>true</isEnforced>\n\t\t\t\t\t\n\t\t\t\t\t<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> 0 2.61799</x>\n\t\t\t\t\t\t\t<y> 0 -0.633555</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>\n\t\t\t\t\t\n\t\t\t\t\t<independent_coordinate_names>shoulder_elv</independent_coordinate_names>\n\t\t\t\t\t\n\t\t\t\t\t<dependent_coordinate_name>sternoclavicular_r2</dependent_coordinate_name>\n\t\t\t\t\t\n\t\t\t\t\t<scale_factor>1</scale_factor>\n\t\t\t\t</CoordinateCouplerConstraint>\n\t\t\t\t"
+    },
+    {
+      "name": "sternoclavicular_r3_con",
+      "dependent": "sternoclavicular_r3",
+      "independent": "shoulder_elv",
+      "complete_source_xml": "<CoordinateCouplerConstraint name=\"sternoclavicular_r3_con\">\n\t\t\t\t\t\n\t\t\t\t\t<isEnforced>true</isEnforced>\n\t\t\t\t\t\n\t\t\t\t\t<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> 0 3.14159</x>\n\t\t\t\t\t\t\t<y> 0 0.322013</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>\n\t\t\t\t\t\n\t\t\t\t\t<independent_coordinate_names>shoulder_elv</independent_coordinate_names>\n\t\t\t\t\t\n\t\t\t\t\t<dependent_coordinate_name>sternoclavicular_r3</dependent_coordinate_name>\n\t\t\t\t\t\n\t\t\t\t\t<scale_factor>1</scale_factor>\n\t\t\t\t</CoordinateCouplerConstraint>\n\t\t\t\t"
+    },
+    {
+      "name": "unrotscap_r2_con",
+      "dependent": "unrotscap_r2",
+      "independent": "shoulder_elv",
+      "complete_source_xml": "<CoordinateCouplerConstraint name=\"unrotscap_r2_con\">\n\t\t\t\t\t\n\t\t\t\t\t<isEnforced>true</isEnforced>\n\t\t\t\t\t\n\t\t\t\t\t<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> 0 2.61799</x>\n\t\t\t\t\t\t\t<y> 0 0.633555</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>\n\t\t\t\t\t\n\t\t\t\t\t<independent_coordinate_names>shoulder_elv</independent_coordinate_names>\n\t\t\t\t\t\n\t\t\t\t\t<dependent_coordinate_name>unrotscap_r2</dependent_coordinate_name>\n\t\t\t\t\t\n\t\t\t\t\t<scale_factor>1</scale_factor>\n\t\t\t\t</CoordinateCouplerConstraint>\n\t\t\t\t"
+    },
+    {
+      "name": "unrotscap_r3_con",
+      "dependent": "unrotscap_r3",
+      "independent": "shoulder_elv",
+      "complete_source_xml": "<CoordinateCouplerConstraint name=\"unrotscap_r3_con\">\n\t\t\t\t\t\n\t\t\t\t\t<isEnforced>true</isEnforced>\n\t\t\t\t\t\n\t\t\t\t\t<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> 0 3.14159</x>\n\t\t\t\t\t\t\t<y> 0 -0.322013</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>\n\t\t\t\t\t\n\t\t\t\t\t<independent_coordinate_names>shoulder_elv</independent_coordinate_names>\n\t\t\t\t\t\n\t\t\t\t\t<dependent_coordinate_name>unrotscap_r3</dependent_coordinate_name>\n\t\t\t\t\t\n\t\t\t\t\t<scale_factor>1</scale_factor>\n\t\t\t\t</CoordinateCouplerConstraint>\n\t\t\t\t"
+    },
+    {
+      "name": "acromioclavicular_r1_con",
+      "dependent": "acromioclavicular_r1",
+      "independent": "shoulder_elv",
+      "complete_source_xml": "<CoordinateCouplerConstraint name=\"acromioclavicular_r1_con\">\n\t\t\t\t\t\n\t\t\t\t\t<isEnforced>true</isEnforced>\n\t\t\t\t\t\n\t\t\t\t\t<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> 0 2.61799</x>\n\t\t\t\t\t\t\t<y> 0 0.466003</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>\n\t\t\t\t\t\n\t\t\t\t\t<independent_coordinate_names>shoulder_elv</independent_coordinate_names>\n\t\t\t\t\t\n\t\t\t\t\t<dependent_coordinate_name>acromioclavicular_r1</dependent_coordinate_name>\n\t\t\t\t\t\n\t\t\t\t\t<scale_factor>1</scale_factor>\n\t\t\t\t</CoordinateCouplerConstraint>\n\t\t\t\t"
+    },
+    {
+      "name": "acromioclavicular_r2_con",
+      "dependent": "acromioclavicular_r2",
+      "independent": "shoulder_elv",
+      "complete_source_xml": "<CoordinateCouplerConstraint name=\"acromioclavicular_r2_con\">\n\t\t\t\t\t\n\t\t\t\t\t<isEnforced>true</isEnforced>\n\t\t\t\t\t\n\t\t\t\t\t<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> 0 2.61799</x>\n\t\t\t\t\t\t\t<y> 0 -0.128282</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>\n\t\t\t\t\t\n\t\t\t\t\t<independent_coordinate_names>shoulder_elv</independent_coordinate_names>\n\t\t\t\t\t\n\t\t\t\t\t<dependent_coordinate_name>acromioclavicular_r2</dependent_coordinate_name>\n\t\t\t\t\t\n\t\t\t\t\t<scale_factor>1</scale_factor>\n\t\t\t\t</CoordinateCouplerConstraint>\n\t\t\t\t"
+    },
+    {
+      "name": "acromioclavicular_r3_con",
+      "dependent": "acromioclavicular_r3",
+      "independent": "shoulder_elv",
+      "complete_source_xml": "<CoordinateCouplerConstraint name=\"acromioclavicular_r3_con\">\n\t\t\t\t\t\n\t\t\t\t\t<isEnforced>true</isEnforced>\n\t\t\t\t\t\n\t\t\t\t\t<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> 0 2.61799</x>\n\t\t\t\t\t\t\t<y> 0 1.03673</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>\n\t\t\t\t\t\n\t\t\t\t\t<independent_coordinate_names>shoulder_elv</independent_coordinate_names>\n\t\t\t\t\t\n\t\t\t\t\t<dependent_coordinate_name>acromioclavicular_r3</dependent_coordinate_name>\n\t\t\t\t\t\n\t\t\t\t\t<scale_factor>1</scale_factor>\n\t\t\t\t</CoordinateCouplerConstraint>\n\t\t\t\t"
+    },
+    {
+      "name": "unrothum_r1_con",
+      "dependent": "unrothum_r1",
+      "independent": "shoulder_elv",
+      "complete_source_xml": "<CoordinateCouplerConstraint name=\"unrothum_r1_con\">\n\t\t\t\t\t\n\t\t\t\t\t<isEnforced>true</isEnforced>\n\t\t\t\t\t\n\t\t\t\t\t<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> 0 2.61799</x>\n\t\t\t\t\t\t\t<y> 0 -0.466003</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>\n\t\t\t\t\t\n\t\t\t\t\t<independent_coordinate_names>shoulder_elv</independent_coordinate_names>\n\t\t\t\t\t\n\t\t\t\t\t<dependent_coordinate_name>unrothum_r1</dependent_coordinate_name>\n\t\t\t\t\t\n\t\t\t\t\t<scale_factor>1</scale_factor>\n\t\t\t\t</CoordinateCouplerConstraint>\n\t\t\t\t"
+    },
+    {
+      "name": "unrothum_r2_con",
+      "dependent": "unrothum_r2",
+      "independent": "shoulder_elv",
+      "complete_source_xml": "<CoordinateCouplerConstraint name=\"unrothum_r2_con\">\n\t\t\t\t\t\n\t\t\t\t\t<isEnforced>true</isEnforced>\n\t\t\t\t\t\n\t\t\t\t\t<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> 0 2.61799</x>\n\t\t\t\t\t\t\t<y> 0 0.128282</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>\n\t\t\t\t\t\n\t\t\t\t\t<independent_coordinate_names>shoulder_elv</independent_coordinate_names>\n\t\t\t\t\t\n\t\t\t\t\t<dependent_coordinate_name>unrothum_r2</dependent_coordinate_name>\n\t\t\t\t\t\n\t\t\t\t\t<scale_factor>1</scale_factor>\n\t\t\t\t</CoordinateCouplerConstraint>\n\t\t\t\t"
+    },
+    {
+      "name": "unrothum_r3_con",
+      "dependent": "unrothum_r3",
+      "independent": "shoulder_elv",
+      "complete_source_xml": "<CoordinateCouplerConstraint name=\"unrothum_r3_con\">\n\t\t\t\t\t\n\t\t\t\t\t<isEnforced>true</isEnforced>\n\t\t\t\t\t\n\t\t\t\t\t<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> 0 2.61799</x>\n\t\t\t\t\t\t\t<y> 0 -1.03673</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>\n\t\t\t\t\t\n\t\t\t\t\t<independent_coordinate_names>shoulder_elv</independent_coordinate_names>\n\t\t\t\t\t\n\t\t\t\t\t<dependent_coordinate_name>unrothum_r3</dependent_coordinate_name>\n\t\t\t\t\t\n\t\t\t\t\t<scale_factor>1</scale_factor>\n\t\t\t\t</CoordinateCouplerConstraint>\n\t\t\t\t"
+    },
+    {
+      "name": "shoulder1_r2_con",
+      "dependent": "shoulder1_r2",
+      "independent": "elv_angle",
+      "complete_source_xml": "<CoordinateCouplerConstraint name=\"shoulder1_r2_con\">\n\t\t\t\t\t\n\t\t\t\t\t<isEnforced>true</isEnforced>\n\t\t\t\t\t\n\t\t\t\t\t<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline>\n\t\t\t\t\t\t\t<x> -1.5708 3.14159</x>\n\t\t\t\t\t\t\t<y> 1.5708 -3.14159</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>\n\t\t\t\t\t\n\t\t\t\t\t<independent_coordinate_names>elv_angle</independent_coordinate_names>\n\t\t\t\t\t\n\t\t\t\t\t<dependent_coordinate_name>shoulder1_r2</dependent_coordinate_name>\n\t\t\t\t\t\n\t\t\t\t\t<scale_factor>1</scale_factor>\n\t\t\t\t</CoordinateCouplerConstraint>\n\t\t\t\t"
+    },
+    {
+      "name": "wrist_hand_r1_con",
+      "dependent": "wrist_hand_r1",
+      "independent": "deviation",
+      "complete_source_xml": "<CoordinateCouplerConstraint name=\"wrist_hand_r1_con\">\n\t\t\t\t\t\n\t\t\t\t\t<isEnforced>true</isEnforced>\n\t\t\t\t\t\n\t\t\t\t\t<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline name=\"f18\">\n\t\t\t\t\t\t\t<x> -0.174533 0 0.436332</x>\n\t\t\t\t\t\t\t<y> -0.261799 0 0.436332</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>\n\t\t\t\t\t\n\t\t\t\t\t<independent_coordinate_names>deviation</independent_coordinate_names>\n\t\t\t\t\t\n\t\t\t\t\t<dependent_coordinate_name>wrist_hand_r1</dependent_coordinate_name>\n\t\t\t\t\t\n\t\t\t\t\t<scale_factor>1</scale_factor>\n\t\t\t\t</CoordinateCouplerConstraint>\n\t\t\t\t"
+    },
+    {
+      "name": "wrist_hand_r3_con",
+      "dependent": "wrist_hand_r3",
+      "independent": "flexion",
+      "complete_source_xml": "<CoordinateCouplerConstraint name=\"wrist_hand_r3_con\">\n\t\t\t\t\t\n\t\t\t\t\t<isEnforced>true</isEnforced>\n\t\t\t\t\t\n\t\t\t\t\t<coupled_coordinates_function>\n\t\t\t\t\t\t<SimmSpline name=\"f19\">\n\t\t\t\t\t\t\t<x> -1.22173 1.22173</x>\n\t\t\t\t\t\t\t<y> -0.610865 0.610865</y>\n\t\t\t\t\t\t</SimmSpline>\n\t\t\t\t\t</coupled_coordinates_function>\n\t\t\t\t\t\n\t\t\t\t\t<independent_coordinate_names>flexion</independent_coordinate_names>\n\t\t\t\t\t\n\t\t\t\t\t<dependent_coordinate_name>wrist_hand_r3</dependent_coordinate_name>\n\t\t\t\t\t\n\t\t\t\t\t<scale_factor>1</scale_factor>\n\t\t\t\t</CoordinateCouplerConstraint>\n\t\t\t"
+    }
+  ],
+  "bodies": [
+    {
+      "name": "thorax",
+      "mass_kg": 0.0,
+      "mass_center_m": "0 0 0",
+      "inertia_kg_m2": "1 1 1 0 0 0"
+    },
+    {
+      "name": "clavicle",
+      "mass_kg": 0.156,
+      "mass_center_m": "-0.011096 0.0063723 0.054168000000000001",
+      "inertia_kg_m2": "0.00024258999999999999 0.00025525999999999999 4.4419999999999998e-05 -1.8980000000000001e-05 -6.9939999999999998e-05 5.3709999999999999e-05"
+    },
+    {
+      "name": "clavphant",
+      "mass_kg": 0.0001,
+      "mass_center_m": "0 0 0",
+      "inertia_kg_m2": "1 1 1 0 0 0"
+    },
+    {
+      "name": "scapula",
+      "mass_kg": 0.70396,
+      "mass_center_m": "-0.054694 -0.035032000000000001 -0.043734000000000002",
+      "inertia_kg_m2": "0.0012428999999999999 0.0011504 0.0013651 0.00044939999999999997 0.00040922000000000002 0.00024110000000000001"
+    },
+    {
+      "name": "scapphant",
+      "mass_kg": 0.0001,
+      "mass_center_m": "0 0 0",
+      "inertia_kg_m2": "1 1 1 0 0 0"
+    },
+    {
+      "name": "humphant",
+      "mass_kg": 0.0001,
+      "mass_center_m": "0 0 0",
+      "inertia_kg_m2": "1 1 1 0 0 0"
+    },
+    {
+      "name": "humphant1",
+      "mass_kg": 0.0001,
+      "mass_center_m": "0 0 0",
+      "inertia_kg_m2": "1 1 1 0 0 0"
+    },
+    {
+      "name": "humerus",
+      "mass_kg": 1.99757,
+      "mass_center_m": "0.018064 -0.14014099999999999 -0.012746",
+      "inertia_kg_m2": "0.0122776 0.0025513300000000001 0.0125789 -0.00034740999999999998 -0.00023250000000000001 0.0012293"
+    },
+    {
+      "name": "ulna",
+      "mass_kg": 1.1053,
+      "mass_center_m": "0.0097178300000000002 -0.095950900000000006 0.024285999999999999",
+      "inertia_kg_m2": "0.0054130899999999997 0.00115318 0.0049436100000000002 0.00031686000000000003 -7.6149999999999994e-05 0.00109169"
+    },
+    {
+      "name": "radius",
+      "mass_kg": 0.23359,
+      "mass_center_m": "0.0336341 -0.181559 0.015599999999999999",
+      "inertia_kg_m2": "0.00043855000000000001 8.8590000000000004e-05 0.00040257999999999998 3.0139999999999999e-05 -4.2400000000000001e-06 6.4179999999999999e-05"
+    },
+    {
+      "name": "proximal_row",
+      "mass_kg": 0.0001,
+      "mass_center_m": "0 0 0",
+      "inertia_kg_m2": "1.0000000000000001e-05 1.0000000000000001e-05 1.0000000000000001e-05 0 0 0"
+    },
+    {
+      "name": "hand",
+      "mass_kg": 0.5819,
+      "mass_center_m": "-0.0030131400000000001 -0.042499299999999997 -0.0011220500000000001",
+      "inertia_kg_m2": "0.00011 6.0000000000000002e-05 0.00014999999999999999 8.9999999999999996e-07 -1.9999999999999999e-07 1.2e-05"
+    }
+  ],
+  "unrepresented_girdle_muscles": [
+    "trapezius",
+    "serratus anterior",
+    "rhomboids",
+    "levator scapulae",
+    "pectoralis minor"
+  ],
+  "registration": {
+    "body_transforms": null,
+    "coordinate_mapping": null,
+    "bilateral_reflection": null,
+    "girdle_mass_partition": null,
+    "added_native_mass_kg": 0,
+    "required_target_owners": [
+      "existing torso residual after cervical/thoracic partition",
+      "exclusive clavicle/scapula per side",
+      "existing humerus per side"
+    ],
+    "gates": [
+      "resolve donor provenance and reuse scope",
+      "register anatomical girdle and humeral frames",
+      "coherent bilateral coordinate/coupler mapping",
+      "exclusive mass/COM/inertia partition with cervical/thoracic candidate",
+      "preserve moving/conditional path functions and source wrap ranges",
+      "reconcile existing Arm26 shoulder origins without duplicated muscle force",
+      "source-range geometry and tension-feasible moment-arm validation in native engine"
+    ]
+  },
+  "native_installation": false,
+  "native_load_test_performed": false,
+  "donor_geometry_meshes_held": false,
+  "parameter_tuning_performed": false,
+  "source_primary_basis": {
+    "species": "Homo sapiens",
+    "anthropometry": "50th-percentile male model",
+    "force_generation": "Saul2015 reports32muscle volumes and joint moments from5healthy young male subjects; fitted specific tension50.8N/cm2",
+    "uncertainty": "No per-parameter covariance or individual donor sample distribution supplied here; no target calibration inferred"
+  }
+}
