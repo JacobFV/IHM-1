@@ -88,7 +88,7 @@ def consumed_intake_delta(previous,current):
         return None
     if count!=old_count+1:raise ValueError('Skipped or replayed native consumption')
     if old_last is not None:
-        if last['meal_sequence']<=old_last['advance_sequence'] or last['interval_start_tick']<old_last['interval_end_tick']:
+        if last['meal_sequence']<=old_last['advance_sequence'] or last['interval_start_tick']<old_last['interval_end_tick'] or last['native_start_s']<old_last['native_end_s']-1e-7:
             raise ValueError('Native intake sequence or clock went backwards')
     payload=last['native_payload']
     _equal(mass-old_mass,payload['mass_kg'],'mass boundary increment')

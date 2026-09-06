@@ -56,6 +56,8 @@ class Checks(unittest.TestCase):
         b['last_consumed'].update(consumed_count=2,meal_sequence=4,advance_sequence=5,
             interval_start_tick=1,interval_end_tick=2,native_start_s=3600.02,native_end_s=3600.04)
         self.assertEqual(consumed_intake_delta(a,b)['mass_kg'],.013)
+        reset=deepcopy(b);reset['last_consumed'].update(native_start_s=0.,native_end_s=.02)
+        with self.assertRaises(ValueError):consumed_intake_delta(a,reset)
         b['last_consumed']['meal_sequence']=2
         with self.assertRaises(ValueError):consumed_intake_delta(a,b)
 
