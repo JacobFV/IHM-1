@@ -21,7 +21,9 @@ def swept_vertex_face(point_start,point_end,triangle_start,triangle_end):
     normal=np.array([np.cross(e,f),np.cross(de,f)+np.cross(e,df),np.cross(de,df)])
     norm2=reduce(poly.polyadd,(poly.polymul(normal[:,j],normal[:,j]) for j in range(3)))
     extrema=[0.,1.]+[float(r.real) for r in poly.polyroots(poly.polyder(norm2)) if abs(r.imag)<1e-9 and 0<r.real<1]
-    if min(poly.polyval(r,norm2) for r in extrema)<=1e-20:
+    # Evaluate geometry itself at candidate extrema: the expanded norm²
+    # polynomial can cancel to positive roundoff at an exact collapse.
+    if min(float(np.linalg.norm(np.cross(e+r*de,f+r*df))) for r in extrema)<=1e-10:
         return dict(status='unresolved',reason='triangle_degenerates_during_interval')
     relative=np.array([a-t[0],b-a-(u[0]-t[0])])
     coefficients=reduce(poly.polyadd,(poly.polymul(relative[:,j],normal[:,j]) for j in range(3)))

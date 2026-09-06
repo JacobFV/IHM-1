@@ -55,6 +55,12 @@ class Checks(unittest.TestCase):
         q=np.array([[0,0,1],[1,0,0],[0,1,0]])
         r=swept_vertex_face(np.array([0,0,1])@q+3,np.array([0,0,-1])@q+3,T@q+3,T@q+3)
         self.assertAlmostEqual(r['fraction'],.5)
+    def test_nonbinary_collapse_rejected(self):
+        t=np.array([[0.,0,0],[1,0,0],[0,1,0]]);u=t.copy();u[1,0]=1-2.7
+        a=np.array([.2,.2,-.5]);b=np.array([.2,.2,.5])
+        self.assertEqual(swept_vertex_face(a,b,t,u)['status'],'unresolved')
+        c=StrictGarmentSurfaceContact(t,u,np.array([[0,1,2]]),1,friction_static=.4,friction_kinetic=.3);c.fraction=1
+        with self.assertRaises(ValueError):c.resolve([b],[b-a],[1],1)
     def test_interior_tangency_is_unresolved(self):
         t=np.array([[0.,0,0],[1,0,-.5],[0,1,0]])
         u=np.array([[0.,0,0],[1,0,.5],[0,1,0]])

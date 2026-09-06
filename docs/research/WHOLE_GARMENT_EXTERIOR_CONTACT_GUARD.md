@@ -26,7 +26,7 @@ This is a tunneling guard, not a completed impact integrator. It deliberately ca
 
 ## Bounded validation
 
-`scripts/verify_garment_exterior_contact.py` runs nine tiny tests covering:
+`scripts/verify_garment_exterior_contact.py` runs ten tiny tests covering:
 
 * byte/hash-bound two-component source filtering, original face mapping, preserved prior tether record and a distinct candidate mapping;
 * actual `GarmentFeedback.from_root` wiring with mocked tiny source owners;
@@ -36,3 +36,7 @@ This is a tunneling guard, not a completed impact integrator. It deliberately ca
 * strict feedback rejection with exact cloth/native checkpoint restoration.
 
 The existing `verify_garment_feedback.py` remains passing. No native execution, browser action, full garment materialization, large geometry scan or physical full-body contact acceptance was performed for this change.
+
+## Independent-review correction
+
+The first guard version (`c994bdc`) could accept an exactly collapsing triangle when the expanded squared-normal polynomial cancelled to small positive roundoff. Reproducer: T=[[0,0,0],[1,0,0],[0,1,0]], U=T with U[1,0]=1−2.7, point endpoints [.2,.2,−.5] and [.2,.2,.5]. T collapses at fraction 1/2.7. The new regression failed on the old implementation. The corrected check evaluates the actual cross product of the interpolated edges at candidate extrema in normalized coordinates, instead of the expanded squared-norm value. Both the kernel and strict adapter now reject this case. This correction does not upgrade the floating-point algorithm to certified exact CCD.
