@@ -283,6 +283,11 @@ class EmbodiedRuntime:
         for event in data['events']:
             if not isinstance(event,dict) or set(event)!={'event_id','time_s','meal'} or not isinstance(event['meal'],dict):raise ValueError('Invalid intake event')
             events.append(IntakeEvent(event['event_id'],event['time_s'],Meal(**event['meal'])))
+        if self.intake_mass_bridge is not None:
+            from .intake_mass import planned_nutrition_mass_kg
+            planned=math.fsum(planned_nutrition_mass_kg(e.meal) for e in (*self.intakes.events,*events))
+            if planned>self.intake_mass_bridge.snapshot()['capacity_kg']:
+                raise ValueError('Intake schedule exceeds validated mechanical payload capacity; no events added')
         self.intakes.add_events(events,round(self.time_s*50))
         self.sequence+=1
         try:return self.snapshot()

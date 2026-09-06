@@ -39,6 +39,11 @@ def _mass(parts):
     return math.fsum(parts[k]*factor for k,factor in zip(COMPONENTS,KG_FACTORS))
 
 
+def planned_nutrition_mass_kg(meal):
+    """Capacity screening only; configured nutrition never earns mass credit."""
+    return _mass(_components({k:getattr(meal,k,None) for k in COMPONENTS},'planned nutrition'))
+
+
 def _envelope(value):
     if not isinstance(value,dict) or value.get('schema')!='ihm.native-consumed-intake.v1':
         raise ValueError('Native consumed intake receipt required')

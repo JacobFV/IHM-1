@@ -74,3 +74,11 @@ This is a free-body, two-owner mass-boundary acceptance. Physiology used its
 ordinary native advancement; it does not validate the whole-body signed
 metabolic loop, supported equilibrium, swallowing mechanics, regional organ
 deformation or excretion. The receipt preserves that distinction.
+
+When intake mass mode is enabled, the shared runtime also screens the scheduled
+nutrition total against the validated mechanical payload capacity before adding
+any events. This uses the native nutrition mass convention only for input-domain
+screening, never for mass credit. A 500 mL schedule is accepted; adding another
+1 mg of calcium rejects atomically without consuming physiology, advancing the
+body sequence or failing the body. The authoritative consumed-boundary and
+actual owner-capacity checks still run at execution.

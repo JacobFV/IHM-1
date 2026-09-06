@@ -45,6 +45,15 @@ class RuntimeTests(unittest.TestCase):
         self.assertEqual(frame['mechanics']['effective_native_body_mass_kg'],70.013);self.assertEqual(frame['intake_mass']['bridge']['applied_mass_kg'],.013)
         self.assertEqual(frame['mechanics']['muscle_metabolic_energy_j'],2.1);self.assertEqual(body.time_s,.02)
         body.snapshot();body.snapshot();body.step({});self.assertEqual(len(plant.transfers),1);self.assertFalse(body.failed)
+    def test_schedule_capacity_rejects_before_native_consumption_or_queue_mutation(self):
+        body,plant,native,bridge=self.make()
+        body.schedule_intakes({'events':[{'event_id':'water','time_s':0.,'meal':{'water_ml':500.}}]})
+        before=body.snapshot();sequence=body.sequence
+        with self.assertRaisesRegex(ValueError,'mechanical payload capacity'):
+            body.schedule_intakes({'events':[{'event_id':'calcium','time_s':.02,'meal':{'calcium_mg':1.}}]})
+        self.assertEqual(body.sequence,sequence);self.assertEqual(body.snapshot(),before)
+        self.assertFalse(body.failed);self.assertEqual(plant.transfers,[]);self.assertEqual(native.intake['consumed_count'],0)
+
     def test_uncertain_post_consumption_transfer_aborts_both_without_rollback(self):
         body,plant,native,bridge=self.make();plant.transfer_fail=True
         with self.assertRaisesRegex(TimeoutError,'uncertain endpoint'):body.step({})
