@@ -38,7 +38,12 @@ class GarmentFeedback:
     @classmethod
     def from_root(cls,root,registration,*,areal_density_kg_m2=.18,edge_stiffness_n_m=12.,support_stiffness_n_m=12.,friction_static=.4,friction_kinetic=.3):
         root=Path(root);garments,identity=materialize_garments(root,areal_density_kg_m2=areal_density_kg_m2,edge_stiffness_n_m=edge_stiffness_n_m)
-        pairings=build_source_pairings(root);skin=json.loads(gzip.decompress((root/identity['skin']['path']).read_bytes()));x=np.asarray(skin['positions']).reshape(-1,3);tri=np.asarray(skin['indices']).reshape(-1,3)
+        from .garment_exterior_contact import exterior_source,StrictGarmentSurfaceContact
+        prior_pairings=build_source_pairings(root)
+        x,tri,face_ids,pairings,exterior=exterior_source(root,identity['skin'],prior_pairings,{name:b.position_m for name,b in garments.items()})
+        identity.update({'exterior_support':exterior,'contact_source_face_indices':face_ids.tolist(),
+                         'tether_mapping_status':'New exterior-only engineering candidate; original raw-source mappings retained in pairings',
+                         'contact_acceptance':'Strict linear swept node-face tunneling guard; unsupported events reject the interval'})
         owners=np.empty(len(x),int)
         # Fixed reference assignment, bounded batch size. Never rebind a material
         # point to a different segment because its current position moved.
@@ -50,7 +55,9 @@ class GarmentFeedback:
                          'binding_basis':'Fixed nearest reference named bone envelope per retained source skin vertex; inferred, no tissue inertia added',
                          'contact_scope':'Retained source face orientation; anatomical exterior/cavity semantics and intersegment skin continuity unresolved',
                          'material_parameters':'Explicit engineering cloth, tether and Coulomb priors; no calibrated whole-fabric or skin-region claim'})
-        return cls(garments,x,tri,owners,registration,attachments,friction_static=friction_static,friction_kinetic=friction_kinetic,identity=identity)
+        result=cls(garments,x,tri,owners,registration,attachments,friction_static=friction_static,friction_kinetic=friction_kinetic,identity=identity)
+        result.surface_contact_class=StrictGarmentSurfaceContact
+        return result
     def checkpoint(self):
         return {'garments':{n:{'position_m':b.position_m.copy(),'velocity_m_s':b.velocity_m_s.copy(),'time_s':b.time_s} for n,b in self.garments.items()},'last':copy.deepcopy(self.last)}
     def restore(self,state):
@@ -64,7 +71,8 @@ class GarmentFeedback:
         return result
     def _integrate(self,start,end,dt):
         a=self.surface(start);b=self.surface(end);count=math.ceil(dt/self.hmax);h=dt/count
-        surface=MovingSurfaceContact(a,b,self.triangles,dt,friction_static=self.friction_static,friction_kinetic=self.friction_kinetic)
+        surface=getattr(self,'surface_contact_class',MovingSurfaceContact)(a,b,self.triangles,dt,friction_static=self.friction_static,friction_kinetic=self.friction_kinetic)
+        surface.source_face_indices=self.identity.get('contact_source_face_indices')
         impulse=np.zeros((len(self.owner_nodes),3));angular=np.zeros_like(impulse);gravity=self.registration.basis@start['gravity_m_s2']
         totals={'normal_impact_dissipation_j':0.,'friction_dissipation_j':0.,'cloth_numerical_energy_defect_j':0.,'attachment_numerical_energy_defect_j':0.,'interface_body_work_j':0.,'contact_count':0,'unresolved_edge_contacts':0,'maximum_position_correction_m':0.}
         for k in range(count):
