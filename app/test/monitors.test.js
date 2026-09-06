@@ -33,3 +33,6 @@ test('local microvascular geometry is discoverable as a source-conditioned anato
 test('actual mechanical mass ownership has its own searchable live monitor',()=>{
  assert.deepEqual(filterMonitors('mass','live').map(m=>m.id),['intake-mass']);
 });
+test('bulk Skin native voltage is discoverable without labeling it epidermal TEP',()=>{
+ const found=filterMonitors('voltage','live');assert.deepEqual(found.map(m=>m.id),['skin-voltage']);assert.equal(found[0].title,'Bulk Skin tissue Vm');
+});

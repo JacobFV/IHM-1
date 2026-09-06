@@ -2,6 +2,7 @@
 #pragma once
 #include "native_body_ports.h"
 #include <biogears/cdm/compartment/tissue/SETissueCompartment.h>
+#include <biogears/cdm/properties/SEScalarElectricPotential.h>
 #include <biogears/cdm/circuit/fluid/SEFluidCircuitNode.h>
 #include <biogears/engine/BioGearsPhysiologyEngine.h>
 inline std::map<std::string,double> native_tissue_ports(BioGearsEngine& bg) {
@@ -25,6 +26,8 @@ inline std::map<std::string,double> native_tissue_ports(BioGearsEngine& bg) {
   };
   for(const std::string organ : {"Fat","Bone","Brain","Gut","LeftKidney","RightKidney","Liver","LeftLung","RightLung","Muscle","Myocardium","Skin","Spleen"}) {
     const std::string prefix="tissue."+organ;
+    const auto* tissue=bg.GetCompartments().GetTissueCompartment(organ+"Tissue");
+    values[prefix+".bulk_membrane_potential_v"]=tissue&&tissue->HasMembranePotential()?tissue->GetMembranePotential(ElectricPotentialUnit::V):missing;
     liquid(prefix+".vascular",organ+"Vasculature");
     liquid(prefix+".extracellular",organ+"TissueExtracellular");
     liquid(prefix+".intracellular",organ+"TissueIntracellular");
