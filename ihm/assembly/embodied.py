@@ -175,7 +175,7 @@ def _prepare_mechanical_registration(root,relative):
 
 class EmbodiedRuntime:
     @classmethod
-    def from_workspace(cls,root,output,*,environment='supine',state_path=None,surface_contact_manifest=None,cutaneous_configuration=None,bed_material=None,regional_skin=False,source_pin=None,intake_mass=False,augmented_registration=None):
+    def from_workspace(cls,root,output,*,environment='supine',state_path=None,surface_contact_manifest=None,cutaneous_configuration=None,bed_material=None,regional_skin=False,source_pin=None,intake_mass=False,augmented_registration=None,native_afferent_allocation=None):
         if type(regional_skin) is not bool:raise ValueError('regional_skin must be a bool')
         if type(intake_mass) is not bool:raise ValueError('intake_mass must be a bool')
         from pathlib import Path
@@ -186,6 +186,9 @@ class EmbodiedRuntime:
         if regional_skin:
             from ihm.native.regional_session import RegionalSignedNativeSession
             native_session_type=RegionalSignedNativeSession
+        if native_afferent_allocation is not None:
+            from ihm.native.afferent_session import AfferentSignedNativeSession,AfferentRegionalNativeSession
+            native_session_type=AfferentRegionalNativeSession if regional_skin else AfferentSignedNativeSession
         from .articulated import ArticulatedBodyPlant
         if intake_mass:
             from .intake_mass import IntakeMassBridge
@@ -198,6 +201,13 @@ class EmbodiedRuntime:
         if not output.is_relative_to(root) or output.exists():raise ValueError('Fresh retained embodied output required')
         mechanical_frozen,mechanical_manifest,mechanical_catalog=({},None,None) if augmented_registration is None else _prepare_mechanical_registration(root,augmented_registration)
         candidate_frozen,candidate_loaded=_prepare_brain_candidate(root,source_pin)
+        if native_afferent_allocation is not None:
+            from .native_afferents import NativeAfferentBridge
+            from types import SimpleNamespace
+            # Static allocation validation occurs before either native owner starts.
+            NativeAfferentBridge(SimpleNamespace(data=json.loads((root/'data/derived/canonical/brain.json').read_bytes()),source_identity={}),
+                native_identity={k:'0'*64 for k in ('library_sha256','executable_sha256','state_sha256','manifest_sha256')},
+                source_sha256='0'*64,origin_s=0.,allocation=native_afferent_allocation)
         sensor_indices=[]
         if cutaneous_configuration is not None:
             if surface_contact_manifest is None:raise ValueError('Cutaneous binding requires native surface contact')
@@ -223,6 +233,7 @@ class EmbodiedRuntime:
             'ihm.assembly.respiratory_feedback','ihm.assembly.embodied_respiration','ihm.assembly.intake_schedule','ihm.app.embodied')
         if regional_skin:names+=('ihm.native.regional_session',)
         if intake_mass:names+=('ihm.assembly.intake_mass','ihm.native.instance_mass',)
+        if native_afferent_allocation is not None:names+=('ihm.assembly.native_afferents','ihm.native.afferent_session',)
         if source_pin is not None:names+=('ihm.brain.candidate','ihm.brain.source_loader',)
         receipts=[_loaded_source(sys.modules[name]) for name in names if name in sys.modules]
         frozen={r['path']:r['bytes'] for r in receipts}
@@ -270,17 +281,23 @@ class EmbodiedRuntime:
                 (output/'intake_mass_binding.json').write_text(json.dumps(intake_binding,indent=2,allow_nan=False)+'\n')
             identity={key:manifest[key] for key in ('library_sha256','executable_sha256','state_sha256')}
             identity['manifest_sha256']=hashlib.sha256((output/'physiology/manifest.json').read_bytes()).hexdigest()
+            afferents=None
+            if native_afferent_allocation is not None:
+                observer_sha=manifest['adapter_sha256']['native_nervous_afferents.h']
+                afferents=NativeAfferentBridge(neural.brain,native_identity=identity,source_sha256=observer_sha,
+                    origin_s=reference['origin_s'],allocation=native_afferent_allocation)
             exchange=NativeTissueExchange.from_workspace(root,reference,identity)
             respiratory_path=root/'data/derived/canonical/respiration.json'
             respiratory=EmbodiedRespiration(json.loads(frozen[respiratory_path]),reference['values']['lung_volume_ml'])
             cutaneous=None if cutaneous_configuration is None else bind_cutaneous(root,plant.snapshot().get('cutaneous_contacts'),cutaneous_configuration,source_pin=source_pin)
-            body=cls(plant,neural,native,exchange,respiratory,cutaneous=cutaneous,intake_mass_bridge=intake_bridge,intake_mass_binding=intake_binding,reference_identity=hashlib.sha256((output/'mechanics/native/execution.json').read_bytes()).hexdigest())
+            body=cls(plant,neural,native,exchange,respiratory,cutaneous=cutaneous,afferents=afferents,intake_mass_bridge=intake_bridge,intake_mass_binding=intake_binding,reference_identity=hashlib.sha256((output/'mechanics/native/execution.json').read_bytes()).hexdigest())
             if any(p.read_bytes()!=raw for p,raw in frozen.items()):raise ValueError('Embodied source changed during initialization; reopen with a stable revision')
             (output/'manifest.json').write_text(json.dumps({'schema':'ihm.embodied-runtime.v1','sources':hashes,
                 'loaded_code':{str(r['path'].relative_to(root)):r['loaded_code_sha256'] for r in receipts},
                 'source_receipts':{str(r['path'].relative_to(root)):{k:v for k,v in r.items() if k not in ('path','bytes')} for r in receipts},
                 'mechanical_registration_override':None if mechanical_manifest is None else {'path':augmented_registration,'sha256':hashlib.sha256(mechanical_frozen[root/augmented_registration]).hexdigest(),'model_sha256':mechanical_manifest['model_sha256'],'catalog_sha256':mechanical_manifest['catalog_sha256']},
                 'brain_source_pin':None if source_pin is None else source_pin.to_dict(),'brain_candidate_loaded_modules':candidate_loaded,
+                'native_afferent_allocation':native_afferent_allocation,'native_afferent_model_sha256':None if afferents is None else afferents.model_sha256,
                 'environment':environment,'regional_skin':regional_skin,'intake_mass':intake_mass,'intake_mass_binding':intake_binding,
                 'intake_mass_initial_bridge':None if intake_bridge is None else intake_bridge.snapshot(),
                 'intake_mass_variant':None if intake_bridge is None else plant.native.instance_mass_variant,
@@ -297,7 +314,7 @@ class EmbodiedRuntime:
                 error.add_note(str(cleanup_error))
             raise
 
-    def __init__(self,plant,neural,native,exchange,respiratory_load,*,reference_identity=None,cutaneous=None,intake_mass_bridge=None,intake_mass_binding=None):
+    def __init__(self,plant,neural,native,exchange,respiratory_load,*,reference_identity=None,cutaneous=None,intake_mass_bridge=None,intake_mass_binding=None,afferents=None):
         self.plant,self.neural,self.native,self.exchange,self.respiratory_load=plant,neural,native,exchange,respiratory_load
         self.time_s=0.;self.sequence=0;self.failed=False;self.closed=False;self.next_excitation={};self.frame=None
         self.native_state=native.snapshot();self.mechanical_state=plant.snapshot()
@@ -310,6 +327,11 @@ class EmbodiedRuntime:
             if not isinstance(intake_mass_binding,dict) or intake_mass_binding.get('registration_sha256')!=intake_mass_bridge.registration_identity:
                 raise ValueError('Intake binding provenance differs from bridge')
         elif intake_mass_binding is not None:raise ValueError('Intake binding requires enabled bridge')
+        self.afferents=afferents;self.afferent_input=None;self.afferent_receipt=None
+        if afferents is not None:
+            if afferents.time_s!=0 or afferents.brain is not neural.brain:raise ValueError('Fresh shared-brain native afferent bridge required')
+            from .native_afferents import endpoint_receipt
+            self.afferent_receipt=endpoint_receipt(self.native_state,afferents.native_identity,afferents.source_sha256)
         self.cutaneous=cutaneous;self.cutaneous_state=None
         if cutaneous is not None and abs(cutaneous.time_s)>1e-9:raise ValueError('Fresh cutaneous clock required')
         self.cleanup_owner=CleanupOwners(native,plant)
@@ -349,7 +371,7 @@ class EmbodiedRuntime:
             except BaseException as error:self.cleanup_failures.append({'owner':label,'error':str(error)})
 
     def _validate(self,data):
-        if not isinstance(data,dict) or set(data)-{'seconds','forces','descending','sensory_blocks','motor_blocks','skin_compression_pa','skin_sensory_blocks','regional_skin_pressures'}:
+        if not isinstance(data,dict) or set(data)-{'seconds','forces','descending','sensory_blocks','motor_blocks','skin_compression_pa','skin_sensory_blocks','regional_skin_pressures','native_sensory_blocks'}:
             raise ValueError('Unknown embodied input')
         dt=finite(data.get('seconds',.02),'embodied interval',.02,.02)
         forces=data.get('forces',[])
@@ -369,6 +391,7 @@ class EmbodiedRuntime:
             for pressure in pressures.values():finite(pressure,'regional skin pressure',0,5000)
         blocks=data.get('skin_sensory_blocks',[])
         if not isinstance(blocks,(list,tuple)) or any(not isinstance(k,str) or self.cutaneous is None or k not in self.cutaneous.sites for k in blocks):raise ValueError('Unknown skin sensory block')
+        if 'native_sensory_blocks' in data and self.afferents is None:raise ValueError('Native afferent input is unavailable')
         horizon=getattr(getattr(self.native,'config',None),'horizon_s',None)
         if horizon is not None and self.time_s+dt>horizon+1e-9:raise ValueError('Native horizon reached; no owners advanced')
         return dt,deepcopy(forces)
@@ -376,7 +399,7 @@ class EmbodiedRuntime:
     def step(self,data):
         if self.failed or self.closed:raise RuntimeError('Embodied runtime is no longer advancing')
         dt,forces=self._validate(data)
-        p_checkpoint=n_checkpoint=c_checkpoint=None;native_touched=False
+        p_checkpoint=n_checkpoint=c_checkpoint=a_checkpoint=None;native_touched=False
         try:
             p_checkpoint=self.plant.checkpoint();n_checkpoint=self.neural.checkpoint()
             v=self.native_state['values']
@@ -398,7 +421,13 @@ class EmbodiedRuntime:
                 cutaneous=self.cutaneous.step(dt,{'time_s':self.time_s,'contacts':contacts,
                     'skin_temperature_C':v.get('skin_temperature_c')},sensory_blocks=blocks)
 
-            physiology={'mean_arterial_pressure_mmHg':v['mean_arterial_pressure_mmhg'],
+            afferent_input=None
+            if self.afferents is not None:
+                a_checkpoint=self.afferents.checkpoint()
+                afferent_input=self.afferents.step(dt,self.afferent_receipt,sensory_blocks=data.get('native_sensory_blocks',()))
+                for region,rate in afferent_input['sensory_inputs_hz'].items():
+                    additional[region]=finite(additional.get(region,0.)+rate,'combined afferent Hz',0,1000)
+            physiology={'mean_arterial_pressure_mmHg' :v['mean_arterial_pressure_mmhg'],
                 'oxygen_saturation':v['oxygen_saturation'],'core_temperature_C':v['core_temperature_c']}
             neural=self.neural.step(dt,self.mechanical_state,descending=data.get('descending',{}),
                 sensory_blocks=data.get('sensory_blocks',()),motor_blocks=data.get('motor_blocks',()),physiology=physiology,additional_sensory_inputs_hz=additional)
@@ -447,10 +476,15 @@ class EmbodiedRuntime:
             tissue=self.exchange.observe(native)
             geometry=self.respiratory_load.geometry(native['values']['lung_volume_ml'],mechanical['entities'],end)
             self.next_excitation=deepcopy(neural['motor_excitations'])
+            next_afferent_receipt=None
+            if self.afferents is not None:
+                from .native_afferents import endpoint_receipt
+                next_afferent_receipt=endpoint_receipt(native,self.afferents.native_identity,self.afferents.source_sha256)
+            self.afferent_receipt=next_afferent_receipt;self.afferent_input=afferent_input
             self.native_state=native;self.mechanical_state=mechanical;self.time_s=end;self.sequence+=1
             self.frame={'schema':'ihm.embodied-frame.v1','time_s':end,'sequence':self.sequence,'input_capabilities':self._input_capabilities(),
                 'entities':geometry['entities'],'skin_field':geometry['skin_field'],'respiration':geometry,'mechanics':mechanical,'neural':neural,'physiology':native,
-                'cutaneous':cutaneous,'intake_mass':self._intake_mass_audit(),'tissue_exchange':tissue,'respiratory_load':load,'intake_schedule':self.intakes.snapshot(),
+                'native_afferents':self._afferent_state(),'cutaneous':cutaneous,'intake_mass':self._intake_mass_audit(),'tissue_exchange':tissue,'respiratory_load':load,'intake_schedule':self.intakes.snapshot(),
                 'coupling':{'exchange_interval_s':dt,'motor_exchange_latency_s':dt,
                     'positive_muscle_work_j':work,'native_extra_metabolic_demand_w':incremental_w,
                     'muscle_metabolic_reference_w':self.reference_metabolic_w,'interval_muscle_metabolic_w':metabolic_w,
@@ -471,6 +505,7 @@ class EmbodiedRuntime:
                     if p_checkpoint is None or n_checkpoint is None:raise RuntimeError('Checkpoint acquisition failed')
                     self.plant.restore(p_checkpoint);self.neural.restore(n_checkpoint)
                     if c_checkpoint is not None:self.cutaneous.restore(c_checkpoint)
+                    if a_checkpoint is not None:self.afferents.restore(a_checkpoint)
                     if hasattr(self.plant,'release'):self.plant.release(p_checkpoint)
                 except BaseException:self._abort()
             raise
@@ -478,6 +513,10 @@ class EmbodiedRuntime:
     def _intake_mass_audit(self):
         if self.intake_mass_bridge is None:return {'enabled':False}
         return {'enabled':True,'binding':deepcopy(self.intake_mass_binding),'bridge':self.intake_mass_bridge.snapshot()}
+
+    def _afferent_state(self):
+        return {'available':self.afferents is not None,'endpoint_receipt':deepcopy(self.afferent_receipt),
+            'applied_input':deepcopy(self.afferent_input),'efferent_control':False}
 
     def _input_capabilities(self):
         regional=getattr(self.native,'regions',())
@@ -496,7 +535,7 @@ class EmbodiedRuntime:
         geometry=self.respiratory_load.geometry(native['values']['lung_volume_ml'],self.mechanical_state['entities'],0.)
         return {'schema':'ihm.embodied-frame.v1','time_s':0.,'sequence':self.sequence,'input_capabilities':self._input_capabilities(),
             'entities':geometry['entities'],'skin_field':geometry['skin_field'],'respiration':geometry,
-            'mechanics':deepcopy(self.mechanical_state),'physiology':native,
+            'native_afferents':self._afferent_state(),'mechanics':deepcopy(self.mechanical_state),'physiology':native,
             'tissue_exchange':self.exchange.observe(self.native_state),'intake_schedule':self.intakes.snapshot(),'intake_mass':self._intake_mass_audit()}
 
     def close(self):
