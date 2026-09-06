@@ -1,0 +1,46 @@
+{
+  "id": "native-muscle-metabolism",
+  "status": "source_api_reviewed_not_yet_native_numerically_verified",
+  "primary_paper": {
+    "doi": "10.1371/journal.pone.0150378",
+    "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0150378",
+    "access": "publisher HTML inspected; no new PDF download"
+  },
+  "implementation": "held OpenSim Umberger2010MuscleMetabolicsProbe, including Uchida2016 modifications",
+  "receipts": [
+    {
+      "path": "data/raw/mechanics/opensim-core/OpenSim/Simulation/Model/Umberger2010MuscleMetabolicsProbe.cpp",
+      "sha256": "4a69981e2fdb6c9fc7625cabc1d170280988f45ab1dd2f98157d69829375c879"
+    },
+    {
+      "path": "data/raw/mechanics/opensim-core/OpenSim/Simulation/Model/Umberger2010MuscleMetabolicsProbe.h",
+      "sha256": "14563d98023821934db773cddc6faf5dab2a5e59b64f5d3e04ed35218f3aa07e"
+    },
+    {
+      "path": "data/raw/mechanics/opensim-core/OpenSim/Simulation/tests/testMuscleMetabolicsProbes.cpp",
+      "sha256": "d3c9d68870e66110b94d5a4c2f2e9e32b1014080ae233be1e540fb36342cc5b8"
+    },
+    {
+      "path": "data/raw/mechanics/opensim-core/OpenSim/Examples/Moco/example3DWalking/subject_walk_scaled.osim",
+      "sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5"
+    },
+    {
+      "path": "data/runtime/opensim/install/opensim/include/OpenSim/Simulation/Model/Umberger2010MuscleMetabolicsProbe.h",
+      "sha256": "14563d98023821934db773cddc6faf5dab2a5e59b64f5d3e04ed35218f3aa07e"
+    },
+    {
+      "path": "scripts/native_muscle_metabolism.h",
+      "sha256": "0eabf9a9268f2cd5e8a30a79c3c4e548a8d40cca8ff631e2838e980c3627763d"
+    }
+  ],
+  "defaults": {
+    "slow_twitch_fraction": 0.5,
+    "density_kg_m3": 1059.7,
+    "specific_tension_pa": 250000,
+    "aerobic_factor": 1.5,
+    "minimum_heat_w_per_kg": 1.0,
+    "whole_body_basal_enabled": false
+  },
+  "adds_body_inertia": false,
+  "requires_explicit_biogears_incremental_reference": true
+}
