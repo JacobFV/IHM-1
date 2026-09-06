@@ -26,3 +26,6 @@ test('live finite-window spectrum has its own searchable monitor card',()=>{
  assert.deepEqual(filterMonitors('laplace','live').map(m=>m.id),['temporal-spectrum']);
  assert.deepEqual(filterMonitors('damping','spectra').map(m=>m.id),['temporal-spectrum']);
 });
+test('local microvascular geometry is discoverable as a source-conditioned anatomy monitor',()=>{
+ assert.deepEqual(filterMonitors('local','vascular').map(m=>m.id),['microvascular']);
+});
