@@ -18,7 +18,7 @@ from . import BASE, RUNTIME, SOURCE_REVISION, available_patients, number, _sha, 
 
 VARIANTS = ('upstream', 'saturation_bounds', 'saturation_bounds_heatflux',
             'saturation_bounds_heatflux_thermal_units', 'whole_body_integrity', 'whole_body_integrity_renal',
-            'whole_body_integrity_gi_water', 'whole_body_integrity_energy', 'whole_body_integrity_depletion','whole_body_integrity_signed_muscle_v2','whole_body_integrity_gi_absorption')+THERMAL_RESEARCH_VARIANTS
+            'whole_body_integrity_gi_water', 'whole_body_integrity_energy', 'whole_body_integrity_depletion','whole_body_integrity_signed_muscle_v2','whole_body_integrity_gi_absorption','whole_body_integrity_regional_skin_graph_v2')+THERMAL_RESEARCH_VARIANTS
 
 
 def runtime_patient(patient):
