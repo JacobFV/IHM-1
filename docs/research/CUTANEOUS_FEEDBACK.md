@@ -168,3 +168,13 @@ No cortical mapping or gain is silently represented as measured connectivity.
 The default factory does not enable this optional setup without its explicit
 surface and cortical mapping inputs. Supported resting pose and accepted coupled
 whole-body contact/reflex trajectory remain outstanding.
+
+Actual native factory acceptance is retained at
+`data/derived/audits/cutaneous-factory-ylro2d66/verification.json` (17.55 s,
+initialization and confirmed cleanup only). The real 92-muscle/signed-native
+session requested quadrature 0, received its canonical current position/normal,
+zero indentation and source triangle 143278, and bound exactly the same material
+identity into the pinned receptor. All clocks remained zero. The fixture's
+right-postcentral assignment and gain 0.1 are explicit engineering inputs.
+This verifies actual process/material identity wiring, not touch activation,
+supported equilibrium or a coupled advancing whole-body trajectory.
