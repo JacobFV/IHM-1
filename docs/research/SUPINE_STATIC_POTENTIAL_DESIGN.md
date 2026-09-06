@@ -246,3 +246,52 @@ failed force-root q), 2 calls/15 s, with no optimization or trajectory. Numerica
 identity tolerance is 1e-8 per native acceleration component, separately in
 m/s² and rad/s². Physical acceptance remains 1e-4 in those same respective
 units. No mass operator will be used by the solver before this gate passes.
+
+### Native inverse-mass gate passed; support-feasible physical solver prepared
+
+Actual receipt `native-physical-metric-04jdqqbn` contains two evaluations in
+0.542 s after successful isolated compile. The constrained sign relation holds
+within 7.75e-14 per acceleration component. Inverse symmetry and M*MInv errors
+are below 5.69e-14; both mass matrices have strictly positive minimum eigenvalues
+(1.4217e-4 and 1.3290e-4 in the native mixed-coordinate representation). Applying
+MInv to the *tree* residual instead gives errors 102.079 and 70.175, confirming
+that retaining native constraint reactions is essential. All processes reaped;
+continuing state unchanged. This passes only the metric prerequisite.
+
+`scripts/support_feasible_physical_step.py` and
+`scripts/solve_support_physical_metric.py` now use
+`a = -MInv * constrained_residual`, verified at every sampled pose. The local
+model `B = -MInv * d(residual)/dq` freezes MInv for each trust-region iteration;
+it does not silently claim to differentiate MInv. Actual retained data measures
+its difference from the full acceleration Jacobian at 0.9702% in matrix norm.
+The actual/predicted reduction ratio checks this approximation during trials.
+Only columns are preconditioned; the residual merit is all native accelerations
+in their respective m/s² and rad/s² units.
+
+Every local QP enforces normal support, pitch and roll equalities. At most three
+additional bounded root-coordinate corrections use the native support block
+before accepting a trial. Actual support AND gauge residuals must remain within
+1e-4, and actual acceleration cost must decrease with ratio at least 0.1.
+Otherwise the trust box shrinks and its QP is recomputed. No constraint multiplier
+or bound reaction can supply physical equilibrium. XML ranges, original .03
+native-unit maximum coordinate box, unchanged muscles and original wrap physics
+are retained. Full acceleration/constraint acceptance and forward promotion
+remain separate gates.
+
+The offline design receipt `physical_qp_design.json` in the native metric folder
+uses an exactly matching q/force anchor. The .03 box predicts acceleration cost
+6293.4602 ->1126.6866; using the separately measured full acceleration Jacobian
+on that same step predicts957.4281. Boxes .015/.0075/.00375 also predict decreases;
+linear support error is <=6.4e-17. These are unaccepted local predictions. Source
+fixtures additionally reject a lower-cost candidate with .18 normalized support
+error. An initial QP column scaling that left tiny normalized Hessian diagonals
+hit its offline iteration cap; scaling columns by the common objective norm
+restored unit column norms without changing the mathematical objective or bounds.
+
+The prepared gated solver requests at most 200 calls/60 s, six refreshed Jacobians,
+eight recomputed attempts and four total support evaluations per attempt. It
+records raw native M/MInv, q, force and acceleration responses, rejection records,
+scales/rank/model diagnostics and exact last accepted numerical candidate. It
+starts from the original supported98 seed, never the unsupported failed candidate,
+and requires the successful metric receipt to match the executable manifest hash.
+No full native solve has occurred at this source checkpoint.
