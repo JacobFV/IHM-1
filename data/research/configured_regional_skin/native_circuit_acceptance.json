@@ -1,0 +1,102 @@
+{
+  "passed": true,
+  "regions": 3,
+  "zero_load_steps": 10,
+  "max_volume_error_ml": 4.263256414560601e-14,
+  "max_flow_error_ml_per_s": 1.7436052601738083e-13,
+  "local_pressure_difference_mmhg": 0.9998001855873788,
+  "local_specific_flow_difference_ml_per_s": 0.009998001855567137,
+  "patient_initialized": false,
+  "protein_transport_executed": false,
+  "configuration_sha256": "ad93aa3dcc4e9bcfeb54f076c7bbe76d316f0b2e6d52ec4865536a20e511aefb",
+  "native_region_names": [
+    "engineered_left_lower_leg",
+    "engineered_right_lower_leg",
+    "engineered_exterior_complement"
+  ],
+  "parent_variant": "whole_body_integrity_regional_skin_graph_v2",
+  "parent_manifest_sha256": "52de403e3dab2682f774755b7bf1370711bc5ab218244c581460b84a82aad130",
+  "parent_library_sha256": "bc91cbab829c04bfa2df7490433af5bee752e7514332ac715e9f0bd11a17650a",
+  "compile_command": [
+    "c++",
+    "-std=c++20",
+    "-O0",
+    "-g1",
+    "-DBIOGEARS_THROW_READONLY_EXCEPTIONS",
+    "/home/brandonin/Documents/IHM-1/data/derived/audits/configured-regional-native-k0i3zjpb/native_configured_regional_skin_fixture.cpp",
+    "-I",
+    "/home/brandonin/Documents/IHM-1/data/raw/physiology/biogears/projects/biogears/libBiogears/include",
+    "-I",
+    "/home/brandonin/Documents/IHM-1/data/raw/physiology/biogears/projects/biogears-common/include",
+    "-I",
+    "/home/brandonin/Documents/IHM-1/data/runtime/physiology/sysroot/usr/include",
+    "-I",
+    "/home/brandonin/Documents/IHM-1/data/runtime/physiology/sysroot/usr/include/eigen3",
+    "-I",
+    "/home/brandonin/Documents/IHM-1/data/runtime/physiology/biogears-build/projects/biogears/generated/Release",
+    "-L",
+    "/home/brandonin/Documents/IHM-1/data/runtime/physiology/biogears-build/outputs/Release/lib",
+    "-lbiogears",
+    "-lbiogears_cdm",
+    "-o",
+    "/home/brandonin/Documents/IHM-1/data/derived/audits/configured-regional-native-k0i3zjpb/fixture"
+  ],
+  "fixture_sha256": "bc981452cb8171324461e22aabf903fe55dcb934db031ad718adc6e0351794fa",
+  "production_activation_allowed": false,
+  "scope": "Actual native circuit solver installation, zero-load and local-pressure/release fixture; no full patient acceptance",
+  "retained_audit_path": "data/derived/audits/configured-regional-native-k0i3zjpb",
+  "evidence_files": [
+    {
+      "path": "data/derived/audits/configured-regional-native-k0i3zjpb/verification.json",
+      "sha256": "0e163f1d93fe50ddd062d74b06c7476522026781d4545e9eab1443ca2103b48e",
+      "bytes": 2171
+    },
+    {
+      "path": "data/derived/audits/configured-regional-native-k0i3zjpb/compile.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "data/derived/audits/configured-regional-native-k0i3zjpb/compile.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "data/derived/audits/configured-regional-native-k0i3zjpb/compile.resources",
+      "sha256": "5e932f206987283fe78379d72e066d0aff89498da2b416158635fd0ebda4f3f8",
+      "bytes": 1607
+    },
+    {
+      "path": "data/derived/audits/configured-regional-native-k0i3zjpb/fixture.stdout",
+      "sha256": "fa74a6392754819d1d3a50f0742c4251cc64b0193d5b7e88885be456a52f1120",
+      "bytes": 834
+    },
+    {
+      "path": "data/derived/audits/configured-regional-native-k0i3zjpb/fixture.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "data/derived/audits/configured-regional-native-k0i3zjpb/fixture.resources",
+      "sha256": "92c00cc5dd9d33d72207dc79b611a68e589d035e3bc83aca693840d422493d25",
+      "bytes": 811
+    },
+    {
+      "path": "data/derived/audits/configured-regional-native-k0i3zjpb/ldd.txt",
+      "sha256": "ba97d8e37778c7139c37b75c83acea2714894c2cdd6dd336be34f8d2a07de0d2",
+      "bytes": 3308
+    }
+  ],
+  "resources": {
+    "compile_wall_s": 2.04,
+    "compile_peak_rss_kib": 549240,
+    "fixture_wall_s": 0.1,
+    "fixture_peak_rss_kib": 43724,
+    "nice": 10,
+    "threads": 1,
+    "compile_address_space_limit_bytes": 1073741824,
+    "compile_cpu_limit_s": 60,
+    "compile_wall_limit_s": 75,
+    "fixture_wall_limit_s": 10
+  }
+}

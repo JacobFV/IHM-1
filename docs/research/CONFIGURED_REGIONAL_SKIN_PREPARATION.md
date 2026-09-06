@@ -108,7 +108,32 @@ or execute regional protein transport.
   Outputs, failures, timing, runtime linkage and receipts are retained in a new audit
   directory. Do not invoke until the root grants the shared heavy slot.
 
-At preparation time native execution remains queued. Even a passing circuit fixture
-must be followed by matched full-patient zero-load and load/release lifecycle checks,
+The circuit gate has now passed as recorded below. It must be followed by matched full-patient zero-load and load/release lifecycle checks,
 fluid/species/sweat ledgers and configuration-aware observer/adapter integration in
 new files before activation. The accepted existing installation remains unchanged.
+
+
+## Completed isolated native circuit acceptance
+
+The granted serial run completed on 2026-09-06 with no patient initialization or
+advancement. `data/derived/audits/configured-regional-native-k0i3zjpb/` retains
+compile/run stdout, stderr, resources, linkage, staged sources and verification.
+The checked-in `native_circuit_acceptance.json` records their byte hashes and the
+same configuration digest `ad93aa3d...`.
+
+| Check | Observed result |
+| --- | --- |
+| Matched zero-load steps | 10 passed |
+| Maximum aggregate volume error | 4.263256414560601e-14 mL |
+| Maximum aggregate selected-flow error | 1.7436052601738083e-13 mL/s |
+| Local regional pressure difference | 0.9998001855873788 mmHg |
+| Local specific-drainage difference | 0.009998001855567137 mL/s |
+| Pressure release | Passed native pressure-source check |
+| Compiler | 2.04 s, peak RSS 549,240 KiB |
+| Native fixture | 0.10 s, peak RSS 43,724 KiB |
+
+Installation inventory and source-law updates passed the inherited fixture checks.
+These are floating-point tolerance parity results, not bitwise equality. Regional
+protein transport, full-patient initialization/stepping and coupled mechanical
+pressure transmission were not exercised. No production activation is enabled.
+The process was reaped and the shared native slot released immediately after the run.
