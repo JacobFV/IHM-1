@@ -1,0 +1,137 @@
+{
+  "native_report": {
+    "status": "analyzed",
+    "output": "data/derived/arm26-wrap-candidate-po_0h6uq",
+    "cases_per_variant": 104,
+    "unchanged_other_muscle_observations": 9984,
+    "accepted_cylinder_observations": 208,
+    "rejected_observations": [],
+    "maximum_accepted_cylinder_virtual_work_error_m": 2.7755575142194085e-10,
+    "candidate_gradient_gate_passed": true,
+    "whole_source_range_certified": false,
+    "native_time_advanced_s": 0,
+    "wall_s": 7.988696439002524,
+    "executable_sha256": "deb8366340903204b3a143f6e16e264851f60a5ff76b6d1c6ab3b9e03972fb62"
+  },
+  "sources": {
+    "data/derived/arm26-wrap-candidate-po_0h6uq/manifest.json": "f3bc7f2187eff31581f700659ca2744d8e2283b762d3c87e6f0a2eab670c7d4c",
+    "data/derived/arm26-wrap-candidate-po_0h6uq/observed.csv": "b1d3e0338d85e73233d5d6d6d8ff1afb7b375480a0aef379a0d65173bf49d924",
+    "data/derived/arm26-wrap-candidate-po_0h6uq/candidate.csv": "57f168975d3ca763e60ef69dfcdb8c26b33d8b013e5fd2b8c80e2221568351b8",
+    "data/derived/arm26-wrap-candidate-po_0h6uq/observed.jsonl": "96b9e5a90eb7964541f258474f972e2619b058f8395101d3cecfd9759b23fb89",
+    "data/derived/arm26-wrap-candidate-po_0h6uq/candidate.jsonl": "7127454b664a45130f2d4b3d391d831e5aa5d0195abb1dead32ecdf579afb02d",
+    "data/derived/arm26-wrap-candidate-po_0h6uq/contact_analysis.json": "4f66bd3d3b17ac804dc9cc07da83e919dbc85c0716b3fe4ad38283908184c731",
+    "data/derived/arm26-wrap-candidate-po_0h6uq/models/manifest.json": "cedff2982e854a5c660c04f5a013e57fbbdc7cf9e6bf47c8ffbc8857d067cbc6"
+  },
+  "unit_tension_resultants": {
+    "unit_resultant_force": 0.0,
+    "unit_resultant_moment": 2.498001805406602e-16
+  },
+  "maximum_BRA_length_change_m": 2.607737474638605e-05,
+  "observed": {
+    "local_wrapped_ellipsoid_records": 112,
+    "local_wrapped_cylinder_records": 112,
+    "maximum_cylinder_axial_tangency_residual": 0.01448306141655617,
+    "ellipsoid_ranges": {
+      "plane_residual_m": [
+        8.29575399477131e-08,
+        1.1288961956012165e-07
+      ],
+      "surface_implicit_residual_max": [
+        3.818860975002281e-06,
+        4.383866533452796e-06
+      ],
+      "planar_section_geodesic_curvature_max_per_m": [
+        0.947605218442205,
+        1.8185174921275005
+      ],
+      "projected_arc_minus_native_stored_m": [
+        1.687964303363071e-06,
+        1.945131390266447e-06
+      ],
+      "contact_projection_displacement_max_m": [
+        7.902353245979962e-08,
+        1.1995439391248081e-07
+      ],
+      "quadrature_32_64_difference_m": [
+        0.0,
+        6.938893903907228e-18
+      ]
+    }
+  },
+  "candidate": {
+    "local_wrapped_ellipsoid_records": 112,
+    "local_wrapped_cylinder_records": 112,
+    "maximum_cylinder_axial_tangency_residual": 1.6375789613221059e-15,
+    "ellipsoid_ranges": {
+      "plane_residual_m": [
+        8.29575399477131e-08,
+        1.1288961956012165e-07
+      ],
+      "surface_implicit_residual_max": [
+        3.818860975002281e-06,
+        4.383866533452796e-06
+      ],
+      "planar_section_geodesic_curvature_max_per_m": [
+        0.947605218442205,
+        1.8185174921275005
+      ],
+      "projected_arc_minus_native_stored_m": [
+        1.687964303363071e-06,
+        1.945131390266447e-06
+      ],
+      "contact_projection_displacement_max_m": [
+        7.902353245979962e-08,
+        1.1995439391248081e-07
+      ],
+      "quadrature_32_64_difference_m": [
+        0.0,
+        6.938893903907228e-18
+      ]
+    }
+  },
+  "ellipsoid_arc_refinement_only": [
+    {
+      "coordinate": "arm_flex_r",
+      "native_length_force_error_m": 3.448591746676999e-05,
+      "projected_section_arc_derivative_correction_m": -3.4600680962876948e-06,
+      "remaining_error_after_arc_refinement_m": 3.1025849370482295e-05
+    },
+    {
+      "coordinate": "arm_add_r",
+      "native_length_force_error_m": 0.00010719395199746025,
+      "projected_section_arc_derivative_correction_m": 2.624236094901608e-06,
+      "remaining_error_after_arc_refinement_m": 0.00010981818809236186
+    },
+    {
+      "coordinate": "arm_rot_r",
+      "native_length_force_error_m": 9.540210653332173e-05,
+      "projected_section_arc_derivative_correction_m": 9.09504132922258e-07,
+      "remaining_error_after_arc_refinement_m": 9.631161066624399e-05
+    },
+    {
+      "coordinate": "arm_flex_l",
+      "native_length_force_error_m": 0.00010546946001048496,
+      "projected_section_arc_derivative_correction_m": -3.1605056753491144e-06,
+      "remaining_error_after_arc_refinement_m": 0.00010230895433513584
+    },
+    {
+      "coordinate": "arm_add_l",
+      "native_length_force_error_m": 0.00023355682269824568,
+      "projected_section_arc_derivative_correction_m": 2.94042618910277e-06,
+      "remaining_error_after_arc_refinement_m": 0.00023649724888734846
+    },
+    {
+      "coordinate": "arm_rot_l",
+      "native_length_force_error_m": 0.00023001465808445928,
+      "projected_section_arc_derivative_correction_m": 7.619907255675887e-07,
+      "remaining_error_after_arc_refinement_m": 0.00023077664881002686
+    }
+  ],
+  "reviewable_sources": {
+    "scripts/native_arm26_wrap_probe.cpp": "ce65a3b201f7199adbdc3e40495560cb3e16576ac614cf10d503fc8084c0cfca",
+    "scripts/arm26_wrap_candidate.h": "2615a1aa7ae5f461dd0cee74721478ca3afdd035b1d280cce1cd5858674ca853",
+    "scripts/run_arm26_wrap_probe.py": "9d7eddfd2f624f2683ab6e855b1c65a1ed43ef734566c157d1d5cec5a9d6f630",
+    "scripts/materialize_arm26_wrap_probe.py": "782829c72bb78cdf1b4a8f027e3c94f7d0f19c038a4ac8be0963fddd09952f86",
+    "scripts/analyze_arm26_wrap_contacts.py": "e1733ac4bcefe5ce5bb9a48f7d0cf00bb8c8ae5a82bf3102723511a99c1110af"
+  }
+}

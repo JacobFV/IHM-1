@@ -1,0 +1,17 @@
+{
+  "status": "failed_untouched_path_scope_gate",
+  "native_runs_completed": true,
+  "cases_each": 104,
+  "native_time_advanced_s": 0,
+  "reason": "BRA cylinder also used by triceps; changing shared object affects18 non-BRA lengths up to1.7998787739e-5m. Not accepted.",
+  "candidate_BRA_max_virtual_work_error_m": 2.7755575142194085e-10,
+  "rejected_candidate_observations": 0,
+  "files": {
+    "probe": "53ede9fc6d8b6acc6356c9b12baa47c805f5c6ec3ced01627966df85969f6df9",
+    "observed.csv": "b1d3e0338d85e73233d5d6d6d8ff1afb7b375480a0aef379a0d65173bf49d924",
+    "candidate.csv": "92b7a7778c2a21b1e601f1204a9ae34b38549bd9b5c7264429fe5655d0d4cff8",
+    "observed.jsonl": "96b9e5a90eb7964541f258474f972e2619b058f8395101d3cecfd9759b23fb89",
+    "candidate.jsonl": "9edb5a93dac801b923ff1e72bcd899f1d66854e4fd7c82e91a093d81156eadea",
+    "contact_analysis.json": "b25a1b79b68f297af6ba30c3ae7ac43af3e43be698db5cddb8234635ef296217"
+  }
+}
