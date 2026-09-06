@@ -180,3 +180,18 @@ The articulated and embodied constructors now forward optional `bed_material`
 to the native measured-bed law. Bed selection does not supply a supported pose;
 its initial mechanical state remains subject to force/moment and joint residual
 acceptance. Native receipts retain the chosen curve and separate skin/bed strains.
+
+## Local application refresh
+
+After confirming the old server had no active scenario jobs or native children,
+the workbench was restarted from current source. PID4082759 now serves port8765.
+`artifacts/workbench-refresh-verification.json` records the loaded revision,
+HTML hash, empty embodied-session inventory, and an actual64,912-byte local
+microvascular response (source-derived scenario, read-only). Verification sent no
+native commands and did not load a browser/high-resolution scene. The current
+production bundle contains intake, finite-Laplace, local microvascular and hair
+worker components. A page refresh is required for an already open browser tab.
+
+This promotion exposes completed interfaces; it does not turn the unresolved
+supine muscle/joint equilibrium into an accepted live-body trajectory. Failed
+body runs remain visible and must not be substituted with replay animation.
