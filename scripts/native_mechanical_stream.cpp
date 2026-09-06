@@ -35,7 +35,7 @@ public:
   for(int i=0;i<(int)socket.getNumConnectees();i++){const auto& a=socket.getConnectee(i);a.addInControls(SimTK::Vector(1,values.at(a.getName())),controls);}
  }
 };
-struct Saved {SimTK::State state;std::vector<Load> loads;std::map<std::string,double> excitations;double work,positive_work,metabolic_energy;};
+struct Saved {SimTK::State state;std::vector<Load> loads;std::map<std::string,double> excitations;double work,positive_work,metabolic_energy,signed_work,heat_energy;};
 int main(int argc,char** argv){try{
  if(argc!=5)throw std::runtime_error("source_dir output_dir environment(free|supine|upright) target_mass required");
  fs::path source=argv[1],out=argv[2];std::string environment=argv[3];
@@ -87,13 +87,16 @@ int main(int argc,char** argv){try{
  model.finalizeConnections();SimTK::State state=model.initSystem();state.setTime(0);
  for(const auto& m:model.getComponentList<Muscle>())m.setActivation(state,excitation->values.at(m.getName()));
  model.equilibrateMuscles(state);model.realizeDynamics(state);model.print((out/"assembled_model.osim").string());
- double work=0,positive_work=0,metabolic_energy=0;std::map<std::string,Saved> checkpoints;
+ const auto reference=metabolism.sample(state);
+ double work=0,positive_work=0,metabolic_energy=0,signed_work=0,heat_energy=0;std::map<std::string,Saved> checkpoints;
  auto active_power=[&](){model.realizeDynamics(state);double power=0;for(const auto& m:model.getComponentList<Muscle>())power+=std::max(0.,-m.getActiveFiberForce(state)*m.getFiberVelocity(state));return power;};
  auto emit=[&](const std::string& kind){
   model.realizeAcceleration(state);auto metabolic=metabolism.sample(state);std::ostringstream o;o<<"{\"kind\":";str(o,kind);o<<",\"time_s\":";num(o,state.getTime());
   o<<",\"mass_kg\":";num(o,model.getTotalMass(state));o<<",\"gravity_m_s2\":";vec(o,model.getGravity());
   o<<",\"kinetic_energy_j\":";num(o,model.calcKineticEnergy(state));o<<",\"potential_energy_j\":";num(o,model.calcPotentialEnergy(state));o<<",\"external_work_j\":";num(o,work);o<<",\"positive_active_fiber_work_j\":";num(o,positive_work);o<<",\"external_power_w\":";num(o,external->power(state));
   o<<",\"muscle_metabolic_energy_j\":";num(o,metabolic_energy);o<<",\"total_muscle_metabolic_w\":";num(o,metabolic.total_muscle_metabolic_w);o<<",\"signed_active_fiber_power_w\":";num(o,metabolic.active_fiber_work_w);o<<",\"muscle_heat_w\":";num(o,metabolic.muscle_heat_w);o<<",\"metabolic_analysis_mass_kg\":";num(o,metabolic.analysis_mass_kg);
+  o<<",\"signed_active_fiber_work_j\":";num(o,signed_work);o<<",\"muscle_heat_energy_j\":";num(o,heat_energy);
+  o<<",\"metabolic_reference\":{\"M0_w\":";num(o,reference.total_muscle_metabolic_w);o<<",\"W0_w\":";num(o,reference.active_fiber_work_w);o<<",\"H0_w\":";num(o,reference.total_muscle_metabolic_w-reference.active_fiber_work_w);o<<'}';
   o<<",\"constraint_position_error\":";num(o,state.getQErr().norm());o<<",\"constraint_velocity_error\":";num(o,state.getUErr().norm());
   o<<",\"original_source_mass_kg\":";num(o,original_mass);o<<",\"mass_scale\":";num(o,mass_scale);
   o<<",\"support_plane_source_x_m\":";num(o,support_plane);bool first=true;
@@ -129,13 +132,13 @@ int main(int argc,char** argv){try{
  };
  emit("initialized");std::string line;
  while(std::getline(std::cin,line)){
-  Saved before{state,external->loads,excitation->values,work,positive_work,metabolic_energy};
+  Saved before{state,external->loads,excitation->values,work,positive_work,metabolic_energy,signed_work,heat_energy};
   try{
    std::istringstream in(line);std::string command;in>>command;
    if(command=="close")break;
    if(command=="observe"){emit("observed");continue;}
    if(command=="checkpoint"){std::string key;in>>key;if(key.empty()||checkpoints.size()>=64||checkpoints.count(key))throw std::runtime_error("invalid checkpoint id/capacity");checkpoints.emplace(key,before);std::cout<<"@IHM {\"kind\":\"checkpointed\"}"<<std::endl;continue;}
-   if(command=="restore"){std::string key;in>>key;const auto& old=checkpoints.at(key);state=old.state;external->loads=old.loads;excitation->values=old.excitations;work=old.work;positive_work=old.positive_work;metabolic_energy=old.metabolic_energy;model.markControlsAsInvalid(state);state.invalidateAllCacheAtOrAbove(SimTK::Stage::Dynamics);emit("restored");continue;}
+   if(command=="restore"){std::string key;in>>key;const auto& old=checkpoints.at(key);state=old.state;external->loads=old.loads;excitation->values=old.excitations;work=old.work;positive_work=old.positive_work;metabolic_energy=old.metabolic_energy;signed_work=old.signed_work;heat_energy=old.heat_energy;model.markControlsAsInvalid(state);state.invalidateAllCacheAtOrAbove(SimTK::Stage::Dynamics);emit("restored");continue;}
    if(command=="drop"){std::string key;in>>key;if(!checkpoints.erase(key))throw std::runtime_error("unknown checkpoint");std::cout<<"@IHM {\"kind\":\"dropped\"}"<<std::endl;continue;}
    if(command!="advance")throw std::runtime_error("unknown command");double dt;int count;in>>dt>>count;if(!in||!std::isfinite(dt)||dt<=0||dt>.02||count<0||count>10000)throw std::runtime_error("invalid native step/force count");
    model.realizePosition(state);external->loads.clear();
@@ -143,10 +146,14 @@ int main(int argc,char** argv){try{
    in>>count;if(!in||count<0||count>1000)throw std::runtime_error("invalid excitation count");
    for(int i=0;i<count;i++){std::string name;double value;in>>name>>value;if(!in||!std::isfinite(value)||value<0||value>1||!excitation->values.count(name))throw std::runtime_error("invalid muscle excitation");excitation->values[name]=value;}
    std::string extra;if(in>>extra)throw std::runtime_error("trailing command data");
-   model.markControlsAsInvalid(state);state.invalidateAllCacheAtOrAbove(SimTK::Stage::Dynamics);model.realizeVelocity(state);double p0=external->power(state),active0=active_power(),metabolic0=metabolism.sample(state).total_muscle_metabolic_w;
+   model.markControlsAsInvalid(state);state.invalidateAllCacheAtOrAbove(SimTK::Stage::Dynamics);model.realizeVelocity(state);double p0=external->power(state),active0=active_power();const auto metabolic0=metabolism.sample(state);
    Manager manager(model);manager.setIntegratorAccuracy(1e-7);manager.setIntegratorConstraintTolerance(1e-9);manager.setIntegratorMaximumStepSize(.0005);manager.setIntegratorInternalStepLimit(100000);manager.initialize(state);
-   state=manager.integrate(state.getTime()+dt);model.realizeVelocity(state);work+=dt*.5*(p0+external->power(state));positive_work+=dt*.5*(active0+active_power());metabolic_energy+=dt*.5*(metabolic0+metabolism.sample(state).total_muscle_metabolic_w);emit("advanced");
-  }catch(const std::exception& error){state=before.state;external->loads=before.loads;excitation->values=before.excitations;work=before.work;positive_work=before.positive_work;metabolic_energy=before.metabolic_energy;std::ostringstream o;o<<"{\"error\":";str(o,error.what());o<<'}';std::cout<<"@IHM "<<o.str()<<std::endl;}
+   state=manager.integrate(state.getTime()+dt);model.realizeVelocity(state);work+=dt*.5*(p0+external->power(state));positive_work+=dt*.5*(active0+active_power());const auto metabolic1=metabolism.sample(state);
+   // One endpoint quadrature owns chemical energy and signed active-fiber work.
+   metabolic_energy+=dt*.5*(metabolic0.total_muscle_metabolic_w+metabolic1.total_muscle_metabolic_w);
+   signed_work+=dt*.5*(metabolic0.active_fiber_work_w+metabolic1.active_fiber_work_w);
+   heat_energy=metabolic_energy-signed_work;emit("advanced");
+  }catch(const std::exception& error){state=before.state;external->loads=before.loads;excitation->values=before.excitations;work=before.work;positive_work=before.positive_work;metabolic_energy=before.metabolic_energy;signed_work=before.signed_work;heat_energy=before.heat_energy;std::ostringstream o;o<<"{\"error\":";str(o,error.what());o<<'}';std::cout<<"@IHM "<<o.str()<<std::endl;}
  }
  return 0;
 }catch(const std::exception& e){std::cerr<<"MECHANICAL_STREAM_ERROR="<<e.what()<<std::endl;return 2;}}

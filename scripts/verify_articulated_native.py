@@ -4,6 +4,7 @@ import argparse,json,sys,tempfile,time,resource,traceback
 import numpy as np
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from ihm.assembly.articulated import ArticulatedBodyPlant
+from verify_native_signed_energy_ledger import ENERGIES,check_interval
 ROOT=Path(__file__).resolve().parents[1]
 
 def main():
@@ -13,10 +14,11 @@ def main():
     try:
         plant=ArticulatedBodyPlant(ROOT,output/'plant',environment='supine',target_mass_kg=77.6122029,augmented_registration=args.augmentation_registration,enable_garments=args.garments)
         initial=plant.snapshot();assert len(initial['muscles'])==92 and len(initial['entities'])==2408
-        assert initial['total_muscle_metabolic_w']>0 and initial['muscle_metabolic_energy_j']==0
+        assert initial['total_muscle_metabolic_w']>0 and all(initial[k]==0 for k in ENERGIES)
         checkpoint=plant.checkpoint();dt=.00005 if args.garments else .002
         baseline=plant.advance(dt);plant.restore(checkpoint);repeat=plant.advance(dt)
-        assert repeat['native_bodies']==baseline['native_bodies'] and repeat['muscle_metabolic_energy_j']==baseline['muscle_metabolic_energy_j']
+        assert repeat['native_bodies']==baseline['native_bodies'] and all(repeat[k]==baseline[k] for k in (*ENERGIES,'metabolic_reference'))
+        ledger=check_interval(initial,baseline,endpoint_check=not args.garments)
         plant.restore(checkpoint);active=plant.advance(dt,actuation={'arm26_BRA_r':.8})
         assert active['muscles']['arm26_BRA_r']['activation']>baseline['muscles']['arm26_BRA_r']['activation']
         assert active['total_muscle_metabolic_w']>baseline['total_muscle_metabolic_w']
@@ -29,7 +31,7 @@ def main():
         plant.close()
         report={'passed':True,'dt_s':dt,'wall_s':time.monotonic()-started,'maximum_child_rss_kib':resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss,
                 'muscles':len(initial['muscles']),'canonical_entities':len(initial['entities']),'metabolic_baseline_w':baseline['total_muscle_metabolic_w'],
-                'metabolic_active_w':active['total_muscle_metabolic_w'],'garments_enabled':args.garments,
+                'metabolic_active_w':active['total_muscle_metabolic_w'],'garments_enabled':args.garments,'signed_energy_ledger':ledger,
                 'scope':'Short actual native branching/checkpoint/metabolic/force acceptance; not settled support, full-body motion or full garment containment'}
         for name,frame in [('initial',initial),('baseline',baseline),('active',active),('forced',forced)]:
             (output/(name+'.json')).write_text(json.dumps(frame,allow_nan=False)+'\n')
