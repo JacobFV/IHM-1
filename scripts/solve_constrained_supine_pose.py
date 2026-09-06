@@ -39,8 +39,13 @@ def static_converged(entry):
             ('constraint_position_error','constraint_velocity_error','constraint_acceleration_error')))
 
 
-def run(seed_path,material,resume_path=None,resume_cache=None,mode='constrained'):
-    from ihm.native.mechanical_stream import NativeMechanicalStream
+def run(seed_path,material,resume_path=None,resume_cache=None,mode='constrained',frozen_stream=None):
+    if frozen_stream is None:
+        from ihm.native.mechanical_stream import NativeMechanicalStream
+    else:
+        from frozen_static_stream import load
+        if not frozen_stream.resolve().is_relative_to(ROOT):raise ValueError('Owned frozen stream manifest required')
+        NativeMechanicalStream=load(frozen_stream)
     seed_record=json.loads(seed_path.read_text())
     if not seed_record['passed'] or seed_record['material']!=material:raise ValueError('Matching force/moment-supported rigid seed required')
     manifest_path=ROOT/'data/derived/supine-surface-contact-exmzq9pq/manifest.json';manifest=json.loads(manifest_path.read_text())
@@ -115,6 +120,10 @@ def run(seed_path,material,resume_path=None,resume_cache=None,mode='constrained'
         stream=NativeMechanicalStream(ROOT,output/'native',environment='supine',target_mass_kg=77.6122029,
             augmented_registration='data/derived/mechanics/whole_body_arm26_v2/registration.json',surface_contact_manifest=manifest_path,bed_material=material)
         execution=json.loads((output/'native/execution.json').read_text())
+        report['native_execution_basis']='live worktree validated stream' if frozen_stream is None else 'immutable archived compiled physics; current worktree native source is not used'
+        if frozen_stream is not None:
+            report['frozen_stream_attestation']=execution['frozen_archive_attestation']
+            report['frozen_loader_sha256']=hashlib.sha256((ROOT/'scripts/frozen_static_stream.py').read_bytes()).hexdigest()
         identity=dict(schema='ihm.static-pose-cache.v1',protocol_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
             journal_sha256=hashlib.sha256((ROOT/'scripts/static_pose_journal.py').read_bytes()).hexdigest(),
             solver_sha256=hashlib.sha256((ROOT/'scripts/bounded_static_root.py').read_bytes()).hexdigest(),
@@ -202,6 +211,12 @@ def run(seed_path,material,resume_path=None,resume_cache=None,mode='constrained'
     finally:
         signal.setitimer(signal.ITIMER_REAL,0);signal.signal(signal.SIGALRM,old)
         if stream is not None:stream.close()
+        if frozen_stream is not None:
+            try:
+                from frozen_static_stream import validate
+                validate(frozen_stream);report['frozen_archive_intact_after_run']=True
+            except Exception as error:
+                report.update(status='frozen_archive_identity_failed',frozen_archive_intact_after_run=False,error=str(error))
         report.update(wall_s=time.monotonic()-started,evaluations=len(evaluations),cache_hits=cache_hits,best_cost=None if best is None else best['cost'],
              best_supported_cost=None if best_feasible is None else best_feasible['cost'],
              source_sha256={str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in (seed_path,manifest_path,Path(__file__).resolve(),*(() if resume_path is None else (resume_path,)))})
@@ -209,6 +224,6 @@ def run(seed_path,material,resume_path=None,resume_cache=None,mode='constrained'
 
 
 if __name__=='__main__':
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--run-native',action='store_true');parser.add_argument('--seed',type=Path);parser.add_argument('--resume',type=Path);parser.add_argument('--resume-cache',type=Path);parser.add_argument('--mode',choices=('constrained','acceleration-root','balanced-root'),default='constrained');parser.add_argument('--material',choices=('MM','HM'),default='MM');args=parser.parse_args()
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--run-native',action='store_true');parser.add_argument('--seed',type=Path);parser.add_argument('--resume',type=Path);parser.add_argument('--resume-cache',type=Path);parser.add_argument('--frozen-stream',type=Path);parser.add_argument('--mode',choices=('constrained','acceleration-root','balanced-root'),default='constrained');parser.add_argument('--material',choices=('MM','HM'),default='MM');args=parser.parse_args()
     if not args.run_native or args.seed is None:raise SystemExit('Coordinated --run-native slot and --seed required')
-    run(args.seed.resolve(),args.material,None if args.resume is None else args.resume.resolve(),None if args.resume_cache is None else args.resume_cache.resolve(),args.mode)
+    run(args.seed.resolve(),args.material,None if args.resume is None else args.resume.resolve(),None if args.resume_cache is None else args.resume_cache.resolve(),args.mode,None if args.frozen_stream is None else args.frozen_stream.resolve())
