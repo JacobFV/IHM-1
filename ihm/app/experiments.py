@@ -118,3 +118,30 @@ def read_experiment(root,kind):
         if not file.is_relative_to(root) or hashlib.sha256(file.read_bytes()).hexdigest()!=anchor['geometry_sha256']:
             raise ValueError('Experiment anchor geometry changed')
     return data
+
+
+def clothing_catalog(root):
+    """Garment tiles read this: identity, label, slot and thumbnail only.
+
+    Slot carries the exclusivity model. Garments sharing a slot are mutually
+    exclusive; different slots combine freely. A record that declares no slot
+    gets its own, so nothing is made exclusive that the data did not say is.
+    """
+    root=Path(root).resolve()
+    path=root/'data/derived/clothing/garments.json'
+    data=json.loads(path.read_bytes())
+    garments=[]
+    for garment in data['garments']:
+        thumbnail=garment.get('thumbnail') or garment.get('thumbnail_path') or garment.get('image')
+        if thumbnail is not None:
+            file=(root/thumbnail).resolve()
+            if not file.is_relative_to(root) or not file.is_file():
+                raise ValueError('Garment thumbnail is missing: '+str(thumbnail))
+            thumbnail=str(file.relative_to(root))
+        garments.append({'id':garment['id'],'label':garment.get('label') or garment.get('name') or garment['id'],
+                         'slot':garment.get('slot') or 'garment:'+garment['id'],
+                         'thumbnail':thumbnail,
+                         'thumbnail_url':None if thumbnail is None else '/api/clothing/thumbnail/'+garment['id'],
+                         'evidence_kind':garment.get('evidence_kind'),
+                         'physical_contact_solved':garment.get('physical_contact_solved',False)})
+    return {'schema':'ihm.clothing-catalog.v1','source':data.get('source'),'garments':garments}

@@ -1,6 +1,6 @@
-.scene-modes,.scene-actions{display:flex;gap:5px;margin-top:10px}
-.scene-modes button,.scene-actions button{flex:1;padding:8px 5px;border:1px solid #35494b;border-radius:8px;background:#1c2a2c;font-size:11px}
-.scene-modes button[aria-pressed="true"]{background:#33594f;border-color:#6b9e8f;color:#dff8ed}
+.scene-modes,.scene-actions{display:flex;gap:5px;margin-top:8px}
+.scene-modes button,.scene-actions button{flex:1;padding:6px 5px;font-size:11px;margin-top:0}
 .scene-values{display:flex;gap:12px;justify-content:space-between}
-.scene-values span{color:#96aaa6;font-size:11px}.scene-values b{display:block;color:#d8e8df;font-size:17px;margin-top:6px;font-variant-numeric:tabular-nums}
-.scene-advanced{margin-top:12px;font-size:11px}.scene-advanced summary{cursor:pointer;color:#9eafaa}.scene-advanced select{margin-top:8px;width:100%}#scene-status-note{line-height:1.5}#scene-scope{font-size:11px;line-height:1.6}
+.scene-values span{color:var(--dim);font-size:11px}
+.scene-values b{display:block;color:var(--ink);font-size:17px;margin-top:4px;font-variant-numeric:tabular-nums}
+#scene-scope{font-size:11px;line-height:1.55}

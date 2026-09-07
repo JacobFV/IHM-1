@@ -1,351 +1,90 @@
 import { test, expect } from "@playwright/test";
-async function selectSource(page, id) {
-  await page.locator('.view-section').filter({hasText:'Sources & body status'}).evaluate(el=>el.open=true);
-  if (!await page.locator("#source-inspection").evaluate(el => el.open))
-    await page.locator("#source-inspection summary").click();
-  await page.locator("#model").selectOption(id);
-}
-test("real source anatomy renders and research controls remain connected", async ({
-  page,
-}) => {
+
+test("the left column carries five sections and nothing asks for a source", async ({ page }) => {
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto("/");
-  await expect(page.locator("#model option")).not.toHaveText([
-    "Loading source families…",
-  ]);
   await expect(page.locator("#viewport canvas")).toBeVisible();
-  await expect(page.locator("#render-count")).not.toHaveText(
-    "0 structures visible",
-    { timeout: 120000 },
-  );
-  await expect(page.locator("#scene-status")).toHaveText("", {
-    timeout: 120000,
-  });
-  const before = await page.locator("#count").innerText();
-  expect(Number(before)).toBeGreaterThan(0);
+  await expect(page.locator("#left-column .column-section > h2")).toHaveText([
+    "Materialization", "Layers", "Clothing", "Environment", "Simulation",
+  ]);
+  // No source, candidate or execution pickers survive anywhere in the page.
+  for (const id of ["#model", "#scene-owner", "#patient", "#engine-variant", "#scene-reconnect"])
+    await expect(page.locator(id)).toHaveCount(0);
+  await expect(page.locator("#scene-status")).toHaveText("", { timeout: 240000 });
+  expect(errors).toEqual([]);
+});
+
+test("layers filter by member and expand to reveal members", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator("#layers .layer")).not.toHaveCount(0);
+  // Members are listed only when the system is expanded.
+  await expect(page.locator("#layers .members")).toHaveCount(0);
+  await page.locator("#layer-search").fill("lung");
+  await expect(page.locator("#layers .layer-row > label > span")).toHaveText(["respiratory"]);
+  await expect(page.locator("#layers .members .check-row")).not.toHaveCount(0);
+  await page.locator("#layer-search").fill("");
+  await expect(page.locator("#layers .members")).toHaveCount(0);
+  await page.locator("#layers .disclose").first().click();
+  await expect(page.locator("#layers .members")).toHaveCount(1);
+});
+
+test("clothing and environment appear only for the whole body", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator("#clothing-section")).toBeVisible();
+  await expect(page.locator("#environment-section")).toBeVisible();
+  await page.locator("#materialization option[value^='conforming-domain-']").first().waitFor({ state: "attached" });
+  const domain = await page.locator("#materialization option[value^='conforming-domain-']").first().getAttribute("value");
+  await page.locator("#materialization").selectOption(domain);
+  await expect(page.locator("#clothing-section")).toBeHidden();
+  await expect(page.locator("#environment-section")).toBeHidden();
+  await expect(page.locator("[data-pane='domain'] .check-row")).not.toHaveCount(0, { timeout: 240000 });
+  await page.locator("#materialization").selectOption("body");
+  await expect(page.locator("#clothing-section")).toBeVisible();
+});
+
+test("the viewport carries only the gimbal, the transport and two column icons", async ({ page }) => {
+  await page.goto("/");
+  // One human figure carrying three selectable planes, not a row of buttons.
+  await expect(page.locator("#gimbal .figure")).toHaveCount(1);
+  await expect(page.locator("#gimbal [data-plane]")).toHaveCount(3);
+  await expect(page.locator("#speed")).toHaveText("1x");
+  await page.locator("#speed").click();
+  await expect(page.locator("#speed-menu button")).toHaveText(["0.25x", "0.5x", "1x", "2x", "5x", "10x"]);
+  await page.locator("#speed-menu button").getByText("5x", { exact: true }).click();
+  await expect(page.locator("#speed")).toHaveText("5x");
+  // The composed body-state legend is gone, not shortened.
+  await expect(page.locator("#flow-legend")).toHaveCount(0);
+  await expect(page.getByText("tissue transforms")).toHaveCount(0);
+  await page.locator("#toggle-left").click();
+  await expect(page.locator("#left-column")).toBeHidden();
+  await page.locator("#toggle-right").click();
+  await expect(page.locator("#pane-column")).toBeHidden();
+  await expect(page.locator("#gimbal")).toBeVisible();
+  await expect(page.locator("#transport")).toBeVisible();
+  await page.locator("#toggle-left").click();
+  await expect(page.locator("#left-column")).toBeVisible();
+});
+
+test("monitors can be removed and chosen again", async ({ page }) => {
+  await page.goto("/");
+  await page.locator("#add-pane").waitFor({ timeout: 60000 });
+  await expect(page.locator("[data-pane='selection']")).toBeVisible();
+  await page.locator("[data-pane='selection'] .pane-dismiss").click();
+  await expect(page.locator("[data-pane='selection']")).toBeHidden();
+  await page.locator("#add-pane").click();
+  const entry = page.locator("#pane-picker button").getByText("Selection", { exact: true });
+  await expect(entry).toHaveCount(1);
+  await entry.click();
+  await expect(page.locator("[data-pane='selection']")).toBeVisible();
+});
+
+test("clicking a structure identifies it and answers where it came from", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator("#scene-status")).toHaveText("", { timeout: 240000 });
   const canvas = await page.locator("#viewport canvas").boundingBox();
-  await page.mouse.click(
-    canvas.x + canvas.width * 0.5,
-    canvas.y + canvas.height * 0.5,
-  );
-  await expect(page.locator("#details > dl")).toBeVisible();
-  const skeletal = page.locator('#systems input[value="skeletal"]');
-  await skeletal.uncheck();
-  await expect(page.locator("#count")).not.toHaveText(before);
-  await skeletal.check();
-  await expect(page.locator("#count")).toHaveText(before);
-  await page.locator("#structures button").first().click();
-  await expect(page.locator("#details > dl")).toBeVisible();
-  await page.locator("#search").fill("this-structure-does-not-exist");
-  await expect(page.locator("#count")).toHaveText("0");
-  await expect(page.locator("#scene-status")).toContainText("No structures");
-  await page.locator("#search").fill("");
-  await page.locator("#opacity").fill("0.5");
-  await page.locator("#opacity").dispatchEvent("input");
-  await expect(page.locator("#opacity-value")).toHaveText("50%");
-  await page.locator("#clip").fill("40");
-  await page.locator("#clip").dispatchEvent("input");
-  await expect(page.locator("#clip-value")).toHaveText("40%");
-  await page.locator("#clip").fill("100");
-  await page.locator("#clip").dispatchEvent("input");
-  await page.locator("#posture").click();
-  await expect(page.locator("#frame-label")).toContainText("Supine display");
-  await page.locator("#posture").click();
-  await page.locator("#tab-spectral").click();
-  await expect(page.locator("#tab-spectral")).toHaveClass("active");
-  await page.locator("#tab-phys").click();
-  await page.locator("#opacity").fill("1");
-  await page.locator("#opacity").dispatchEvent("input");
-  await page.screenshot({ path: "test-results/workbench.png", fullPage: true });
-  expect(errors).toEqual([]);
-});
-test("measured Laplace evidence and archived vascular playback use actual data", async ({
-  page,
-}) => {
-  const errors = [];
-  page.on("pageerror", (e) => errors.push(e.message));
-  await page.goto("/");
-  await expect(page.locator("#variable")).toHaveValue(
-    "ArterialPressure(mmHg)",
-    { timeout: 30000 },
-  );
-  await page.locator("#tab-spectral").click();
-  await page.locator("#spectral-run").selectOption("bidmc_01");
-  await page.locator("#spectral-mode").selectOption("laplace");
-  await page.locator("#sigma").selectOption("1");
-  await expect(page.locator("#chart svg")).toBeVisible();
-  await expect(page.locator("#chart-note")).toContainText("Finite-horizon");
-  await selectSource(page, "vascular-cerebral");
-  await expect(page.locator("#play")).toBeEnabled({ timeout: 60000 });
-  await page.locator("#play").click();
-  await expect(page.locator("#time")).not.toHaveValue("0");
-  await page.locator("#play").click();
-  await page.locator("#flow-field").selectOption("pressure");
-  await expect(page.locator("#flow-legend")).toContainText(
-    "source units unconfirmed",
-  );
-  const legend = await page.locator("#flow-legend").innerText();
-  await page.locator("#time").fill("150");
-  await page.locator("#time").dispatchEvent("input");
-  await expect(page.locator("#flow-legend")).toHaveText(legend);
-  await page.screenshot({
-    path: "test-results/vascular-laplace.png",
-    fullPage: true,
-  });
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.getByRole("button", { name: "Anatomy panel", exact: true }).click();
-  await expect(page.locator("#model")).toBeVisible();
-  expect(
-    await page.evaluate(
-      () => document.documentElement.scrollWidth <= window.innerWidth,
-    ),
-  ).toBeTruthy();
-  expect(errors).toEqual([]);
-});
-test("native scenario form submits selected-preset hemorrhage and saline with stop actions", async ({
-  page,
-}) => {
-  test.skip(
-    process.env.RUN_NATIVE_BROWSER !== "1",
-    "Opt-in real native engine execution",
-  );
-  await page.goto("/");
-  await expect(page.locator("#run-status")).not.toContainText("Checking");
-  await selectSource(page, "bodyparts3d");
-  await page.locator("#patient").selectOption("StandardFemale");
-  await expect(page.locator("#patient")).toHaveValue("StandardFemale");
-  await page
-    .locator("#engine-variant")
-    .selectOption("saturation_bounds_heatflux");
-  await page.locator("#scenario").selectOption("hemorrhage_saline");
-  await page.locator("#duration").fill("2");
-  const responsePromise = page.waitForResponse(
-    (r) =>
-      r.url().endsWith("/api/scenarios") && r.request().method() === "POST",
-  );
-  await page.locator("#run").click();
-  const response = await responsePromise;
-  expect(response.ok()).toBeTruthy();
-  const run = await response.json();
-  expect(response.request().postDataJSON().patient).toBe("StandardFemale");
-  expect(
-    response
-      .request()
-      .postDataJSON()
-      .interventions.map((a) => a.kind),
-  ).toEqual(["hemorrhage", "hemorrhage", "saline", "saline"]);
-  expect(response.request().postDataJSON().engine_variant).toBe(
-    "saturation_bounds_heatflux",
-  );
-  console.log("Native browser run:", run.id);
-  await expect(page.locator("#run-status")).toContainText(run.id);
-  await expect(page.locator("#run-status")).toContainText(
-    /completed|complete|succeeded/,
-    { timeout: 110000 },
-  );
-  await expect(page.locator("#chart svg")).toBeVisible();
-});
-test("OpenSim source family exposes native wrapped paths and force provenance", async ({
-  page,
-}) => {
-  await page.goto("/");
-  await selectSource(page, "opensim-rajagopal");
-  await expect(page.locator("#scene-status")).toHaveText("", {
-    timeout: 60000,
-  });
-  await expect(page.locator("#frame-label")).toContainText("m display");
-  await page.locator("#search").fill("addbrev_r");
-  await page.locator("#structures button").first().click();
-  await expect(page.locator("#details")).toContainText("Native mechanics");
-  await expect(page.locator("#details")).toContainText("Solved by source");
-  await expect(page.locator("#details")).toContainText(
-    "external force balance not solved",
-  );
-  await page.locator("#search").fill("");
-  await page.screenshot({ path: "test-results/opensim.png", fullPage: true });
-});
-test("anatomy inspection remains available without a WebGL context", async ({
-  page,
-}) => {
-  await page.addInitScript(() => {
-    HTMLCanvasElement.prototype.getContext = () => null;
-  });
-  await page.goto("/");
-  await expect(page.locator("#scene-status")).toContainText(
-    "WebGL unavailable",
-  );
-  await expect(page.locator("#render-count")).toHaveText(
-    "3D rendering unavailable",
-  );
-  await page.locator("#structures button").first().click();
-  await expect(page.locator("#details > dl")).toBeVisible();
-});
-test("coverage, circuit balance and CFD uncertainty are exposed with measured and source-model context", async ({
-  page,
-}) => {
-  const errors = [];
-  page.on("pageerror", (e) => errors.push(e.message));
-  await page.goto("/");
-  await expect(page.locator('#systems input[value="cardiac"]')).toBeChecked();
-  await page.locator("summary").filter({ hasText: "System coverage" }).click();
-  await expect(page.locator("#coverage-details")).toContainText(
-    "21 system domains",
-  );
-  await page
-    .locator("summary")
-    .filter({ hasText: "Conservative exchange" })
-    .click();
-  await expect(page.locator("#coupling-details")).toContainText(
-    "Maximum free-node flow residual",
-  );
-  await page
-    .locator("summary")
-    .filter({ hasText: "Vascular CFD audit" })
-    .click();
-  await expect(page.locator("#vascular-audit")).toContainText(
-    "Simulation failed",
-  );
-  await expect(page.locator("#vascular-audit")).toContainText("24.9%");
-  await page.locator("#trajectory-run").selectOption("reproductive");
-  await page.locator("#variable").selectOption("E2");
-  await expect(page.locator("#chart-note")).toContainText(
-    "prescribed time input",
-  );
-  await expect(page.locator("#chart")).toContainText("day");
-  await expect(page.locator("#chart svg")).toBeVisible();
-  expect(errors).toEqual([]);
-});
-
-test("native BETSE cells expose voltage, ions, constant protein field and source-clock playback", async ({
-  page,
-}) => {
-  const errors = [];
-  page.on("pageerror", (e) => errors.push(e.message));
-  await page.goto("/");
-  await selectSource(page, "betse-tissue");
-  await expect(page.locator("#play")).toBeEnabled();
-  await expect(page.locator("#flow-legend")).toContainText("Vmem");
-  await page.locator("#structures button").first().click();
-  await expect(page.locator("#cell-values")).toContainText(
-    "212 planar solver cells",
-  );
-  const canvas = page.locator("#viewport canvas"),
-    box = await canvas.boundingBox();
-  await canvas.click({ position: { x: box.width / 2, y: box.height / 2 } });
-  await expect(page.locator("#cell-values strong")).toContainText("Cell");
-  await page.locator("#flow-field").selectOption("proteins");
-  await expect(page.locator("#flow-legend")).toContainText("135.0");
-  await page.locator("#flow-field").selectOption("sodium");
-  await expect(page.locator("#flow-legend")).toContainText("mol/m^3");
-  await page.locator("#time").fill("33");
-  await expect(page.locator("#time-value")).toContainText("0.034 s");
-  await page.locator("#flow-field").selectOption("Vmem");
-  await page.screenshot({ path: "test-results/betse-tissue.png" });
-  expect(errors).toEqual([]);
-});
-
-test("CSF source trajectories retain coupling boundaries and environment overrides reach transport", async ({
-  page,
-}) => {
-  await page.goto("/");
-  for (const run of ["baseline", "native_map_driven", "hypotension"]) {
-    await page.locator("#trajectory-run").selectOption(`csf:${run}`);
-    await page.locator("#variable").selectOption("Pic_mmHg");
-    await expect(page.locator("#chart svg")).toBeVisible();
-    await expect(page.locator("#chart")).toContainText("mmHg");
-    await expect(page.locator("#chart-note")).toContainText(
-      run === "native_map_driven"
-        ? "no ICP feedback"
-        : "Separate literature model",
-    );
-  }
-  await expect(page.locator("#ambient")).toHaveValue("");
-  await expect(page.locator("#clothing")).toHaveValue("");
-  let payload;
-  await page.route("**/api/body/scenarios", async (route) => {
-    if (route.request().method() !== "POST") return route.continue();
-    payload = route.request().postDataJSON();
-    await route.fulfill({
-      status: 400,
-      contentType: "application/json",
-      body: JSON.stringify({ error: "Transport test: no native job executed" }),
-    });
-  });
-  await page.locator("#ambient").fill("22");
-  await page.locator("#clothing").fill("0");
-  await page.locator("#run").click();
-  await expect(page.locator("#run-status")).toContainText("Transport test");
-  expect(payload.ambient_temperature_c).toBe(22);
-  expect(payload.clothing_clo).toBe(0);
-});
-
-test("hour-scale spectra disclose sampling limits and exclude aliased pulse channels", async ({
-  page,
-}) => {
-  await page.goto("/");
-  await page.locator("#tab-spectral").click();
-  await page.locator("#spectral-run").selectOption("native_hour_rest");
-  await expect(page.locator("#chart-note")).toContainText("Nyquist 0.5 Hz");
-  const names = await page.locator("#variable option").allTextContents();
-  expect(names.some((n) => n === "ArterialPressure")).toBe(false);
-  await expect(page.locator("#chart svg")).toBeVisible();
-});
-
-test("published supine thermal model and measured bedding boundaries remain separate source trajectories", async ({
-  page,
-}) => {
-  await page.goto("/");
-  for (const run of [
-    "lying_default",
-    "supine_mattress",
-    "supine_blanket",
-    "supine_duvet",
-  ]) {
-    await page.locator("#trajectory-run").selectOption(`thermal:${run}`);
-    await page.locator("#variable").selectOption("CentralBloodTemperature");
-    await expect(page.locator("#chart svg")).toBeVisible();
-    await expect(page.locator("#chart")).toContainText("degC");
-    await expect(page.locator("#chart-note")).toContainText("85 thermal nodes");
-    if (run !== "lying_default")
-      await expect(page.locator("#chart-note")).toContainText(
-        "applied uniformly",
-      );
-  }
-});
-
-test('full source anatomy is discoverable by tissue and supports independent layer transparency', async ({page})=>{
-  const errors=[];page.on('pageerror',e=>errors.push(e.message));
-  await page.goto('/');
-  await page.getByLabel('Anatomy view',{exact:true}).selectOption('muscles');
-  await expect(page.locator('#systems input[value="muscular"]')).toBeChecked();
-  await expect(page.locator('#systems input[value="arterial"]')).not.toBeChecked();
-  expect(Number(await page.locator('#count').innerText())).toBeGreaterThan(400);
-  await expect(page.locator('#scene-status')).toHaveText('',{timeout:120000});
-  await page.getByLabel('Anatomy view',{exact:true}).selectOption('skin');
-  await page.locator('#search').fill('skin');
-  await page.locator('#structures button').first().click();
-  await expect(page.locator('#details')).toContainText('203382 original triangles');
-  await expect(page.locator('#scene-status')).toHaveText('',{timeout:120000});
-  await page.getByLabel('integumentary layer opacity',{exact:true}).fill('0.25');
-  await page.getByLabel('integumentary layer opacity',{exact:true}).dispatchEvent('input');
-  await expect(page.getByLabel('integumentary layer opacity',{exact:true})).toHaveValue('0.25');
-  await page.getByLabel('Anatomy view',{exact:true}).selectOption('blood');
-  expect(Number(await page.locator('#count').innerText())).toBeGreaterThan(1000);
-  await expect(page.locator('#systems input[value="venous"]')).toBeChecked();
-  await expect(page.locator('#systems input[value="integumentary"]')).not.toBeChecked();
-  await page.getByLabel('Anatomy view',{exact:true}).selectOption('all');
-  await expect(page.getByLabel('integumentary layer opacity',{exact:true})).toHaveValue('0.18');
-  await selectSource(page, 'published-lymphatic-network');
-  await expect(page.locator('#scene-status')).toHaveText('',{timeout:120000});
-  await page.locator('#structures button').first().click();
-  await expect(page.locator('#details')).toContainText('lymph');
-  await selectSource(page, 'z-anatomy');
-  await expect(page.locator('#systems input[value="lymphatic"]')).toBeChecked();
-  await expect(page.locator('#count')).toHaveText('163');
-  await expect(page.locator('#scene-status')).toHaveText('',{timeout:120000});
-  await page.locator('#structures button').filter({hasText:/node/i}).first().click();
-  await expect(page.locator('#details')).toContainText('CC-BY-SA-4.0');
-  await expect(page.locator('#details')).toContainText('source-authored evaluated viewport surface');
-  expect(errors).toEqual([]);
+  await page.mouse.click(canvas.x + canvas.width * 0.5, canvas.y + canvas.height * 0.42);
+  await expect(page.locator("[data-pane='selection'] h3")).toBeVisible();
+  await expect(page.locator("#details .structure-provenance")).toContainText("Where this came from", { timeout: 60000 });
+  await expect(page.locator("#details .structure-provenance")).toContainText("Originating dataset");
 });
