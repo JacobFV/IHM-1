@@ -102,7 +102,9 @@ export function mountLeftColumn(host, hooks) {
   const clothingHost = el("div");
   clothingHost.id = "clothing-tiles";
   const clothing = mountTiles(clothingHost, { onChange: (ids) => hooks.onClothing(ids) });
-  const clothingSection = section("clothing", "Clothing", clothingHost);
+  const clothingNote = el("p", "note", "Loading the wardrobe…");
+  clothingNote.id = "clothing-note";
+  const clothingSection = section("clothing", "Clothing", clothingHost, clothingNote);
   clothingSection.id = "clothing-section";
 
   // Environment -----------------------------------------------------------
@@ -230,6 +232,7 @@ export function mountLeftColumn(host, hooks) {
     get sceneObjects() { return environment.instances; },
     get garments() { return clothing.active(); },
     setGarments(items, options) { clothing.setItems(items, options); },
+    setClothingNote(text) { clothingNote.textContent = text; clothingNote.hidden = !text; },
     setEnvironments(items, options) { environment.setItems(items, { title: "Environment", ...options }); },
     setMaterializations(items, current) {
       materialization.replaceChildren();

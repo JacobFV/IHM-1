@@ -38,7 +38,7 @@ const shot = async (name) => {
   return `${name}.png`;
 };
 const coverage = () => page.evaluate(() => {
-  const canvas = document.querySelector("#viewport canvas");
+  const canvas = document.querySelector("#scene");
   if (!canvas) return null;
   const copy = document.createElement("canvas");
   copy.width = 320; copy.height = 200;
@@ -61,14 +61,19 @@ report.steps.push({
   step: "whole-body",
   materialization: await page.locator("#materialization").inputValue(),
   materializations: await page.locator("#materialization option").allTextContents(),
-  sections: await page.locator("#left-column .column-section > h2").allTextContents(),
+  sections: await page.locator("#left-column .column-section h2").allTextContents(),
   clothing_visible: await page.locator("#clothing-section").isVisible(),
   environment_visible: await page.locator("#environment-section").isVisible(),
   clothing_tiles: await page.locator("#clothing-tiles .tile span").allTextContents(),
-  environment_tiles: await page.locator("#environment-tiles .tile span").allTextContents(),
+  environment_slots: await page.locator("#environment-tiles .tile-slot").allTextContents(),
+  environment_tiles: await page.locator("#environment-tiles .tile").evaluateAll((n) =>
+    n.map((x) => ({ id: x.dataset.tile, slot: x.dataset.slot, on: x.getAttribute("aria-pressed") === "true", available: !x.disabled }))),
   systems: await page.locator("#layers .layer-row > label > span").allTextContents(),
   dynamics: await page.locator("#dynamics .check-row span").allTextContents(),
-  gimbal: await page.locator("#gimbal [data-plane]").evaluateAll((n) => n.map((x) => x.dataset.plane)),
+  gimbal: await page.locator("#gimbal").evaluate((el) => ({
+    tag: el.tagName.toLowerCase(), engine: el.dataset.engine || null, selected: el.dataset.selected || null,
+    box: [el.clientWidth, el.clientHeight],
+  })),
   insets: await page.evaluate(() => {
     const style = getComputedStyle(document.getElementById("viewport"));
     return { left: style.getPropertyValue("--left-inset").trim(), right: style.getPropertyValue("--right-inset").trim() };
@@ -84,7 +89,7 @@ await page.waitForTimeout(400);
 report.steps.push({
   step: "layer-search",
   visible_systems: await page.locator("#layers .layer-row > label > span").allTextContents(),
-  members: (await page.locator("#layers .members .check-row span").allTextContents()).slice(0, 10),
+  members: (await page.locator("#layers .members .member-name").allTextContents()).slice(0, 10),
   screenshot: await shot("02-layer-search"),
 });
 await page.locator("#layer-search").fill("");
@@ -92,13 +97,13 @@ await page.locator("#layers .disclose").first().click();
 await page.waitForTimeout(300);
 report.steps.push({
   step: "layer-expand",
-  members: (await page.locator("#layers .members .check-row span").allTextContents()).slice(0, 6),
+  members: (await page.locator("#layers .members .member-name").allTextContents()).slice(0, 6),
   screenshot: await shot("03-layer-expand"),
 });
 await page.locator("#layers .disclose").first().click();
 
 // 3 · click-to-inspect over busy geometry, pane floating on the canvas
-const box = await page.locator("#viewport canvas").boundingBox();
+const box = await page.locator("#scene").boundingBox();
 await page.mouse.click(box.x + box.width * 0.5, box.y + box.height * 0.42);
 await page.waitForTimeout(2500);
 report.steps.push({
@@ -107,6 +112,35 @@ report.steps.push({
   provenance: await page.locator("#details .structure-provenance").count(),
   screenshot: await shot("04-selection-pane"),
 });
+
+// 2b · the three interaction kinds: tiles for environments and scenes,
+// contextual dropdowns for configuration, insert actions for objects.
+const envState = () => page.evaluate(() => ({
+  tiles: [...document.querySelectorAll("#environment-tiles .tile")].map((t) => ({
+    id: t.dataset.tile, slot: t.dataset.slot,
+    on: t.getAttribute("aria-pressed") === "true", available: !t.disabled })),
+  configuration: [...document.querySelectorAll("#environment-tiles select")].map((s) => ({
+    slot: s.dataset.slot, value: s.value,
+    options: [...s.options].map((o) => o.value).filter(Boolean) })),
+  inserts: [...document.querySelectorAll("#environment-tiles [data-insert]")].map((b) => b.dataset.insert),
+  instances: [...document.querySelectorAll("#environment-tiles .instance-list li")].map((l) => l.dataset.instance),
+}));
+report.steps.push({ step: "environment-default", ...(await envState()), screenshot: await shot("02b-environment-default") });
+
+await page.locator('#environment-tiles select[data-slot="bed_support_model"]').selectOption("bed-support-skin-quadrature");
+await page.waitForTimeout(300);
+report.steps.push({ step: "environment-configuration-appears", ...(await envState()) });
+
+for (const id of ["ball-small", "ball-small", "pillow"])
+  await page.locator(`#environment-tiles [data-insert="${id}"]`).click();
+await page.waitForTimeout(300);
+report.steps.push({ step: "objects-inserted", ...(await envState()), screenshot: await shot("02c-environment-objects") });
+
+await page.locator('#environment-tiles [data-tile="studio"]').click();
+await page.waitForTimeout(300);
+report.steps.push({ step: "environment-cascade", ...(await envState()) });
+await page.locator('#environment-tiles [data-tile="bed"]').click();
+await page.waitForTimeout(300);
 
 // 3b · zoom until geometry fills the frame, so the panes float over busy 3D
 await page.mouse.move(box.x + box.width * 0.5, box.y + box.height * 0.5);
@@ -118,25 +152,59 @@ report.steps.push({
   screenshot: await shot("04b-panes-over-geometry"),
 });
 
-// 4 · gimbal planes: one figure, three click targets. Points are chosen inside
-// each plane's own painted area, and the hit test is recorded rather than assumed.
-const PLANE_POINTS = { sagittal: [45, 56], coronal: [31, 30], transverse: [22, 56] };
-for (const [plane, point] of Object.entries(PLANE_POINTS)) {
-  const target = await page.evaluate(([vx, vy]) => {
-    const svg = document.getElementById("gimbal");
-    const rect = svg.getBoundingClientRect();
-    const [, , w, h] = svg.getAttribute("viewBox").split(/\s+/).map(Number);
-    const x = rect.left + (vx / w) * rect.width, y = rect.top + (vy / h) * rect.height;
-    const hit = document.elementFromPoint(x, y);
-    return { x, y, hit: hit?.closest("[data-plane]")?.dataset.plane || hit?.tagName || null };
-  }, point);
-  await page.mouse.click(target.x, target.y);
+// 4 · the orientation gizmo. It is a real 3D widget: it turns with the main
+// camera, and its planes are picked by actual hit testing, which the widget
+// reports through data-hover as the pointer crosses them.
+async function probeGimbal() {
+  const rect = await page.locator("#gimbal").boundingBox();
+  const found = {};
+  const N = 9;
+  outer: for (let i = 1; i < N; i++)
+    for (let j = 1; j < N; j++) {
+      const x = rect.x + (rect.width * i) / N, y = rect.y + (rect.height * j) / N;
+      await page.mouse.move(x, y);
+      const hover = await page.locator("#gimbal").getAttribute("data-hover");
+      if (hover && !found[hover]) found[hover] = { x, y };
+      if (Object.keys(found).length === 3) break outer;
+    }
+  await page.mouse.move(rect.x - 20, rect.y - 20);
+  return found;
+}
+// Orbit the main scene and record that the widget follows it.
+const orbit = async (dx, dy) => {
+  await page.mouse.move(box.x + box.width * 0.5, box.y + box.height * 0.5);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width * 0.5 + dx, box.y + box.height * 0.5 + dy, { steps: 12 });
+  await page.mouse.up();
+  await page.waitForTimeout(900);
+};
+const gimbalPixels = () => page.locator("#gimbal").screenshot().then((b) => b.length);
+for (const [name, dx, dy] of [["front", 0, 0], ["three-quarter", 220, 60], ["profile", 220, 0]]) {
+  await orbit(dx, dy);
+  report.steps.push({
+    step: `gimbal-orbit-${name}`,
+    hoverable_planes: Object.keys(await probeGimbal()),
+    gimbal_bytes: await gimbalPixels(),
+    screenshot: await shot(`05-gimbal-orbit-${name}`),
+  });
+}
+for (const plane of ["sagittal", "coronal", "transverse"]) {
+  // The widget turns after every snap, so where a plane sits has to be found
+  // again before each click rather than reused from an earlier orientation.
+  const point = (await probeGimbal())[plane];
+  if (!point) { report.steps.push({ step: `gimbal-${plane}`, error: "no visible hit area at this orbit" }); continue; }
+  await page.mouse.move(point.x, point.y);
+  await page.waitForTimeout(250);
+  const hover = await page.locator("#gimbal").getAttribute("data-hover");
+  const shotName = plane === "sagittal" ? await shot("05-gimbal-hover-sagittal") : null;
+  await page.mouse.click(point.x, point.y);
   await page.waitForTimeout(1200);
   report.steps.push({
     step: `gimbal-${plane}`,
-    hit_test: target.hit,
-    selected: await page.locator("#gimbal .plane.on").getAttribute("data-plane"),
+    hover_reported: hover,
+    selected: await page.locator("#gimbal").getAttribute("data-selected"),
     coverage: await coverage(),
+    hover_screenshot: shotName,
     screenshot: await shot(`05-gimbal-${plane}`),
   });
 }
@@ -187,6 +255,23 @@ report.steps.push({
 await page.locator("#add-pane").click();
 await page.waitForTimeout(200);
 
+// 6c · panes collapsed to their titles
+for (const id of ["playback", "live", "scene"]) await page.locator("#add-pane").click().catch(() => {});
+await page.locator("#pane-picker").waitFor({ state: "visible" }).catch(() => {});
+for (const title of ["Live body", "Body interaction", "Motor & skin inputs"]) {
+  const entry = page.locator("#pane-picker button").getByText(title, { exact: true });
+  if (await entry.count()) await entry.click();
+}
+await page.locator("#add-pane").click();
+for (const id of ["selection", "live"]) await page.locator(`[data-pane='${id}'] .disclose`).click();
+await page.waitForTimeout(400);
+report.steps.push({
+  step: "panes-collapsed",
+  heights: await page.locator("#pane-column .pane:not([hidden])").evaluateAll((n) =>
+    n.map((x) => ({ pane: x.dataset.pane, collapsed: x.dataset.collapsed, height: Math.round(x.getBoundingClientRect().height) }))),
+  screenshot: await shot("07c-panes-collapsed"),
+});
+
 // 7 · a conforming tetrahedral domain: clothing and environment disappear
 const domain = option("--domain", "conforming-domain-whole-body-0.01m");
 await page.locator("#materialization").selectOption(domain);
@@ -199,7 +284,7 @@ report.steps.push({
   materialization: await page.locator("#materialization").inputValue(),
   clothing_visible: await page.locator("#clothing-section").isVisible(),
   environment_visible: await page.locator("#environment-section").isVisible(),
-  note: await page.locator("#left-column .column-section p").first().textContent(),
+  note: await page.locator("[data-section='materialization'] .note").first().textContent(),
   roles: await page.locator("#domain-roles .check-row span").allTextContents(),
   picked: await page.locator("#domain-selected").textContent(),
   coverage: await coverage(),

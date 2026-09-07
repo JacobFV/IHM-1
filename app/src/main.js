@@ -10,13 +10,14 @@ import {
 import "./style.css";
 import { attachedHairPositions } from "./hair_motion.js";
 import { attachElasticHair, updateElasticHair } from "./hair-view.js";
-import { ClothingView } from "./clothing.js";
+import { WardrobeView } from "./clothing.js";
 import { DomainView, ROLE_LABELS } from "./domains.js";
 import { mountSceneInteraction } from "./scene-interaction.js";
 import { mountLeftColumn } from "./left-panel.js";
 import { mountPanes } from "./panes.js";
 import { mountProvenance } from "./provenance.js";
 import { mountGimbal } from "./gimbal.js";
+import { mountSurround } from "./surround.js";
 import { mountMicrovascularDetail } from "./microvascular-detail.js";
 
 const MODEL_ID = "ihm-body";
@@ -144,7 +145,7 @@ const microvascularDetail = mountMicrovascularDetail(microvascularHost);
 // ------------------------------------------------------------- left column -
 let manifest = null, structures = [];
 let objects = new Map(), generation = 0, loadController;
-let selected = null, clothingView = null, clothingRequest = 0;
+let selected = null, clothingView = null, clothingRequest = 0, clothingCatalog = null;
 let domainView = null, domainRequest = 0, materialization = "body";
 let bodyTrajectory = null, bodyError = "Body trajectory unavailable";
 let liveFrame = null, sceneInteraction = null;
@@ -172,16 +173,49 @@ const left = mountLeftColumn($("left-column"), {
     syncRun();
   },
 });
-// Seam for the environment lane's declared surround: each environment and
-// scene will carry its sky, ground treatment and enclosing geometry, and say
-// which parts are visual only and which participate in physics. Until those
-// fields arrive there is nothing to draw, and the scene keeps its own ground.
-let sceneCatalog = null;
-function applySurround(selection, objects = []) {
-  const entry = sceneCatalog?.tiles?.find((t) => t.id === (selection.scene || selection.environment));
-  const surround = entry?.surround || entry?.sky || entry?.ground;
-  if (!surround) return;
-  // Intentionally inert until the declared shape lands; nothing is guessed here.
+// The declared surround: every environment and scene carries its sky, its
+// ground treatment and its enclosing geometry under `world`, and names the
+// parts to cut away so an interior can be seen into. All of it is scenery — the
+// catalogue's own world.physics says no collider exists for any of it — so it
+// is drawn into a group of its own that anatomy picking never reaches.
+let sceneCatalog = null, surround = null, surroundRequest = 0, framedScene = null;
+function applySurround(selection = {}, objects = []) {
+  if (!surround || !sceneCatalog) return;
+  const request = ++surroundRequest;
+  const environment = sceneCatalog.environments?.find((e) => e.id === selection.environment);
+  const scene = sceneCatalog.scenes?.find((s) => s.id === selection.scene);
+  const entry = scene || environment;
+  surround.apply(entry, environment, objects, sceneCatalog.objects || [])
+    .then((result) => {
+      if (request !== surroundRequest) return;
+      if (result.note) left.setRunNote(result.note);
+      // Choosing a world is a request to see it. The camera goes to the view the
+      // catalogue itself renders its scene tiles from, so what appears is what
+      // the tile promised; leaving the scene leaves the camera where it is.
+      if (scene && scene.id !== framedScene) { framedScene = scene.id; frameScene(); }
+      if (!scene) framedScene = null;
+    })
+    .catch((error) => { if (request === surroundRequest) left.setRunNote("Surround unavailable: " + error.message); });
+}
+// camera.view_direction_canonical points from the scene centre toward the
+// catalogue's camera; image_right_canonical is its right vector, which is how
+// this reading was checked rather than guessed.
+function frameScene() {
+  const view = sceneCatalog?.camera;
+  if (!camera || !view?.view_direction_canonical) return;
+  const half = view.half_extent_m?.scene_tiles;
+  if (!Number.isFinite(half)) return;
+  const centre = new THREE.Vector3(...(view.centre_m || [0, 0, 0]));
+  const direction = new THREE.Vector3(...view.view_direction_canonical).normalize();
+  const distance = half / Math.tan((camera.fov * Math.PI) / 360) * 1.15;
+  controls.target.copy(centre);
+  camera.position.copy(centre).addScaledVector(direction, distance);
+  camera.up.set(...(view.image_up_canonical || [0, 1, 0]));
+  camera.near = distance / 1000;
+  camera.far = Math.max(camera.far, distance * 40);
+  camera.updateProjectionMatrix();
+  controls.update();
+  gimbal?.select(null);
 }
 
 // POST /api/embodied/sessions accepts one environment and nothing else, so the
@@ -300,6 +334,7 @@ function resetCamera(plane = "coronal") {
   camera.updateProjectionMatrix();
   controls.update();
 }
+if (scene) surround = mountSurround(scene, { api });
 let gimbal = null;
 if (camera) {
   try {
@@ -355,27 +390,45 @@ syncInsets();
 new ResizeObserver(syncInsets).observe(document.documentElement);
 
 // ------------------------------------------------------------- clothing ----
-async function loadClothing() {
+// The wardrobe is 33 registered, cloth-simulated garments served whole by the
+// API. They are already in this body's own frame, so there is no fitting step
+// here: the view binds them to the skin entity and the body's transform carries
+// them. What is worn is the catalog's exclusivity model, resolved by the tiles.
+function loadClothing() {
   const request = ++clothingRequest;
   clothingView?.dispose(); clothingView = null;
   if (materialization !== "body" || !group) return;
   const skin = structures.find((s) => s.id === "body-bp3d-FJ2810");
-  if (!skin) return;
-  try {
-    const geometry = await api(skin.geometry_url || `/api/geometry/${encodeURIComponent(skin.id)}`);
-    if (request !== clothingRequest) return;
-    clothingView = new ClothingView(group);
-    clothingView.fit(geometry, skin);
-    applyGarments(left.garments.length ? left.garments : [...clothingView.meshes.keys()]);
-    updateFrame();
-  } catch { if (request === clothingRequest) { clothingView?.dispose(); clothingView = null; } }
+  if (!skin || request !== clothingRequest) return;
+  clothingView = new WardrobeView(group, { fetchGeometry: (url) => api(url) });
+  clothingView.bind(skin);
+  if (clothingCatalog) clothingView.setCatalog(clothingCatalog);
+  applyGarments(left.garments);
 }
 
-// The clothing catalog owns identity, label, slot and thumbnail; the view can
-// only show the garments it has geometry for, and never invents the rest.
 function applyGarments(ids) {
   if (!clothingView) return;
-  for (const id of clothingView.meshes.keys()) clothingView.setEnabled(id, ids.includes(id));
+  clothingView.setActive(ids).then((failures) => {
+    if (failures.length) left.setClothingNote("Garment geometry unavailable · " + failures.join("; "));
+    updateFrame();
+  });
+}
+
+// The wardrobe declares no outfit, so the workbench opens with one garment in
+// each everyday slot — the first the catalog lists for it — and leaves hats,
+// gloves, outerwear and the rest for the reader to add. Exclusivity is still
+// the catalog's: these are ordinary selections a click can undo.
+const OPENING_SLOTS = ["underwear_bottom", "underwear_top", "torso_base", "legs", "feet_outer"];
+function openingOutfit(catalog) {
+  const worn = [];
+  for (const slot of OPENING_SLOTS) {
+    const garment = catalog.garments.find((g) => (g.slots || []).includes(slot));
+    if (garment && !worn.some((id) => {
+      const held = catalog.garments.find((g) => g.id === id);
+      return (held?.slots || []).some((s) => (garment.slots || []).includes(s));
+    })) worn.push(garment.id);
+  }
+  return worn;
 }
 
 // -------------------------------------------------------- materialization --
@@ -494,6 +547,7 @@ if (renderer) {
     lastRender = now;
     controls.update();
     gimbal?.update();
+    surround?.follow(camera);
     sceneInteraction?.update(now);
     const frames = bodyTrajectory?.frames;
     if (playing && frames?.length && !liveFrame && !domainView) {
@@ -583,12 +637,16 @@ async function start() {
   mountBody();
   api("/api/clothing")
     .then((catalog) => {
-      left.setGarments(catalog.garments, { initial: catalog.garments.map((g) => g.id) });
+      clothingCatalog = catalog;
+      clothingView?.setCatalog(catalog);
+      left.setGarments(catalog.garments, { initial: openingOutfit(catalog) });
+      left.setClothingNote("");
       applyGarments(left.garments);
     })
-    .catch(() => left.setGarments(
-      [...(clothingView?.meshes.keys() || [])].map((id) => ({ id, label: id, slot: `slot:${id}` })),
-      { initial: [...(clothingView?.meshes.keys() || [])] }));
+    .catch((error) => {
+      left.setGarments([], {});
+      left.setClothingNote("Wardrobe unavailable: " + error.message);
+    });
   // The scene catalog owns identity, label, slot, thumbnail, requirements and
   // per-slot defaults, for environments and their components alike. Nothing
   // about exclusivity or dependency is decided here.
@@ -605,7 +663,7 @@ async function start() {
         initial: slots.map((s) => s.default).filter(Boolean),
       });
       applyEnvironment(left.environment);
-      applySurround(left.environmentSelection, []);
+      applySurround(left.environmentSelection, left.sceneObjects.map((i) => i.id));
     })
     .catch((error) => {
       left.setEnvironments([], {});

@@ -120,28 +120,83 @@ def read_experiment(root,kind):
     return data
 
 
-def clothing_catalog(root):
-    """Garment tiles read this: identity, label, slot and thumbnail only.
+WARDROBE='data/derived/wardrobe-v1/wardrobe.json'
 
-    Slot carries the exclusivity model. Garments sharing a slot are mutually
-    exclusive; different slots combine freely. A record that declares no slot
-    gets its own, so nothing is made exclusive that the data did not say is.
+
+def _wardrobe(root):
+    """The 33 shrinkwrapped garments, read from the wardrobe the cloth run produced.
+
+    The two offset shells under data/derived/clothing are the earlier pattern
+    prior and are not served: they are neither registered onto the outer
+    envelope nor cloth-simulated, so they cannot stand for this wardrobe.
     """
     root=Path(root).resolve()
-    path=root/'data/derived/clothing/garments.json'
-    data=json.loads(path.read_bytes())
+    data=json.loads((root/WARDROBE).read_bytes())
+    if data.get('garment_count')!=len(data['garments']):
+        raise ValueError('Wardrobe declares a garment count its records do not match')
+    return root,data
+
+
+def _wardrobe_asset(root,relative,expected=None):
+    """Assets are addressed inside the workspace and are served only when they hash as declared."""
+    file=(root/relative).resolve()
+    if not file.is_relative_to(root) or not file.is_file():return None
+    if expected is not None and hashlib.sha256(file.read_bytes()).hexdigest()!=expected:
+        raise ValueError('Wardrobe asset changed since the cloth run: '+str(relative))
+    return file
+
+
+def clothing_catalog(root):
+    """Garment tiles read this: identity, label, occupied slots and thumbnail.
+
+    Exclusivity here is slot-set intersection, not a single slot. A dress
+    occupies torso_base and legs at once, so it excludes every garment that
+    holds either. The wardrobe's own slot model carries that relation and is
+    passed through untouched; nothing about it is decided in this function or
+    in the front end.
+    """
+    root,data=_wardrobe(root)
+    model=data['slot_model']
+    occupies={entry['garment']:entry['occupies'] for entry in model['garments']}
+    excludes={entry['garment']:entry['excludes'] for entry in model['garments']}
     garments=[]
     for garment in data['garments']:
-        thumbnail=garment.get('thumbnail') or garment.get('thumbnail_path') or garment.get('image')
-        if thumbnail is not None:
-            file=(root/thumbnail).resolve()
-            if not file.is_relative_to(root) or not file.is_file():
-                raise ValueError('Garment thumbnail is missing: '+str(thumbnail))
-            thumbnail=str(file.relative_to(root))
-        garments.append({'id':garment['id'],'label':garment.get('label') or garment.get('name') or garment['id'],
-                         'slot':garment.get('slot') or 'garment:'+garment['id'],
+        identity=garment['id']
+        slots=garment.get('slots') or occupies.get(identity) or []
+        if not slots:raise ValueError('Wardrobe garment declares no slot: '+identity)
+        if occupies.get(identity) not in (None,slots):
+            raise ValueError('Wardrobe slot model disagrees with the garment record for '+identity)
+        thumbnail=garment.get('thumbnail')
+        if thumbnail is not None and _wardrobe_asset(root,thumbnail) is None:
+            raise ValueError('Garment thumbnail is missing: '+str(thumbnail))
+        geometry=garment.get('geometry')
+        if geometry is not None and _wardrobe_asset(root,geometry) is None:
+            raise ValueError('Garment geometry is missing: '+str(geometry))
+        garments.append({'id':identity,'label':garment.get('name') or identity,
+                         'slots':slots,'slot':slots[0],'excludes':excludes.get(identity,[]),
+                         'colour':garment.get('colour'),
                          'thumbnail':thumbnail,
-                         'thumbnail_url':None if thumbnail is None else '/api/clothing/thumbnail/'+garment['id'],
-                         'evidence_kind':garment.get('evidence_kind'),
-                         'physical_contact_solved':garment.get('physical_contact_solved',False)})
-    return {'schema':'ihm.clothing-catalog.v1','source':data.get('source'),'garments':garments}
+                         'thumbnail_url':None if thumbnail is None else '/api/clothing/thumbnail/'+identity,
+                         'geometry_url':None if geometry is None else '/api/clothing/geometry/'+identity,
+                         'fit_mode':garment.get('fit_mode'),'loose_fit':garment.get('loose_fit',False),
+                         'mass_kg':garment.get('mass_kg'),'author':garment.get('author'),'license':garment.get('license'),
+                         'inside_body_vertices':garment.get('inside_body_vertices'),
+                         'max_penetration_mm':garment.get('max_penetration_mm'),
+                         'evidence_kind':'registered_cc0_garment_cloth_solve',
+                         'physical_contact_solved':bool(garment.get('contact_ready'))
+                                                   and bool(garment.get('contacted_body_in_run'))})
+    return {'schema':'ihm.clothing-catalog.v2','source':str(Path(WARDROBE)),
+            'body':data.get('body'),'registration':data.get('registration'),
+            'draw_order':model['draw_order'],'draw_order_basis':model.get('draw_order_basis'),
+            'empty_slots':model.get('empty_slots',[]),'unfilled_slots':data.get('unfilled_slots',{}),
+            'exclusivity_model':'Slot sets carry exclusivity: two garments are mutually exclusive when the slots they occupy intersect, and combine when they do not.',
+            'loose_fit_note':data.get('loose_fit_note'),'verification':data.get('verification'),
+            'garments':garments}
+
+
+def clothing_asset(root,ident,field):
+    """Serve one garment's thumbnail or geometry, hash-checked against the wardrobe."""
+    root,data=_wardrobe(root)
+    garment=next((g for g in data['garments'] if g['id']==ident),None)
+    if garment is None or not garment.get(field):return None
+    return _wardrobe_asset(root,garment[field],garment.get(field+'_sha256'))

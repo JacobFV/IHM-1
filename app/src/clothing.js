@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import {deformSkinVertices,bodyTransform} from './state.js';
+import {deformSkinVertices,bodyTransform,geometryArrays} from './state.js';
 
 // Garments are synthesized around the retained skin's transverse sections.
 // This is a geometric pattern/ease prior, not a cloth contact solve.
@@ -164,4 +164,85 @@ export class ClothingView {
   setClipping(planes){for(const mesh of this.meshes.values())mesh.material.clippingPlanes=planes;}
   clear(){for(const mesh of this.meshes.values()){mesh.geometry.dispose();mesh.material.dispose();mesh.removeFromParent();}this.meshes.clear();}
   dispose(){this.clear();this.group.removeFromParent();}
+}
+
+// ---------------------------------------------------------------------------
+// The wardrobe: 33 CC0 MakeHuman garments registered onto this body's outer
+// envelope and cloth-simulated against it, served by /api/clothing. Nothing is
+// synthesized here — every vertex comes from the run, in the same
+// bodyparts3d-display-m frame as the skin, so a garment needs no fitting step
+// and is placed by the body's own transform alone.
+export class WardrobeView {
+  constructor(parent,{fetchGeometry}) {
+    this.group=new THREE.Group();this.group.name='wardrobe';parent.add(this.group);
+    this.fetchGeometry=fetchGeometry;this.meshes=new Map();this.catalog=new Map();
+    this.drawOrder=[];this.active=new Set();this.pending=new Map();this.generation=0;
+    this.source=null;this.clipping=null;
+  }
+  setCatalog(catalog) {
+    this.catalog=new Map((catalog.garments||[]).map(g=>[g.id,g]));
+    this.drawOrder=catalog.draw_order||[];
+    for(const [id,mesh] of this.meshes)if(!this.catalog.has(id)){mesh.geometry.dispose();mesh.material.dispose();mesh.removeFromParent();this.meshes.delete(id);}
+  }
+  // The garment follows the skin entity it was registered against, so the body
+  // transform that moves the skin moves the clothes with it.
+  bind(source){this.source=source;}
+  order(garment) {
+    const index=this.drawOrder.indexOf((garment.slots||[])[0]);
+    return index<0?this.drawOrder.length:index;
+  }
+  async build(id) {
+    if(this.meshes.has(id))return this.meshes.get(id);
+    if(this.pending.has(id))return this.pending.get(id);
+    const garment=this.catalog.get(id);
+    if(!garment?.geometry_url)throw Error('No served geometry for garment '+id);
+    const task=(async()=>{
+      const data=await this.fetchGeometry(garment.geometry_url);
+      const {positions,indices}=geometryArrays(data);
+      if(!indices)throw Error('Garment geometry must be indexed');
+      const geometry=new THREE.BufferGeometry();
+      geometry.setAttribute('position',new THREE.BufferAttribute(positions,3));
+      geometry.setIndex(new THREE.BufferAttribute(indices,1));
+      geometry.computeVertexNormals();
+      const mesh=new THREE.Mesh(geometry,new THREE.MeshStandardMaterial({
+        color:garment.colour||'#9aa7ad',roughness:.92,metalness:0,side:THREE.DoubleSide}));
+      mesh.name=id;mesh.renderOrder=this.order(garment);
+      mesh.userData.reference=positions.slice();mesh.userData.garment=garment;
+      if(this.clipping)mesh.material.clippingPlanes=this.clipping;
+      mesh.visible=this.active.has(id);
+      this.meshes.set(id,mesh);this.group.add(mesh);
+      return mesh;
+    })().finally(()=>this.pending.delete(id));
+    this.pending.set(id,task);
+    return task;
+  }
+  // Selection is the catalog's, not this view's: whatever the tiles report is
+  // worn is loaded and shown, and everything else is hidden rather than removed
+  // so re-selecting a garment costs no request.
+  async setActive(ids) {
+    const current=++this.generation;
+    this.active=new Set(ids.filter(id=>this.catalog.has(id)));
+    for(const [id,mesh] of this.meshes)mesh.visible=this.active.has(id);
+    const failures=[];
+    await Promise.all([...this.active].map(async id=>{
+      try{const mesh=await this.build(id);if(current===this.generation)mesh.visible=this.active.has(id);}
+      catch(error){failures.push(id+': '+error.message);}
+    }));
+    return failures;
+  }
+  update(frame,centroids={}) {
+    const field=frame?.respiration?.skin_field;
+    const applied=field?.entity_ids?.includes(this.source?.id)?field:null;
+    const transform=bodyTransform(frame?.entities?.[this.source?.id],centroids[this.source?.id]);
+    for(const mesh of this.meshes.values()) {
+      if(!mesh.visible)continue;
+      const positions=mesh.geometry.attributes.position;
+      deformSkinVertices(mesh.userData.reference,applied,positions.array);
+      positions.needsUpdate=true;mesh.geometry.computeVertexNormals();mesh.geometry.computeBoundingSphere();
+      mesh.matrixAutoUpdate=false;mesh.matrix.set(...transform);mesh.matrixWorldNeedsUpdate=true;
+    }
+  }
+  setClipping(planes){this.clipping=planes;for(const mesh of this.meshes.values())mesh.material.clippingPlanes=planes;}
+  clear(){for(const mesh of this.meshes.values()){mesh.geometry.dispose();mesh.material.dispose();mesh.removeFromParent();}this.meshes.clear();this.pending.clear();}
+  dispose(){this.generation++;this.clear();this.group.removeFromParent();}
 }

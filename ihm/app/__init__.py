@@ -286,14 +286,21 @@ def create_server(root=None,port=8765,host='127.0.0.1'):
                     from ihm.app.experiments import clothing_catalog
                     return self._send(clothing_catalog(root))
                 if path.startswith('/api/clothing/thumbnail/'):
-                    from ihm.app.experiments import clothing_catalog
+                    from ihm.app.experiments import clothing_asset
                     ident=path.removeprefix('/api/clothing/thumbnail/')
                     if not SAFE_ID.fullmatch(ident):return self._error('Invalid garment ID')
-                    entry=next((g for g in clothing_catalog(root)['garments'] if g['id']==ident),None)
-                    if entry is None or not entry['thumbnail']:return self._error('No thumbnail for that garment',404)
-                    file=(root/entry['thumbnail']).resolve()
-                    if not file.is_relative_to(root.resolve()) or not file.is_file():return self._error('Thumbnail asset missing',404)
+                    file=clothing_asset(root,ident,'thumbnail')
+                    if file is None:return self._error('No thumbnail for that garment',404)
                     return self._send(file.read_bytes(),content_type=mimetypes.guess_type(file.name)[0] or 'application/octet-stream')
+                if path.startswith('/api/clothing/geometry/'):
+                    from ihm.app.experiments import clothing_asset
+                    ident=path.removeprefix('/api/clothing/geometry/')
+                    if not SAFE_ID.fullmatch(ident):return self._error('Invalid garment ID')
+                    file=clothing_asset(root,ident,'geometry')
+                    if file is None:return self._error('No geometry for that garment',404)
+                    compressed=file.read_bytes()
+                    if 'gzip' in self.headers.get('Accept-Encoding',''):return self._send(compressed,encoding='gzip')
+                    return self._send(gzip.decompress(compressed))
                 if path.startswith('/api/'):return self._error('Endpoint not found',404)
                 static=(root/'app/dist').resolve();file=(static/(path.lstrip('/') or 'index.html')).resolve()
                 if not file.is_relative_to(static) or not file.is_file():return self._error('Asset not found; build app first',404)
