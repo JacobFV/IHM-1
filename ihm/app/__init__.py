@@ -149,7 +149,16 @@ def create_server(root=None,port=8765,host='127.0.0.1'):
             if '..' in path.split('/') or '\\' in path or '\x00' in path:return self._error('Invalid path',400)
             try:
                 derived=root/'data/derived'
-                if path=='/api/scene/catalog':return self._send(self.server.scenes.catalog())
+                if path=='/api/scene/catalog':
+                    from ihm.app.scenes import scene_catalog
+                    return self._send(scene_catalog(root,self.server.scenes.catalog()))
+                if path.startswith('/api/scene/thumbnail/'):
+                    from ihm.app.scenes import thumbnail
+                    ident=path.removeprefix('/api/scene/thumbnail/')
+                    if not SAFE_ID.fullmatch(ident):return self._error('Invalid environment ID')
+                    file=thumbnail(root,ident,self.server.scenes.catalog())
+                    if file is None:return self._error('No thumbnail for that environment',404)
+                    return self._send(file.read_bytes(),content_type=mimetypes.guess_type(file.name)[0] or 'application/octet-stream')
                 if path=='/api/embodied/sessions':return self._send(self.server.embodied.list())
                 if re.fullmatch(r'/api/embodied/sessions/[a-f0-9]{32}',path):
                     return self._send(self.server.embodied.command(path.rsplit('/',1)[1],'snapshot'))
