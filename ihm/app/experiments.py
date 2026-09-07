@@ -21,6 +21,23 @@ def read_experiment(root,kind):
             if not file.is_relative_to(root) or hashlib.sha256(file.read_bytes()).hexdigest()!=structure['geometry_sha256']:
                 raise ValueError('Hair strand geometry changed')
         return data
+    if kind=='conforming-domains' or kind.startswith('conforming-domain-'):
+        directory=root/'data/derived/conforming-domain-display-v1'
+        index=json.loads((directory/'index.json').read_bytes())
+        wanted=None if kind=='conforming-domains' else kind.removeprefix('conforming-domain-')
+        entries=index['domains'] if wanted is None else [e for e in index['domains'] if e['id']==wanted]
+        if not entries:raise ValueError('Unknown conforming domain')
+        for entry in entries:
+            # The display is a boundary projection of a volume; a changed volume invalidates it.
+            for source,expected in entry['source_hashes'].items():
+                file=(root/source).resolve()
+                if not file.is_relative_to(root) or hashlib.sha256(file.read_bytes()).hexdigest()!=expected:
+                    raise ValueError('Conforming domain source changed; rebuild '+entry['id'])
+        if wanted is None:return index
+        path=(directory/entries[0]['display_path']).resolve()
+        if not path.is_relative_to(directory.resolve()) or hashlib.sha256(path.read_bytes()).hexdigest()!=entries[0]['display_sha256']:
+            raise ValueError('Conforming domain display changed; rebuild export')
+        return json.loads(gzip.decompress(path.read_bytes()))
     if kind=='systemic':
         index=root/'data/derived/canonical/systemic-index.json'
         return json.loads(index.read_text()) if index.exists() else {'runs':[]}

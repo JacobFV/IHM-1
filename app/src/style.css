@@ -824,3 +824,35 @@ header { min-width: 0; height: 64px; padding: 0 20px; gap: 20px; z-index: 30; }
   .signal-header h2 { font-size: 16px; }
   .tabs button { padding: 6px 8px; }
 }
+
+#domain-roles {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 6px 0;
+  max-height: 220px;
+  overflow-y: auto;
+}
+.domain-role {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  cursor: pointer;
+}
+.domain-role small {
+  margin-left: auto;
+  opacity: 0.6;
+  font-size: 9px;
+  white-space: nowrap;
+}
+.domain-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex: 0 0 auto;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+}
+#domain-selected {
+  font-size: 10px;
+}

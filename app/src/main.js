@@ -22,6 +22,7 @@ import { attachElasticHair, updateElasticHair } from "./hair-view.js";
 import { RegionalView, ElectricRegionalView } from "./regional.js";
 import { ClothingView } from "./clothing.js";
 import { GarmentContactView } from "./garment-contact.js";
+import { DomainView, ROLE_LABELS } from "./domains.js";
 import { mountSceneInteraction } from "./scene-interaction.js";
 import { prepareSystemic, systemicLabel, systemicSnapshot } from "./systemic.js";
 const $ = (id) => document.getElementById(id),
@@ -55,6 +56,14 @@ const garmentControls=document.createElement('div');garmentControls.id='garment-
 garmentControls.innerHTML='<button id="garment-contact-focus" class="text-button">Focus contact region</button><label class="field-label" for="garment-contact-speed">Recorded contact playback</label><select id="garment-contact-speed"><option value=".1">0.1× · inspect motion</option><option value=".02">0.02× · slow inspection</option><option value="1">1× · recorded time</option></select><p class="muted">Only the panel and three tissue owners move. Use anatomy layers, garment visibility and sectioning to inspect the interior; outer skin has no solved contact in this experiment.</p>';
 regionalControls.append(garmentControls);
 $('garment-contact-focus').onclick=()=>{if(regionalView instanceof GarmentContactView&&regionalView.active)regionalView.resetCamera();};
+const domainControls=document.createElement('div');domainControls.id='domain-controls';domainControls.hidden=true;
+domainControls.innerHTML='<label class="field-label">Material owners</label><div id="domain-roles"></div><p id="domain-selected" class="muted">Click a surface to identify the owner that carries it.</p>';
+regionalControls.append(domainControls);
+let domainIndex=[];
+api('/api/body/experiments/conforming-domains').then(index=>{
+  domainIndex=index.domains;
+  for(const domain of index.domains)$('regional-study').add(new Option(domain.title,'conforming-domain-'+domain.id));
+}).catch(error=>{$('regional-note').textContent='Conforming tetrahedral domains unavailable: '+error.message;});
 const systemicControls=document.createElement('div');
 systemicControls.id='systemic-controls';
 systemicControls.innerHTML='<label class="field-label" for="systemic-study">Whole-body experiment</label><select id="systemic-study"><option value="">Resting body playback</option></select><p id="systemic-note" class="muted">Checking completed native experiments…</p><button id="systemic-refresh" class="text-button">Refresh experiments</button><label id="systemic-speed-label" class="field-label" for="systemic-speed" hidden>Recorded playback speed</label><select id="systemic-speed" hidden><option value="1">1× · recorded time</option><option value="10">10×</option><option value="60">60×</option><option value="300">300×</option></select>';
@@ -294,7 +303,7 @@ try {
     pointer = [e.clientX, e.clientY];
   });
   renderer.domElement.addEventListener("pointerup", (e) => {
-    if (regionalView?.active) return;
+    if (regionalView?.active && !(regionalView instanceof DomainView)) return;
     if (
       !pointer ||
       Math.hypot(e.clientX - pointer[0], e.clientY - pointer[1]) > 5
@@ -310,6 +319,10 @@ try {
     );
     ray.params.Line.threshold =
       modelBounds.getSize(new THREE.Vector3()).length() * 0.003;
+    if (regionalView instanceof DomainView && regionalView.active) {
+      showDomainPick(regionalView.pick(ray));
+      return;
+    }
     const hit = ray.intersectObjects(
       [...objects.values()].filter((x) => x.visible),
       true,
@@ -521,7 +534,7 @@ function receivePhysiology(value){
 }
 function closeRegional(){
   regionalView?.close();
-  garmentControls.hidden=true;garmentMonitor.hidden=true;
+  garmentControls.hidden=true;garmentMonitor.hidden=true;domainControls.hidden=true;
   if(regionalReturnPhys!==null){phys=regionalReturnPhys;regionalReturnPhys=null;}
   if(regionalReturnLabels){
     $('view-title').textContent=regionalReturnLabels.title;$('frame-label').textContent=regionalReturnLabels.frame;
@@ -531,6 +544,18 @@ function closeRegional(){
   $('scene-status').hidden=false;
   $('regional-condition').hidden=true;
   updateSigma();updateVariables();
+}
+function renderDomainRoles(){
+  if(!(regionalView instanceof DomainView)||!regionalView.active)return;
+  $('domain-roles').innerHTML=regionalView.roles().map(r=>
+    `<label class="domain-role"><input type="checkbox" data-role="${esc(r.role)}"${r.visible?' checked':''}><span class="domain-swatch" style="background:${esc(regionalView.meshes.find(m=>m.name===r.role).material.color.getStyle())}"></span>${esc(ROLE_LABELS[r.role]||r.role)} <small>${r.structures.toLocaleString()} · ${r.triangles.toLocaleString()} tri</small></label>`).join('');
+  for(const box of $('domain-roles').querySelectorAll('input'))
+    box.onchange=()=>{regionalView.setRoleVisible(box.dataset.role,box.checked);renderDomainRoles();};
+}
+function showDomainPick(found){
+  $('domain-selected').textContent=found
+    ? `${found.structure.name} · ${found.structure.entity_id} · ${ROLE_LABELS[found.role]||found.role} · ${found.structure.tets.toLocaleString()} owned tetrahedra`
+    : 'No visible owner under the cursor.';
 }
 function updateGarmentContactReadouts(){
   if(!(regionalView instanceof GarmentContactView)||!regionalView.active)return;
@@ -842,6 +867,7 @@ function updateDisplay() {
   );
   clothingView?.setClipping(clip < 100 ? [plane] : []);
   if(regionalView instanceof GarmentContactView)regionalView.setClipping(clip < 100 ? [plane] : []);
+  if(regionalView instanceof DomainView&&regionalView.active){regionalView.setOpacity(opacity);regionalView.setClipping(clip < 100 ? [plane] : []);}
   if(regionalView instanceof GarmentContactView&&regionalView.active)regionalView.tissueMeshes.forEach(mesh=>{
     const structure=manifest.structures.find(s=>s.id===mesh.name),alpha=opacity*(layerOpacity.get(structure?.system)??1);
     mesh.material.opacity=alpha;mesh.material.transparent=alpha<1;mesh.material.depthWrite=alpha>.5;
@@ -906,6 +932,13 @@ function updateFrame() {
     $('time-value').title='Recorded local mechanical snapshots; no interpolation. Other body geometry remains at reference. Playback speed affects viewing only.';
     $('flow-legend').hidden=false;$('flow-legend').textContent='Computed panel ↔ elastic tissue contact · reference body context · whole-garment containment unvalidated';
     updateGarmentContactReadouts();if(!spectral)drawChart();return;
+  }
+  if (regionalView instanceof DomainView&&regionalView.active) {
+    $('flow-legend').hidden=false;
+    $('flow-legend').textContent=`${regionalView.data.geometry.triangle_count.toLocaleString()} owner boundary triangles · static geometry · no mechanical state`;
+    $('time-value').textContent='Static domain';
+    $('time-value').title='A conforming volume partition, not a trajectory. Nothing is integrated in time here.';
+    return;
   }
   if (regionalView?.active) {
     const frame=regionalView.draw(Number($('time').value));
@@ -1405,6 +1438,26 @@ $('regional-study').onchange=async()=>{
         (identity?`<p class="muted">Display ${esc(identity.path)}<br>SHA-256 ${esc(identity.sha256)}<br>Maximum position quantization error ${Number(identity.position_quantization_max_error_m).toExponential(3)} m</p>`:'');
       phys=regionalView.prepared.physiology;spectral=false;$('tab-phys').classList.add('active');$('tab-spectral').classList.remove('active');
       updateSigma();updateVariables();setupFrames();updateDisplay();
+      return;
+    }
+    if(kind.startsWith('conforming-domain-')){
+      regionalView=new DomainView({scene,camera,controls,bodyGroup:group});
+      regionalView.open(data);
+      domainControls.hidden=false;renderDomainRoles();showDomainPick(null);
+      $('scene-status').hidden=true;
+      $('view-title').textContent=data.title;
+      $('frame-label').textContent=`${data.frame.id} · meters · per-owner boundary of the recorded volume`;
+      $('render-count').textContent=`${data.geometry.triangle_count.toLocaleString()} boundary triangles · ${data.structure_count.toLocaleString()} material owners · ${data.volume.tets.toLocaleString()} source tetrahedra`;
+      $('regional-note').textContent=data.summary;
+      spectral=false;$('tab-phys').click();
+      updateVariables();setupFrames();updateDisplay();
+      $('details').innerHTML=`<h2>${esc(data.title)}</h2><p>${esc(data.summary)}</p>`+
+        `<dl><dt>Mesher</dt><dd>${esc(data.mesher.name)}${data.mesher.epsilon_relative?` · ε<sub>rel</sub> ${esc(data.mesher.epsilon_relative)} · ℓ<sub>rel</sub> ${esc(data.mesher.edge_length_relative)}`:''}${data.mesher.spacing_m?` · ${Number(data.mesher.spacing_m*1000).toPrecision(3)} mm cells`:''} · ${Number(data.mesher.seconds).toFixed(0)} s</dd>`+
+        `<dt>Volume</dt><dd>${data.volume.tets.toLocaleString()} tetrahedra · ${data.volume.vertices.toLocaleString()} nodes</dd>`+
+        (data.volume.min_dihedral_deg?`<dt>Worst element</dt><dd>${Number(data.volume.min_dihedral_deg).toFixed(2)}° minimum dihedral</dd>`:'')+
+        (data.volume.interface_faces_between_two_structures?`<dt>Shared interfaces</dt><dd>${data.volume.interface_faces_between_two_structures.toLocaleString()} faces carried by two different owners through the same nodes</dd>`:'')+
+        `<dt>Display projection</dt><dd>${data.geometry.triangle_count.toLocaleString()} boundary triangles over ${data.geometry.vertex_count.toLocaleString()} referenced nodes · float32 positions, ${Number(data.geometry.position_quantization_max_error_m).toExponential(2)} m maximum quantization</dd></dl>`+
+        (data.limitations||[]).map(text=>`<p class="muted">${esc(text)}</p>`).join('');
       return;
     }
     const View=kind==='skin-electric'?ElectricRegionalView:RegionalView;
