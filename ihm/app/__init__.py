@@ -152,6 +152,13 @@ def create_server(root=None,port=8765,host='127.0.0.1'):
                 if path=='/api/scene/catalog':
                     from ihm.app.scenes import scene_catalog
                     return self._send(scene_catalog(root,self.server.scenes.catalog()))
+                if path.startswith('/api/scene/object/'):
+                    from ihm.app.scenes import object_geometry
+                    ident=path.removeprefix('/api/scene/object/')
+                    if not SAFE_ID.fullmatch(ident):return self._error('Invalid object ID')
+                    file=object_geometry(root,ident,self.server.scenes.catalog())
+                    if file is None:return self._error('No geometry for that object',404)
+                    return self._send(json.loads(file.read_bytes()))
                 if path.startswith('/api/scene/thumbnail/'):
                     from ihm.app.scenes import thumbnail
                     ident=path.removeprefix('/api/scene/thumbnail/')

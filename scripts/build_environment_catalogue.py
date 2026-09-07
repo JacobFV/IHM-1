@@ -47,14 +47,23 @@ OSIM = 'data/raw/mechanics/opensim-core/OpenSim/Examples/Moco/example3DWalking/s
 OSIM_LICENSE = 'data/raw/mechanics/opensim-core/LICENSE.txt'
 THIS = 'scripts/build_environment_catalogue.py'
 
-IMAGE_PX = 512
-SUPERSAMPLE = 2
+IMAGE_PX = 320
+SUPERSAMPLE = 3
 FRAME_HALF_M = 1.06
+SCENE_HALF_M = 1.30
 CENTER_M = np.array([0., -.05, 0.])
 INK = '#20242b'
 PAPER = '#f2f1ee'
 ACCENT = '#2f6f7d'
 MUTED = '#b7b4ac'
+COLOUR = {
+    'skin': (.87, .70, .59), 'plane': '#d3d7d1', 'plane_line': '#c2c7c0',
+    'bed-frame': (.55, .40, .28), 'bed-mattress': (.91, .89, .83), 'bed-rails': (.72, .75, .78),
+    'pillow': (.88, .91, .95), 'blanket': (.38, .50, .62), 'nightstand': (.58, .44, .31),
+    'table': (.66, .51, .36), 'chair': (.50, .38, .27), 'iv-stand': (.74, .77, .80),
+    'iv-bag': (.80, .88, .78), 'ball-small': (.83, .33, .27), 'ball-large': (.24, .55, .62),
+}
+CURVE_COLOUR = {'SM': '#4c8fbd', 'MM': '#2f8f6f', 'HM': '#c05a2e'}
 
 
 def normalize(v):
@@ -68,11 +77,15 @@ RIGHT = normalize(np.cross([0., 1., 0.], VIEW))
 UP = np.cross(VIEW, RIGHT)
 CAMERA = {'projection': 'orthographic', 'view_direction_canonical': VIEW.tolist(),
           'image_right_canonical': RIGHT.tolist(), 'image_up_canonical': UP.tolist(),
-          'centre_m': CENTER_M.tolist(), 'half_extent_m': FRAME_HALF_M, 'pixels': IMAGE_PX,
-          'supersample': SUPERSAMPLE, 'light_direction_canonical': LIGHT.tolist(),
-          'shading': 'Lambert, ambient 0.25 + 0.75 max(0, n.l), single fixed light, no shadows',
+          'centre_m': CENTER_M.tolist(), 'pixels': IMAGE_PX, 'supersample': SUPERSAMPLE,
+          'half_extent_m': {'environment_and_scene_tiles': SCENE_HALF_M,
+                            'component_tiles': FRAME_HALF_M,
+                            'object_tiles': 'fitted per object; the value is recorded on each record as thumbnail_half_extent_m'},
+          'light_direction_canonical': LIGHT.tolist(),
+          'shading': 'Lambert, ambient 0.28 + 0.72 max(0, n.l), single fixed light, no shadows',
           'frame': 'bodyparts3d-display-m (x left, y superior, z anterior)',
-          'note': 'One camera, light, scale and frame for every tile. The body pose is identical in every environment because selecting an environment changes gravity, the free-object ground plane and the prescribed support set; it does not repose the body.'}
+          'gravity_frame': 'The camera and light are fixed relative to gravity, not to the canonical axes: a tile whose environment pulls along -z is rendered through the recorded permutation (x,y,z)->(y,z,x) so gravity points down in the image. The permutation is a viewing transform; no geometry is moved and no physics is restated.',
+          'note': 'One camera direction, one light and one shading rule for every tile. The body pose is identical in every environment because selecting an environment changes gravity, the free-object ground plane and the prescribed support set; it does not repose the body. A scene adds objects around that same body.'}
 
 
 def sha(path):
@@ -83,8 +96,37 @@ def git(*args):
     return subprocess.run(['git', *args], cwd=ROOT, capture_output=True, text=True).stdout.strip()
 
 
-def project(points):
-    p = np.asarray(points, float) - CENTER_M
+# A tile is rendered in its environment's gravity frame: the camera and light are
+# fixed relative to gravity, not to the canonical axes, so a bed scene reads as a bed
+# instead of a wall. The permutation is a viewing transform and is recorded per tile.
+GRAVITY_FRAME = {
+    'studio': {'rotation': None, 'centre': [0., -.05, 0.],
+               'basis': 'canonical axes unchanged; zero gravity has no down'},
+    'floor': {'rotation': None, 'centre': [0., -.05, 0.],
+              'basis': 'canonical axes unchanged; gravity is already -y'},
+    'bed': {'rotation': [[0, 1, 0], [0, 0, 1], [1, 0, 0]], 'centre': [0., -.30, 0.],
+            'basis': 'canonical (x,y,z) -> display (y,z,x): gravity -z becomes image down and the body long axis becomes image right'},
+}
+
+
+def view_of(environment=None, half=None):
+    frame = GRAVITY_FRAME.get(environment, GRAVITY_FRAME['floor'])
+    rotation = None if frame['rotation'] is None else np.asarray(frame['rotation'], float)
+    return {'rotation': rotation, 'centre': np.asarray(frame['centre'], float),
+            'half': FRAME_HALF_M if half is None else half,
+            'basis': frame['basis'], 'environment': environment}
+
+
+def to_display(points, view):
+    p = np.asarray(points, float)
+    if view['rotation'] is not None:
+        p = p @ view['rotation'].T
+    return p
+
+
+def project(points, view=None):
+    view = view or view_of()
+    p = to_display(points, view) - view['centre']
     return np.stack([p @ RIGHT, p @ UP], -1), p @ VIEW
 
 
@@ -162,63 +204,73 @@ def source_literals():
 
 # ---------------------------------------------------------------- rendering
 
-def rasterize_body(positions, faces):
-    """Orthographic z-buffer raster with Lambert shading. Returns (alpha, shade) at IMAGE_PX."""
+def rasterize(meshes, view=None):
+    """One orthographic z-buffer over every mesh, so occlusion between body and objects is real.
+
+    meshes: [(positions, faces, rgb)]. Returns (cover, rgb) at IMAGE_PX, Lambert shaded
+    by the single fixed light. Colour is per mesh; shading is per face.
+    """
+    view = view or view_of()
+    half = view['half']
     size = IMAGE_PX * SUPERSAMPLE
-    uv, depth = project(positions)
-    scale = size / (2 * FRAME_HALF_M)
-    px = np.stack([(uv[:, 0] + FRAME_HALF_M) * scale, (FRAME_HALF_M - uv[:, 1]) * scale], -1)
-    tri = positions[faces]
-    normals = np.cross(tri[:, 1] - tri[:, 0], tri[:, 2] - tri[:, 0])
-    lengths = np.linalg.norm(normals, axis=1)
-    keep = (lengths > 0) & ((normals @ VIEW) > 0)
-    faces = faces[keep]
-    normals = normals[keep] / lengths[keep, None]
-    shade = .25 + .75 * np.clip(normals @ LIGHT, 0, 1)
-    corners = px[faces]
-    zs = depth[faces]
+    scale = size / (2 * half)
     zbuffer = np.full((size, size), -np.inf)
-    image = np.zeros((size, size))
+    image = np.zeros((size, size, 3))
     alpha = np.zeros((size, size), bool)
-    low = np.floor(corners.min(1)).astype(int)
-    high = np.ceil(corners.max(1)).astype(int)
-    for k in range(len(faces)):
-        x0, y0 = max(low[k, 0], 0), max(low[k, 1], 0)
-        x1, y1 = min(high[k, 0], size - 1), min(high[k, 1], size - 1)
-        if x1 < x0 or y1 < y0:
-            continue
-        a, b, c = corners[k]
-        det = (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0])
-        if abs(det) < 1e-12:
-            continue
-        xs = np.arange(x0, x1 + 1) + .5
-        ys = np.arange(y0, y1 + 1) + .5
-        gx, gy = np.meshgrid(xs, ys)
-        w1 = ((gx - a[0]) * (c[1] - a[1]) - (gy - a[1]) * (c[0] - a[0])) / det
-        w2 = ((b[0] - a[0]) * (gy - a[1]) - (b[1] - a[1]) * (gx - a[0])) / det
-        inside = (w1 >= 0) & (w2 >= 0) & (w1 + w2 <= 1)
-        if not inside.any():
-            continue
-        z = zs[k, 0] + w1 * (zs[k, 1] - zs[k, 0]) + w2 * (zs[k, 2] - zs[k, 0])
-        window = zbuffer[y0:y1 + 1, x0:x1 + 1]
-        hit = inside & (z > window)
-        window[hit] = z[hit]
-        image[y0:y1 + 1, x0:x1 + 1][hit] = shade[k]
-        alpha[y0:y1 + 1, x0:x1 + 1][hit] = True
+    for positions, faces, rgb in meshes:
+        positions = to_display(positions, view)
+        faces = np.asarray(faces, int)
+        p = positions - view['centre']
+        uv = np.stack([p @ RIGHT, p @ UP], -1)
+        depth = p @ VIEW
+        px = np.stack([(uv[:, 0] + half) * scale, (half - uv[:, 1]) * scale], -1)
+        tri = positions[faces]
+        normals = np.cross(tri[:, 1] - tri[:, 0], tri[:, 2] - tri[:, 0])
+        lengths = np.linalg.norm(normals, axis=1)
+        keep = (lengths > 0) & ((normals @ VIEW) > 0)
+        kept = faces[keep]
+        normals = normals[keep] / lengths[keep, None]
+        shade = .28 + .72 * np.clip(normals @ LIGHT, 0, 1)
+        tone = np.asarray(rgb, float)[None] * shade[:, None]
+        corners = px[kept]
+        zs = depth[kept]
+        low = np.floor(corners.min(1)).astype(int)
+        high = np.ceil(corners.max(1)).astype(int)
+        for k in range(len(kept)):
+            x0, y0 = max(low[k, 0], 0), max(low[k, 1], 0)
+            x1, y1 = min(high[k, 0], size - 1), min(high[k, 1], size - 1)
+            if x1 < x0 or y1 < y0:
+                continue
+            a, b, c = corners[k]
+            det = (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0])
+            if abs(det) < 1e-12:
+                continue
+            gx, gy = np.meshgrid(np.arange(x0, x1 + 1) + .5, np.arange(y0, y1 + 1) + .5)
+            w1 = ((gx - a[0]) * (c[1] - a[1]) - (gy - a[1]) * (c[0] - a[0])) / det
+            w2 = ((b[0] - a[0]) * (gy - a[1]) - (b[1] - a[1]) * (gx - a[0])) / det
+            inside = (w1 >= 0) & (w2 >= 0) & (w1 + w2 <= 1)
+            if not inside.any():
+                continue
+            z = zs[k, 0] + w1 * (zs[k, 1] - zs[k, 0]) + w2 * (zs[k, 2] - zs[k, 0])
+            window = zbuffer[y0:y1 + 1, x0:x1 + 1]
+            hit = inside & (z > window)
+            window[hit] = z[hit]
+            image[y0:y1 + 1, x0:x1 + 1][hit] = tone[k]
+            alpha[y0:y1 + 1, x0:x1 + 1][hit] = True
     block = SUPERSAMPLE
     cover = alpha.reshape(IMAGE_PX, block, IMAGE_PX, block).mean((1, 3))
-    total = (image * alpha).reshape(IMAGE_PX, block, IMAGE_PX, block).sum((1, 3))
     count = alpha.reshape(IMAGE_PX, block, IMAGE_PX, block).sum((1, 3))
-    shaded = np.divide(total, count, out=np.zeros_like(total), where=count > 0)
-    return cover, shaded
+    total = (image * alpha[..., None]).reshape(IMAGE_PX, block, IMAGE_PX, block, 3).sum((1, 3))
+    rgb = np.divide(total, count[..., None], out=np.zeros_like(total), where=count[..., None] > 0)
+    return cover, rgb
 
 
-def figure():
+def figure(half=FRAME_HALF_M):  # noqa: D401
     import matplotlib.pyplot as plt
     fig = plt.figure(figsize=(IMAGE_PX / 100, IMAGE_PX / 100), dpi=100)
     axes = fig.add_axes([0, 0, 1, 1])
-    axes.set_xlim(-FRAME_HALF_M, FRAME_HALF_M)
-    axes.set_ylim(-FRAME_HALF_M, FRAME_HALF_M)
+    axes.set_xlim(-half, half)
+    axes.set_ylim(-half, half)
     axes.set_aspect('equal')
     axes.set_axis_off()
     axes.set_facecolor(PAPER)
@@ -226,18 +278,16 @@ def figure():
     return fig, axes
 
 
-def body_layer(axes, cover, shaded, alpha=1.):
-    rgba = np.zeros((IMAGE_PX, IMAGE_PX, 4))
-    tone = .30 + .62 * shaded
-    rgba[..., 0] = tone * .99
-    rgba[..., 1] = tone * .97
-    rgba[..., 2] = tone * .95
-    rgba[..., 3] = cover * alpha
-    axes.imshow(rgba, extent=[-FRAME_HALF_M, FRAME_HALF_M, -FRAME_HALF_M, FRAME_HALF_M],
-                interpolation='bilinear', zorder=2)
+def raster_layer(axes, cover, rgb, alpha=1., half=FRAME_HALF_M):
+    rgba = np.concatenate([np.clip(rgb, 0, 1), (cover * alpha)[..., None]], -1)
+    axes.imshow(rgba, extent=[-half, half, -half, half], interpolation='bilinear', zorder=2)
 
 
-def plane_layer(axes, axis, offset, half=.62):
+def plane_extent(view, half=.62):
+    return half
+
+
+def plane_layer(axes, axis, offset, view, half=.62, fill=True):
     """The environment plane drawn where the data puts it, in the shared camera."""
     others = [i for i in range(3) if i != axis]
     def point(a, b):
@@ -247,26 +297,29 @@ def plane_layer(axes, axis, offset, half=.62):
         p[others[1]] = b
         return p
     corners = [point(-half, -half), point(half, -half), point(half, half), point(-half, half)]
-    uv, _ = project(np.array(corners))
-    axes.add_patch(__import__('matplotlib').patches.Polygon(uv, closed=True, facecolor='#dcdad3',
-                                                            edgecolor='#c3c0b7', linewidth=1., zorder=1))
+    uv, _ = project(np.array(corners), view)
+    if fill:
+        axes.add_patch(__import__('matplotlib').patches.Polygon(uv, closed=True, facecolor=COLOUR['plane'],
+                                                                edgecolor=COLOUR['plane_line'], linewidth=1., zorder=1))
     for t in np.linspace(-half, half, 7):
         for pair in ((point(t, -half), point(t, half)), (point(-half, t), point(half, t))):
-            line, _ = project(np.array(pair))
-            axes.plot(line[:, 0], line[:, 1], color='#cbc8bf', linewidth=.7, zorder=1)
+            line, _ = project(np.array(pair), view)
+            axes.plot(line[:, 0], line[:, 1], color=COLOUR['plane_line'], linewidth=.7, zorder=1)
 
 
-def gravity_layer(axes, gravity, anchor=np.array([.52, .62, 0.])):
+def gravity_layer(axes, gravity, view, anchor=np.array([.52, .62, 0.])):
     g = np.asarray(gravity, float)
     magnitude = float(np.linalg.norm(g))
-    start, _ = project(anchor[None])
+    if view['rotation'] is not None:
+        anchor = np.array([.72, 0., .60]) if view['environment'] == 'bed' else anchor
+    start, _ = project(anchor[None], view)
     if magnitude == 0:
         axes.plot(*start[0], marker='o', markersize=9, markerfacecolor='none',
                   markeredgecolor=INK, markeredgewidth=1.6, zorder=4)
         axes.text(start[0, 0], start[0, 1] - .12, 'g = 0', color=INK, ha='center',
                   va='top', fontsize=13, zorder=4)
         return
-    end, _ = project((anchor + g / magnitude * .40)[None])
+    end, _ = project((anchor + g / magnitude * .40)[None], view)
     axes.annotate('', xy=end[0], xytext=start[0], zorder=4,
                   arrowprops=dict(arrowstyle='-|>', color=INK, linewidth=2.2, mutation_scale=18))
     mid = (start[0] + end[0]) / 2
@@ -279,10 +332,10 @@ def gravity_layer(axes, gravity, anchor=np.array([.52, .62, 0.])):
                   ha='center', va='top', fontsize=12, zorder=4)
 
 
-def support_layer(axes, centroids):
+def support_layer(axes, centroids, view):
     if not centroids:
         return
-    uv, _ = project(np.array(centroids))
+    uv, _ = project(np.array(centroids), view)
     axes.scatter(uv[:, 0], uv[:, 1], s=64, facecolor=ACCENT, edgecolor=PAPER, linewidth=1.4, zorder=5)
 
 
@@ -312,14 +365,16 @@ def curve_figure():
 def render_mattress(curves, selected):
     fig, axes = curve_figure()
     for key, curve in curves.items():
-        axes.plot(curve['strain'], np.asarray(curve['pressure_pa']) / 1e3, color=MUTED, linewidth=1.6, zorder=1)
+        axes.plot(curve['strain'], np.asarray(curve['pressure_pa']) / 1e3,
+                  color=CURVE_COLOUR[key], linewidth=1.5, alpha=.42, zorder=1)
     if selected is None:
-        axes.axvline(0, color=ACCENT, linewidth=3.4, zorder=3)
-        axes.text(.04, 23.2, 'rigid plane', color=ACCENT, fontsize=13, va='top')
+        axes.axvline(0, color=INK, linewidth=4., zorder=3)
+        axes.text(.05, 23.4, 'rigid plane', color=INK, fontsize=13, va='top')
     else:
         curve = curves[selected]
-        axes.plot(curve['strain'], np.asarray(curve['pressure_pa']) / 1e3, color=ACCENT, linewidth=3.4, zorder=3)
-        axes.scatter(curve['strain'], np.asarray(curve['pressure_pa']) / 1e3, s=16, color=ACCENT, zorder=4)
+        colour = CURVE_COLOUR[selected]
+        axes.plot(curve['strain'], np.asarray(curve['pressure_pa']) / 1e3, color=colour, linewidth=4., zorder=3)
+        axes.scatter(curve['strain'], np.asarray(curve['pressure_pa']) / 1e3, s=20, color=colour, zorder=4)
     axes.set_xlim(0, .70)
     axes.set_ylim(0, 25)
     axes.set_xlabel('compressive strain', color=INK, fontsize=12)
@@ -327,10 +382,10 @@ def render_mattress(curves, selected):
     return fig
 
 
-def render_quadrature(points, bodies, cover, shaded):
+def render_quadrature(points, bodies, cover, rgb):
     fig, axes = figure()
-    body_layer(axes, cover, shaded, alpha=.40)
-    uv, depth = project(points)
+    raster_layer(axes, cover, rgb, alpha=.35)
+    uv, depth = project(points, view_of())
     order = np.argsort(depth)
     axes.scatter(uv[order, 0], uv[order, 1], s=.8, c=depth[order], cmap='viridis',
                  linewidths=0, zorder=3)
@@ -387,6 +442,301 @@ def render_ambient(setpoint, bounds, default_c):
     axes.text((lo + hi) / 2, -1.05, f'accepted range {lo:g}–{hi:g} °C', color=INK, ha='center', va='top', fontsize=11)
     axes.spines['left'].set_visible(False)
     return fig
+
+
+# ---------------------------------------------------------------- objects and scenes
+
+def _tris(quads):
+    """Independent triangles with flat normals; no shared vertices, so faces stay exact."""
+    positions, faces = [], []
+    for quad in quads:
+        base = len(positions)
+        positions.extend(quad)
+        faces.append([base, base + 1, base + 2])
+        if len(quad) == 4:
+            faces.append([base, base + 2, base + 3])
+    return np.asarray(positions, float), np.asarray(faces, int)
+
+
+def box(low, high):
+    (x0, y0, z0), (x1, y1, z1) = low, high
+    quads = [
+        [(x0, y0, z1), (x1, y0, z1), (x1, y1, z1), (x0, y1, z1)],
+        [(x1, y0, z0), (x0, y0, z0), (x0, y1, z0), (x1, y1, z0)],
+        [(x0, y1, z0), (x0, y1, z1), (x1, y1, z1), (x1, y1, z0)],
+        [(x0, y0, z0), (x1, y0, z0), (x1, y0, z1), (x0, y0, z1)],
+        [(x1, y0, z1), (x1, y0, z0), (x1, y1, z0), (x1, y1, z1)],
+        [(x0, y0, z0), (x0, y0, z1), (x0, y1, z1), (x0, y1, z0)],
+    ]
+    return _tris(quads)
+
+
+def cylinder(centre, radius, height, axis=1, segments=28):
+    centre = np.asarray(centre, float)
+    other = [i for i in range(3) if i != axis]
+    angles = np.linspace(0, 2 * np.pi, segments + 1)
+    def ring(offset):
+        points = np.zeros((segments + 1, 3))
+        points[:, axis] = offset
+        points[:, other[0]] = radius * np.cos(angles)
+        points[:, other[1]] = radius * np.sin(angles)
+        return points + centre
+    low, high = ring(-height / 2), ring(height / 2)
+    quads = [[low[i], low[i + 1], high[i + 1], high[i]] for i in range(segments)]
+    top = centre + np.eye(3)[axis] * height / 2
+    bottom = centre - np.eye(3)[axis] * height / 2
+    quads += [[high[i], high[i + 1], top] for i in range(segments)]
+    quads += [[low[i + 1], low[i], bottom] for i in range(segments)]
+    # The (other0, other1, axis) triple is right handed for axis 0 and 2 and left handed
+    # for axis 1, so reverse only when it is: outward normals, positive signed volume.
+    handed = float(np.linalg.det(np.eye(3)[[other[0], other[1], axis]]))
+    return _tris(quads if handed > 0 else [q[::-1] for q in quads])
+
+
+def ball(centre, radius, rings=18, segments=30):
+    centre = np.asarray(centre, float)
+    theta = np.linspace(0, np.pi, rings + 1)
+    phi = np.linspace(0, 2 * np.pi, segments + 1)
+    grid = np.stack(np.meshgrid(theta, phi, indexing='ij'), -1)
+    points = centre + radius * np.stack([np.sin(grid[..., 0]) * np.cos(grid[..., 1]),
+                                         np.cos(grid[..., 0]),
+                                         np.sin(grid[..., 0]) * np.sin(grid[..., 1])], -1)
+    quads = [[points[i, j], points[i + 1, j], points[i + 1, j + 1], points[i, j + 1]]
+             for i in range(rings) for j in range(segments)]
+    return _tris([q[::-1] for q in quads])  # outward normals: signed volume must be positive
+
+
+def merge(parts):
+    positions, faces = [], []
+    offset = 0
+    for p, f in parts:
+        positions.append(p)
+        faces.append(np.asarray(f) + offset)
+        offset += len(p)
+    return np.concatenate(positions), np.concatenate(faces)
+
+
+def part_volume(part):
+    if part['primitive'] == 'box':
+        return float(np.prod(np.asarray(part['max_m']) - np.asarray(part['min_m'])))
+    if part['primitive'] == 'cylinder':
+        return float(np.pi * part['radius_m'] ** 2 * part['height_m'])
+    return float(4 / 3 * np.pi * part['radius_m'] ** 3)
+
+
+def part_mesh(part):
+    if part['primitive'] == 'box':
+        return box(part['min_m'], part['max_m'])
+    if part['primitive'] == 'cylinder':
+        return cylinder(part['centre_m'], part['radius_m'], part['height_m'], part.get('axis', 1))
+    return ball(part['centre_m'], part['radius_m'])
+
+
+def _legs(x0, x1, z0, z1, low, high, thickness, axis='y'):
+    """Four uprights between low and high along the given up axis."""
+    parts = []
+    for i, x in enumerate((x0, x1 - thickness)):
+        for j, z in enumerate((z0, z1 - thickness)):
+            if axis == 'y':
+                parts.append({'name': f'leg-{i}{j}', 'primitive': 'box',
+                              'min_m': [x, low, z], 'max_m': [x + thickness, high, z + thickness]})
+            else:
+                parts.append({'name': f'leg-{i}{j}', 'primitive': 'box',
+                              'min_m': [x, z, low], 'max_m': [x + thickness, z + thickness, high]})
+    return parts
+
+
+BED_LENGTH_M, BED_WIDTH_M, BED_THICKNESS_M = 1.9, 1.2, .2   # retained Hong et al. specimen mattress
+BED_PLANE_Z = -.24                                          # ENVIRONMENTS['bed']['plane']
+FLOOR_PLANE_Y = -.96                                        # ENVIRONMENTS['floor']['plane']
+BED_ROOM_FLOOR_Z = -.86                                     # implied by the frame legs; no engine plane
+
+
+def object_specs():
+    """Every object is constructed here. Dimensions are stated; nothing is downloaded."""
+    half_w, half_l = BED_WIDTH_M / 2, BED_LENGTH_M / 2
+    mattress_top, mattress_bottom = BED_PLANE_Z, BED_PLANE_Z - BED_THICKNESS_M
+    frame_top = mattress_bottom
+    specs = [
+        {'id': 'bed-mattress', 'label': 'Mattress', 'colour': 'bed-mattress',
+         'base_environment': 'bed', 'mass_kg': None,
+         'mass_basis': 'Absent: the retained bed evidence reports no density (specimen_conditions.density_kg_m3 = null, "do not invent").',
+         'material': {'response': 'measured compression curve, selected in the mattress_material slot',
+                      'tier': 'derived', 'source': 'Hong et al. 2022, DOI 10.3390/biology11071030'},
+         'dimensions_basis': 'Retained study specimen mattress 1.9 x 1.2 x 0.2 m (bed_material manifest specimen_conditions.mattress_dimensions_m).',
+         'parts': [{'name': 'slab', 'primitive': 'box',
+                    'min_m': [-half_w, -half_l + .05, mattress_bottom], 'max_m': [half_w, half_l - .05, mattress_top]}]},
+        {'id': 'bed-frame', 'label': 'Bed frame', 'colour': 'bed-frame',
+         'base_environment': 'bed', 'mass_kg': 45.,
+         'mass_basis': 'Engineering choice; no retained measurement.',
+         'material': {'response': None, 'tier': 'synthesized', 'source': 'nominal timber frame; stiffness not calibrated'},
+         'dimensions_basis': 'Sized to carry the retained mattress with a 20 mm margin; leg length is an engineering choice that fixes the implied room floor.',
+         'parts': ([{'name': 'deck', 'primitive': 'box',
+                     'min_m': [-half_w - .04, -half_l, frame_top - .06], 'max_m': [half_w + .04, half_l, frame_top]},
+                    {'name': 'headboard', 'primitive': 'box',
+                     'min_m': [-half_w - .04, half_l - .06, frame_top], 'max_m': [half_w + .04, half_l, mattress_top + .22]}]
+                   + _legs(-half_w - .04, half_w + .04, -half_l, half_l, BED_ROOM_FLOOR_Z, frame_top - .06, .09, axis='z'))},
+        {'id': 'bed-rails', 'label': 'Bed side rails', 'colour': 'bed-rails',
+         'base_environment': 'bed', 'mass_kg': 8.,
+         'mass_basis': 'Engineering choice; no retained measurement.',
+         'material': {'response': None, 'tier': 'synthesized', 'source': 'nominal steel rail; stiffness not calibrated'},
+         'dimensions_basis': 'Nominal hospital bed side rail envelope; engineering choice.',
+         'parts': [{'name': 'rail-left', 'primitive': 'box',
+                    'min_m': [-half_w - .05, -.45, mattress_top + .10], 'max_m': [-half_w + .01, .45, mattress_top + .16]},
+                   {'name': 'rail-right', 'primitive': 'box',
+                    'min_m': [half_w - .01, -.45, mattress_top + .10], 'max_m': [half_w + .05, .45, mattress_top + .16]},
+                   {'name': 'post-left', 'primitive': 'box',
+                    'min_m': [-half_w - .04, -.44, mattress_bottom], 'max_m': [-half_w, -.38, mattress_top + .16]},
+                   {'name': 'post-right', 'primitive': 'box',
+                    'min_m': [half_w, -.44, mattress_bottom], 'max_m': [half_w + .04, -.38, mattress_top + .16]}]},
+        {'id': 'pillow', 'label': 'Pillow', 'colour': 'pillow',
+         'base_environment': 'bed', 'mass_kg': .8,
+         'mass_basis': 'Engineering choice; no retained measurement.',
+         'material': {'response': None, 'tier': 'synthesized',
+                      'source': 'Stiffness absent: the only retained soft-support response in this repository is the mattress curve, which is a mattress, not a pillow.'},
+         'dimensions_basis': '0.60 x 0.40 x 0.12 m nominal pillow; engineering choice.',
+         'parts': [{'name': 'slab', 'primitive': 'box',
+                    'min_m': [-.30, .52, mattress_top], 'max_m': [.30, .92, mattress_top + .12]}]},
+        {'id': 'blanket', 'label': 'Blanket', 'colour': 'blanket',
+         'base_environment': 'bed', 'mass_kg': 1.5,
+         'mass_basis': 'Engineering choice; no retained measurement.',
+         'material': {'response': None, 'tier': 'synthesized',
+                      'source': 'Textile behaviour is not solved here; the garment lane owns cloth.'},
+         'dimensions_basis': 'Top panel 4 mm clear of the anterior skin extent over the legs and hips, with 60 mm side skirts. The shape is drawn, not draped: no cloth solve is attempted, so the torso and head are left uncovered rather than faking a fold.',
+         'parts': [{'name': 'top', 'primitive': 'box',
+                    'min_m': [-.40, -.88, .150], 'max_m': [.40, -.04, .164]},
+                   {'name': 'skirt-left', 'primitive': 'box',
+                    'min_m': [-.42, -.88, .090], 'max_m': [-.40, -.04, .164]},
+                   {'name': 'skirt-right', 'primitive': 'box',
+                    'min_m': [.40, -.88, .090], 'max_m': [.42, -.04, .164]},
+                   {'name': 'skirt-foot', 'primitive': 'box',
+                    'min_m': [-.42, -.90, .090], 'max_m': [.42, -.88, .164]}]},
+        {'id': 'nightstand', 'label': 'Nightstand', 'colour': 'nightstand',
+         'base_environment': 'bed', 'mass_kg': 12.,
+         'mass_basis': 'Engineering choice; no retained measurement.',
+         'material': {'response': None, 'tier': 'synthesized', 'source': 'nominal timber cabinet'},
+         'dimensions_basis': '0.38 x 0.40 x 0.55 m nominal cabinet standing on the implied room floor beside the bed.',
+         'parts': [{'name': 'top', 'primitive': 'box',
+                    'min_m': [-1.08, -.92, BED_ROOM_FLOOR_Z + .52], 'max_m': [-.70, -.52, BED_ROOM_FLOOR_Z + .55]},
+                   {'name': 'body', 'primitive': 'box',
+                    'min_m': [-1.05, -.89, BED_ROOM_FLOOR_Z], 'max_m': [-.73, -.55, BED_ROOM_FLOOR_Z + .52]}]},
+        {'id': 'iv-stand', 'label': 'IV stand', 'colour': 'iv-stand',
+         'base_environment': 'bed', 'mass_kg': 9.,
+         'mass_basis': 'Engineering choice; no retained measurement.',
+         'material': {'response': None, 'tier': 'synthesized', 'source': 'nominal steel pole and bag'},
+         'dimensions_basis': '1.60 m pole on a 0.25 m base disc; engineering choice.',
+         'parts': [{'name': 'base', 'primitive': 'cylinder', 'axis': 2,
+                    'centre_m': [-.88, .74, BED_ROOM_FLOOR_Z + .02], 'radius_m': .25, 'height_m': .04},
+                   {'name': 'pole', 'primitive': 'cylinder', 'axis': 2,
+                    'centre_m': [-.88, .74, BED_ROOM_FLOOR_Z + .82], 'radius_m': .016, 'height_m': 1.60},
+                   {'name': 'bag', 'primitive': 'box',
+                    'min_m': [-.94, .66, BED_ROOM_FLOOR_Z + 1.30], 'max_m': [-.82, .82, BED_ROOM_FLOOR_Z + 1.58]}]},
+        {'id': 'chair', 'label': 'Chair', 'colour': 'chair',
+         'base_environment': 'floor', 'mass_kg': 6.,
+         'mass_basis': 'Engineering choice; no retained measurement.',
+         'material': {'response': None, 'tier': 'synthesized', 'source': 'nominal timber chair'},
+         'dimensions_basis': '0.45 m seat height, 0.45 x 0.45 m seat, 0.45 m back; engineering choice.',
+         'parts': ([{'name': 'seat', 'primitive': 'box',
+                     'min_m': [.52, FLOOR_PLANE_Y + .42, -.24], 'max_m': [.97, FLOOR_PLANE_Y + .46, .21]},
+                    {'name': 'back', 'primitive': 'box',
+                     'min_m': [.52, FLOOR_PLANE_Y + .46, -.28], 'max_m': [.97, FLOOR_PLANE_Y + .91, -.24]}]
+                   + _legs(.52, .97, -.24, .21, FLOOR_PLANE_Y, FLOOR_PLANE_Y + .42, .05))},
+        {'id': 'table', 'label': 'Table', 'colour': 'table',
+         'base_environment': 'floor', 'mass_kg': 20.,
+         'mass_basis': 'Engineering choice; no retained measurement.',
+         'material': {'response': None, 'tier': 'synthesized', 'source': 'nominal timber table'},
+         'dimensions_basis': '0.74 m top height, 0.70 x 0.60 m top; engineering choice.',
+         'parts': ([{'name': 'top', 'primitive': 'box',
+                     'min_m': [-1.02, FLOOR_PLANE_Y + .70, -.30], 'max_m': [-.32, FLOOR_PLANE_Y + .74, .30]}]
+                   + _legs(-1.02, -.32, -.30, .30, FLOOR_PLANE_Y, FLOOR_PLANE_Y + .70, .06))},
+        {'id': 'ball-small', 'label': 'Ball (0.065 m)', 'colour': 'ball-small',
+         'base_environment': None, 'mass_kg': .4, 'radius_m': .065,
+         'engine_object_id': 'scene-ball', 'always_present': True,
+         'mass_basis': 'Retained scene default: Sphere(radius=.065, mass=.4) in ihm/assembly/interactive_scene.py.',
+         'material': {'response': 'zero restitution, Coulomb-capped tangential impulse against the environment plane',
+                      'tier': 'synthesized', 'source': 'Sphere.step in ihm/assembly/interactive_scene.py'},
+         'dimensions_basis': 'The radius and mass the scene already instantiates.',
+         'collider': 'sphere', 'start_m': [.42, .1, .3],
+         'parts': [{'name': 'ball', 'primitive': 'sphere', 'centre_m': [.42, .1, .3], 'radius_m': .065}]},
+        {'id': 'ball-large', 'label': 'Ball (0.11 m)', 'colour': 'ball-large',
+         'base_environment': None, 'mass_kg': .6, 'radius_m': .11,
+         'mass_basis': 'Engineering choice inside the accepted Sphere bounds (0 < radius <= 1 m, 0 < mass <= 100 kg).',
+         'material': {'response': 'zero restitution, Coulomb-capped tangential impulse against the environment plane',
+                      'tier': 'synthesized', 'source': 'Sphere.step in ihm/assembly/interactive_scene.py'},
+         'dimensions_basis': 'Engineering choice; accepted by the existing Sphere constructor.',
+         'collider': 'sphere', 'start_m': [-.52, .18, .34],
+         'parts': [{'name': 'ball', 'primitive': 'sphere', 'centre_m': [-.52, .18, .34], 'radius_m': .11}]},
+    ]
+    return {spec['id']: spec for spec in specs}
+
+
+def object_geometry(specs):
+    """Construct every object mesh and retain it as geometry the viewer can load."""
+    (OUT / 'objects').mkdir(exist_ok=True)
+    built = {}
+    for ident, spec in specs.items():
+        parts = [part_mesh(part) for part in spec['parts']]
+        positions, faces = merge(parts)
+        payload = {
+            'schema': 'ihm.scene-object-geometry.v1', 'id': ident, 'label': spec['label'],
+            'units': 'm', 'frame': 'bodyparts3d-display-m (x left, y superior, z anterior)',
+            'construction': 'procedural: constructed by scripts/build_environment_catalogue.py from the stated primitives. Not downloaded, not acquired.',
+            'parts': spec['parts'],
+            'part_volume_sum_m3': round(sum(part_volume(part) for part in spec['parts']), 8),
+            'part_volume_note': 'Sum over primitives; overlaps between parts are not subtracted.',
+            'bounds_m': {'min': positions.min(0).tolist(), 'max': positions.max(0).tolist()},
+            'vertex_count': int(len(positions)), 'face_count': int(len(faces)),
+            'topology': 'independent triangles, one vertex triple per face, so flat normals are exact',
+            'positions': [round(float(v), 6) for v in positions.reshape(-1)],
+            'indices': [int(v) for v in faces.reshape(-1)],
+        }
+        path = OUT / 'objects' / f'{ident}.json'
+        path.write_text(json.dumps(payload) + '\n')
+        built[ident] = {'spec': spec, 'positions': positions, 'faces': faces,
+                        'path': str(path.relative_to(ROOT)), 'payload': payload}
+    return built
+
+
+def render_object(entry):
+    """Same camera direction and light; frame fitted to the object, extent recorded."""
+    view = view_of(entry['spec']['base_environment'])
+    positions = to_display(entry['positions'], view)
+    centre = (positions.min(0) + positions.max(0)) / 2
+    fitted = {**view, 'rotation': None, 'centre': centre, 'half': 1.}
+    uv, _ = project(positions, fitted)
+    fitted['half'] = float(np.abs(uv).max() * 1.14)
+    cover, rgb = rasterize([(positions, entry['faces'], COLOUR[entry['spec']['colour']])], fitted)
+    fig, axes = figure(half=fitted['half'])
+    raster_layer(axes, cover, rgb, half=fitted['half'])
+    return fig, fitted['half']
+
+
+def render_scene(spec, objects, skin, environment, view):
+    meshes = [(skin[0], skin[1], COLOUR['skin'])]
+    for ident in spec['objects']:
+        entry = objects[ident]
+        meshes.append((entry['positions'], entry['faces'], COLOUR[entry['spec']['colour']]))
+    cover, rgb = rasterize(meshes, view)
+    fig, axes = figure(half=view['half'])
+    plane_layer(axes, environment['axis'], environment['plane'], view, fill=False)
+    raster_layer(axes, cover, rgb, half=view['half'])
+    return fig
+
+
+SCENE_SPECS = [
+    {'id': 'bedroom', 'label': 'Bedroom', 'environment': 'bed',
+     'objects': ['bed-frame', 'bed-mattress', 'pillow', 'blanket', 'nightstand'],
+     'description': 'Domestic bed arrangement on the supine environment: frame, the retained study mattress, pillow, blanket and a nightstand on the implied room floor.'},
+    {'id': 'hospital-room', 'label': 'Hospital room', 'environment': 'bed',
+     'objects': ['bed-frame', 'bed-mattress', 'bed-rails', 'pillow', 'iv-stand', 'nightstand'],
+     'description': 'Clinical bed arrangement on the supine environment: frame, retained mattress, side rails, pillow, IV stand and bedside cabinet.'},
+    {'id': 'clinic-room', 'label': 'Clinic room', 'environment': 'floor',
+     'objects': ['table', 'chair'],
+     'description': 'Standing consultation arrangement on the floor environment: table and chair beside the supported stance.'},
+    {'id': 'play-floor', 'label': 'Play floor', 'environment': 'floor',
+     'objects': ['ball-small', 'ball-large', 'chair'],
+     'description': 'Floor environment with two free balls the scene actually simulates, plus a chair. The balls fall to the ground plane and accept force ports; they do not yet collide with the body.'},
+]
 
 
 # ---------------------------------------------------------------- provenance
@@ -465,12 +815,15 @@ def build(render=True):
     supine = read_json(SUPINE_MANIFEST)
     bed_evidence = read_json(BED_MANIFEST)
 
+    objects = object_geometry(object_specs())
     if render:
-        positions, faces = skin_mesh()
-        cover, shaded = rasterize_body(positions, faces)
+        skin = skin_mesh()
+        body_raster = {name: rasterize([(skin[0], skin[1], COLOUR['skin'])], view_of(name, SCENE_HALF_M))
+                       for name in ('studio', 'floor', 'bed')}
+        cover, body_rgb = rasterize([(skin[0], skin[1], COLOUR['skin'])])
         points, bodies, _ = quadrature_points()
     else:
-        cover = shaded = points = bodies = None
+        skin = body_raster = cover = body_rgb = points = bodies = None
 
     inputs = {p: sha(ROOT / p) for p in sorted({
         SCENE_MODULE, NATIVE_CPP, NATIVE_STREAM, NATIVE_CONFIG, BIOGEARS_CPP, BED_MANIFEST, BED_CURVE,
@@ -524,12 +877,13 @@ def build(render=True):
         gravity = spec['gravity']
         centroids = [supports[i][1] for i in spec['supports'] if i in supports]
         if render:
-            fig, axes = figure()
+            view = view_of(ident, SCENE_HALF_M)
+            fig, axes = figure(half=SCENE_HALF_M)
             if ident != 'studio':
-                plane_layer(axes, spec['axis'], spec['plane'])
-            body_layer(axes, cover, shaded)
-            support_layer(axes, centroids)
-            gravity_layer(axes, gravity)
+                plane_layer(axes, spec['axis'], spec['plane'], view)
+            raster_layer(axes, *body_raster[ident], half=SCENE_HALF_M)
+            support_layer(axes, centroids, view)
+            gravity_layer(axes, gravity, view)
             save(fig, ident)
         thumbnail = f'{OUT.relative_to(ROOT)}/thumbnails/{ident}.png'
         records.append({
@@ -594,7 +948,7 @@ def build(render=True):
         ident = component['id']
         if render:
             if ident == 'bed-support-skin-quadrature':
-                fig = render_quadrature(points, bodies, cover, shaded)
+                fig = render_quadrature(points, bodies, cover, body_rgb)
             else:
                 fig = render_proxy(radii)
             save(fig, ident)
@@ -810,6 +1164,141 @@ def build(render=True):
                        'representation': 'range_bar_png'} if render else None,
             selection=records[-1]['selection']))
 
+    # ------------------------------------------------ interactable objects
+    contact_model = ('Simulated as a finite-mass sphere with rotational inertia: gravity, applied force ports, '
+                     'zero-restitution contact with the environment plane and a Coulomb-capped tangential impulse. '
+                     'There is no body-object contact and no object-object contact in any engine here '
+                     '(interactive scene scope: body_object_contact=false).')
+    for ident, entry in objects.items():
+        spec = entry['spec']
+        payload = entry['payload']
+        simulated = spec.get('collider') == 'sphere'
+        if render:
+            fig, half = render_object(entry)
+            save(fig, ident)
+        else:
+            half = None
+        thumbnail = f'{OUT.relative_to(ROOT)}/thumbnails/{ident}.png'
+        size = np.asarray(payload['bounds_m']['max']) - np.asarray(payload['bounds_m']['min'])
+        requires = [] if spec['base_environment'] is None else [{'slot': 'environment', 'any_of': [spec['base_environment']]}]
+        records.append({
+            'id': ident, 'label': spec['label'], 'slot': 'objects', 'kind': 'object',
+            'thumbnail': thumbnail, 'thumbnail_url': f'/api/scene/thumbnail/{ident}',
+            'thumbnail_kind': 'rendered_geometry',
+            'thumbnail_half_extent_m': half,
+            'description': (f"{spec['dimensions_basis']} Extent {size[0]:.2f} x {size[1]:.2f} x {size[2]:.2f} m. "
+                            + (f"Mass {spec['mass_kg']:g} kg. " if spec['mass_kg'] is not None else 'Mass absent. ')
+                            + ('Contact-ready: the scene instantiates it as a free sphere.' if simulated
+                               else 'Display-only in the current engines: no collider exists for this shape.')),
+            'evidence_kind': 'constructed_geometry',
+            'geometry': entry['path'], 'geometry_url': f'/api/scene/object/{ident}',
+            'geometry_sha256': sha(ROOT / entry['path']),
+            'vertex_count': payload['vertex_count'], 'face_count': payload['face_count'],
+            'bounds_m': payload['bounds_m'], 'extent_m': [round(float(v), 4) for v in size],
+            'mass_kg': spec['mass_kg'], 'mass_basis': spec['mass_basis'], 'material': spec['material'],
+            'collider': spec.get('collider'), 'radius_m': spec.get('radius_m'),
+            'start_m': spec.get('start_m'), 'colour_rgb': [round(c, 3) for c in COLOUR[spec['colour']]],
+            'engine_object_id': spec.get('engine_object_id', ident),
+            'always_present': spec.get('always_present', False),
+            'physical_contact_solved': simulated,
+            'contact_model': contact_model if simulated else 'None. Display-only: the scene has no collider for a constructed box or cylinder, so it is never instantiated as a physical body.',
+            'base_environment': spec['base_environment'],
+            'requires': requires,
+            'in_scenes': [s['id'] for s in SCENE_SPECS if ident in s['objects']],
+            'selection': ([{'endpoint': 'POST /api/scene/sessions', 'parameter': 'scene',
+                            'value': 'any scene listing this object; simulated spheres are instantiated'}] if simulated
+                          else [{'endpoint': 'display only', 'parameter': None, 'value': None}]),
+            'provenance': f'{PROV.relative_to(ROOT)}/{ident}.json',
+        })
+        dataset = hong_dataset if ident == 'bed-mattress' else ihm_dataset
+        provenance.append(provenance_record(
+            structure_id=ident, dataset=dataset,
+            source_file=file_block(BED_MANIFEST if ident == 'bed-mattress' else THIS),
+            build=build_info,
+            geometry={'path': entry['path'], 'sha256': sha(ROOT / entry['path']), 'sha256_verified': True,
+                      'representation': 'independent-triangle surface constructed from primitives',
+                      'frame': 'bodyparts3d-display-m', 'units': 'm',
+                      'vertex_count': payload['vertex_count'], 'face_count': payload['face_count']},
+            transforms=[{'name': 'procedural construction from stated primitives',
+                         'residual': None,
+                         'residual_reason': 'Exact construction, not a fit: the primitives are the definition.'}],
+            tier='synthesized',
+            tier_basis=('Extent constructed from explicit priors with no source geometry of its own. '
+                        + ('Dimensions are the retained study mattress; the compression response is the measured curve carried by the mattress_material slot.'
+                           if ident == 'bed-mattress' else 'Dimensions and mass are engineering choices.')),
+            tier_evidence=([f"bed_material manifest specimen_conditions.mattress_dimensions_m={bed_evidence['specimen_conditions']['mattress_dimensions_m']}"]
+                           if ident == 'bed-mattress' else
+                           ["Sphere('scene-ball', [.42,.1,.3]) with Sphere(radius=.065, mass=.4) in ihm/assembly/interactive_scene.py"]
+                           if ident == 'ball-small' else
+                           [spec['dimensions_basis'], spec['mass_basis']]),
+            frame_relation='canonical',
+            assumptions=[{'id': 'no-download', 'statement': 'Geometry is constructed in this repository. Nothing was downloaded, so no third-party licence applies to it.'},
+                         {'id': 'mass-tier', 'statement': spec['mass_basis']},
+                         {'id': 'material-tier', 'statement': spec['material']['source'] or 'No material response retained.'},
+                         {'id': 'contact-scope', 'statement': records[-1]['contact_model']}],
+            thumbnail={'path': thumbnail, 'sha256': sha(ROOT / thumbnail) if render else None,
+                       'representation': 'orthographic_shaded_raster_png', 'camera': {**CAMERA, 'half_extent_m': half},
+                       'note': 'Same camera direction, light and shading as the body tiles; the frame is fitted to the object and its half extent is recorded here.'} if render else None,
+            selection=records[-1]['selection'],
+            measurement={'extent_m': records[-1]['extent_m'], 'mass_kg': spec['mass_kg'],
+                         'part_volume_sum_m3': payload['part_volume_sum_m3'],
+                         'parts': [p['name'] for p in spec['parts']]},
+        ))
+
+    # ------------------------------------------------ composed scenes
+    for spec in SCENE_SPECS:
+        ident = spec['id']
+        environment = ENVIRONMENTS[spec['environment']]
+        placed = [objects[o] for o in spec['objects']]
+        simulated = [o for o in spec['objects'] if objects[o]['spec'].get('collider') == 'sphere']
+        if render:
+            save(render_scene(spec, objects, skin, environment, view_of(spec['environment'], SCENE_HALF_M)), ident)
+        thumbnail = f'{OUT.relative_to(ROOT)}/thumbnails/{ident}.png'
+        gap = abs(environment['plane']) - (.8648706 if environment['axis'] == 1 else .1460153)
+        records.append({
+            'id': ident, 'label': spec['label'], 'slot': 'scene', 'kind': 'scene',
+            'thumbnail': thumbnail, 'thumbnail_url': f'/api/scene/thumbnail/{ident}',
+            'thumbnail_kind': 'rendered_geometry',
+            'description': spec['description'],
+            'evidence_kind': 'composed_arrangement',
+            'base_environment': spec['environment'],
+            'requires': [{'slot': 'environment', 'any_of': [spec['environment']]}],
+            'objects': list(spec['objects']),
+            'simulated_objects': simulated,
+            'engine_object_ids': sorted({objects[o]['spec'].get('engine_object_id', o) for o in simulated} | {'scene-ball'}),
+            'display_only_objects': [o for o in spec['objects'] if o not in simulated],
+            'object_count': len(spec['objects']),
+            'physical_contact_solved': bool(simulated),
+            'contact_model': ('Objects with a sphere collider are instantiated in the scene session and fall to the '
+                              'environment plane; every other object is drawn only. A scene never changes gravity, the '
+                              'plane offset or the prescribed supports: those stay exactly as the base environment sets them.'),
+            'implied_room_floor_m': None if spec['environment'] != 'bed' else BED_ROOM_FLOOR_Z,
+            'body_to_plane_gap_m': round(gap, 3),
+            'selection': [{'endpoint': 'POST /api/scene/sessions', 'parameter': 'scene', 'value': ident}],
+            'provenance': f'{PROV.relative_to(ROOT)}/{ident}.json',
+        })
+        provenance.append(provenance_record(
+            structure_id=ident, dataset=ihm_dataset, source_file=file_block(THIS), build=build_info,
+            geometry={'path': None, 'sha256': None, 'sha256_verified': None,
+                      'representation': 'composition of retained object geometries',
+                      'frame': 'bodyparts3d-display-m', 'units': 'm', 'vertex_count': None, 'face_count': None,
+                      'absent_reason': 'A scene is an arrangement, not a mesh. Each object it names carries its own geometry record.'},
+            transforms=[], tier='synthesized',
+            tier_basis='An arrangement of constructed objects over one of the three real environments. The arrangement is an engineering choice; the base environment underneath it is unchanged.',
+            tier_evidence=[f"base environment {spec['environment']}: gravity={environment['gravity']} axis={environment['axis']} plane={environment['plane']}",
+                           'ihm/assembly/interactive_scene.py scope: body_object_contact=False'],
+            frame_relation='canonical',
+            assumptions=[{'id': 'placement', 'statement': 'Object placement is an engineering choice; no room measurement is retained.'},
+                         {'id': 'body-plane-gap',
+                          'statement': f'The body sits {gap:.3f} m off the environment plane, so it is drawn resting above the surface, not on it. The plane is the free-object ground level and the body is held by prescribed supports.'},
+                         {'id': 'implied-floor',
+                          'statement': 'Bed scenes place cabinets and stands on an implied room floor at z = -0.86 m fixed by the bed frame legs. No engine plane exists there.'}],
+            derived_artifacts=[{'path': objects[o]['path'], 'sha256': sha(ROOT / objects[o]['path'])} for o in spec['objects']],
+            thumbnail={'path': thumbnail, 'sha256': sha(ROOT / thumbnail) if render else None,
+                       'representation': 'orthographic_shaded_raster_png', 'camera': CAMERA} if render else None,
+            selection=records[-1]['selection'],
+            measurement={'objects': list(spec['objects']), 'simulated': simulated}))
+
     slots = [
         {'id': 'environment', 'label': 'Environment', 'exclusive': True, 'required': True,
          'default': 'bed', 'requires': [],
@@ -826,6 +1315,12 @@ def build(render=True):
         {'id': 'ambient_thermal', 'label': 'Ambient air', 'exclusive': True, 'required': False,
          'default': 'ambient-22c', 'requires': [], 'continuous_range_c': ambient_bounds,
          'note': 'Physiology-engine boundary condition, independent of the mechanical environment. Discrete tiles are convenience points on a continuous accepted range.'},
+        {'id': 'scene', 'label': 'Scene', 'exclusive': True, 'required': False, 'default': None,
+         'requires': [],
+         'note': 'A named arrangement of objects over one of the three real environments. Exclusive: one arrangement at a time. Each scene names the base environment it requires; selecting it does not change gravity, plane or supports.'},
+        {'id': 'objects', 'label': 'Objects', 'exclusive': False, 'required': False, 'default': None,
+         'requires': [],
+         'note': 'Not exclusive: objects combine. A scene is a saved combination; individual objects can be added on their own. Objects with a sphere collider are simulated, the rest are display-only.'},
     ]
 
     catalogue = {
@@ -833,10 +1328,12 @@ def build(render=True):
         'generated_unix': time.time(),
         'commit': commit,
         'exclusivity_model': 'Slots carry exclusivity: entries sharing a slot are mutually exclusive, different slots combine. An entry with unmet requires is not selectable.',
-        'camera': CAMERA,
+        'camera': {**CAMERA, 'gravity_frames': GRAVITY_FRAME},
         'slots': slots,
         'environments': [r for r in records if r['kind'] == 'environment'],
         'components': [r for r in records if r['kind'] == 'component'],
+        'objects': [r for r in records if r['kind'] == 'object'],
+        'scenes': [r for r in records if r['kind'] == 'scene'],
         'verified': {
             'scene_environment_ids': literals['scene_environment_ids'],
             'native_cpp_environments': literals['native_cpp_environments'],
@@ -845,6 +1342,11 @@ def build(render=True):
             'ambient_bounds_c': ambient_bounds,
             'quadrature_points': supine['points'],
             'proxy_bodies': len(radii),
+            'scene_default_ball': {'radius_m': .065, 'mass_kg': .4, 'start_m': [.42, .1, .3],
+                                   'source': 'ihm/assembly/interactive_scene.py Sphere defaults'},
+            'sphere_bounds': {'radius_m': [0, 1], 'mass_kg': [0, 100],
+                              'source': 'Sphere.__init__ guard in ihm/assembly/interactive_scene.py'},
+            'body_object_contact': False,
         },
         'not_selectable': [
             {'candidate': 'gravity magnitude other than 0 or 9.81 m s^-2',
@@ -855,6 +1357,16 @@ def build(render=True):
              'reason': 'SceneSessions.create accepts only {environment}; bed_material reaches the native/articulated path, not the reduced interactive body. Declared per record under selection.'},
             {'candidate': 'clothing insulation (clo) and air velocity',
              'reason': 'Accepted by the physiology engine but left to the garment lane; not emitted here.'},
+            {'candidate': 'body-object contact',
+             'reason': 'No engine solves it. The interactive scene declares body_object_contact=false and objects contact only the environment plane. Objects are placed and simulated as free bodies; the body cannot yet rest on, push or grasp them.'},
+            {'candidate': 'object-object contact',
+             'reason': 'Spheres are integrated independently against the plane; no pair test exists.'},
+            {'candidate': 'box, cylinder and cloth colliders',
+             'reason': 'The scene has one collider, Sphere, against a half-space. Furniture, pillow and blanket are therefore display-only until a mesh or box collider exists.'},
+            {'candidate': 'rooms as a fourth environment',
+             'reason': 'Gravity direction, plane offset and prescribed supports are hardcoded in two engines. A scene composes objects on top of one of the three; it never invents a fourth.'},
+            {'candidate': 'downloaded furniture assets',
+             'reason': 'No object geometry was downloaded. Everything under objects/ is constructed procedurally by this script, so no third-party licence is claimed or needed.'},
         ],
     }
 
@@ -884,8 +1396,11 @@ def build(render=True):
         'artifact_exclusion': 'manifest.json is deliberately absent from artifacts: a manifest may not hash itself.',
         'self_test': report,
         'renderer': 'offscreen: numpy orthographic z-buffer rasterizer (2x supersampled) for body geometry, matplotlib Agg for overlays and plots. No browser, no playwright.',
-        'counts': {'environments': len(catalogue['environments']), 'components': len(catalogue['components']),
-                   'slots': len(slots), 'provenance_records': len(provenance), 'thumbnails': len(list(THUMBS.glob('*.png')))},
+        'counts': {'environments': len(catalogue['environments']), 'scenes': len(catalogue['scenes']),
+                   'components': len(catalogue['components']), 'objects': len(catalogue['objects']),
+                   'contact_ready_objects': sum(o['physical_contact_solved'] for o in catalogue['objects']),
+                   'slots': len(slots), 'provenance_records': len(provenance),
+                   'thumbnails': len(list(THUMBS.glob('*.png'))), 'object_geometries': len(list((OUT / 'objects').glob('*.json')))},
     }
     (OUT / 'manifest.json').write_text(json.dumps(manifest, indent=1) + '\n')
     return catalogue, manifest
@@ -893,12 +1408,43 @@ def build(render=True):
 
 # ---------------------------------------------------------------- self-test
 
+def _scene_smoke_test(catalogue):
+    """Open every scene in the real engine, step it, close it, then remove the run directory.
+
+    The directory is a constant under this build's own output. No caller-supplied root is
+    ever handed to anything that writes.
+    """
+    import shutil
+    from ihm.assembly.interactive_scene import InteractiveScene
+    area = OUT / 'self-test'
+    if area.exists():
+        shutil.rmtree(area)
+    detail = []
+    passed = True
+    try:
+        for record in catalogue['scenes']:
+            output = area / record['id']
+            scene = InteractiveScene(ROOT, output, record['base_environment'], record['id'])
+            frame = scene.step({'seconds': .02, 'sequence': 0})
+            simulated = sorted(o['id'] for o in frame['objects'])
+            expected = sorted(record['engine_object_ids'])
+            ok = simulated == expected and frame['scene_id'] == record['id']
+            passed = passed and ok
+            detail.append(f"{record['id']}:{'ok' if ok else 'MISMATCH'} objects={simulated}")
+    finally:
+        if area.exists() and area.is_relative_to(OUT):
+            shutil.rmtree(area)
+    return {'passed': passed, 'detail': '; '.join(detail)}
+
+
 def self_test(catalogue, provenance, curves, radii, literals, render=True):
     checks = []
 
     def check(name, ok, detail):
         checks.append({'check': name, 'passed': bool(ok), 'detail': detail})
 
+    entries_all = (catalogue['environments'] + catalogue['components']
+                   + catalogue['objects'] + catalogue['scenes'])
     ids = [r['id'] for r in catalogue['environments']]
     check('environment ids equal ENVIRONMENTS keys', sorted(ids) == sorted(literals['scene_environment_ids']),
           f"catalogue={sorted(ids)} source={sorted(literals['scene_environment_ids'])}")
@@ -938,7 +1484,7 @@ def self_test(catalogue, provenance, curves, radii, literals, render=True):
           f'max radius difference {invariant:.3e} m over {len(radii)} bodies at scale 1.37')
 
     slot_ids = {s['id'] for s in catalogue['slots']}
-    entries = catalogue['environments'] + catalogue['components']
+    entries = entries_all
     check('every entry declares a known slot', all(e['slot'] in slot_ids for e in entries),
           str(sorted({e['slot'] for e in entries})))
     known = {e['id'] for e in entries}
@@ -946,9 +1492,9 @@ def self_test(catalogue, provenance, curves, radii, literals, render=True):
                           for e in entries for r in e.get('requires', []))
     check('every requires clause resolves to a known slot and ids', dependencies_ok,
           str([(e['id'], e['requires']) for e in entries if e.get('requires')][:3]) + ' ...')
-    check('exactly one exclusive required slot (environment)',
+    check('exactly one required slot (environment) and only the objects slot is non-exclusive',
           [s['id'] for s in catalogue['slots'] if s['required']] == ['environment']
-          and all(s['exclusive'] for s in catalogue['slots']),
+          and [s['id'] for s in catalogue['slots'] if not s['exclusive']] == ['objects'],
           str([(s['id'], s['exclusive'], s['required']) for s in catalogue['slots']]))
     check('slot defaults exist in their slot',
           all(s['default'] is None or any(e['id'] == s['default'] and e['slot'] == s['id'] for e in entries)
@@ -973,12 +1519,83 @@ def self_test(catalogue, provenance, curves, radii, literals, render=True):
           all(r['source_file']['sha256'] == sha(ROOT / r['source_file']['path']) for r in provenance),
           f'{len(provenance)} records verified')
 
+    # ---- composed scenes and objects
+    objects = {o['id']: o for o in catalogue['objects']}
+    check('every scene names a real base environment',
+          all(s['base_environment'] in [e['id'] for e in catalogue['environments']] for s in catalogue['scenes']),
+          str({s['id']: s['base_environment'] for s in catalogue['scenes']}))
+    check('every scene object exists and every object geometry hashes',
+          all(o in objects for s in catalogue['scenes'] for o in s['objects'])
+          and all(sha(ROOT / o['geometry']) == o['geometry_sha256'] for o in objects.values()),
+          f"{len(objects)} objects, {sum(len(s['objects']) for s in catalogue['scenes'])} placements")
+    check('object requires clause matches its base environment',
+          all((o['requires'] == [] and o['base_environment'] is None)
+              or o['requires'] == [{'slot': 'environment', 'any_of': [o['base_environment']]}] for o in objects.values()),
+          str({o['id']: o['base_environment'] for o in objects.values()}))
+    check('scene base environment agrees with every object it places',
+          all(objects[o]['base_environment'] in (None, s['base_environment'])
+              for s in catalogue['scenes'] for o in s['objects']),
+          str({s['id']: [objects[o]['base_environment'] for o in s['objects']] for s in catalogue['scenes']}))
+    check('contact-ready exactly where a sphere collider exists',
+          all(o['physical_contact_solved'] == (o['collider'] == 'sphere') for o in objects.values()),
+          str({o['id']: o['physical_contact_solved'] for o in objects.values()}))
+    from ihm.assembly.interactive_scene import Sphere
+    accepted = []
+    for entry in objects.values():
+        if entry['collider'] != 'sphere':
+            continue
+        sphere = Sphere(entry['id'], entry['start_m'], radius=entry['radius_m'], mass=entry['mass_kg'])
+        accepted.append((entry['id'], sphere.radius, sphere.mass))
+    check('every contact-ready object is accepted by the existing Sphere constructor', bool(accepted), str(accepted))
+    volumes = {}
+    for entry in catalogue['objects']:
+        payload = json.loads((ROOT / entry['geometry']).read_bytes())
+        positions = np.asarray(payload['positions'], float).reshape(-1, 3)
+        faces = np.asarray(payload['indices'], int).reshape(-1, 3)
+        tri = positions[faces]
+        volume = float(np.sum(np.einsum('ij,ij->i', tri[:, 0], np.cross(tri[:, 1] - tri[:, 0], tri[:, 2] - tri[:, 0]))) / 6)
+        volumes[entry['id']] = (round(volume, 6), payload['part_volume_sum_m3'])
+    check('object meshes are closed with outward normals and match their primitive volume',
+          all(v > 0 and abs(v - s) / s < .05 for v, s in volumes.values()),
+          str({k: v for k, v in sorted(volumes.items())[:4]}) + ' ... (signed volume m3, primitive sum m3)')
+    check('constructed geometry declares no third-party licence',
+          all(json.loads((ROOT / o['geometry']).read_bytes())['construction'].startswith('procedural')
+              for o in objects.values()),
+          'all object geometry is constructed by this script; nothing downloaded')
+    live = _scene_smoke_test(catalogue)
+    check('each scene opens in the engine and steps', live['passed'], live['detail'])
+
     if render:
         from PIL import Image
         sizes = {p.name: Image.open(p).size for p in sorted(THUMBS.glob('*.png'))}
-        check('one thumbnail per entry at a single size',
+        coloured = 0
+        for path in sorted(THUMBS.glob('*.png')):
+            pixels = np.asarray(Image.open(path).convert('RGB'), float)
+            if float(np.abs(pixels - pixels.mean(-1, keepdims=True)).max()) > 12:
+                coloured += 1
+        check('one square thumbnail per entry at a single size',
               set(p.stem for p in THUMBS.glob('*.png')) == known and set(sizes.values()) == {(IMAGE_PX, IMAGE_PX)},
               f'{len(sizes)} thumbnails at {sorted(set(sizes.values()))}')
+        body_tiles = [e['id'] for e in catalogue['environments'] + catalogue['scenes']] + ['bed-support-skin-quadrature']
+        spreads = {}
+        for name in body_tiles:
+            pixels = np.asarray(Image.open(THUMBS / f'{name}.png').convert('RGB'), float)
+            spreads[name] = round(float(np.abs(pixels - pixels.mean(-1, keepdims=True)).max()), 1)
+        check('environment and scene tiles are rendered in colour', min(spreads.values()) > 12,
+              str(spreads))
+        matches = {}
+        for entry in catalogue['objects']:
+            pixels = np.asarray(Image.open(THUMBS / f"{entry['id']}.png").convert('RGB'), float) / 255
+            flat = pixels.reshape(-1, 3)
+            lit = flat[np.abs(flat - np.asarray([.949, .945, .933])).max(1) > .02]
+            mean = lit.mean(0)
+            declared = np.asarray(entry['colour_rgb'])
+            matches[entry['id']] = round(float(mean @ declared / (np.linalg.norm(mean) * np.linalg.norm(declared))), 4)
+        check('object tiles carry their declared palette colour', min(matches.values()) > .995,
+              f'cosine to declared rgb, worst {min(matches, key=matches.get)}={min(matches.values())}')
+        check('no tile was written through a greyscale pipeline',
+              all(Image.open(p).mode in ('RGB', 'RGBA') for p in THUMBS.glob('*.png')),
+              f'{coloured}/{len(sizes)} tiles exceed a 12/255 channel spread; the rest are objects whose declared colour is near neutral')
     check('manifest does not list itself',
           True, 'artifacts are collected with name != manifest.json; asserted again after write')
 

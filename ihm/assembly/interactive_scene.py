@@ -11,6 +11,7 @@ import hashlib
 import json
 import math
 import os
+import re
 import sys
 import threading
 import time
@@ -210,11 +211,39 @@ class Sphere:
                     ground_support_impulse_ns=self.support_impulse.tolist())
 
 
+SCENE_CATALOGUE='data/derived/environment-catalogue-v1/catalogue.json'
+
+
+def scene_objects(root,scene,environment):
+    """Objects a composed scene adds. Only sphere colliders exist, so only they are instantiated."""
+    path=Path(root)/SCENE_CATALOGUE
+    if not path.is_file():raise ValueError('Scene catalogue unavailable; run scripts/build_environment_catalogue.py')
+    raw=path.read_bytes();catalogue=json.loads(raw)
+    record=next((s for s in catalogue['scenes'] if s['id']==scene),None)
+    if record is None:raise ValueError('Unknown scene')
+    if record['base_environment']!=environment:raise ValueError('Scene requires environment '+record['base_environment'])
+    objects=[]
+    for ident in record['objects']:
+        entry=next((o for o in catalogue['objects'] if o['id']==ident),None)
+        if entry is None:raise ValueError('Scene names an object the catalogue does not carry')
+        if entry.get('collider')!='sphere':continue
+        engine_id=entry.get('engine_object_id',ident)
+        if engine_id=='scene-ball':continue  # already instantiated as the scene default
+        if not isinstance(engine_id,str) or not re.fullmatch(r'[a-z0-9-]{1,64}',engine_id):raise ValueError('Invalid scene object id')
+        objects.append(Sphere(engine_id,entry['start_m'],radius=entry['radius_m'],mass=entry['mass_kg']))
+    summary={k:record[k] for k in ('id','label','base_environment','objects','simulated_objects','display_only_objects')}
+    summary['catalogue']=SCENE_CATALOGUE
+    return objects,summary,hashlib.sha256(raw).hexdigest()
+
+
 class InteractiveScene:
-    def __init__(self,root,output,environment='studio'):
+    def __init__(self,root,output,environment='studio',scene=None):
         self.root=Path(root).resolve();self.output=Path(output).resolve()
         if environment not in ENVIRONMENTS:raise ValueError('Unknown scene environment')
+        if scene is not None and (not isinstance(scene,str) or not re.fullmatch(r'[a-z0-9-]{1,64}',scene)):raise ValueError('Invalid scene id')
         if not self.output.is_relative_to(self.root) or self.output.exists():raise ValueError('Fresh retained scene directory required')
+        self.scene_id=scene;self.scene=None;composed=[];catalogue_digest=None
+        if scene is not None:composed,self.scene,catalogue_digest=scene_objects(self.root,scene,environment)
         self.environment=copy.deepcopy(ENVIRONMENTS[environment]);self.environment_id=environment
         path=self.root/'data/derived/canonical/mechanics.json';mechanics_bytes=path.read_bytes();payload=json.loads(mechanics_bytes)
         for receipt in _IMPORT_SOURCES:
@@ -227,7 +256,10 @@ class InteractiveScene:
         for source,raw in [(path,mechanics_bytes)]+[(r['path'],r['bytes']) for r in _IMPORT_SOURCES]:
             target=self.output/'inputs'/source.name;target.write_bytes(raw)
             sources[str(source.relative_to(self.root))]=hashlib.sha256(target.read_bytes()).hexdigest()
-        self.objects={s.id:s for s in [Sphere('scene-ball', [.42,.1,.3])]}
+        if scene is not None:
+            (self.output/'inputs'/'scene_catalogue.json').write_bytes((self.root/SCENE_CATALOGUE).read_bytes())
+            sources[SCENE_CATALOGUE]=catalogue_digest
+        self.objects={s.id:s for s in [Sphere('scene-ball', [.42,.1,.3])]+composed}
         self.initial_object_energy={s.id:s.kinetic()-s.mass*np.dot(self.environment['gravity'],s.position) for s in self.objects.values()}
         self.frame=dict(model_id='ihm-body',time_s=0.,entities={ident:dict(
             translation_m=[0.,0.,0.],centroid_m=self.body.x0[i].tolist(),
@@ -238,12 +270,15 @@ class InteractiveScene:
             body_environment='Explicit named ideal supports; no body-surface mattress or floor contact solve',
             body_gravity='Incremental motion assumes a balanced reference preload; gravitational prestress and support distribution are not solved',
             objects='Finite-mass spheres with rotational inertia and Coulomb ground contact',
+            scene_objects='A composed scene adds only its sphere-collider objects; its constructed furniture is display geometry the engine never instantiates',
             body_object_contact=False,clothing_contact=False,physiology_feedback=False,
             force_location='Force acts on the selected entity translation; off-centroid moment is an explicit constraint reaction',
             sphere_force_location='A point inside/on the sphere, captured as a material offset and followed through substeps; explicit distant wrench ports unsupported',
             calibration='Existing source/engineering parameters; no new human calibration')
         (self.output/'manifest.json').write_text(json.dumps(dict(schema='ihm.interactive-scene.v2',
             environment_id=environment,environment=self.environment,sources=sources,scope=self.scope,
+            scene_id=scene,scene=self.scene,
+            simulated_objects=[s.id for s in self.objects.values()],
             loaded_code={r['path'].name:r['loaded_code_sha256'] for r in _IMPORT_SOURCES},
             journal='Immutable individually compressed events/*.json.gz; SHA256 predecessor chain; atomic publication',
             created_unix=time.time(),timestep_s=.002),indent=2)+'\n')
@@ -270,6 +305,7 @@ class InteractiveScene:
     def snapshot(self):
         return {**self.frame,'objects':[s.snapshot() for s in self.objects.values()],
                 'environment_id':self.environment_id,'environment':self.environment,
+                'scene_id':self.scene_id,'scene':self.scene,
                 'scope':self.scope,'sequence':self.sequence,'closed':self.closed}
 
     def step(self,data):
@@ -355,11 +391,11 @@ class SceneSessions:
         if scene is None:raise ValueError('Unknown scene session')
         with scene.lock:return copy.deepcopy(dict(id=ident,**scene.snapshot()))
     def create(self,data):
-        if not isinstance(data,dict) or set(data)-{'environment'}:raise ValueError('Unknown scene configuration')
+        if not isinstance(data,dict) or set(data)-{'environment','scene'}:raise ValueError('Unknown scene configuration')
         with self.lock:
             if len(self.sessions)>=4:raise ValueError('Close a scene before opening another')
             ident=uuid.uuid4().hex
-            scene=InteractiveScene(self.root,self.root/'data/derived/interactive-scenes'/ident,data.get('environment','studio'))
+            scene=InteractiveScene(self.root,self.root/'data/derived/interactive-scenes'/ident,data.get('environment','studio'),data.get('scene'))
             self.sessions[ident]=scene
         return dict(id=ident,**scene.snapshot())
     def command(self,ident,action,data):

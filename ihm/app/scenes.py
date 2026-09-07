@@ -63,14 +63,24 @@ def scene_catalog(root, live):
         environments.append(merged)
     catalog['environments'] = environments
     catalog['schema'] = 'ihm.environment-catalog.v1'
-    components = []
+    components, objects, scenes = [], [], []
     if derived is not None:
-        for record in derived['components']:
-            thumbnail = _thumbnail(root, record)
-            if thumbnail is None and record.get('thumbnail'):
-                notes.append('Thumbnail missing for ' + record['id'])
-            components.append({**record, 'kind': 'component', 'thumbnail': thumbnail,
-                               'thumbnail_url': None if thumbnail is None else '/api/scene/thumbnail/' + record['id']})
+        for key, kind, target in (('components', 'component', components),
+                                  ('objects', 'object', objects),
+                                  ('scenes', 'scene', scenes)):
+            for record in derived.get(key, []):
+                thumbnail = _thumbnail(root, record)
+                if thumbnail is None and record.get('thumbnail'):
+                    notes.append('Thumbnail missing for ' + record['id'])
+                entry = {**record, 'kind': kind, 'thumbnail': thumbnail,
+                         'thumbnail_url': None if thumbnail is None else '/api/scene/thumbnail/' + record['id']}
+                if kind == 'object':
+                    geometry = record.get('geometry')
+                    present = geometry is not None and (root / geometry).is_file()
+                    if not present:
+                        notes.append('Object geometry missing for ' + record['id'])
+                    entry['geometry_url'] = '/api/scene/object/' + record['id'] if present else None
+                target.append(entry)
         catalog['slots'] = derived['slots']
         catalog['exclusivity_model'] = derived['exclusivity_model']
         catalog['camera'] = derived['camera']
@@ -86,20 +96,31 @@ def scene_catalog(root, live):
         catalog['exclusivity_model'] = 'Slots carry exclusivity: entries sharing a slot are mutually exclusive, different slots combine.'
         notes.append('Derived environment catalogue absent; serving engine environments only. Run scripts/build_environment_catalogue.py')
     catalog['components'] = components
+    catalog['objects'] = objects
+    catalog['scenes'] = scenes
     # One flat array for a tile grid; slot and requires carry the rules, so the
     # front end reads them rather than encoding which tile excludes which.
-    catalog['tiles'] = environments + components
+    catalog['tiles'] = environments + scenes + components + objects
     catalog['notes'] = notes
     return catalog
 
 
-def thumbnail(root, ident, live):
-    root = Path(root).resolve()
-    catalog = scene_catalog(root, live)
-    entry = next((e for e in catalog['environments'] + catalog['components'] if e['id'] == ident), None)
-    if entry is None or not entry.get('thumbnail'):
+def _resolve(root, catalog, ident, field):
+    entry = next((e for e in catalog['tiles'] if e['id'] == ident), None)
+    if entry is None or not entry.get(field):
         return None
-    file = (root / entry['thumbnail']).resolve()
+    file = (root / entry[field]).resolve()
     if not file.is_relative_to(root) or not file.is_file():
         return None
     return file
+
+
+def thumbnail(root, ident, live):
+    root = Path(root).resolve()
+    return _resolve(root, scene_catalog(root, live), ident, 'thumbnail')
+
+
+def object_geometry(root, ident, live):
+    """Constructed object geometry, so the viewer can place the object it sees on the tile."""
+    root = Path(root).resolve()
+    return _resolve(root, scene_catalog(root, live), ident, 'geometry')
