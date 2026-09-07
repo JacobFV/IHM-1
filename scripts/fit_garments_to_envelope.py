@@ -34,8 +34,8 @@ from scipy.sparse.linalg import splu
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from ihm.assembly.garment_wardrobe import (  # noqa: E402
-    CATALOGUE, SOURCE_UNITS_PER_M, boundary_edge_count, compact, edge_table, keep_components,
-    load_envelope, load_obj, mesh_area_m2, orient_outward, sha256_file, weld)
+    CATALOGUE, SOURCE_UNITS_PER_M, boundary_edge_count, compact, edge_table, face_components,
+    keep_components, load_envelope, load_obj, mesh_area_m2, orient_outward, sha256_file, weld)
 
 ENVELOPE = ROOT / 'data/derived/outer-envelope/outer-envelope.npz'
 RAW = ROOT / 'data/raw/clothing/makehuman'
@@ -43,12 +43,26 @@ OUT = ROOT / 'data/derived/wardrobe-v1/fitted'
 CONFORM_ATTRACT_RANGE_M = 0.060
 DRAPE_ATTRACT_RANGE_MULTIPLE = 3.0
 DRAPE_ATTRACT_RANGE_FLOOR_M = 0.012
+# Shell garments hold their own volume: a fedora crown stands off the scalp, a
+# shoe encloses the foot. Their attraction band is a narrow collar just outside
+# the standoff shell, so only cloth already at the skin is held there and the
+# rest of the silhouette is left where the source authored it.
+SHELL_ATTRACT_RANGE_MULTIPLE = 2.0
+SHELL_ATTRACT_RANGE_FLOOR_M = 0.006
 # A loose sleeve has its inner wall inside the attraction band and its outer wall
 # outside it. With a weak shape term the pinned inner wall drags the free outer
 # wall in and the tube flattens, so drape mode raises the shape term far above
 # the attraction it has to resist.
 FIT_MODES = {'conform': {'regularisation': 2.0, 'attract_weight': 6.0, 'free_weight': 0.02},
-             'drape': {'regularisation': 12.0, 'attract_weight': 2.0, 'free_weight': 0.30}}
+             'skin': {'regularisation': 10.0, 'attract_weight': 5.0, 'free_weight': 0.05},
+             'drape': {'regularisation': 12.0, 'attract_weight': 2.0, 'free_weight': 0.30},
+             'shell': {'regularisation': 30.0, 'attract_weight': 0.8, 'free_weight': 0.60}}
+ATTRACT_RANGE = {
+    'conform': lambda standoff: CONFORM_ATTRACT_RANGE_M,
+    'skin': lambda standoff: CONFORM_ATTRACT_RANGE_M,
+    'drape': lambda standoff: max(DRAPE_ATTRACT_RANGE_FLOOR_M, DRAPE_ATTRACT_RANGE_MULTIPLE * standoff),
+    'shell': lambda standoff: max(SHELL_ATTRACT_RANGE_FLOOR_M, SHELL_ATTRACT_RANGE_MULTIPLE * standoff),
+}
 SHRINKWRAP_ITERATIONS = 18
 # A sample deeper than this is a long edge or face cutting a concave corner, not
 # the body emerging through the cloth. Moving its vertices cannot fix it and
@@ -307,6 +321,121 @@ def build_skinning(root, source_body_path, scale, translation, *, minimum_angle_
         'hard_to_smoothed_l1_change': float(np.abs(weights - hard).sum() / len(body_v)),
     }
     return LimbSkinning(bones, body_v, weights), landmarks, report
+
+
+# ------------------------------------------------------------ extremity seating
+# The limb pose correction is one rigid bone per limb, fitted between the
+# shoulder and the wrist. It cannot represent the difference in elbow angle
+# between the authoring body and this one, and the error it leaves accumulates
+# at the far end: a posed glove lands 136 mm proximal of this body's hand, in
+# the gap between forearm and hip. Nothing the shrinkwrap does to a garment
+# sitting there is a fit - the attraction simply glues it to whatever surface is
+# nearest, which is why the gloves came out as a second skin on the wrong part
+# of the body.
+#
+# Seating is one translation per connected component, measured not assumed: the
+# component's distal end is put on the limb's distal end and then refined by
+# closest-point iteration against the standoff shell, using only the distal part
+# of the component so the sleeve end cannot drag it. A translation preserves
+# every edge length exactly, so the shape-preservation measure is unaffected by
+# it and still reports the shrinkwrap alone. The step is gated: it is applied
+# only if it measurably improves the component's distance to the limb, and it is
+# recorded either way.
+SEAT_LIMBS = {'hand': {'limb': 'arm', 'radius_m': 0.10, 'axis_span_m': 0.45,
+                       'tip_quantile': 0.80, 'distal_fraction': 0.35},
+              'foot': {'limb': 'leg', 'radius_m': 0.13, 'axis_span_m': 0.30,
+                       'tip_quantile': 0.80, 'distal_fraction': 0.50}}
+SEAT_ITERATIONS = 25
+SEAT_TRIM_QUANTILE = 0.70
+SEAT_MAX_TRANSLATION_M = 0.20
+SEAT_MIN_IMPROVEMENT = 0.40
+
+
+def limb_frame(landmarks, limb):
+    row = next(entry for entry in landmarks if entry['limb'] == limb)
+    prox = np.asarray(row['target_proximal']['point_m'], float)
+    dist = np.asarray(row['target_distal']['point_m'], float)
+    axis = dist - prox
+    return prox, dist, axis / np.linalg.norm(axis)
+
+
+def extremity_pool(envelope_v, dist, axis, spec, side_sign):
+    """Envelope vertices on the distal end of one limb: inside a cylinder about
+    the limb axis, no further proximal than the span, and on the named side."""
+    along = (envelope_v - dist) @ axis
+    perpendicular = np.linalg.norm((envelope_v - dist) - along[:, None] * axis, axis=1)
+    lateral = envelope_v[:, 0] < 0 if side_sign < 0 else envelope_v[:, 0] > 0
+    mask = lateral & (along > -spec['axis_span_m']) & (perpendicular < spec['radius_m'])
+    return envelope_v[mask]
+
+
+def seat_component(component, pool, axis, spec, standoff, envelope_v, envelope_f, envelope_normals):
+    def residual(translation, subset):
+        signed, _, _, _ = igl.signed_distance(
+            np.ascontiguousarray(component[subset] + translation), envelope_v, envelope_f,
+            igl.SignedDistanceType.SIGNED_DISTANCE_TYPE_FAST_WINDING_NUMBER)
+        return float(np.median(np.abs(signed - standoff)))
+    along_pool = pool @ axis
+    along_component = component @ axis
+    distal = along_component >= np.quantile(along_component, 1.0 - spec['distal_fraction'])
+    translation = (pool[along_pool >= np.quantile(along_pool, spec['tip_quantile'])].mean(0)
+                   - component[along_component >= np.quantile(along_component, spec['tip_quantile'])].mean(0))
+    before = residual(np.zeros(3), distal)
+    for _ in range(SEAT_ITERATIONS):
+        x = component[distal] + translation
+        signed, index, closest, _ = igl.signed_distance(
+            np.ascontiguousarray(x), envelope_v, envelope_f,
+            igl.SignedDistanceType.SIGNED_DISTANCE_TYPE_FAST_WINDING_NUMBER)
+        target = closest + standoff * envelope_normals[index]
+        trimmed = np.abs(signed) <= np.quantile(np.abs(signed), SEAT_TRIM_QUANTILE)
+        translation = translation + (target - x)[trimmed].mean(0)
+    after = residual(translation, distal)
+    magnitude = float(np.linalg.norm(translation))
+    accepted = bool(magnitude <= SEAT_MAX_TRANSLATION_M and after <= (1.0 - SEAT_MIN_IMPROVEMENT) * before)
+    return translation, {'translation_mm': [float(v * 1e3) for v in translation],
+                         'translation_magnitude_mm': magnitude * 1e3,
+                         'distal_vertices_scored': int(distal.sum()),
+                         'pool_vertices': int(len(pool)),
+                         'distal_residual_mm_before': before * 1e3,
+                         'distal_residual_mm_after': after * 1e3, 'accepted': accepted,
+                         'rejected_because': None if accepted else (
+                             'translation exceeds the seating limit' if magnitude > SEAT_MAX_TRANSLATION_M
+                             else 'no measurable improvement in the distal residual')}
+
+
+def seat_extremity(positions, triangles, kind, standoff, envelope_v, envelope_f, envelope_normals, landmarks):
+    spec = SEAT_LIMBS[kind]
+    count, label = face_components(len(positions), triangles)
+    seated = positions.copy()
+    report = {'kind': kind, 'limb': spec['limb'], 'components': [],
+              'rule': 'one translation per connected component: the component distal end is placed on the limb '
+                      'distal end, then refined by trimmed closest-point iteration against the standoff shell over '
+                      'the distal part of the component. A translation changes no edge length, so the shape '
+                      'measures below report the shrinkwrap alone.',
+              'accepted_components': 0, 'rejected_components': 0}
+    for component in range(count):
+        mask = label == component
+        if mask.sum() < 8:
+            continue
+        side_sign = -1 if positions[mask][:, 0].mean() < 0 else 1
+        limb = f'{"right" if side_sign < 0 else "left"}_{spec["limb"]}'
+        _, dist, axis = limb_frame(landmarks, limb)
+        pool = extremity_pool(envelope_v, dist, axis, spec, side_sign)
+        if len(pool) < 50:
+            report['components'].append({'component': component, 'limb': limb, 'accepted': False,
+                                         'rejected_because': 'the limb extremity pool is empty'})
+            report['rejected_components'] += 1
+            continue
+        translation, row = seat_component(positions[mask], pool, axis, spec, standoff,
+                                          envelope_v, envelope_f, envelope_normals)
+        row.update({'component': component, 'limb': limb, 'vertices': int(mask.sum())})
+        if row['accepted']:
+            seated[mask] = positions[mask] + translation
+            report['accepted_components'] += 1
+        else:
+            report['rejected_components'] += 1
+        report['components'].append(row)
+    return seated, report
 
 
 def uniform_laplacian(vertex_count, triangles):
@@ -572,8 +701,11 @@ def run(argv=None):
                                     'are the shape term',
                        'push_weight': 60.0, 'fit_modes': FIT_MODES,
                        'conform_attract_range_m': CONFORM_ATTRACT_RANGE_M,
+                       'skin_attract_range_m': CONFORM_ATTRACT_RANGE_M,
                        'drape_attract_range_m': f'max({DRAPE_ATTRACT_RANGE_FLOOR_M}, '
                                                 f'{DRAPE_ATTRACT_RANGE_MULTIPLE} x standoff)',
+                       'shell_attract_range_m': f'max({SHELL_ATTRACT_RANGE_FLOOR_M}, '
+                                                f'{SHELL_ATTRACT_RANGE_MULTIPLE} x standoff)',
                        'rule': 'vertices closer than the standoff are driven onto the standoff shell; vertices within '
                                'the attraction range beyond it are attracted with a weight tapering to zero; vertices '
                                'further out are left to hang so flares and hems keep their own shape',
@@ -581,7 +713,14 @@ def run(argv=None):
                                          'is larger than this one and the garment must be drawn in. drape is for '
                                          'garments carrying real ease; a wide attraction range collapses a loose '
                                          'sleeve onto the arm, which is measurable as a sudden drop in the '
-                                         'edge-length ratio. The mode is an authored declaration per garment.'},
+                                         'edge-length ratio. The mode is an authored declaration per garment. '
+                                         'shell is for garments that hold their own volume against the body - a hat '
+                                         'crown standing off the scalp, a shoe enclosing a foot. Its attraction is a '
+                                         'narrow collar just outside the standoff shell and its shape term is fifteen '
+                                         'times the conform value, so only cloth already at the skin is held there '
+                                         'and the authored silhouette survives. skin is conform with a five times '
+                                         'stiffer shape term, for garments that must be drawn a long way onto the '
+                                         'body and would otherwise be squashed differentially while they travel.'},
     }
 
     OUT.mkdir(parents=True, exist_ok=True)
@@ -599,19 +738,22 @@ def run(argv=None):
         standoff = entry['standoff_mm'] * 1e-3
         mode = entry.get('fit_mode', 'conform')
         settings = FIT_MODES[mode]
-        attract_range = (CONFORM_ATTRACT_RANGE_M if mode == 'conform'
-                         else max(DRAPE_ATTRACT_RANGE_FLOOR_M, DRAPE_ATTRACT_RANGE_MULTIPLE * standoff))
-        fitted, history, projection = shrinkwrap(posed_garment, t, envelope_v, envelope_f, envelope_normals, standoff,
+        attract_range = ATTRACT_RANGE[mode](standoff)
+        seated, seat_report = ((posed_garment, None) if 'seat' not in entry else
+                               seat_extremity(posed_garment, t, entry['seat'], standoff,
+                                              envelope_v, envelope_f, envelope_normals, landmarks))
+        fitted, history, projection = shrinkwrap(seated, t, envelope_v, envelope_f, envelope_normals, standoff,
                                                  attract_range_m=attract_range, **settings)
-        stats = measure(fitted, posed_garment, t, envelope_v, envelope_f)
+        stats = measure(fitted, seated, t, envelope_v, envelope_f)
         stats.update({'fit_mode': mode, 'attract_range_mm': attract_range * 1e3, 'fit_weights': settings,
+                      'extremity_seating': seat_report,
                       'boundary_edges': boundary, 'nonmanifold_edges': nonmanifold,
                       'orientation_component_flips': flips, 'target_standoff_mm': entry['standoff_mm'],
                       'shrinkwrap_history': history, 'final_projection': projection,
                       'source_sha256': sha256_file(source),
                       'source_path': str(source.relative_to(ROOT))})
         np.savez_compressed(OUT / f'{entry["id"]}.npz', positions=fitted, indices=t,
-                            posed_source_positions=posed_garment)
+                            posed_source_positions=posed_garment, seated_source_positions=seated)
         results[entry['id']] = stats
         print(f'{entry["id"]:20s} V={stats["vertices"]:5d} inside={stats["inside_body_vertices"]:4d} '
               f'maxpen={stats["max_penetration_mm"]:6.3f} mm  samples_in={stats["inside_body_surface_samples"]:4d} '

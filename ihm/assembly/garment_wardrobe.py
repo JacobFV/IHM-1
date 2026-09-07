@@ -143,26 +143,45 @@ SLOTS = [
 # One catalogue entry per retained source mesh. `components` selects face
 # components by descending vertex count where one source file holds several
 # garments; `standoff_mm` is the clearance the shrinkwrap targets.
+#
+# `fit_mode` declares how the garment is meant to sit and is what stops the
+# shrinkwrap's attraction from flattening every garment onto the skin:
+#   conform  cloth that lies on the body and must be drawn in to reach it
+#   skin     conform with a stiffer shape term, for a garment that has to travel
+#            a long way onto the body and would otherwise be squashed on the way
+#   drape    cloth carrying real ease, whose flares and hems must hang
+#   shell    a garment that holds its own volume against the body: a hat crown
+#            standing off the scalp, a shoe enclosing a foot. Its attraction is a
+#            narrow collar just outside the standoff shell, so the authored
+#            silhouette survives and only cloth already at the skin is held there
+# `colour` is a display colour, not a measurement. Every one of them is held a
+# measured CIE Lab distance from the body colour and from its slot siblings so a
+# garment never renders as skin; scripts/build_garment_wardrobe.py --self-test
+# checks both distances.
+# `seat` names a limb extremity whose garment is re-seated by one translation per
+# connected component before the shrinkwrap, because the single-bone limb pose
+# correction leaves a glove 136 mm proximal of this body's hand and no shrinkwrap
+# of a garment sitting there is a fit.
 CATALOGUE = [
-    {'id': 'briefs', 'name': 'Briefs', 'slots': ['underwear_bottom'], 'colour': '#d7dade',
+    {'id': 'briefs', 'name': 'Briefs', 'slots': ['underwear_bottom'], 'colour': '#cfd8e6',
      'pack': 'underwear01', 'asset': 'wolgade_female_panties_01', 'obj': 'f_panties_01.obj', 'standoff_mm': 2.0},
-    {'id': 'bra-top', 'name': 'Bra top', 'slots': ['underwear_top'], 'colour': '#d7dade',
+    {'id': 'bra-top', 'name': 'Bra top', 'slots': ['underwear_top'], 'colour': '#d79bb4',
      'pack': 'underwear01', 'asset': 'wolgade_female_top_01', 'obj': 'f_top_01.obj', 'standoff_mm': 2.0},
-    {'id': 't-shirt', 'name': 'T-shirt', 'slots': ['torso_base'], 'colour': '#7d9ea6',
+    {'id': 't-shirt', 'name': 'T-shirt', 'slots': ['torso_base'], 'colour': '#5f9fbd',
      'pack': 'shirts01', 'asset': 'elvs_crude_t-shirt_male', 'obj': 'crude_male_shirt.obj', 'standoff_mm': 4.0},
-    {'id': 'polo-shirt', 'fit_mode': 'drape', 'name': 'Polo shirt', 'slots': ['torso_base'], 'colour': '#5f8a7d',
+    {'id': 'polo-shirt', 'fit_mode': 'drape', 'name': 'Polo shirt', 'slots': ['torso_base'], 'colour': '#3f7f66',
      'pack': 'shirts01', 'asset': 'namuhekam_male_polo_shirt', 'obj': 'Polo_t-shirt.obj', 'standoff_mm': 4.0},
-    {'id': 'tucked-t-shirt', 'name': 'Tucked T-shirt', 'slots': ['torso_base'], 'colour': '#93887a',
+    {'id': 'tucked-t-shirt', 'name': 'Tucked T-shirt', 'slots': ['torso_base'], 'colour': '#8a9663',
      'pack': 'shirts01', 'asset': 'toigo_basic_tucked_t-shirt', 'obj': 't_shirt_basic_tucked.obj', 'standoff_mm': 4.0},
-    {'id': 'fisherman-sweater', 'fit_mode': 'drape', 'name': 'Fisherman sweater', 'slots': ['torso_base'], 'colour': '#b9b0a0',
+    {'id': 'fisherman-sweater', 'fit_mode': 'drape', 'name': 'Fisherman sweater', 'slots': ['torso_base'], 'colour': '#e6d296',
      'pack': 'shirts01', 'asset': 'toigo_fisherman_sweater', 'obj': 'sweater_fisherman.obj', 'standoff_mm': 7.0},
-    {'id': 'turtleneck', 'name': 'Turtleneck top', 'slots': ['torso_base'], 'colour': '#4c5560',
+    {'id': 'turtleneck', 'name': 'Turtleneck top', 'slots': ['torso_base'], 'colour': '#3f4a58',
      'pack': 'shirts01', 'asset': 'toigo_turtleneck_halter_top', 'obj': 'turtleneck_halter.obj', 'standoff_mm': 4.0},
-    {'id': 'tank-top', 'name': 'Tank top', 'slots': ['torso_base'], 'colour': '#8fa9a8',
+    {'id': 'tank-top', 'name': 'Tank top', 'slots': ['torso_base'], 'colour': '#5fa79c',
      'pack': 'shirts01', 'asset': 'toigo_keyhole_tank_top', 'obj': 'tank_keyhole_neck.obj', 'standoff_mm': 3.0},
-    {'id': 'camisole', 'name': 'Camisole', 'slots': ['torso_base'], 'colour': '#c9b6bd',
+    {'id': 'camisole', 'name': 'Camisole', 'slots': ['torso_base'], 'colour': '#cc7f96',
      'pack': 'shirts01', 'asset': 'toigo_camisole_top', 'obj': 'camisole_top.obj', 'standoff_mm': 3.0},
-    {'id': 'tube-top', 'name': 'Tube top', 'slots': ['torso_base'], 'colour': '#9c6f86',
+    {'id': 'tube-top', 'name': 'Tube top', 'slots': ['torso_base'], 'colour': '#8f4a72',
      'pack': 'shirts01', 'asset': 'skalldyrssuppe_tube_top_funky_colors', 'obj': 'tube_top.obj', 'standoff_mm': 3.0},
     {'id': 'suit-jacket', 'fit_mode': 'drape', 'name': 'Suit jacket', 'slots': ['torso_outer'], 'colour': '#3a3f4a',
      'pack': 'system', 'asset': 'male_elegantsuit01', 'obj': 'male_elegantsuit01.obj', 'components': [0],
@@ -170,50 +189,50 @@ CATALOGUE = [
     {'id': 'suit-trousers', 'name': 'Suit trousers', 'slots': ['legs'], 'colour': '#3a3f4a',
      'pack': 'system', 'asset': 'male_elegantsuit01', 'obj': 'male_elegantsuit01.obj', 'components': [1],
      'standoff_mm': 6.0},
-    {'id': 'casual-shirt', 'fit_mode': 'drape', 'name': 'Casual shirt', 'slots': ['torso_base'], 'colour': '#6d7f96',
+    {'id': 'casual-shirt', 'fit_mode': 'drape', 'name': 'Casual shirt', 'slots': ['torso_base'], 'colour': '#5a7599',
      'pack': 'system', 'asset': 'male_casualsuit03', 'obj': 'male_casualsuit03.obj', 'components': [0],
      'standoff_mm': 6.0},
-    {'id': 'casual-trousers', 'name': 'Casual trousers', 'slots': ['legs'], 'colour': '#4a5162',
+    {'id': 'casual-trousers', 'name': 'Casual trousers', 'slots': ['legs'], 'colour': '#5a6b8a',
      'pack': 'system', 'asset': 'male_casualsuit03', 'obj': 'male_casualsuit03.obj', 'components': [1],
      'standoff_mm': 6.0},
-    {'id': 'wool-trousers', 'name': 'Wool trousers', 'slots': ['legs'], 'colour': '#5a5548',
+    {'id': 'wool-trousers', 'name': 'Wool trousers', 'slots': ['legs'], 'colour': '#4a4535',
      'pack': 'pants01', 'asset': 'toigo_wool_pants', 'obj': 'pants_wool.obj', 'standoff_mm': 6.0},
-    {'id': 'cargo-trousers', 'fit_mode': 'drape', 'name': 'Cargo trousers', 'slots': ['legs'], 'colour': '#6d6b52',
+    {'id': 'cargo-trousers', 'fit_mode': 'drape', 'name': 'Cargo trousers', 'slots': ['legs'], 'colour': '#525c33',
      'pack': 'pants01', 'asset': 'cortu_cargo_pants', 'obj': 'cargo_pants.obj', 'standoff_mm': 6.0},
-    {'id': 'denim-shorts', 'name': 'Denim shorts', 'slots': ['legs'], 'colour': '#3f5f82',
+    {'id': 'denim-shorts', 'name': 'Denim shorts', 'slots': ['legs'], 'colour': '#2f4f74',
      'pack': 'pants01', 'asset': 'cortu_jeans_shorts', 'obj': 'jean_shorts.obj', 'standoff_mm': 6.0},
-    {'id': 'harem-trousers', 'fit_mode': 'drape', 'name': 'Harem trousers', 'slots': ['legs'], 'colour': '#7a5b74',
+    {'id': 'harem-trousers', 'fit_mode': 'drape', 'name': 'Harem trousers', 'slots': ['legs'], 'colour': '#8a6a3a',
      'pack': 'pants01', 'asset': 'toigo_harem_pants', 'obj': 'pants_harem.obj', 'standoff_mm': 8.0},
-    {'id': 'long-skirt', 'fit_mode': 'drape', 'name': 'Long skirt', 'slots': ['legs'], 'colour': '#6b4a63',
+    {'id': 'long-skirt', 'fit_mode': 'drape', 'name': 'Long skirt', 'slots': ['legs'], 'colour': '#574a78',
      'pack': 'skirts01', 'asset': 'toigo_long_full_skirt', 'obj': 'skirt_full_long.obj', 'standoff_mm': 8.0},
-    {'id': 'mini-skirt', 'fit_mode': 'drape', 'name': 'Mini skirt', 'slots': ['legs'], 'colour': '#8a4f5e',
+    {'id': 'mini-skirt', 'fit_mode': 'drape', 'name': 'Mini skirt', 'slots': ['legs'], 'colour': '#a34a4a',
      'pack': 'skirts01', 'asset': 'frankyaye_mini_skirt_02', 'obj': 'mini_skirt_02.obj', 'standoff_mm': 6.0},
     {'id': 'halter-dress', 'fit_mode': 'drape', 'name': 'Halter dress', 'slots': ['torso_base', 'legs'], 'colour': '#7a4b5c',
      'pack': 'dress01', 'asset': 'toigo_halter_dress_knee_length', 'obj': 'dress_knee_halter.obj', 'standoff_mm': 6.0},
-    {'id': 'midi-dress', 'fit_mode': 'drape', 'name': 'Midi dress', 'slots': ['torso_base', 'legs'], 'colour': '#57506e',
+    {'id': 'midi-dress', 'fit_mode': 'drape', 'name': 'Midi dress', 'slots': ['torso_base', 'legs'], 'colour': '#6a4a2e',
      'pack': 'dress01', 'asset': 'toigo_halter_dress_midi', 'obj': 'dress_midi_halter.obj', 'standoff_mm': 6.0},
-    {'id': 'tunic', 'fit_mode': 'drape', 'name': 'Tunic', 'slots': ['torso_base', 'legs'], 'colour': '#b3a07f',
+    {'id': 'tunic', 'fit_mode': 'drape', 'name': 'Tunic', 'slots': ['torso_base', 'legs'], 'colour': '#c39a45',
      'pack': 'dress01', 'asset': 'wdg_mycenaean_tunic', 'obj': 'mycenaean_tunic.obj', 'standoff_mm': 7.0},
-    {'id': 'ankle-socks', 'name': 'Ankle socks', 'slots': ['feet_inner'], 'colour': '#e2e5e9',
-     'pack': 'underwear04', 'asset': 'joepal_crude_low_socks', 'obj': 'crudelowsocks.obj', 'standoff_mm': 2.0},
-    {'id': 'crew-socks', 'name': 'Crew socks', 'slots': ['feet_inner'], 'colour': '#dadfe6',
-     'pack': 'underwear04', 'asset': 'joepal_crude_high_socks', 'obj': 'crudehighsocks.obj', 'standoff_mm': 2.0},
-    {'id': 'stockings', 'name': 'Stockings', 'slots': ['feet_inner'], 'colour': '#cdbfb6',
-     'pack': 'underwear01', 'asset': 'marco_105_stocking01', 'obj': 'stocking01.obj', 'standoff_mm': 2.0},
-    {'id': 'shoes', 'name': 'Shoes', 'slots': ['feet_outer'], 'colour': '#33302e',
-     'pack': 'system', 'asset': 'shoes01', 'obj': 'shoes01.obj', 'standoff_mm': 3.0},
-    {'id': 'dress-shoes', 'name': 'Dress shoes', 'slots': ['feet_outer'], 'colour': '#241f1c',
-     'pack': 'system', 'asset': 'shoes02', 'obj': 'shoes02.obj', 'standoff_mm': 3.0},
-    {'id': 'gloves', 'name': 'Gloves', 'slots': ['hands'], 'colour': '#5a4636',
-     'pack': 'gloves01', 'asset': 'toigo_gloves_medium', 'obj': 'gloves_medium.obj', 'standoff_mm': 2.0},
-    {'id': 'long-gloves', 'name': 'Long gloves', 'slots': ['hands'], 'colour': '#4c3c52',
-     'pack': 'gloves01', 'asset': 'toigo_gloves_long', 'obj': 'gloves_long.obj', 'standoff_mm': 2.0},
-    {'id': 'newsboy-cap', 'name': 'Newsboy cap', 'slots': ['head'], 'colour': '#5f5a4e',
-     'pack': 'hats01', 'asset': 'jujube_newsboy_cap', 'obj': 'newsboy_cap.obj', 'standoff_mm': 4.0},
-    {'id': 'cloche-hat', 'name': 'Cloche hat', 'slots': ['head'], 'colour': '#7b4f4f',
-     'pack': 'hats01', 'asset': 'aethelraed_unraed_cloche_hat', 'obj': 'cloche_hat.obj', 'standoff_mm': 4.0},
-    {'id': 'fedora', 'name': 'Fedora', 'slots': ['head'], 'colour': '#4b4139',
-     'pack': 'system', 'asset': 'fedora01', 'obj': 'fedora.obj', 'standoff_mm': 4.0},
+    {'id': 'ankle-socks', 'fit_mode': 'shell', 'name': 'Ankle socks', 'slots': ['feet_inner'], 'colour': '#dde5ec',
+     'pack': 'underwear04', 'asset': 'joepal_crude_low_socks', 'obj': 'crudelowsocks.obj', 'standoff_mm': 3.0},
+    {'id': 'crew-socks', 'fit_mode': 'shell', 'name': 'Crew socks', 'slots': ['feet_inner'], 'colour': '#55748f',
+     'pack': 'underwear04', 'asset': 'joepal_crude_high_socks', 'obj': 'crudehighsocks.obj', 'standoff_mm': 3.0},
+    {'id': 'stockings', 'fit_mode': 'skin', 'name': 'Stockings', 'slots': ['feet_inner'], 'colour': '#7d5566',
+     'pack': 'underwear01', 'asset': 'marco_105_stocking01', 'obj': 'stocking01.obj', 'standoff_mm': 3.0},
+    {'id': 'shoes', 'fit_mode': 'shell', 'name': 'Shoes', 'slots': ['feet_outer'], 'colour': '#6b4a2e',
+     'pack': 'system', 'asset': 'shoes01', 'obj': 'shoes01.obj', 'standoff_mm': 6.0},
+    {'id': 'dress-shoes', 'fit_mode': 'shell', 'name': 'Dress shoes', 'slots': ['feet_outer'], 'colour': '#221f1e',
+     'pack': 'system', 'asset': 'shoes02', 'obj': 'shoes02.obj', 'standoff_mm': 6.0},
+    {'id': 'gloves', 'fit_mode': 'skin', 'seat': 'hand', 'name': 'Gloves', 'slots': ['hands'], 'colour': '#5a4636',
+     'pack': 'gloves01', 'asset': 'toigo_gloves_medium', 'obj': 'gloves_medium.obj', 'standoff_mm': 3.0},
+    {'id': 'long-gloves', 'fit_mode': 'skin', 'seat': 'hand', 'name': 'Long gloves', 'slots': ['hands'], 'colour': '#4c3c52',
+     'pack': 'gloves01', 'asset': 'toigo_gloves_long', 'obj': 'gloves_long.obj', 'standoff_mm': 3.0},
+    {'id': 'newsboy-cap', 'fit_mode': 'shell', 'name': 'Newsboy cap', 'slots': ['head'], 'colour': '#46606f',
+     'pack': 'hats01', 'asset': 'jujube_newsboy_cap', 'obj': 'newsboy_cap.obj', 'standoff_mm': 8.0},
+    {'id': 'cloche-hat', 'fit_mode': 'shell', 'name': 'Cloche hat', 'slots': ['head'], 'colour': '#8f4646',
+     'pack': 'hats01', 'asset': 'aethelraed_unraed_cloche_hat', 'obj': 'cloche_hat.obj', 'standoff_mm': 8.0},
+    {'id': 'fedora', 'fit_mode': 'shell', 'name': 'Fedora', 'slots': ['head'], 'colour': '#5a3a22',
+     'pack': 'system', 'asset': 'fedora01', 'obj': 'fedora.obj', 'standoff_mm': 10.0},
 ]
 
 

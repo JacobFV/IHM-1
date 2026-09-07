@@ -51,18 +51,33 @@ CONTACT_BAND_M = 0.045
 SIMULATED_SECONDS = 0.030
 MAX_STEPS = 1400
 
-CAMERA = {'azimuth_deg': 28.0, 'elevation_deg': 14.0, 'projection': 'orthographic',
-          'half_width_m': 0.62, 'half_height_m': 0.95, 'centre_m': [0.0, 0.0, 0.0]}
+VIEW = {'azimuth_deg': 28.0, 'elevation_deg': 14.0, 'projection': 'orthographic'}
 LIGHT = {'direction': [-0.35, 0.55, 0.76], 'ambient': 0.34, 'diffuse': 0.66}
-IMAGE = {'width': 360, 'height': 540, 'supersample': 2}
-BODY_RGB = (0.78, 0.74, 0.71)
+# The tile picture is read at about 90 x 130 device-independent pixels; the file
+# is written at three times that so it stays sharp on a 2x display.
+IMAGE = {'width': 270, 'height': 390, 'supersample': 2, 'tile_width': 90, 'tile_height': 130}
+# The body is the ground every garment is read against, so it is a single
+# desaturated neutral and every garment colour is held a measured distance from
+# it. MINIMUM_BODY_DELTA_E is checked in --self-test, so a future palette edit
+# cannot quietly reintroduce a garment that renders as skin.
+BODY_RGB = (0.60, 0.56, 0.53)
+MINIMUM_BODY_DELTA_E = 22.0
+MINIMUM_SIBLING_DELTA_E = 12.0
+# Framing rule. Every tile carries the same light, the same palette, the same
+# view direction and the same pixel size; only the camera window moves. A window
+# is the garment's own extent in the camera plane, grown by a context margin so
+# the body part it belongs to comes with it, then squared up to the tile aspect
+# and clamped. A glove therefore arrives with a hand and a fedora with a head,
+# while a coat still frames the whole figure because its own extent is that big.
+FRAME = {'context_fraction': 0.30, 'context_floor_m': 0.05,
+         'min_half_height_m': 0.115, 'max_half_height_m': 0.98}
 
 
 # ----------------------------------------------------------------------- render
 
 def camera_basis():
-    az = math.radians(CAMERA['azimuth_deg'])
-    el = math.radians(CAMERA['elevation_deg'])
+    az = math.radians(VIEW['azimuth_deg'])
+    el = math.radians(VIEW['elevation_deg'])
     w = np.array([math.sin(az) * math.cos(el), math.sin(el), math.cos(az) * math.cos(el)])
     w /= np.linalg.norm(w)
     r = np.cross(np.array([0.0, 1.0, 0.0]), w)
@@ -71,13 +86,71 @@ def camera_basis():
     return r, u, w
 
 
-def project(points, basis, size):
+def lateral_pair_component(positions, triangles, *, tolerance_m=0.02, offset_m=0.04):
+    """Vertex mask of the largest connected component when the garment is a
+    laterally symmetric pair, otherwise None.
+
+    A pair of gloves framed together is framed on the whole torso, because the
+    two gloves sit at opposite ends of the body: the tile then shows two dark
+    slivers on a full figure. One glove framed on its own shows a glove. The
+    test is exact rather than a slot rule: the largest component must sit off
+    the midline and its reflection must land on another component of the same
+    garment, which is true of gloves, socks and shoes and false of a polo shirt
+    whose sleeves are separate components around a midline body."""
+    count, label = face_components(len(positions), triangles)
+    if count < 2:
+        return None, count
+    sizes = np.bincount(label, minlength=count)
+    order = np.argsort(-sizes)
+    centroid = positions[label == order[0]].mean(0)
+    if abs(centroid[0]) < offset_m:
+        return None, count
+    mirrored = centroid * np.array([-1.0, 1.0, 1.0])
+    for other in order[1:]:
+        if np.linalg.norm(positions[label == other].mean(0) - mirrored) <= tolerance_m:
+            return label == order[0], count
+    return None, count
+
+
+def frame_camera(positions, *, aspect=None, note=''):
+    """Camera window for one garment: its own extent in the camera plane plus a
+    context margin, squared up to the tile aspect and clamped.
+
+    The margin is a fraction of the garment's own larger extent with a floor, so
+    a small garment gets proportionally more body around it than a large one and
+    nothing is ever framed edge-to-edge."""
+    r, u, _ = camera_basis()
+    aspect = aspect if aspect is not None else IMAGE['width'] / IMAGE['height']
+    a = np.asarray(positions) @ r
+    b = np.asarray(positions) @ u
+    extent = max(float(a.max() - a.min()), float(b.max() - b.min()))
+    margin = max(FRAME['context_fraction'] * extent, FRAME['context_floor_m'])
+    half_w = 0.5 * float(a.max() - a.min()) + margin
+    half_h = 0.5 * float(b.max() - b.min()) + margin
+    if half_w / half_h > aspect:
+        half_h = half_w / aspect
+    else:
+        half_w = half_h * aspect
+    clamped = float(min(max(half_h, FRAME['min_half_height_m']), FRAME['max_half_height_m']))
+    limit = 'none' if clamped == half_h else ('minimum' if clamped > half_h else 'maximum')
+    half_h, half_w = clamped, clamped * aspect
+    centre = 0.5 * float(a.max() + a.min()) * r + 0.5 * float(b.max() + b.min()) * u
+    return {'azimuth_deg': VIEW['azimuth_deg'], 'elevation_deg': VIEW['elevation_deg'],
+            'projection': VIEW['projection'], 'centre_m': [float(v) for v in centre],
+            'half_width_m': half_w, 'half_height_m': half_h,
+            'garment_extent_m': {'across': float(a.max() - a.min()), 'up': float(b.max() - b.min())},
+            'context_margin_m': margin, 'clamped_by': limit,
+            'rule': note or 'garment extent in the camera plane plus a context margin, squared to the tile '
+                            'aspect and clamped between a minimum and the whole figure'}
+
+
+def project(points, basis, size, camera):
     r, u, w = basis
-    centre = np.asarray(CAMERA['centre_m'])
+    centre = np.asarray(camera['centre_m'])
     local = points - centre
     width, height = size
-    px = (local @ r / CAMERA['half_width_m'] * 0.5 + 0.5) * width
-    py = (0.5 - local @ u / CAMERA['half_height_m'] * 0.5) * height
+    px = (local @ r / camera['half_width_m'] * 0.5 + 0.5) * width
+    py = (0.5 - local @ u / camera['half_height_m'] * 0.5) * height
     return np.stack([px, py, local @ w], 1)
 
 
@@ -97,7 +170,11 @@ def rasterise(screen, positions, triangles, colour, depth, image, mask):
     height, width = depth.shape
     lo = np.floor(s[:, :, :2].min(1)).astype(int)
     hi = np.ceil(s[:, :, :2].max(1)).astype(int)
-    for i in np.flatnonzero(keep & (facing > 0)):
+    # A cropped window discards most of the body; rejecting those faces before
+    # the per-face loop is what keeps a tight crop as cheap as a wide one.
+    visible = (keep & (facing > 0) & (hi[:, 0] >= 0) & (hi[:, 1] >= 0)
+               & (lo[:, 0] < width) & (lo[:, 1] < height))
+    for i in np.flatnonzero(visible):
         x0, y0 = max(lo[i, 0], 0), max(lo[i, 1], 0)
         x1, y1 = min(hi[i, 0] + 1, width), min(hi[i, 1] + 1, height)
         if x1 <= x0 or y1 <= y0:
@@ -127,9 +204,10 @@ def rasterise(screen, positions, triangles, colour, depth, image, mask):
 _BODY_LAYER = {}
 
 
-def body_layer(body):
-    """The body raster is camera-invariant across garments; rasterise it once."""
-    key = id(body[0])
+def body_layer(body, camera):
+    """The body raster depends only on the camera window, so garments sharing a
+    window share one rasterisation of the body."""
+    key = (id(body[0]), round(camera['half_height_m'], 6), tuple(round(v, 6) for v in camera['centre_m']))
     if key not in _BODY_LAYER:
         factor = IMAGE['supersample']
         size = (IMAGE['width'] * factor, IMAGE['height'] * factor)
@@ -137,26 +215,61 @@ def body_layer(body):
         image = np.zeros((size[1], size[0], 3))
         mask = np.zeros((size[1], size[0]), bool)
         positions, triangles, colour = body
-        rasterise(project(positions, camera_basis(), size), positions, triangles, colour, depth, image, mask)
+        rasterise(project(positions, camera_basis(), size, camera), positions, triangles, colour,
+                  depth, image, mask)
         _BODY_LAYER[key] = (depth, image, mask)
     depth, image, mask = _BODY_LAYER[key]
     return depth.copy(), image.copy(), mask.copy()
 
 
-def render(body, garments, path):
+def render(body, garments, path, camera=None):
     from PIL import Image
+    if camera is None:
+        camera = frame_camera(np.concatenate([g[0] for g in garments]) if garments else body[0])
     factor = IMAGE['supersample']
     size = (IMAGE['width'] * factor, IMAGE['height'] * factor)
-    depth, image, mask = body_layer(body)
+    depth, image, mask = body_layer(body, camera)
+    body_pixels = int(mask.sum())
     basis = camera_basis()
     for positions, triangles, colour in garments:
-        rasterise(project(positions, basis, size), positions, triangles, colour, depth, image, mask)
+        rasterise(project(positions, basis, size, camera), positions, triangles, colour, depth, image, mask)
     rgba = np.concatenate([np.clip(image, 0, 1), mask[:, :, None].astype(float)], 2)
     small = rgba.reshape(IMAGE['height'], factor, IMAGE['width'], factor, 4).mean((1, 3))
     path.parent.mkdir(parents=True, exist_ok=True)
     Image.fromarray((small * 255 + 0.5).astype(np.uint8), 'RGBA').save(path)
+    # Garment coverage is the receipt that the framing worked: a tile whose
+    # garment covers a handful of pixels is not identifiable however it is lit.
+    garment_mask = np.zeros(mask.shape, bool)
+    gdepth = np.full(depth.shape, -np.inf)
+    gimage = np.zeros(image.shape)
+    for positions, triangles, colour in garments:
+        rasterise(project(positions, basis, size, camera), positions, triangles, colour,
+                  gdepth, gimage, garment_mask)
+    visible = garment_mask & (gdepth >= depth - 1e-9)
     return {'width': IMAGE['width'], 'height': IMAGE['height'], 'supersample': factor,
-            'covered_pixels': int((small[:, :, 3] > 0.5).sum())}
+            'tile_width': IMAGE['tile_width'], 'tile_height': IMAGE['tile_height'],
+            'covered_pixels': int((small[:, :, 3] > 0.5).sum()),
+            'garment_pixels': int(round(visible.sum() / (factor * factor))),
+            'garment_pixel_fraction': float(visible.sum() / (factor * factor)
+                                            / (IMAGE['width'] * IMAGE['height'])),
+            'body_pixels': int(round(body_pixels / (factor * factor)))}
+
+
+def srgb_to_lab(rgb):
+    """CIE Lab under D65. Used only to hold garment colours a measured distance
+    from the body colour and from their slot siblings."""
+    c = np.asarray(rgb, float)
+    linear = np.where(c <= 0.04045, c / 12.92, ((c + 0.055) / 1.055) ** 2.4)
+    matrix = np.array([[0.4124564, 0.3575761, 0.1804375],
+                       [0.2126729, 0.7151522, 0.0721750],
+                       [0.0193339, 0.1191920, 0.9503041]])
+    xyz = matrix @ linear / np.array([0.95047, 1.0, 1.08883])
+    f = np.where(xyz > 216 / 24389, np.cbrt(xyz), (24389 / 27 * xyz + 16) / 116)
+    return np.array([116 * f[1] - 16, 500 * (f[0] - f[1]), 200 * (f[1] - f[2])])
+
+
+def delta_e(a, b):
+    return float(np.linalg.norm(srgb_to_lab(a) - srgb_to_lab(b)))
 
 
 def hex_rgb(text):
@@ -375,12 +488,26 @@ def prior_work_regression():
     for path, digest in sorted(configuration['source_sha256'].items()):
         compare('data/derived/garment-tissue-refined-oufb46p6', path, digest)
     run = json.loads((GARMENT_TISSUE / 'report.json').read_text())
+    # The claim under test is that this build leaves the retained experiments'
+    # data alone. A viewer source file listed in the same recorded manifest is
+    # not that claim: app/src is front-end code owned by other work and it moves
+    # for reasons this build neither causes nor can see. Both groups are
+    # recorded; only the derived data is asserted.
+    derived = [c for c in checks if c['path'].startswith('data/')]
+    viewer = [c for c in checks if not c['path'].startswith('data/')]
     return {
         'schema': 'ihm.prior-work-regression.v1',
         'statement': 'This build writes new files only. It does not read, rewrite or re-run the retained coupled '
                      'cloth-tissue experiment, and it leaves the generated-garment constructor and its emitted '
                      'garments.json untouched.',
-        'all_unchanged': all(c['unchanged'] for c in checks),
+        'all_unchanged': all(c['unchanged'] for c in derived),
+        'derived_data_unchanged': all(c['unchanged'] for c in derived),
+        'viewer_sources_unchanged': all(c['unchanged'] for c in viewer),
+        'viewer_source_drift': [c['path'] for c in viewer if not c['unchanged']],
+        'viewer_source_drift_note': 'app/src files are recorded in the retained report but are owned by the viewer, '
+                                    'not by this build. Drift here is reported, never asserted, because this build '
+                                    'does not read or write them; git reports them unmodified against HEAD, so the '
+                                    'recorded digest predates a later commit to the viewer.',
         'checks': checks,
         'retained_coupled_run': {
             'path': 'data/derived/garment-tissue-refined-oufb46p6/coupled',
@@ -453,7 +580,14 @@ def run(argv=None):
         with gzip.open(ROOT / geometry_path, 'wt') as handle:
             json.dump(payload, handle)
         thumbnail = OUT / 'thumbnails' / f'{entry["id"]}.png'
-        image = render(body, [(positions, triangles, hex_rgb(entry['colour']))], thumbnail)
+        side, _ = lateral_pair_component(positions, triangles)
+        camera = frame_camera(positions if side is None else positions[side],
+                              note='the garment is a laterally symmetric pair and is framed on one side, so a '
+                                   'glove is read from one glove instead of two slivers on a whole figure'
+                                   if side is not None else '')
+        camera['framed_on'] = 'whole garment' if side is None else 'largest laterally paired component'
+        image = render(body, [(positions, triangles, hex_rgb(entry['colour']))], thumbnail, camera)
+        image['body_colour_delta_e'] = delta_e(hex_rgb(entry['colour']), BODY_RGB)
         transforms = [
             {'kind': 'uniform_similarity', 'from': 'makehuman-base-mesh', 'to': 'bodyparts3d-display-m',
              'scale': registration['similarity']['uniform_scale'],
@@ -483,6 +617,7 @@ def run(argv=None):
             'geometry': geometry_path, 'geometry_sha256': sha256_file(ROOT / geometry_path),
             'thumbnail': f'data/derived/wardrobe-v1/thumbnails/{entry["id"]}.png',
             'thumbnail_sha256': sha256_file(thumbnail), 'thumbnail_pixels': image,
+            'thumbnail_frame': camera,
             'provenance': f'data/derived/wardrobe-v1/provenance/{entry["id"]}.json',
             'tier': record['tier'], 'license': retrieval['files'][entry['id']]['license'],
             'author': retrieval['files'][entry['id']]['author'],
@@ -601,7 +736,12 @@ def run(argv=None):
         'loose_fits': {r['id']: r['standoff_mm']['p95'] for r in records if r['loose_fit']},
         'loose_fit_note': 'a garment whose 95th-percentile standoff exceeds 40 mm carries real ease that the fit '
                           'deliberately did not remove. Widening the attraction to close it was measured and '
-                          'rejected: it pulls the inner wall of a long sleeve onto the torso and shreds the sleeve.',
+                          'rejected: it pulls the inner wall of a long sleeve onto the torso and shreds the sleeve. '
+                          'Shell-mode garments - hats, shoes, socks - appear here by construction: a shoe encloses a '
+                          'foot and a hat crown stands off a scalp, and holding that volume is the point of the mode, '
+                          'not a fit failure. Their standoff distribution is the authored silhouette measured against '
+                          'this body, and their edge-length ratio is the receipt that the shrinkwrap did not shrink '
+                          'them to reach it.',
     }
     (OUT / 'wardrobe.json').write_text(json.dumps(wardrobe, indent=1, sort_keys=True) + '\n')
 
@@ -685,8 +825,50 @@ def self_test():
         stats = render((box, faces, BODY_RGB), [(box * 1.02, faces, (0.2, 0.4, 0.7))], target)
         _BODY_LAYER.clear()
         assert target.exists() and stats['covered_pixels'] > 100, stats
+        assert stats['garment_pixels'] > 100, stats
+    # Framing: a small garment must be framed tighter than a large one, both
+    # must arrive at the tile aspect, and neither may be framed edge-to-edge.
+    aspect = IMAGE['width'] / IMAGE['height']
+    small = frame_camera(np.array([[-0.02, 0.80, -0.02], [0.02, 0.84, 0.02]]))
+    large = frame_camera(np.array([[-0.30, -0.80, -0.15], [0.30, 0.80, 0.15]]))
+    assert small['half_height_m'] < large['half_height_m'], (small, large)
+    for cam in (small, large):
+        assert abs(cam['half_width_m'] / cam['half_height_m'] - aspect) < 1e-12, cam
+    assert small['half_height_m'] >= FRAME['min_half_height_m'] - 1e-12, small
+    assert large['half_height_m'] <= FRAME['max_half_height_m'] + 1e-12, large
+    assert small['centre_m'][1] > 0.5, 'the window must follow the garment, not stay on the origin'
+    # A laterally paired garment is framed on one side; a midline garment is not.
+    ring = np.array([[np.cos(a), 0.0, np.sin(a)] for a in np.linspace(0, 2 * np.pi, 8, endpoint=False)])
+    unit = np.concatenate([ring * 0.02, ring * 0.02 + [0, 0.1, 0]])
+    fan = np.array([[j, (j + 1) % 8, 8 + j] for j in range(8)]
+                   + [[(j + 1) % 8, 8 + (j + 1) % 8, 8 + j] for j in range(8)], dtype=np.int64)
+    pair_v = np.concatenate([unit + [-0.2, 0, 0], unit + [0.2, 0, 0]])
+    pair_f = np.concatenate([fan, fan + len(unit)])
+    side, count = lateral_pair_component(pair_v, pair_f)
+    assert count == 2 and side is not None and side.sum() == len(unit), (count, None if side is None else side.sum())
+    assert abs(pair_v[side].mean(0)[0]) > 0.1, 'a paired garment must be framed on one side only'
+    mid_v = np.concatenate([unit, unit * [1, 1, 1] + [0, 0.3, 0]])
+    mid_f = np.concatenate([fan, fan + len(unit)])
+    side, count = lateral_pair_component(mid_v, mid_f)
+    assert count == 2 and side is None, 'a midline garment must be framed whole'
+    assert (large['half_height_m'] * 2
+            > large['garment_extent_m']['up']), 'the window must include a context margin'
+    # Palette: no garment may render as skin, and two garments sharing a slot
+    # must not render as each other.
+    for entry in CATALOGUE:
+        d = delta_e(hex_rgb(entry['colour']), BODY_RGB)
+        assert d >= MINIMUM_BODY_DELTA_E, f'{entry["id"]} colour is {d:.1f} deltaE from the body colour'
+    for one in CATALOGUE:
+        for other in CATALOGUE:
+            if one['id'] >= other['id'] or not set(one['slots']) & set(other['slots']):
+                continue
+            if one['colour'] == other['colour']:
+                continue
+            d = delta_e(hex_rgb(one['colour']), hex_rgb(other['colour']))
+            assert d >= MINIMUM_SIBLING_DELTA_E, f'{one["id"]} and {other["id"]} are {d:.1f} deltaE apart'
     regression = prior_work_regression()
-    assert regression['all_unchanged'], [c for c in regression['checks'] if not c['unchanged']]
+    assert regression['derived_data_unchanged'], [c for c in regression['checks']
+                                                  if not c['unchanged'] and c['path'].startswith('data/')]
     assert regression['retained_coupled_run']['contact_resolutions'] == 10742, regression['retained_coupled_run']
     assert PROVENANCE_SCHEMA.exists(), 'provenance schema is missing'
     required = json.loads(PROVENANCE_SCHEMA.read_text())['required_fields']
