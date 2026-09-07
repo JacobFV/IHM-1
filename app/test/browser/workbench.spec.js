@@ -70,13 +70,19 @@ test("the environment section tells tiles, configuration and objects apart", asy
 
 test("scene objects are additive inserts, not toggles", async ({ page }) => {
   await page.goto("/");
-  const insert = (id) => page.locator(`#environment-tiles [data-insert="${id}"]`);
-  await expect(insert("ball-small")).toBeVisible({ timeout: 60000 });
+  // One plus opens a menu of the insertable objects; the buttons live inside it.
+  const plus = page.locator("#insert-object");
+  const insert = async (id) => {
+    await plus.click();
+    await page.locator(`#environment-tiles [data-insert="${id}"]`).click();
+  };
+  await expect(plus).toBeVisible({ timeout: 60000 });
+  await expect(page.locator("#insert-menu")).toBeHidden();
   await expect(page.locator("#environment-tiles .instance-list li")).toHaveCount(0);
   // The same object can be inserted more than once.
-  await insert("ball-small").click();
-  await insert("ball-small").click();
-  await insert("pillow").click();
+  await insert("ball-small");
+  await insert("ball-small");
+  await insert("pillow");
   await expect(page.locator("#environment-tiles .instance-list li")).toHaveCount(3);
   await page.locator("#environment-tiles .instance-list li .instance-remove").first().click();
   await expect(page.locator("#environment-tiles .instance-list li")).toHaveCount(2);
@@ -150,12 +156,37 @@ test("all three planes are reachable on the gimbal and snap the camera", async (
   expect(Object.keys(found).sort()).toEqual(["coronal", "sagittal", "transverse"]);
   // Clicking one snaps the main camera to that view. Only one snap is asserted:
   // a snap leaves the other two edge-on, and re-probing races camera damping.
-  const plane = "transverse";
-  await page.mouse.move(found[plane].x, found[plane].y);
-  await expect(page.locator("#gimbal")).toHaveAttribute("data-hover", plane);
+  // All three are reachable, asserted above. For the snap, take whichever plane
+  // the widget reports under the pointer and which is not already selected:
+  // which plane sits at a given pixel depends on an orbit that is not
+  // bit-deterministic, so naming one in advance would test the drag, not the
+  // gimbal. Scan and confirm in one loop, because the widget keeps turning.
+  const already = await page.locator("#gimbal").getAttribute("data-selected");
   const before = await page.locator("#scene").screenshot();
-  await page.mouse.click(found[plane].x, found[plane].y);
-  await expect(page.locator("#gimbal")).toHaveAttribute("data-selected", plane);
+  let plane = null;
+  for (let attempt = 0; attempt < 12 && !plane; attempt++) {
+    const at = await page.evaluate((skip) => {
+      const canvas = document.getElementById("gimbal");
+      const box = canvas.getBoundingClientRect();
+      for (let i = 1; i < 24; i++)
+        for (let j = 1; j < 24; j++) {
+          const clientX = box.left + (box.width * i) / 24, clientY = box.top + (box.height * j) / 24;
+          canvas.dispatchEvent(new PointerEvent("pointermove", { clientX, clientY, bubbles: true }));
+          const hit = canvas.dataset.hover;
+          if (hit && hit !== skip) return { x: clientX, y: clientY, hit };
+        }
+      return null;
+    }, already);
+    if (!at) { await page.waitForTimeout(250); continue; }
+    await page.mouse.move(at.x, at.y);
+    if ((await page.locator("#gimbal").getAttribute("data-hover")) !== at.hit) continue;
+    // Press where the pointer already is, in the same settled state the hover
+    // was confirmed against; the widget turns with the camera between probes.
+    await page.mouse.down();
+    await page.mouse.up();
+    if ((await page.locator("#gimbal").getAttribute("data-selected")) === at.hit) plane = at.hit;
+  }
+  expect(["coronal", "sagittal", "transverse"]).toContain(plane);
   await page.waitForTimeout(1500);
   expect((await page.locator("#scene").screenshot()).equals(before)).toBe(false);
 });
