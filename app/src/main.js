@@ -16,6 +16,7 @@ import { mountSceneInteraction } from "./scene-interaction.js";
 import { mountLeftColumn } from "./left-panel.js";
 import { mountPanes } from "./panes.js";
 import { mountProvenance } from "./provenance.js";
+import { mountGimbal } from "./gimbal.js";
 import { mountMicrovascularDetail } from "./microvascular-detail.js";
 
 const MODEL_ID = "ihm-body";
@@ -36,22 +37,7 @@ document.querySelector("#app").innerHTML = `
   <button id="toggle-left" class="edge-toggle left" type="button" aria-label="Collapse controls" aria-expanded="true">◧</button>
   <button id="toggle-right" class="edge-toggle right" type="button" aria-label="Collapse panes" aria-expanded="true">◨</button>
   <aside id="left-column" aria-label="Body controls"></aside>
-  <!-- One human figure; each of the three major planes drawn on it is the click target. -->
-  <svg id="gimbal" viewBox="0 0 90 104" role="group" aria-label="Body plane views">
-    <g class="plane" data-plane="transverse" role="button" tabindex="0" aria-label="Transverse plane">
-      <ellipse cx="45" cy="56" rx="26" ry="12"/>
-    </g>
-    <g class="plane" data-plane="coronal" role="button" tabindex="0" aria-label="Coronal plane">
-      <path d="M63 34 L27 18 L27 78 L63 94 Z"/>
-    </g>
-    <g class="plane" data-plane="sagittal" role="button" tabindex="0" aria-label="Sagittal plane">
-      <path d="M27 34 L63 18 L63 78 L27 94 Z"/>
-    </g>
-    <g class="figure" aria-hidden="true">
-      <circle cx="45" cy="18" r="7"/>
-      <path d="M38 27 h14 l6 20 -4 2 -3 -9 v17 h-4 l-2 26 h-5 l-2 -26 h-4 v-17 l-3 9 -4 -2 z"/>
-    </g>
-  </svg>
+  <canvas id="gimbal" width="108" height="108" aria-label="Body plane views · drag the scene to turn it"></canvas>
   <aside id="pane-column" aria-label="Panes"></aside>
   <div id="transport">
     <button id="play" type="button" aria-label="Play recorded body" disabled>▶</button>
@@ -70,6 +56,7 @@ try {
   renderer.setPixelRatio(1);
   renderer.localClippingEnabled = true;
   renderer.setClearColor(0x0d1416, 1);
+  renderer.domElement.id = "scene";
   viewport.prepend(renderer.domElement);
   scene = new THREE.Scene();
   camera = new THREE.PerspectiveCamera(35, 1, 0.01, 100000);
@@ -169,9 +156,9 @@ const left = mountLeftColumn($("left-column"), {
   onLayers: () => { refresh(); },
   onMember: (id) => selectStructure(structures.find((s) => s.id === id)),
   onClothing: (ids) => applyGarments(ids),
-  onEnvironment: (id) => {
-    if (!id) return;
-    sceneInteraction?.setEnvironment(id).then(syncRun).catch((e) => left.setRunNote(e.message));
+  onEnvironment: (selection, objects) => {
+    applyEnvironment(selection.environment);
+    applySurround(selection, objects);
   },
   onSimulation: (option, on) => {
     if (option === "hair") { hairDynamics = on; updateFrame(); return; }
@@ -185,6 +172,25 @@ const left = mountLeftColumn($("left-column"), {
     syncRun();
   },
 });
+// Seam for the environment lane's declared surround: each environment and
+// scene will carry its sky, ground treatment and enclosing geometry, and say
+// which parts are visual only and which participate in physics. Until those
+// fields arrive there is nothing to draw, and the scene keeps its own ground.
+let sceneCatalog = null;
+function applySurround(selection, objects = []) {
+  const entry = sceneCatalog?.tiles?.find((t) => t.id === (selection.scene || selection.environment));
+  const surround = entry?.surround || entry?.sky || entry?.ground;
+  if (!surround) return;
+  // Intentionally inert until the declared shape lands; nothing is guessed here.
+}
+
+// POST /api/embodied/sessions accepts one environment and nothing else, so the
+// component slots and scene objects are held as declared state until the
+// runtime accepts them.
+function applyEnvironment(id) {
+  if (!id) return;
+  sceneInteraction?.setEnvironment(id).then(syncRun).catch((e) => left.setRunNote(e.message));
+}
 function syncRun() {
   if (!sceneInteraction) { left.setRun("Start body", true); return; }
   left.setRun(!sceneInteraction.started ? "Start body" : sceneInteraction.running ? "Pause body" : "Resume body");
@@ -277,6 +283,7 @@ function selectStructure(s) {
 
 // --------------------------------------------------------------- camera ----
 function resetCamera(plane = "coronal") {
+  gimbal?.select(plane);
   if (domainView) { domainView.resetCamera(plane === "sagittal" ? "side" : "front"); return; }
   if (!camera || modelBounds.isEmpty()) return;
   const center = modelBounds.getCenter(new THREE.Vector3()),
@@ -293,16 +300,15 @@ function resetCamera(plane = "coronal") {
   camera.updateProjectionMatrix();
   controls.update();
 }
-for (const target of $("gimbal").querySelectorAll("[data-plane]")) {
-  const pick = () => {
-    for (const other of $("gimbal").querySelectorAll("[data-plane]"))
-      other.classList.toggle("on", other === target);
-    resetCamera(target.dataset.plane);
-  };
-  target.onclick = pick;
-  target.onkeydown = (event) => {
-    if (event.key === "Enter" || event.key === " ") { event.preventDefault(); pick(); }
-  };
+let gimbal = null;
+if (camera) {
+  try {
+    gimbal = mountGimbal($("gimbal"), { camera, onSelect: (plane) => resetCamera(plane) });
+    gimbal.select("coronal");
+  } catch (error) {
+    $("gimbal").hidden = true;
+    gimbal = null;
+  }
 }
 
 // ------------------------------------------------------------- transport ---
@@ -487,6 +493,7 @@ if (renderer) {
     if (document.hidden || now - lastRender < 1000 / 30) return;
     lastRender = now;
     controls.update();
+    gimbal?.update();
     sceneInteraction?.update(now);
     const frames = bodyTrajectory?.frames;
     if (playing && frames?.length && !liveFrame && !domainView) {
@@ -576,27 +583,33 @@ async function start() {
   mountBody();
   api("/api/clothing")
     .then((catalog) => {
-      left.setGarments(catalog.garments, catalog.garments.map((g) => g.id));
+      left.setGarments(catalog.garments, { initial: catalog.garments.map((g) => g.id) });
       applyGarments(left.garments);
     })
     .catch(() => left.setGarments(
       [...(clothingView?.meshes.keys() || [])].map((id) => ({ id, label: id, slot: `slot:${id}` })),
-      [...(clothingView?.meshes.keys() || [])]));
-  // The environment catalog owns identity, label, slot and thumbnail. The body
-  // accepts exactly one environment, so entries share one slot unless the
-  // catalog says otherwise. Imagery is read from the record when it lands.
+      { initial: [...(clothingView?.meshes.keys() || [])] }));
+  // The scene catalog owns identity, label, slot, thumbnail, requirements and
+  // per-slot defaults, for environments and their components alike. Nothing
+  // about exclusivity or dependency is decided here.
   api("/api/scene/catalog")
-    .then((catalog) => left.setEnvironments(
-      (catalog.environments || []).map((e) => ({
-        id: e.id,
-        label: e.label?.split(" · ")[0] || e.id,
-        slot: e.slot || "environment",
-        thumbnail_url: e.thumbnail_url ?? null,
-      })),
-      catalog.environments?.some((e) => e.id === "bed") ? ["bed"] : []))
+    .then((catalog) => {
+      sceneCatalog = catalog;
+      const tiles = catalog.tiles || (catalog.environments || []).map((e) => ({
+        id: e.id, label: e.label, slot: e.slot || "environment", kind: e.kind || "environment",
+        thumbnail_url: e.thumbnail_url ?? null, requires: e.requires || [],
+      }));
+      const slots = catalog.slots || [{ id: "environment", exclusive: true, required: true, default: "bed" }];
+      left.setEnvironments(tiles, {
+        slots,
+        initial: slots.map((s) => s.default).filter(Boolean),
+      });
+      applyEnvironment(left.environment);
+      applySurround(left.environmentSelection, []);
+    })
     .catch((error) => {
-      left.setEnvironments([], []);
-      left.setRunNote("Environment catalog unavailable: " + error.message);
+      left.setEnvironments([], {});
+      left.setRunNote("Scene catalog unavailable: " + error.message);
     });
   api("/api/body/experiments/conforming-domains").then((index) => {
     left.setMaterializations(

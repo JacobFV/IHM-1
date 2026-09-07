@@ -1,6 +1,8 @@
-// Picture-and-label tiles, driven entirely by a catalog: id, label, slot and an
-// optional thumbnail URL. Exclusivity is data, not a front-end rule — tiles that
-// share a slot are mutually exclusive, different slots combine freely.
+// Picture-and-label tiles, driven entirely by a catalog: id, label, slot,
+// thumbnail and requirements. Exclusivity and dependency are data, never
+// front-end rules — tiles in one slot replace each other, different slots
+// combine, and a tile whose requirements are unmet is shown unavailable rather
+// than selectable-and-then-refused.
 const svg = (body) =>
   `<svg viewBox="0 0 64 48" aria-hidden="true" focusable="false">${body}</svg>`;
 
@@ -13,23 +15,6 @@ export const THUMBNAILS = {
   shorts: svg(
     `<path d="M18 10 H46 L44 40 H35 L32 24 L29 40 H20 Z" fill="#33506b" stroke="#9dc3e0" stroke-width="1.4" stroke-linejoin="round"/>
      <path d="M18 15 H46" fill="none" stroke="#cfe3f2" stroke-width="1.2"/>`,
-  ),
-  bed: svg(
-    `<rect x="8" y="24" width="48" height="12" rx="3" fill="#5c7570" stroke="#a9cec5" stroke-width="1.4"/>
-     <rect x="12" y="18" width="16" height="8" rx="3" fill="#cfe3dc" stroke="#a9cec5" stroke-width="1.2"/>
-     <path d="M10 36 v6 M54 36 v6" stroke="#a9cec5" stroke-width="1.6" stroke-linecap="round"/>`,
-  ),
-  floor: svg(
-    `<path d="M4 34 H60" stroke="#a9cec5" stroke-width="1.8" stroke-linecap="round"/>
-     <path d="M10 34 L20 42 M24 34 L34 42 M38 34 L48 42" stroke="#5c7570" stroke-width="1.3"/>
-     <circle cx="32" cy="18" r="6" fill="#5c7570" stroke="#a9cec5" stroke-width="1.3"/>
-     <path d="M32 24 v8" stroke="#a9cec5" stroke-width="1.6" stroke-linecap="round"/>`,
-  ),
-  studio: svg(
-    `<circle cx="32" cy="24" r="8" fill="#4b6b78" stroke="#a9cfdd" stroke-width="1.4"/>
-     <circle cx="12" cy="12" r="1.6" fill="#cfe6ee"/><circle cx="52" cy="14" r="1.4" fill="#cfe6ee"/>
-     <circle cx="48" cy="38" r="1.6" fill="#cfe6ee"/><circle cx="16" cy="36" r="1.3" fill="#cfe6ee"/>
-     <circle cx="32" cy="8" r="1.2" fill="#cfe6ee"/>`,
   ),
 };
 const GENERIC = svg(
@@ -47,60 +32,184 @@ function picture(item) {
   return THUMBNAILS[item.thumbnail || item.id] || GENERIC;
 }
 
+const el = (tag, className, text) => {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+};
+
 export function mountTiles(host, { onChange }) {
   host.classList.add("tile-grid");
-  let items = [];
-  const selected = new Set();
-  const buttons = new Map();
+  let items = [], slots = [], title = "", instances = [], serial = 0;
+  const chosen = new Map(); // slot -> id
   const slotOf = (item) => item.slot || `slot:${item.id}`;
+  const slotSpec = (id) => slots.find((s) => s.id === id) || { id, exclusive: true };
 
+  const met = (requires) =>
+    (requires || []).every((rule) => (rule.any_of || []).includes(chosen.get(rule.slot)));
+  const available = (item) => met(item.requires) && met(slotSpec(slotOf(item)).requires);
+
+  // A choice can invalidate another slot's choice; drop what is no longer
+  // available until nothing else falls, rather than leaving a stale selection.
+  function settle() {
+    for (let pass = 0; pass < slots.length + items.length; pass++) {
+      const stale = items.find((item) => chosen.get(slotOf(item)) === item.id && !available(item));
+      if (!stale) break;
+      chosen.delete(slotOf(stale));
+    }
+    instances = instances.filter((instance) => {
+      const item = items.find((i) => i.id === instance.id);
+      return item && available(item);
+    });
+    // A slot that has just become reachable takes the default the catalog
+    // declares for it, rather than opening empty.
+    for (const spec of slots) {
+      if (chosen.has(spec.id) || !spec.default || !met(spec.requires)) continue;
+      const fallback = items.find((i) => i.id === spec.default);
+      if (fallback && available(fallback)) chosen.set(spec.id, spec.default);
+    }
+  }
+
+  // Three interaction kinds, told apart by the catalog rather than by anything
+  // hardcoded: exclusive selections are tiles, per-slot configuration is a
+  // dropdown that appears only when its requirements are met, and objects are
+  // additive inserts in the one non-exclusive slot.
   function render() {
     host.replaceChildren();
-    buttons.clear();
-    for (const item of items) {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "tile";
-      button.dataset.tile = item.id;
-      button.innerHTML = `${picture(item)}<span>${escape(item.label)}</span>`;
-      button.onclick = () => {
-        const on = !selected.has(item.id);
-        if (on)
-          for (const other of items)
-            if (other !== item && slotOf(other) === slotOf(item)) selected.delete(other.id);
-        on ? selected.add(item.id) : selected.delete(item.id);
-        paint();
-        onChange(active());
+    const named = slots.filter((s) => s.label).length > 1;
+    const pick = items.filter((i) => i.kind !== "component" && i.kind !== "object");
+    const config = items.filter((i) => i.kind === "component");
+    const objects = items.filter((i) => i.kind === "object");
+
+    const order = named ? slots.map((s) => s.id) : [null];
+    for (const slot of order) {
+      const group = slot === null ? pick : pick.filter((item) => slotOf(item) === slot);
+      if (!group.length) continue;
+      const spec = slot === null ? {} : slotSpec(slot);
+      if (spec.label && spec.label.toLowerCase() !== (title || "").toLowerCase())
+        host.append(el("p", "tile-slot", spec.label));
+      const grid = el("div", "tile-row");
+      for (const item of group) grid.append(tile(item));
+      host.append(grid);
+    }
+
+    for (const spec of slots) {
+      const group = config.filter((item) => slotOf(item) === spec.id);
+      if (!group.length || !met(spec.requires)) continue;
+      const available_ = group.filter(available);
+      if (!available_.length) continue;
+      const row = el("label", "config-row");
+      row.append(el("span", null, spec.label || spec.id));
+      const select = document.createElement("select");
+      select.dataset.slot = spec.id;
+      if (!spec.required) select.append(new Option("—", ""));
+      for (const item of available_) select.append(new Option(item.label, item.id));
+      select.value = chosen.get(spec.id) || "";
+      select.onchange = () => {
+        select.value ? chosen.set(spec.id, select.value) : chosen.delete(spec.id);
+        settle();
+        render();
+        emit();
       };
-      buttons.set(item.id, button);
-      host.append(button);
+      row.append(select);
+      host.append(row);
     }
-    paint();
-  }
-  function paint() {
-    for (const [id, button] of buttons) {
-      const on = selected.has(id);
-      button.setAttribute("aria-pressed", String(on));
-      button.classList.toggle("on", on);
+
+    if (objects.length) {
+      const usable = objects.filter(available);
+      if (usable.length) {
+        host.append(el("p", "tile-slot", slotSpec("objects").label || "Objects"));
+        const actions = el("div", "insert-actions");
+        for (const item of usable) {
+          const button = el("button", "insert", `+ Insert ${item.label}`);
+          button.type = "button";
+          button.dataset.insert = item.id;
+          button.onclick = () => {
+            instances.push({ uid: `${item.id}:${++serial}`, id: item.id });
+            render();
+            emit();
+          };
+          actions.append(button);
+        }
+        host.append(actions);
+      }
+      if (instances.length) {
+        const list = el("ul", "instance-list");
+        for (const instance of instances) {
+          const entry = el("li");
+          entry.dataset.instance = instance.uid;
+          entry.append(el("span", null, items.find((i) => i.id === instance.id)?.label || instance.id));
+          const remove = el("button", "instance-remove", "×");
+          remove.type = "button";
+          remove.setAttribute("aria-label", `Remove ${instance.id}`);
+          remove.onclick = () => {
+            instances = instances.filter((x) => x !== instance);
+            render();
+            emit();
+          };
+          entry.append(remove);
+          list.append(entry);
+        }
+        host.append(list);
+      }
     }
   }
-  const active = () => items.filter((i) => selected.has(i.id)).map((i) => i.id);
+  function tile(item) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "tile";
+    button.dataset.tile = item.id;
+    button.dataset.slot = slotOf(item);
+    button.innerHTML = `${picture(item)}<span>${escape(item.label)}</span>`;
+    const home = slotOf(item), rule = slotSpec(home);
+    const usable = available(item);
+    button.disabled = !usable;
+    if (!usable && rule.note) button.title = rule.note;
+    const on = chosen.get(home) === item.id;
+    button.setAttribute("aria-pressed", String(on));
+    button.classList.toggle("on", on);
+    button.onclick = () => {
+      if (!available(item)) return;
+      if (chosen.get(home) === item.id && !rule.required) chosen.delete(home);
+      else chosen.set(home, item.id);
+      settle();
+      render();
+      emit();
+    };
+    return button;
+  }
+  const emit = () => onChange(active(), Object.fromEntries(chosen), instances.map((i) => i.id));
+
+  const active = () => [...chosen.values()];
+
   return {
     active,
-    setItems(next, initial) {
+    get selection() { return Object.fromEntries(chosen); },
+    get instances() { return instances.map((i) => ({ ...i })); },
+    setItems(next, options = {}) {
       items = next;
-      const known = new Set(items.map((i) => i.id));
-      for (const id of [...selected]) if (!known.has(id)) selected.delete(id);
-      if (initial) {
-        selected.clear();
-        for (const id of initial) if (known.has(id)) selected.add(id);
+      slots = options.slots || [];
+      title = options.title || "";
+      instances = [];
+      chosen.clear();
+      // Slot defaults are applied in catalog order, and only where the slot's
+      // own requirements are already satisfied by the slots before it.
+      for (const id of options.initial || []) {
+        const item = items.find((i) => i.id === id);
+        if (item && available(item)) chosen.set(slotOf(item), id);
       }
+      settle();
       render();
     },
     select(ids) {
-      selected.clear();
-      for (const id of ids) if (buttons.has(id)) selected.add(id);
-      paint();
+      chosen.clear();
+      for (const id of ids) {
+        const item = items.find((i) => i.id === id);
+        if (item && available(item)) chosen.set(slotOf(item), id);
+      }
+      settle();
+      render();
     },
   };
 }

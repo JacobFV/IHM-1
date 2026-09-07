@@ -1,8 +1,34 @@
 // Panes float directly on the renderer. There is no panel, no sidebar surface
 // and no backdrop: each pane carries its own minimal ground so it stays legible
-// over arbitrary 3D content. Which panes are on screen is the reader's choice.
+// over arbitrary 3D content. Which panes are on screen, and which are collapsed
+// to their title, is the reader's choice and survives a reload.
+const STORE = "ihm.panes.v1";
+
+function load() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORE));
+    return {
+      shown: Array.isArray(saved?.shown) ? saved.shown : null,
+      collapsed: Array.isArray(saved?.collapsed) ? saved.collapsed : [],
+    };
+  } catch {
+    return { shown: null, collapsed: [] };
+  }
+}
+
 export function mountPanes(host, definitions) {
   const panes = new Map();
+  const saved = load();
+  const collapsed = new Set(saved.collapsed);
+  const save = () => {
+    try {
+      localStorage.setItem(STORE, JSON.stringify({
+        shown: definitions.filter((d) => !panes.get(d.id).pane.hidden).map((d) => d.id),
+        collapsed: [...collapsed],
+      }));
+    } catch {}
+  };
+
   const add = document.createElement("button");
   add.type = "button";
   add.className = "pane-add";
@@ -34,7 +60,7 @@ export function mountPanes(host, definitions) {
       button.type = "button";
       button.textContent = definition.title;
       button.onclick = () => {
-        panes.get(definition.id).pane.hidden = false;
+        show(definition.id);
         panes.get(definition.id).pane.scrollIntoView({ block: "nearest" });
         renderPicker();
       };
@@ -59,9 +85,14 @@ export function mountPanes(host, definitions) {
     pane.className = "pane";
     pane.dataset.pane = definition.id;
     pane.setAttribute("aria-label", definition.title);
-    pane.hidden = !definition.open;
+    pane.hidden = saved.shown ? !saved.shown.includes(definition.id) : !definition.open;
+
     const head = document.createElement("div");
     head.className = "pane-head";
+    // The same triangle as the Layers list, meaning the same thing.
+    const disclose = document.createElement("button");
+    disclose.className = "disclose";
+    disclose.type = "button";
     const title = document.createElement("h2");
     title.textContent = definition.title;
     const dismiss = document.createElement("button");
@@ -71,25 +102,48 @@ export function mountPanes(host, definitions) {
     dismiss.setAttribute("aria-label", `Remove ${definition.title}`);
     dismiss.onclick = () => {
       pane.hidden = true;
+      save();
       if (!picker.hidden) renderPicker();
     };
-    head.append(title, dismiss);
+    head.append(disclose, title, dismiss);
+
     const body = document.createElement("div");
     body.className = "pane-body";
     body.append(definition.content);
     pane.append(head, body);
     host.append(pane);
-    panes.set(definition.id, { pane, body });
+    panes.set(definition.id, { pane, body, disclose });
+
+    const paint = () => {
+      const shut = collapsed.has(definition.id);
+      body.hidden = shut;
+      pane.dataset.collapsed = String(shut);
+      disclose.textContent = shut ? "▸" : "▾";
+      disclose.setAttribute("aria-expanded", String(!shut));
+      disclose.setAttribute("aria-label", `${shut ? "Expand" : "Collapse"} ${definition.title}`);
+    };
+    disclose.onclick = () => {
+      collapsed.has(definition.id) ? collapsed.delete(definition.id) : collapsed.add(definition.id);
+      paint();
+      save();
+    };
+    paint();
+  }
+
+  function show(id) {
+    const entry = panes.get(id);
+    if (!entry) return;
+    entry.pane.hidden = false;
+    save();
   }
   return {
     show(id) {
-      const entry = panes.get(id);
-      if (entry) entry.pane.hidden = false;
+      show(id);
       if (!picker.hidden) renderPicker();
     },
     hide(id) {
       const entry = panes.get(id);
-      if (entry) entry.pane.hidden = true;
+      if (entry) { entry.pane.hidden = true; save(); }
     },
     visible: (id) => !panes.get(id)?.pane.hidden,
     body: (id) => panes.get(id)?.body,

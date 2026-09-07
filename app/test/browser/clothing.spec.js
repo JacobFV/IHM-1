@@ -10,13 +10,13 @@ test("clothing tiles come from the garment catalog and change the render", async
   await expect(page.locator("#clothing-tiles .tile span")).toHaveText(catalog.garments.map((g) => g.label));
   for (const garment of catalog.garments)
     await expect(page.locator(`#clothing-tiles [data-tile="${garment.id}"]`)).toHaveAttribute("aria-pressed", "true");
-  const dressed = await page.locator("#viewport canvas").screenshot();
+  const dressed = await page.locator("#scene").screenshot();
   for (const garment of catalog.garments)
     await page.locator(`#clothing-tiles [data-tile="${garment.id}"]`).click();
   for (const garment of catalog.garments)
     await expect(page.locator(`#clothing-tiles [data-tile="${garment.id}"]`)).toHaveAttribute("aria-pressed", "false");
   await page.waitForTimeout(500);
-  expect((await page.locator("#viewport canvas").screenshot()).equals(dressed)).toBe(false);
+  expect((await page.locator("#scene").screenshot()).equals(dressed)).toBe(false);
   expect(errors).toEqual([]);
 });
 

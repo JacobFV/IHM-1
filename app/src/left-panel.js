@@ -30,9 +30,44 @@ const el = (tag, className, text) => {
   if (text !== undefined) node.textContent = text;
   return node;
 };
-function section(title, ...children) {
+// The same disclosure as the panes and the Layers list: one triangle, one
+// meaning, on both sides of the screen, and it survives a reload.
+const STORE = "ihm.sections.v1";
+const shutSections = (() => {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORE));
+    return new Set(Array.isArray(saved) ? saved : []);
+  } catch {
+    return new Set();
+  }
+})();
+function saveSections() {
+  try { localStorage.setItem(STORE, JSON.stringify([...shutSections])); } catch {}
+}
+function section(id, title, ...children) {
   const node = el("section", "column-section");
-  node.append(el("h2", null, title), ...children);
+  node.dataset.section = id;
+  const head = el("div", "section-head");
+  const disclose = el("button", "disclose");
+  disclose.type = "button";
+  const body = el("div", "section-body");
+  body.append(...children);
+  head.append(disclose, el("h2", null, title));
+  node.append(head, body);
+  const paint = () => {
+    const shut = shutSections.has(id);
+    body.hidden = shut;
+    node.dataset.collapsed = String(shut);
+    disclose.textContent = shut ? "▸" : "▾";
+    disclose.setAttribute("aria-expanded", String(!shut));
+    disclose.setAttribute("aria-label", `${shut ? "Expand" : "Collapse"} ${title}`);
+  };
+  disclose.onclick = () => {
+    shutSections.has(id) ? shutSections.delete(id) : shutSections.add(id);
+    paint();
+    saveSections();
+  };
+  paint();
   return node;
 }
 
@@ -67,14 +102,16 @@ export function mountLeftColumn(host, hooks) {
   const clothingHost = el("div");
   clothingHost.id = "clothing-tiles";
   const clothing = mountTiles(clothingHost, { onChange: (ids) => hooks.onClothing(ids) });
-  const clothingSection = section("Clothing", clothingHost);
+  const clothingSection = section("clothing", "Clothing", clothingHost);
   clothingSection.id = "clothing-section";
 
   // Environment -----------------------------------------------------------
   const environmentHost = el("div");
   environmentHost.id = "environment-tiles";
-  const environment = mountTiles(environmentHost, { onChange: (ids) => hooks.onEnvironment(ids[0] || null) });
-  const environmentSection = section("Environment", environmentHost);
+  const environment = mountTiles(environmentHost, {
+    onChange: (ids, selection, objects) => hooks.onEnvironment(selection, objects),
+  });
+  const environmentSection = section("environment", "Environment", environmentHost);
   environmentSection.id = "environment-section";
 
   // Simulation ------------------------------------------------------------
@@ -110,11 +147,11 @@ export function mountLeftColumn(host, hooks) {
   runNote.setAttribute("role", "status");
 
   host.replaceChildren(
-    section("Materialization", materialization, materializationNote),
-    section("Layers", search, layers),
+    section("materialization", "Materialization", materialization, materializationNote),
+    section("layers", "Layers", search, layers),
     clothingSection,
     environmentSection,
-    section("Simulation", dynamics, run, runNote),
+    section("simulation", "Simulation", dynamics, run, runNote),
   );
 
   // -----------------------------------------------------------------------
@@ -188,10 +225,12 @@ export function mountLeftColumn(host, hooks) {
     get systems() { return systems; },
     get hidden() { return hidden; },
     get options() { return { ...options }; },
-    get environment() { return environment.active()[0] || null; },
+    get environment() { return environment.selection.environment || null; },
+    get environmentSelection() { return environment.selection; },
+    get sceneObjects() { return environment.instances; },
     get garments() { return clothing.active(); },
-    setGarments(items, initial) { clothing.setItems(items, initial); },
-    setEnvironments(items, initial) { environment.setItems(items, initial); },
+    setGarments(items, options) { clothing.setItems(items, options); },
+    setEnvironments(items, options) { environment.setItems(items, { title: "Environment", ...options }); },
     setMaterializations(items, current) {
       materialization.replaceChildren();
       for (const item of items) {

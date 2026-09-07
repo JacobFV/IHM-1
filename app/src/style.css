@@ -22,7 +22,8 @@ button:disabled { opacity: 0.42; cursor: not-allowed; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 #viewport { position: fixed; inset: 0; overflow: hidden; }
-#viewport > canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+/* The main renderer. The gimbal is a second canvas with a box of its own. */
+#scene { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 
 /* The one ground shared by every floating element. */
 .float {
@@ -68,10 +69,14 @@ button:disabled { opacity: 0.42; cursor: not-allowed; }
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
 }
 .column-section[hidden] { display: none; }
-.column-section > h2 {
-  margin: 0 0 10px; font-size: 10.5px; letter-spacing: 1.6px;
+.section-head { display: flex; align-items: center; gap: 6px; }
+.section-head h2 {
+  flex: 1; margin: 0; font-size: 10.5px; letter-spacing: 1.6px;
   text-transform: uppercase; color: var(--dim); font-weight: 600;
 }
+.section-body { margin-top: 10px; }
+.section-body[hidden] { display: none; }
+.column-section[data-collapsed="true"] { padding-bottom: 12px; }
 select, input[type="search"], input[type="number"], input[type="text"] {
   width: 100%; padding: 7px 9px; border-radius: 7px;
   border: 1px solid var(--line); background: rgba(255, 255, 255, 0.05); color: var(--ink);
@@ -80,7 +85,7 @@ select, input[type="search"], input[type="number"], input[type="text"] {
 .eyebrow { font-size: 10px; letter-spacing: 1.4px; text-transform: uppercase; color: var(--dim); }
 
 /* -- layers ------------------------------------------------------------- */
-#layers { margin-top: 10px; max-height: 42vh; overflow-y: auto; scrollbar-width: thin; }
+#layers { margin-top: 10px; }
 .check-row {
   display: flex; align-items: center; gap: 8px; padding: 3px 0; cursor: pointer; flex: 1; min-width: 0;
 }
@@ -93,10 +98,8 @@ select, input[type="search"], input[type="number"], input[type="text"] {
   width: 18px; height: 18px; padding: 0; flex: none; background: none; border: 0;
   color: var(--dim); font-size: 10px; line-height: 1;
 }
-.members {
-  margin: 2px 0 8px 26px; padding-left: 10px; border-left: 1px solid var(--line);
-  max-height: 220px; overflow-y: auto;
-}
+/* One tall block: the column scrolls, a section never scrolls inside itself. */
+.members { margin: 2px 0 8px 26px; padding-left: 10px; border-left: 1px solid var(--line); }
 .members .check-row { font-size: 12px; color: var(--dim); }
 .member-name {
   flex: 1; min-width: 0; padding: 0; text-align: left; border: 0; background: none;
@@ -106,15 +109,52 @@ select, input[type="search"], input[type="number"], input[type="text"] {
 
 
 /* -- tiles -------------------------------------------------------------- */
-.tile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.tile-grid { display: grid; gap: 7px; }
+.tile-row { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+.tile-slot {
+  margin: 5px 0 -2px; font-size: 10px; letter-spacing: 1.2px;
+  text-transform: uppercase; color: var(--dim);
+}
+.tile-slot:first-child { margin-top: 0; }
 .tile {
-  display: grid; gap: 6px; justify-items: center; padding: 10px 6px 8px;
-  border: 1px solid var(--line); border-radius: 9px;
+  display: grid; grid-template-rows: 40px auto; gap: 5px; justify-items: center;
+  padding: 6px 5px 6px; min-width: 0;
+  border: 1px solid var(--line); border-radius: 8px;
   background: rgba(255, 255, 255, 0.035); color: var(--dim); text-align: center;
 }
-.tile svg { width: 100%; height: 42px; }
-.tile span { font-size: 11.5px; line-height: 1.2; }
+/* The picture is never tinted, filtered or overlaid; it sits on its own neutral
+   ground so no tile state shows through a transparent thumbnail. */
+.tile svg, .tile img {
+  width: 100%; height: 40px; object-fit: contain; display: block;
+  border-radius: 4px; background: #0d1416;
+}
+.tile span {
+  font-size: 10.5px; line-height: 1.25; width: 100%;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 .tile.on { border-color: var(--accent); color: var(--ink); background: rgba(134, 204, 187, 0.14); }
+/* Configuration appears only while its requirements hold. */
+.config-row { display: grid; gap: 3px; margin-top: 8px; }
+.config-row > span {
+  font-size: 10px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--dim);
+}
+/* Objects are added, not toggled: the same one may be inserted many times. */
+.insert-actions { display: grid; gap: 5px; }
+.insert {
+  padding: 6px 9px; text-align: left; border: 1px dashed var(--line); border-radius: 8px;
+  background: none; color: var(--dim); font-size: 11.5px;
+}
+.insert:hover { color: var(--ink); border-color: var(--accent); border-style: solid; }
+.instance-list { margin: 8px 0 0; padding: 0; list-style: none; display: grid; gap: 2px; }
+.instance-list li {
+  display: flex; align-items: center; gap: 8px; padding: 3px 6px;
+  border-radius: 6px; background: rgba(255, 255, 255, 0.05); font-size: 11.5px;
+}
+.instance-list span { flex: 1; }
+.instance-remove { padding: 0 3px; border: 0; background: none; color: var(--dim); line-height: 1; }
+.instance-remove:hover { color: var(--ink); }
+/* A tile whose catalog requirements are unmet is unavailable, not refused later. */
+.tile:disabled { opacity: 0.32; cursor: not-allowed; }
 
 /* -- simulation --------------------------------------------------------- */
 #dynamics { display: grid; gap: 1px; }
@@ -124,22 +164,15 @@ select, input[type="search"], input[type="number"], input[type="text"] {
 }
 
 /* -- gimbal ------------------------------------------------------------- */
-/* One human figure; each plane drawn on it is its own click target. */
+/* A view gizmo with this body instead of a cube: its own 3D scene, turning
+   with the main camera, with the three planes as click targets on it. */
 #gimbal {
-  position: absolute; top: 8px; right: calc(var(--right-inset, 12px) + 44px); z-index: 6;
-  width: 94px; height: 108px; overflow: visible;
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.75));
+  position: absolute; top: 10px; right: calc(var(--right-inset, 12px) + 42px); z-index: 6;
+  width: 108px; height: 108px; display: block;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.8));
+  touch-action: none;
 }
-#gimbal .figure { fill: rgba(232, 244, 240, 0.72); pointer-events: none; }
-#gimbal .plane { cursor: pointer; }
-#gimbal .plane > * {
-  fill: rgba(134, 204, 187, 0.08); stroke: rgba(190, 222, 214, 0.45); stroke-width: 1.5;
-  vector-effect: non-scaling-stroke;
-}
-#gimbal .plane:hover > * { fill: rgba(134, 204, 187, 0.22); stroke: var(--accent); }
-#gimbal .plane.on > * { fill: rgba(134, 204, 187, 0.34); stroke: var(--accent); stroke-width: 2.2; }
-#gimbal .plane:focus-visible > * { stroke: var(--accent); stroke-width: 2.4; }
-#gimbal .plane:focus { outline: none; }
+#gimbal[hidden] { display: none; }
 
 /* -- panes -------------------------------------------------------------- */
 #pane-column {
@@ -180,6 +213,9 @@ select, input[type="search"], input[type="number"], input[type="text"] {
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
 }
 .pane[hidden] { display: none; }
+/* Collapsed is the title bar and nothing else, so the renderer comes back. */
+.pane[data-collapsed="true"] { padding-bottom: 10px; }
+.pane-head .disclose { margin: 0; }
 .pane-head { display: flex; align-items: baseline; gap: 8px; }
 .pane-head h2 {
   flex: 1; margin: 0; font-size: 10.5px; letter-spacing: 1.6px;
@@ -187,7 +223,7 @@ select, input[type="search"], input[type="number"], input[type="text"] {
 }
 .pane-dismiss { background: none; border: 0; color: var(--dim); padding: 0 2px; line-height: 1; }
 .pane-dismiss:hover { color: var(--ink); }
-.pane-body { margin-top: 8px; font-size: 12px; line-height: 1.5; max-height: 46vh; overflow-y: auto; scrollbar-width: thin; }
+.pane-body { margin-top: 8px; font-size: 12px; line-height: 1.5; }
 .pane-body h3 { margin: 4px 0 6px; font-size: 15px; font-weight: 600; }
 .pane-body h4 { margin: 12px 0 4px; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--dim); }
 .pane-body dl { margin: 6px 0; display: grid; grid-template-columns: minmax(64px, 30%) 1fr; gap: 3px 10px; }
