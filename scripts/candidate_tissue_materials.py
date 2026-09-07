@@ -243,7 +243,10 @@ SOURCES = {
     'icrp89': {
         'citation': 'ICRP. Basic anatomical and physiological data for use in radiological protection: '
                     'reference values. ICRP Publication 89. Ann ICRP 2002;32(3-4):1-277.',
-        'doi': '10.1016/S0146-6453(03)00002-2', 'pmid': '14527029',
+        'doi': '10.1016/S0146-6453(03)00002-2', 'pmid': None,
+        'pmid_note': 'ICRP 89 is not indexed in PubMed. PMID 14527029, previously recorded here, '
+                     'is Boecker, Radiat Prot Dosimetry 2003;105(1-4):571-4 — a four-page conference '
+                     'summary about ICRP 89, not the publication itself. Verified against esummary.',
         'species': 'human', 'state': 'reference values, not a specimen',
         'method': 'Task Group synthesis over Western European and North American autopsy and imaging '
                   'series; Table 2.8 organ masses, Table 2.9 height/mass/surface area, Table 2.20 '
