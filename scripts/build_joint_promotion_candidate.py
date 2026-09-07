@@ -1123,7 +1123,10 @@ def stage_finalize(out, substrate, rows, entities, decisions, duplicate_report, 
             passed=False, error='%s: %s' % (type(error).__name__, error))
     write_json(out / 'summary.json', summary)
 
-    artifacts = {str(p.relative_to(out)): sha(p) for p in sorted(out.rglob('*')) if p.is_file()}
+    # manifest.json is excluded: a file cannot carry its own digest, and listing it would record
+    # the previous run's hash and read as a mismatch on every check.
+    artifacts = {str(p.relative_to(out)): sha(p) for p in sorted(out.rglob('*'))
+                 if p.is_file() and p.name != 'manifest.json'}
     inputs = {p: sha(ROOT / p) for p in (
         SUBSTRATE + '/entities.jsonl', SUBSTRATE + '/summary.json', SUBSTRATE + '/manifest.json',
         CANONICAL, EXTENDED_FRAGMENT, MUSCLE_BUILD + '/entities.jsonl',
