@@ -152,6 +152,13 @@ def create_server(root=None,port=8765,host='127.0.0.1'):
                 if path=='/api/scene/catalog':
                     from ihm.app.scenes import scene_catalog
                     return self._send(scene_catalog(root,self.server.scenes.catalog()))
+                if path.startswith('/api/scene/surround/'):
+                    from ihm.app.scenes import surround_geometry
+                    ident=path.removeprefix('/api/scene/surround/')
+                    if not SAFE_ID.fullmatch(ident):return self._error('Invalid surround ID')
+                    file=surround_geometry(root,ident,self.server.scenes.catalog())
+                    if file is None:return self._error('No geometry for that surround',404)
+                    return self._send(json.loads(file.read_bytes()))
                 if path.startswith('/api/scene/object/'):
                     from ihm.app.scenes import object_geometry
                     ident=path.removeprefix('/api/scene/object/')
@@ -296,7 +303,7 @@ def create_server(root=None,port=8765,host='127.0.0.1'):
             except (RuntimeError,TimeoutError,EOFError) as e:return self._error(str(e),503)
         def do_POST(self):
             if not self._authorized(post=True):return self._error('Only local workbench requests are accepted',403)
-            scene_request=self.path=='/api/scene/sessions' or re.fullmatch(r'/api/scene/sessions/[a-f0-9]{32}/(step|close)',self.path)
+            scene_request=self.path=='/api/scene/sessions' or re.fullmatch(r'/api/scene/sessions/[a-f0-9]{32}/(step|insert|close)',self.path)
             embodied_request=self.path=='/api/embodied/sessions' or re.fullmatch(r'/api/embodied/sessions/[a-f0-9]{32}/(step|close|intakes)',self.path)
             if self.path not in ('/api/scenarios','/api/body/scenarios','/api/body/microvascular-patch') and not scene_request and not embodied_request:return self._error('Endpoint not found',404)
             if self.headers.get('Content-Type','').split(';')[0]!='application/json':return self._error('Expected application/json',415)

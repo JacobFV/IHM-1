@@ -212,28 +212,40 @@ class Sphere:
 
 
 SCENE_CATALOGUE='data/derived/environment-catalogue-v1/catalogue.json'
+MAX_SCENE_OBJECTS=16
+
+
+def scene_catalogue(root):
+    path=Path(root)/SCENE_CATALOGUE
+    if not path.is_file():raise ValueError('Scene catalogue unavailable; run scripts/build_environment_catalogue.py')
+    raw=path.read_bytes();return json.loads(raw),hashlib.sha256(raw).hexdigest()
+
+
+def insertable_object(catalogue,ident):
+    entry=next((o for o in catalogue['objects'] if o['id']==ident),None)
+    if entry is None:raise ValueError('Unknown scene object')
+    if entry.get('collider')!='sphere':raise ValueError('Object is display only; the engine has no collider for it')
+    return entry
 
 
 def scene_objects(root,scene,environment):
     """Objects a composed scene adds. Only sphere colliders exist, so only they are instantiated."""
-    path=Path(root)/SCENE_CATALOGUE
-    if not path.is_file():raise ValueError('Scene catalogue unavailable; run scripts/build_environment_catalogue.py')
-    raw=path.read_bytes();catalogue=json.loads(raw)
+    catalogue,digest=scene_catalogue(root)
     record=next((s for s in catalogue['scenes'] if s['id']==scene),None)
     if record is None:raise ValueError('Unknown scene')
     if record['base_environment']!=environment:raise ValueError('Scene requires environment '+record['base_environment'])
     objects=[]
-    for ident in record['objects']:
-        entry=next((o for o in catalogue['objects'] if o['id']==ident),None)
+    for placement in record['placements']:
+        entry=next((o for o in catalogue['objects'] if o['id']==placement['object']),None)
         if entry is None:raise ValueError('Scene names an object the catalogue does not carry')
-        if entry.get('collider')!='sphere':continue
-        engine_id=entry.get('engine_object_id',ident)
+        if entry.get('collider')!='sphere':continue  # display only: no collider exists for that shape
+        engine_id=placement['instance']
         if engine_id=='scene-ball':continue  # already instantiated as the scene default
-        if not isinstance(engine_id,str) or not re.fullmatch(r'[a-z0-9-]{1,64}',engine_id):raise ValueError('Invalid scene object id')
-        objects.append(Sphere(engine_id,entry['start_m'],radius=entry['radius_m'],mass=entry['mass_kg']))
+        if not re.fullmatch(r'[a-z0-9-]{1,64}',engine_id):raise ValueError('Invalid scene object id')
+        objects.append(Sphere(engine_id,placement['start_m'],radius=entry['radius_m'],mass=entry['mass_kg']))
     summary={k:record[k] for k in ('id','label','base_environment','objects','simulated_objects','display_only_objects')}
     summary['catalogue']=SCENE_CATALOGUE
-    return objects,summary,hashlib.sha256(raw).hexdigest()
+    return objects,summary,digest
 
 
 class InteractiveScene:
@@ -307,6 +319,28 @@ class InteractiveScene:
                 'environment_id':self.environment_id,'environment':self.environment,
                 'scene_id':self.scene_id,'scene':self.scene,
                 'scope':self.scope,'sequence':self.sequence,'closed':self.closed}
+
+    def insert(self,data):
+        """Additive object insert. Each call is a new instance with its own id; nothing is replaced."""
+        if not isinstance(data,dict) or set(data)-{'object','offset_m'}:raise ValueError('Insert accepts object and offset_m')
+        catalogue,digest=scene_catalogue(self.root)
+        entry=insertable_object(catalogue,data.get('object'))
+        offset=vector(data.get('offset_m',[0.,0.,0.]),'offset')
+        if np.max(np.abs(offset))>2:raise ValueError('Insert offset exceeds the scene domain')
+        with self.lock:
+            if self.closed:raise ValueError('Scene is closed')
+            if len(self.objects)>=MAX_SCENE_OBJECTS:raise ValueError('Scene object limit reached; close or start a new scene')
+            base=entry.get('engine_object_id',entry['id'])
+            index=1
+            while (base if index==1 else base+'-'+str(index)) in self.objects:index+=1
+            ident=base if index==1 else base+'-'+str(index)
+            sphere=Sphere(ident,np.asarray(entry['start_m'],float)+offset,radius=entry['radius_m'],mass=entry['mass_kg'])
+            self.objects[ident]=sphere
+            self.initial_object_energy[ident]=sphere.kinetic()-sphere.mass*np.dot(self.environment['gravity'],sphere.position)
+            self.sequence+=1
+            result=self.snapshot()
+            self._record({'kind':'insert','command':data,'object_id':ident,'catalogue_sha256':digest,'frame':result})
+            return result
 
     def step(self,data):
         if not isinstance(data,dict) or set(data)-{'seconds','forces','sequence'}:raise ValueError('Unknown scene command')
@@ -404,6 +438,7 @@ class SceneSessions:
         if scene is None and action=='close':return dict(id=ident,closed=True,already_absent=True)
         if scene is None:raise ValueError('Unknown scene session')
         if action=='step':return dict(id=ident,**scene.step(data))
+        if action=='insert':return dict(id=ident,**scene.insert(data))
         if action=='close':
             if not isinstance(data,dict) or data:raise ValueError('Close accepts an empty object')
             with scene.lock:

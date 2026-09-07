@@ -50,7 +50,8 @@ THIS = 'scripts/build_environment_catalogue.py'
 IMAGE_PX = 320
 SUPERSAMPLE = 3
 FRAME_HALF_M = 1.06
-SCENE_HALF_M = 1.30
+ENV_HALF_M = 1.30
+SCENE_HALF_M = 2.00
 CENTER_M = np.array([0., -.05, 0.])
 INK = '#20242b'
 PAPER = '#f2f1ee'
@@ -63,7 +64,23 @@ COLOUR = {
     'table': (.66, .51, .36), 'chair': (.50, .38, .27), 'iv-stand': (.74, .77, .80),
     'iv-bag': (.80, .88, .78), 'ball-small': (.83, .33, .27), 'ball-large': (.24, .55, .62),
 }
+COLOUR.update({
+    'wall-warm': (.86, .82, .74), 'wall-clinical': (.85, .88, .88), 'wall-play': (.84, .85, .87),
+    'floor-wood': (.62, .47, .32), 'floor-vinyl': (.76, .78, .77), 'floor-carpet': (.55, .52, .49),
+    'ceiling': (.93, .93, .91), 'window-pane': (.72, .84, .92), 'window-frame': (.94, .94, .92),
+    'grass': (.42, .55, .28), 'patio': (.72, .70, .65), 'trunk': (.42, .32, .22), 'canopy': (.29, .44, .24),
+    'block': (.79, .58, .27),
+})
 CURVE_COLOUR = {'SM': '#4c8fbd', 'MM': '#2f8f6f', 'HM': '#c05a2e'}
+SKY = {
+    'day': {'type': 'vertical_gradient',
+            'stops': [{'t': 0., 'rgb': [.78, .85, .90]}, {'t': .55, 'rgb': [.55, .72, .88]},
+                      {'t': 1., 'rgb': [.33, .55, .82]}],
+            'label': 'Clear day sky'},
+    'interior': {'type': 'flat', 'stops': [{'t': 0., 'rgb': [.90, .89, .87]}, {'t': 1., 'rgb': [.90, .89, .87]}],
+                 'label': 'Room interior; the enclosure provides the surround'},
+    'none': {'type': 'none', 'stops': [], 'label': 'No sky: the environment tile shows the engine plane, not a world'},
+}
 
 
 def normalize(v):
@@ -78,11 +95,11 @@ UP = np.cross(VIEW, RIGHT)
 CAMERA = {'projection': 'orthographic', 'view_direction_canonical': VIEW.tolist(),
           'image_right_canonical': RIGHT.tolist(), 'image_up_canonical': UP.tolist(),
           'centre_m': CENTER_M.tolist(), 'pixels': IMAGE_PX, 'supersample': SUPERSAMPLE,
-          'half_extent_m': {'environment_and_scene_tiles': SCENE_HALF_M,
+          'half_extent_m': {'environment_tiles': ENV_HALF_M, 'scene_tiles': SCENE_HALF_M,
                             'component_tiles': FRAME_HALF_M,
                             'object_tiles': 'fitted per object; the value is recorded on each record as thumbnail_half_extent_m'},
           'light_direction_canonical': LIGHT.tolist(),
-          'shading': 'Lambert, ambient 0.28 + 0.72 max(0, n.l), single fixed light, no shadows',
+          'shading': 'Lambert, ambient 0.36 + 0.64 max(0, n.l), single fixed light, no shadows',
           'frame': 'bodyparts3d-display-m (x left, y superior, z anterior)',
           'gravity_frame': 'The camera and light are fixed relative to gravity, not to the canonical axes: a tile whose environment pulls along -z is rendered through the recorded permutation (x,y,z)->(y,z,x) so gravity points down in the image. The permutation is a viewing transform; no geometry is moved and no physics is restated.',
           'note': 'One camera direction, one light and one shading rule for every tile. The body pose is identical in every environment because selecting an environment changes gravity, the free-object ground plane and the prescribed support set; it does not repose the body. A scene adds objects around that same body.'}
@@ -230,8 +247,10 @@ def rasterize(meshes, view=None):
         keep = (lengths > 0) & ((normals @ VIEW) > 0)
         kept = faces[keep]
         normals = normals[keep] / lengths[keep, None]
-        shade = .28 + .72 * np.clip(normals @ LIGHT, 0, 1)
-        tone = np.asarray(rgb, float)[None] * shade[:, None]
+        shade = .36 + .64 * np.clip(normals @ LIGHT, 0, 1)
+        base = np.asarray(rgb, float)
+        base = base[keep] if base.ndim == 2 else base[None]
+        tone = base * shade[:, None]
         corners = px[kept]
         zs = depth[kept]
         low = np.floor(corners.min(1)).astype(int)
@@ -658,6 +677,26 @@ def object_specs():
          'dimensions_basis': 'The radius and mass the scene already instantiates.',
          'collider': 'sphere', 'start_m': [.42, .1, .3],
          'parts': [{'name': 'ball', 'primitive': 'sphere', 'centre_m': [.42, .1, .3], 'radius_m': .065}]},
+        {'id': 'tree', 'label': 'Tree', 'colour': 'canopy',
+         'base_environment': 'floor', 'mass_kg': None,
+         'mass_basis': 'Absent: a tree is scenery here, not a body any engine can hold. No measurement is retained and none is invented.',
+         'material': {'response': None, 'tier': 'synthesized',
+                      'source': 'Nominal trunk and canopy; no wood or foliage property is claimed.'},
+         'dimensions_basis': '1.4 m trunk of 0.09 m radius under a 0.58 m canopy sphere pair; engineering choice.',
+         'parts': [{'name': 'trunk', 'primitive': 'cylinder', 'axis': 1,
+                    'centre_m': [1.50, FLOOR_PLANE_Y + .70, -1.30], 'radius_m': .09, 'height_m': 1.40},
+                   {'name': 'canopy-lower', 'primitive': 'sphere',
+                    'centre_m': [1.50, FLOOR_PLANE_Y + 1.52, -1.30], 'radius_m': .58},
+                   {'name': 'canopy-upper', 'primitive': 'sphere',
+                    'centre_m': [1.60, FLOOR_PLANE_Y + 1.90, -1.20], 'radius_m': .38}]},
+        {'id': 'block', 'label': 'Block (0.12 m)', 'colour': 'block',
+         'base_environment': None, 'mass_kg': .35,
+         'mass_basis': 'Engineering choice; no retained measurement. The engine never uses it: there is no box collider, so the block is display only.',
+         'material': {'response': None, 'tier': 'synthesized',
+                      'source': 'Nominal timber block; no contact law, because no box collider exists.'},
+         'dimensions_basis': '0.12 m cube resting on the floor plane; engineering choice.',
+         'parts': [{'name': 'cube', 'primitive': 'box',
+                    'min_m': [.30, FLOOR_PLANE_Y, .34], 'max_m': [.42, FLOOR_PLANE_Y + .12, .46]}]},
         {'id': 'ball-large', 'label': 'Ball (0.11 m)', 'colour': 'ball-large',
          'base_environment': None, 'mass_kg': .6, 'radius_m': .11,
          'mass_basis': 'Engineering choice inside the accepted Sphere bounds (0 < radius <= 1 m, 0 < mass <= 100 kg).',
@@ -711,31 +750,244 @@ def render_object(entry):
     return fig, fitted['half']
 
 
-def render_scene(spec, objects, skin, environment, view):
-    meshes = [(skin[0], skin[1], COLOUR['skin'])]
-    for ident in spec['objects']:
-        entry = objects[ident]
-        meshes.append((entry['positions'], entry['faces'], COLOUR[entry['spec']['colour']]))
+def render_scene(spec, objects, skin, environment, view, surround, placements):
+    positions, faces, colours = visible_surround(surround)
+    meshes = [(positions, faces, colours), (skin[0], skin[1], COLOUR['skin'])]
+    for placement in placements:
+        entry = objects[placement['object']]
+        offset = np.asarray(placement['offset_m'], float)
+        meshes.append((entry['positions'] + offset, entry['faces'], COLOUR[entry['spec']['colour']]))
     cover, rgb = rasterize(meshes, view)
     fig, axes = figure(half=view['half'])
-    plane_layer(axes, environment['axis'], environment['plane'], view, fill=False)
+    sky_layer(axes, SKY[spec['sky']], view['half'])
     raster_layer(axes, cover, rgb, half=view['half'])
     return fig
 
 
+# ---------------------------------------------------------------- world surround
+
+ROOM_FLOOR_M = {'floor': FLOOR_PLANE_Y, 'bed': BED_ROOM_FLOOR_Z}
+ROOM = {'width': 3.40, 'depth': 3.20, 'height': 2.45, 'thickness': .08}
+GROUND_EXTENT_M = 24.
+GROUND_CELL_M = .75
+
+
+def from_gravity_frame(points, environment):
+    """Surround geometry is authored with gravity down, then written back in canonical axes."""
+    view = view_of(environment)
+    points = np.asarray(points, float)
+    if view['rotation'] is None:
+        return points
+    return points @ view['rotation']  # p_canonical = R^T p_display
+
+
+def room_parts(environment, wall, floor_material, ceiling=True):
+    """A closed room: floor, ceiling, four walls, one window opening in the -z wall.
+
+    Everything is visual surround. Nothing in it has a collider.
+    """
+    base = ROOM_FLOOR_M[environment]
+    w, d, h, t = ROOM['width'] / 2, ROOM['depth'] / 2, ROOM['height'], ROOM['thickness']
+    top = base + h
+    parts = [
+        {'name': 'floor', 'primitive': 'box', 'colour': floor_material,
+         'min_m': [-w, base - t, -d], 'max_m': [w, base, d]},
+        {'name': 'wall-left', 'primitive': 'box', 'colour': wall,
+         'min_m': [-w - t, base, -d], 'max_m': [-w, top, d]},
+        {'name': 'wall-right', 'primitive': 'box', 'colour': wall, 'cutaway': True,
+         'min_m': [w, base, -d], 'max_m': [w + t, top, d]},
+        {'name': 'wall-front', 'primitive': 'box', 'colour': wall, 'cutaway': True,
+         'min_m': [-w, base, d], 'max_m': [w, top, d + t]},
+        {'name': 'ceiling', 'primitive': 'box', 'colour': 'ceiling', 'cutaway': True,
+         'min_m': [-w, top, -d], 'max_m': [w, top + t, d]},
+    ]
+    if not ceiling:
+        parts = [p for p in parts if p['name'] != 'ceiling']
+    # -z wall carries the window: four boxes around the opening plus a pane.
+    x0, x1 = -.55, .75
+    y0, y1 = base + .95, base + 1.85
+    parts += [
+        {'name': 'wall-back-lower', 'primitive': 'box', 'colour': wall,
+         'min_m': [-w, base, -d - t], 'max_m': [w, y0, -d]},
+        {'name': 'wall-back-upper', 'primitive': 'box', 'colour': wall,
+         'min_m': [-w, y1, -d - t], 'max_m': [w, top, -d]},
+        {'name': 'wall-back-left', 'primitive': 'box', 'colour': wall,
+         'min_m': [-w, y0, -d - t], 'max_m': [x0, y1, -d]},
+        {'name': 'wall-back-right', 'primitive': 'box', 'colour': wall,
+         'min_m': [x1, y0, -d - t], 'max_m': [w, y1, -d]},
+        {'name': 'window-pane', 'primitive': 'box', 'colour': 'window-pane',
+         'min_m': [x0, y0, -d - .01], 'max_m': [x1, y1, -d]},
+        {'name': 'window-frame-sill', 'primitive': 'box', 'colour': 'window-frame',
+         'min_m': [x0 - .04, y0 - .04, -d - .05], 'max_m': [x1 + .04, y0, -d + .01]},
+        {'name': 'window-frame-head', 'primitive': 'box', 'colour': 'window-frame',
+         'min_m': [x0 - .04, y1, -d - .05], 'max_m': [x1 + .04, y1 + .04, -d + .01]},
+    ]
+    return parts
+
+
+def ground_parts(environment, colour='grass'):
+    """A tiled ground sheet drawn at the environment plane. Visual only: the engine's
+    ground is the ideal half space at the same offset, not this mesh."""
+    base = ROOM_FLOOR_M[environment]
+    half = GROUND_EXTENT_M / 2
+    return [{'name': 'sheet', 'primitive': 'tiled_plane', 'colour': colour,
+             'min_m': [-half, base - .02, -half], 'max_m': [half, base, half],
+             'cell_m': GROUND_CELL_M,
+             'tone_variation': 'deterministic per-cell lightness jitter, seed 20260907, +-7 percent'}]
+
+
+def surround_mesh(parts, environment):
+    """Build a surround, returning positions, faces and one colour row per face."""
+    meshes, colours = [], []
+    for part in parts:
+        if part['primitive'] == 'tiled_plane':
+            positions, faces, tones = tiled_plane(part)
+            colours.append(tones)
+        else:
+            positions, faces = part_mesh(part)
+            colours.append(np.tile(COLOUR[part['colour']], (len(faces), 1)))
+        meshes.append((positions, faces))
+    positions, faces = merge(meshes)
+    return from_gravity_frame(positions, environment), faces, np.concatenate(colours)
+
+
+def tiled_plane(part):
+    """A flat sheet of cells with jittered tone; the jitter is seeded, so rebuilds match."""
+    low, high = np.asarray(part['min_m'], float), np.asarray(part['max_m'], float)
+    cell = part['cell_m']
+    xs = np.arange(low[0], high[0] - 1e-9, cell)
+    zs = np.arange(low[2], high[2] - 1e-9, cell)
+    base = COLOUR[part['colour']]
+    rng = np.random.default_rng(20260907)
+    quads, tones = [], []
+    for x in xs:
+        for z in zs:
+            quads.append([(x, high[1], z), (x, high[1], z + cell),
+                          (x + cell, high[1], z + cell), (x + cell, high[1], z)])
+            tones.append(np.clip(np.asarray(base) * (1 + rng.uniform(-.07, .07)), 0, 1))
+    positions, faces = _tris(quads)
+    return positions, faces, np.repeat(np.asarray(tones), 2, axis=0)
+
+
+SURROUND_SPECS = [
+    {'id': 'room-bedroom', 'label': 'Bedroom shell', 'environment': 'bed',
+     'kind': 'interior', 'wall': 'wall-warm', 'floor_material': 'floor-wood'},
+    {'id': 'room-hospital', 'label': 'Hospital room shell', 'environment': 'bed',
+     'kind': 'interior', 'wall': 'wall-clinical', 'floor_material': 'floor-vinyl'},
+    {'id': 'room-clinic', 'label': 'Clinic room shell', 'environment': 'floor',
+     'kind': 'interior', 'wall': 'wall-clinical', 'floor_material': 'floor-vinyl'},
+    {'id': 'room-play', 'label': 'Play room shell', 'environment': 'floor',
+     'kind': 'interior', 'wall': 'wall-play', 'floor_material': 'floor-carpet'},
+    {'id': 'ground-grass', 'label': 'Grass ground sheet', 'environment': 'floor',
+     'kind': 'open_ground', 'colour': 'grass'},
+    {'id': 'ground-patio', 'label': 'Paved patio on grass', 'environment': 'floor',
+     'kind': 'open_ground', 'colour': 'grass', 'patio': True},
+]
+
+
+def surround_geometry(specs):
+    """Retain each surround as loadable geometry with a per-face colour table."""
+    (OUT / 'surrounds').mkdir(exist_ok=True)
+    built = {}
+    for spec in specs:
+        if spec['kind'] == 'interior':
+            parts = room_parts(spec['environment'], spec['wall'], spec['floor_material'])
+        else:
+            parts = ground_parts(spec['environment'], spec.get('colour', 'grass'))
+            if spec.get('patio'):
+                base = ROOM_FLOOR_M[spec['environment']]
+                parts = parts + [{'name': 'patio', 'primitive': 'box', 'colour': 'patio',
+                                  'min_m': [-1.7, base, -1.5], 'max_m': [1.7, base + .04, 1.5]}]
+        positions, faces, colours = surround_mesh(parts, spec['environment'])
+        payload = {
+            'schema': 'ihm.scene-surround-geometry.v1', 'id': spec['id'], 'label': spec['label'],
+            'units': 'm', 'frame': 'bodyparts3d-display-m (x left, y superior, z anterior)',
+            'authoring_frame': f"gravity frame of the {spec['environment']} environment; written back in canonical axes",
+            'kind': spec['kind'],
+            'physics': 'Visual surround only. No collider exists for any part of it: the body and the free spheres cannot touch a wall, a floor sheet or a window.',
+            'construction': 'procedural: constructed by scripts/build_environment_catalogue.py from the stated primitives. Not downloaded, not acquired.',
+            'parts': [{k: v for k, v in part.items()} for part in parts],
+            'cutaway_parts': [part['name'] for part in parts if part.get('cutaway')],
+            'cutaway_note': 'Named parts are omitted from the tile render so the interior is visible; the retained geometry is the whole enclosure.',
+            'bounds_m': {'min': positions.min(0).tolist(), 'max': positions.max(0).tolist()},
+            'vertex_count': int(len(positions)), 'face_count': int(len(faces)),
+            'positions': [round(float(v), 5) for v in positions.reshape(-1)],
+            'indices': [int(v) for v in faces.reshape(-1)],
+            'face_colours_rgb': [round(float(v), 4) for v in colours.reshape(-1)],
+        }
+        path = OUT / 'surrounds' / f"{spec['id']}.json"
+        path.write_text(json.dumps(payload) + '\n')
+        built[spec['id']] = {'spec': spec, 'parts': parts, 'positions': positions, 'faces': faces,
+                             'colours': colours, 'path': str(path.relative_to(ROOT)), 'payload': payload}
+    return built
+
+
+MAX_SCENE_OBJECTS = 16
+
+
+def scene_placements(spec, objects):
+    """Resolve a scene's placements to instances. Repeats are allowed: the first instance
+    keeps the object id, later ones get -2, -3 and so on. The engine mirrors this rule."""
+    counts = {}
+    placements = []
+    for entry in spec['placements']:
+        ident = entry['object']
+        obj = objects[ident]['spec']
+        counts[ident] = counts.get(ident, 0) + 1
+        base = obj.get('engine_object_id', ident)
+        instance = base if counts[ident] == 1 else f'{base}-{counts[ident]}'
+        placements.append({'object': ident, 'instance': instance,
+                           'index': counts[ident],
+                           'offset_m': [float(v) for v in entry.get('offset_m', [0., 0., 0.])],
+                           'simulated': obj.get('collider') == 'sphere',
+                           'start_m': ([round(a + b, 4) for a, b in zip(obj['start_m'], entry.get('offset_m', [0., 0., 0.]))]
+                                       if obj.get('collider') == 'sphere' else None)})
+    return placements
+
+
+def visible_surround(entry):
+    """The same surround with its cutaway parts dropped, for the tile render."""
+    keep = [part for part in entry['parts'] if not part.get('cutaway')]
+    if len(keep) == len(entry['parts']):
+        return entry['positions'], entry['faces'], entry['colours']
+    positions, faces, colours = surround_mesh(keep, entry['spec']['environment'])
+    return positions, faces, colours
+
+
+def sky_layer(axes, sky, half):
+    if sky['type'] == 'none':
+        return
+    stops = sky['stops']
+    ramp = np.linspace(0, 1, 256)
+    ts = [stop['t'] for stop in stops]
+    columns = np.stack([np.interp(ramp, ts, [stop['rgb'][channel] for stop in stops]) for channel in range(3)], -1)
+    axes.imshow(columns[::-1, None].repeat(2, 1), extent=[-half, half, -half, half],
+                aspect='auto', interpolation='bilinear', zorder=0)
+
+
 SCENE_SPECS = [
-    {'id': 'bedroom', 'label': 'Bedroom', 'environment': 'bed',
-     'objects': ['bed-frame', 'bed-mattress', 'pillow', 'blanket', 'nightstand'],
-     'description': 'Domestic bed arrangement on the supine environment: frame, the retained study mattress, pillow, blanket and a nightstand on the implied room floor.'},
-    {'id': 'hospital-room', 'label': 'Hospital room', 'environment': 'bed',
-     'objects': ['bed-frame', 'bed-mattress', 'bed-rails', 'pillow', 'iv-stand', 'nightstand'],
-     'description': 'Clinical bed arrangement on the supine environment: frame, retained mattress, side rails, pillow, IV stand and bedside cabinet.'},
-    {'id': 'clinic-room', 'label': 'Clinic room', 'environment': 'floor',
-     'objects': ['table', 'chair'],
-     'description': 'Standing consultation arrangement on the floor environment: table and chair beside the supported stance.'},
-    {'id': 'play-floor', 'label': 'Play floor', 'environment': 'floor',
-     'objects': ['ball-small', 'ball-large', 'chair'],
-     'description': 'Floor environment with two free balls the scene actually simulates, plus a chair. The balls fall to the ground plane and accept force ports; they do not yet collide with the body.'},
+    {'id': 'bedroom', 'label': 'Bedroom', 'environment': 'bed', 'surround': 'room-bedroom', 'sky': 'interior',
+     'placements': [{'object': 'bed-frame'}, {'object': 'bed-mattress'}, {'object': 'pillow'},
+                    {'object': 'blanket'}, {'object': 'nightstand'}],
+     'description': 'Enclosed domestic room on the supine environment: timber floor, warm walls, a window, and a bed carrying the retained study mattress, pillow, blanket and a bedside cabinet.'},
+    {'id': 'hospital-room', 'label': 'Hospital room', 'environment': 'bed', 'surround': 'room-hospital', 'sky': 'interior',
+     'placements': [{'object': 'bed-frame'}, {'object': 'bed-mattress'}, {'object': 'bed-rails'},
+                    {'object': 'pillow'}, {'object': 'iv-stand'}, {'object': 'nightstand'}],
+     'description': 'Enclosed clinical room on the supine environment: vinyl floor, pale walls, a window, bed with side rails and retained mattress, IV stand and bedside cabinet.'},
+    {'id': 'clinic-room', 'label': 'Clinic room', 'environment': 'floor', 'surround': 'room-clinic', 'sky': 'interior',
+     'placements': [{'object': 'table'}, {'object': 'chair'}],
+     'description': 'Enclosed consultation room on the floor environment: vinyl floor, pale walls, a window, table and chair beside the supported stance.'},
+    {'id': 'play-floor', 'label': 'Play room', 'environment': 'floor', 'surround': 'room-play', 'sky': 'interior',
+     'placements': [{'object': 'ball-small'}, {'object': 'ball-large'}, {'object': 'block'}, {'object': 'chair'}],
+     'description': 'Enclosed room on the floor environment with the two free balls the engine actually simulates, a block and a chair. The balls fall to the ground plane and accept force ports; they do not collide with the body, the block or the walls.'},
+    {'id': 'grass-field', 'label': 'Grass field', 'environment': 'floor', 'surround': 'ground-grass', 'sky': 'day',
+     'placements': [{'object': 'tree'}, {'object': 'tree', 'offset_m': [-3.00, 0., -.35]},
+                    {'object': 'tree', 'offset_m': [-1.40, 0., -1.55]}, {'object': 'ball-small'}],
+     'description': 'Open grass under a clear sky on the floor environment: a 24 m tiled ground sheet at the ground plane, three trees and one free ball. Same gravity, same plane and same supports as the bare floor environment; only the world around it differs.'},
+    {'id': 'garden-patio', 'label': 'Garden patio', 'environment': 'floor', 'surround': 'ground-patio', 'sky': 'day',
+     'placements': [{'object': 'table'}, {'object': 'chair'}, {'object': 'tree'},
+                    {'object': 'tree', 'offset_m': [-3.00, 0., -.35]}, {'object': 'ball-large'}],
+     'description': 'Paved patio on grass under a clear sky, on the floor environment: table, chair, two trees and a free ball.'},
 ]
 
 
@@ -816,9 +1068,10 @@ def build(render=True):
     bed_evidence = read_json(BED_MANIFEST)
 
     objects = object_geometry(object_specs())
+    surrounds = surround_geometry(SURROUND_SPECS)
     if render:
         skin = skin_mesh()
-        body_raster = {name: rasterize([(skin[0], skin[1], COLOUR['skin'])], view_of(name, SCENE_HALF_M))
+        body_raster = {name: rasterize([(skin[0], skin[1], COLOUR['skin'])], view_of(name, ENV_HALF_M))
                        for name in ('studio', 'floor', 'bed')}
         cover, body_rgb = rasterize([(skin[0], skin[1], COLOUR['skin'])])
         points, bodies, _ = quadrature_points()
@@ -877,11 +1130,11 @@ def build(render=True):
         gravity = spec['gravity']
         centroids = [supports[i][1] for i in spec['supports'] if i in supports]
         if render:
-            view = view_of(ident, SCENE_HALF_M)
-            fig, axes = figure(half=SCENE_HALF_M)
+            view = view_of(ident, ENV_HALF_M)
+            fig, axes = figure(half=ENV_HALF_M)
             if ident != 'studio':
                 plane_layer(axes, spec['axis'], spec['plane'], view)
-            raster_layer(axes, *body_raster[ident], half=SCENE_HALF_M)
+            raster_layer(axes, *body_raster[ident], half=ENV_HALF_M)
             support_layer(axes, centroids, view)
             gravity_layer(axes, gravity, view)
             save(fig, ident)
@@ -903,6 +1156,13 @@ def build(render=True):
                                    'supine': 'posterior contact: retained skin quadrature when a surface manifest is given, otherwise inertial ellipsoid proxies'}[native_map[ident]],
             'evidence_kind': 'engineering_choice',
             'requires': [],
+            'world': {'kind': 'abstract', 'surround': None, 'sky': {**SKY['none'], 'id': 'none'},
+                      'ground': ({'type': 'none', 'note': 'Studio has no ground contact for free objects.'} if ident == 'studio'
+                                 else {'type': 'ideal_half_space', 'axis': spec['axis'], 'level_m': spec['plane'],
+                                       'note': 'The engine plane itself, drawn as a grid. It is the free-object ground, not a floor the body stands on.'}),
+                      'light': {'direction_gravity_frame': LIGHT.tolist(),
+                                'kind': 'single fixed key light, ambient 0.36, no shadows'},
+                      'physics': 'The plane is the only surface in the environment and it acts on free spheres only. A world with walls, ground sheet or sky is a scene, not an environment.'},
             'selection': [{'endpoint': 'POST /api/scene/sessions', 'parameter': 'environment', 'value': ident},
                           {'endpoint': 'POST /api/embodied/sessions', 'parameter': 'environment', 'value': native_map[ident]}],
             'provenance': f'{PROV.relative_to(ROOT)}/{ident}.json',
@@ -1204,7 +1464,16 @@ def build(render=True):
             'contact_model': contact_model if simulated else 'None. Display-only: the scene has no collider for a constructed box or cylinder, so it is never instantiated as a physical body.',
             'base_environment': spec['base_environment'],
             'requires': requires,
-            'in_scenes': [s['id'] for s in SCENE_SPECS if ident in s['objects']],
+            'in_scenes': [s['id'] for s in SCENE_SPECS if any(pl['object'] == ident for pl in s['placements'])],
+            'insertable': simulated,
+            'insert_label': ('+ Insert ' + spec['label'].split(' (')[0]) if simulated else None,
+            'max_instances_per_session': (MAX_SCENE_OBJECTS if simulated else 0),
+            'instance_model': ('Additive: each insert creates a new sphere with its own id (the first instance keeps '
+                               'the object id, later ones get -2, -3 and so on), up to '
+                               f'{MAX_SCENE_OBJECTS} spheres per session including the scene default ball.'
+                               if simulated else
+                               'Not insertable: the engine has no collider for this shape, so a session holds zero '
+                               'instances of it. A scene may still place it more than once for the renderer to draw.'),
             'selection': ([{'endpoint': 'POST /api/scene/sessions', 'parameter': 'scene',
                             'value': 'any scene listing this object; simulated spheres are instantiated'}] if simulated
                           else [{'endpoint': 'display only', 'parameter': None, 'value': None}]),
@@ -1249,10 +1518,39 @@ def build(render=True):
     for spec in SCENE_SPECS:
         ident = spec['id']
         environment = ENVIRONMENTS[spec['environment']]
-        placed = [objects[o] for o in spec['objects']]
-        simulated = [o for o in spec['objects'] if objects[o]['spec'].get('collider') == 'sphere']
+        placements = scene_placements(spec, objects)
+        named = list(dict.fromkeys(pl['object'] for pl in placements))
+        simulated = [pl for pl in placements if pl['simulated']]
+        surround = surrounds[spec['surround']]
+        world = {
+            'kind': surround['spec']['kind'],
+            'surround': spec['surround'],
+            'surround_geometry': surround['path'],
+            'surround_geometry_sha256': sha(ROOT / surround['path']),
+            'surround_url': '/api/scene/surround/' + spec['surround'],
+            'cutaway_parts': surround['payload']['cutaway_parts'],
+            'sky': {**SKY[spec['sky']], 'id': spec['sky']},
+            'ground': ({'type': 'enclosure_floor', 'part': 'floor',
+                        'material': surround['spec'].get('floor_material'),
+                        'level_m': ROOM_FLOOR_M[spec['environment']],
+                        'axis': 'gravity axis of the ' + spec['environment'] + ' environment'}
+                       if surround['spec']['kind'] == 'interior' else
+                       {'type': 'tiled_ground_sheet', 'material': surround['spec'].get('colour'),
+                        'extent_m': GROUND_EXTENT_M, 'cell_m': GROUND_CELL_M,
+                        'level_m': ROOM_FLOOR_M[spec['environment']],
+                        'axis': 'gravity axis of the ' + spec['environment'] + ' environment'}),
+            'light': {'direction_gravity_frame': LIGHT.tolist(),
+                      'kind': 'single fixed key light, ambient 0.36, no shadows and no light transport',
+                      'note': 'The window is declared scenery. No illumination is computed from it.'},
+            'enclosure_dimensions_m': (dict(ROOM) if surround['spec']['kind'] == 'interior' else None),
+            'physics': ('Visual surround only. Walls, floor sheet, ceiling, window and every scene object other '
+                        'than the free spheres have no collider, so the body can never touch them. The engine '
+                        'ground stays the ideal half space at the environment plane; the surround floor is drawn '
+                        f"at the room floor level {ROOM_FLOOR_M[spec['environment']]:.2f} m, which is not an engine plane."),
+        }
         if render:
-            save(render_scene(spec, objects, skin, environment, view_of(spec['environment'], SCENE_HALF_M)), ident)
+            save(render_scene(spec, objects, skin, environment, view_of(spec['environment'], SCENE_HALF_M),
+                              surround, placements), ident)
         thumbnail = f'{OUT.relative_to(ROOT)}/thumbnails/{ident}.png'
         gap = abs(environment['plane']) - (.8648706 if environment['axis'] == 1 else .1460153)
         records.append({
@@ -1263,16 +1561,20 @@ def build(render=True):
             'evidence_kind': 'composed_arrangement',
             'base_environment': spec['environment'],
             'requires': [{'slot': 'environment', 'any_of': [spec['environment']]}],
-            'objects': list(spec['objects']),
-            'simulated_objects': simulated,
-            'engine_object_ids': sorted({objects[o]['spec'].get('engine_object_id', o) for o in simulated} | {'scene-ball'}),
-            'display_only_objects': [o for o in spec['objects'] if o not in simulated],
-            'object_count': len(spec['objects']),
+            'world': world,
+            'objects': named,
+            'placements': placements,
+            'simulated_objects': [pl['object'] for pl in simulated],
+            'engine_object_ids': sorted({pl['instance'] for pl in simulated} | {'scene-ball'}),
+            'display_only_objects': [o for o in named if not objects[o]['spec'].get('collider')],
+            'object_count': len(placements),
+            'repeated_objects': sorted({pl['object'] for pl in placements
+                                        if sum(1 for q in placements if q['object'] == pl['object']) > 1}),
             'physical_contact_solved': bool(simulated),
             'contact_model': ('Objects with a sphere collider are instantiated in the scene session and fall to the '
                               'environment plane; every other object is drawn only. A scene never changes gravity, the '
                               'plane offset or the prescribed supports: those stay exactly as the base environment sets them.'),
-            'implied_room_floor_m': None if spec['environment'] != 'bed' else BED_ROOM_FLOOR_Z,
+            'implied_room_floor_m': ROOM_FLOOR_M[spec['environment']],
             'body_to_plane_gap_m': round(gap, 3),
             'selection': [{'endpoint': 'POST /api/scene/sessions', 'parameter': 'scene', 'value': ident}],
             'provenance': f'{PROV.relative_to(ROOT)}/{ident}.json',
@@ -1289,39 +1591,99 @@ def build(render=True):
                            'ihm/assembly/interactive_scene.py scope: body_object_contact=False'],
             frame_relation='canonical',
             assumptions=[{'id': 'placement', 'statement': 'Object placement is an engineering choice; no room measurement is retained.'},
+                         {'id': 'surround-not-physical', 'statement': world['physics']},
+                         {'id': 'sky-declared', 'statement': f"Sky is a declared {world['sky']['type']} the renderer paints; no sky image is acquired and no daylight model is solved."},
                          {'id': 'body-plane-gap',
                           'statement': f'The body sits {gap:.3f} m off the environment plane, so it is drawn resting above the surface, not on it. The plane is the free-object ground level and the body is held by prescribed supports.'},
                          {'id': 'implied-floor',
                           'statement': 'Bed scenes place cabinets and stands on an implied room floor at z = -0.86 m fixed by the bed frame legs. No engine plane exists there.'}],
-            derived_artifacts=[{'path': objects[o]['path'], 'sha256': sha(ROOT / objects[o]['path'])} for o in spec['objects']],
+            derived_artifacts=([{'path': objects[o]['path'], 'sha256': sha(ROOT / objects[o]['path'])} for o in named]
+                               + [{'path': surround['path'], 'sha256': sha(ROOT / surround['path'])}]),
             thumbnail={'path': thumbnail, 'sha256': sha(ROOT / thumbnail) if render else None,
                        'representation': 'orthographic_shaded_raster_png', 'camera': CAMERA} if render else None,
             selection=records[-1]['selection'],
-            measurement={'objects': list(spec['objects']), 'simulated': simulated}))
+            measurement={'placements': placements, 'engine_object_ids': records[-1]['engine_object_ids'],
+                         'enclosure_m': world['enclosure_dimensions_m'], 'ground': world['ground']}))
+
+    # ------------------------------------------------ world surrounds
+    for ident, entry in surrounds.items():
+        spec = entry['spec']
+        payload = entry['payload']
+        provenance.append(provenance_record(
+            structure_id=ident, dataset=ihm_dataset, source_file=file_block(THIS), build=build_info,
+            geometry={'path': entry['path'], 'sha256': sha(ROOT / entry['path']), 'sha256_verified': True,
+                      'representation': 'independent-triangle surround with a per-face colour table',
+                      'frame': 'bodyparts3d-display-m', 'units': 'm',
+                      'vertex_count': payload['vertex_count'], 'face_count': payload['face_count']},
+            transforms=[{'name': 'authored in the gravity frame, written back in canonical axes',
+                         'method': view_of(spec['environment'])['basis'],
+                         'residual': None,
+                         'residual_reason': 'Exact axis permutation, not a fit.'}],
+            tier='synthesized',
+            tier_basis='A room shell or ground sheet constructed from explicit priors. No room was measured and no asset was acquired.',
+            tier_evidence=[payload['construction'], payload['physics'],
+                           f"enclosure {ROOM} m" if spec['kind'] == 'interior' else
+                           f"ground sheet {GROUND_EXTENT_M} m at {GROUND_CELL_M} m cells"],
+            frame_relation='canonical',
+            assumptions=[{'id': 'surround-not-physical', 'statement': payload['physics']},
+                         {'id': 'dimensions', 'statement': 'Room and ground dimensions are engineering choices; no architectural source is retained.'},
+                         {'id': 'cutaway', 'statement': payload['cutaway_note']}],
+            thumbnail=None,
+            selection=[{'endpoint': 'declared by a scene record under world.surround', 'parameter': None, 'value': None}],
+            measurement={'parts': [q['name'] for q in entry['parts']],
+                         'bounds_m': payload['bounds_m'],
+                         'cutaway_parts': payload['cutaway_parts'],
+                         'floor_level_m': ROOM_FLOOR_M[spec['environment']]}))
 
     slots = [
-        {'id': 'environment', 'label': 'Environment', 'exclusive': True, 'required': True,
-         'default': 'bed', 'requires': [],
+        {'id': 'environment', 'label': 'Environment', 'control': 'tiles', 'order': 1,
+         'exclusive': True, 'required': True, 'default': 'bed', 'requires': [], 'contingent_on': None,
          'note': 'The body accepts exactly one environment. Entries in this slot are mutually exclusive.'},
-        {'id': 'bed_support_model', 'label': 'Support surface', 'exclusive': True, 'required': False,
-         'default': 'bed-support-inertial-proxy',
+        {'id': 'scene', 'label': 'Scene', 'control': 'tiles', 'order': 2,
+         'exclusive': True, 'required': False, 'default': None, 'requires': [],
+         'contingent_on': {'slot': 'environment', 'per_option': True},
+         'note': 'A named world over one of the three real environments. Exclusive: one at a time. Each scene names the base environment it requires; selecting it does not change gravity, plane or supports.'},
+        {'id': 'objects', 'label': 'Objects', 'control': 'insert', 'order': 3,
+         'exclusive': False, 'multiple': True, 'required': False, 'default': None, 'requires': [],
+         'contingent_on': {'slot': 'environment', 'per_option': True},
+         'note': 'Additive inserts, not toggles: the same object may be inserted more than once and each insert is a separate instance. Only sphere-collider objects can be inserted into a session; the rest are drawn by a scene and cannot be instantiated.'},
+        {'id': 'bed_support_model', 'label': 'Support surface', 'control': 'select', 'order': 4,
+         'exclusive': True, 'required': False, 'default': 'bed-support-inertial-proxy',
          'requires': [{'slot': 'environment', 'any_of': ['bed']}],
-         'note': 'Posterior contact model used by the native supine environment. Only offered with the bed environment.'},
-        {'id': 'mattress_material', 'label': 'Mattress', 'exclusive': True, 'required': False,
-         'default': 'mattress-rigid',
+         'contingent_on': {'slot': 'environment', 'any_of': ['bed']},
+         'note': 'Posterior contact model used by the native supine environment. Shown only with the bed environment.'},
+        {'id': 'mattress_material', 'label': 'Mattress firmness', 'control': 'select', 'order': 5,
+         'exclusive': True, 'required': False, 'default': 'mattress-rigid',
          'requires': [{'slot': 'environment', 'any_of': ['bed']},
                       {'slot': 'bed_support_model', 'any_of': ['bed-support-skin-quadrature']}],
-         'note': 'A property of the bed, not an alternative to it. The engine refuses a mattress without an explicit skin surface foundation.'},
-        {'id': 'ambient_thermal', 'label': 'Ambient air', 'exclusive': True, 'required': False,
-         'default': 'ambient-22c', 'requires': [], 'continuous_range_c': ambient_bounds,
-         'note': 'Physiology-engine boundary condition, independent of the mechanical environment. Discrete tiles are convenience points on a continuous accepted range.'},
-        {'id': 'scene', 'label': 'Scene', 'exclusive': True, 'required': False, 'default': None,
-         'requires': [],
-         'note': 'A named arrangement of objects over one of the three real environments. Exclusive: one arrangement at a time. Each scene names the base environment it requires; selecting it does not change gravity, plane or supports.'},
-        {'id': 'objects', 'label': 'Objects', 'exclusive': False, 'required': False, 'default': None,
-         'requires': [],
-         'note': 'Not exclusive: objects combine. A scene is a saved combination; individual objects can be added on their own. Objects with a sphere collider are simulated, the rest are display-only.'},
+         'contingent_on': {'slot': 'bed_support_model', 'any_of': ['bed-support-skin-quadrature']},
+         'note': 'A property of the bed, not an alternative to it. The engine refuses a mattress without an explicit skin surface foundation, so this control appears only once that support surface is chosen.'},
+        {'id': 'ambient_thermal', 'label': 'Ambient air temperature', 'control': 'select', 'order': 6,
+         'exclusive': True, 'required': False, 'default': 'ambient-22c', 'requires': [],
+         'contingent_on': None, 'continuous_range_c': ambient_bounds, 'unit': 'degC',
+         'note': 'Physiology-engine boundary condition, independent of the mechanical environment. The options are convenience points on a continuous accepted range, so a slider over range_c is equally valid.'},
     ]
+    by_slot = {}
+    for record in records:
+        by_slot.setdefault(record['slot'], []).append(record)
+    for slot in slots:
+        options = []
+        for record in by_slot.get(slot['id'], []):
+            if slot['control'] == 'insert' and not record.get('insertable'):
+                continue
+            options.append({'value': record['id'], 'label': record['label'],
+                            'default': record['id'] == slot['default'],
+                            'thumbnail_url': record['thumbnail_url'],
+                            'summary': record['description'].split('. ')[0] + '.',
+                            'requires': record['requires'],
+                            'value_c': record.get('value_c')})
+        slot['options'] = options
+        slot['option_count'] = len(options)
+        if slot['control'] == 'insert':
+            slot['not_insertable'] = [{'value': r['id'], 'label': r['label'],
+                                       'reason': 'no collider for this shape; a scene may draw it but a session cannot hold an instance'}
+                                      for r in by_slot.get(slot['id'], []) if not r.get('insertable')]
+            slot['max_instances_per_session'] = MAX_SCENE_OBJECTS
 
     catalogue = {
         'schema': SCHEMA,
@@ -1334,6 +1696,18 @@ def build(render=True):
         'components': [r for r in records if r['kind'] == 'component'],
         'objects': [r for r in records if r['kind'] == 'object'],
         'scenes': [r for r in records if r['kind'] == 'scene'],
+        'surrounds': [{'id': ident, 'label': entry['spec']['label'], 'kind': entry['spec']['kind'],
+                       'base_environment': entry['spec']['environment'],
+                       'geometry': entry['path'], 'geometry_sha256': sha(ROOT / entry['path']),
+                       'geometry_url': '/api/scene/surround/' + ident,
+                       'vertex_count': entry['payload']['vertex_count'],
+                       'face_count': entry['payload']['face_count'],
+                       'cutaway_parts': entry['payload']['cutaway_parts'],
+                       'part_names': [p['name'] for p in entry['parts']],
+                       'physics': entry['payload']['physics'],
+                       'used_by': [s['id'] for s in SCENE_SPECS if s['surround'] == ident],
+                       'provenance': f'{PROV.relative_to(ROOT)}/{ident}.json'}
+                      for ident, entry in surrounds.items()],
         'verified': {
             'scene_environment_ids': literals['scene_environment_ids'],
             'native_cpp_environments': literals['native_cpp_environments'],
@@ -1365,8 +1739,16 @@ def build(render=True):
              'reason': 'The scene has one collider, Sphere, against a half-space. Furniture, pillow and blanket are therefore display-only until a mesh or box collider exists.'},
             {'candidate': 'rooms as a fourth environment',
              'reason': 'Gravity direction, plane offset and prescribed supports are hardcoded in two engines. A scene composes objects on top of one of the three; it never invents a fourth.'},
-            {'candidate': 'downloaded furniture assets',
-             'reason': 'No object geometry was downloaded. Everything under objects/ is constructed procedurally by this script, so no third-party licence is claimed or needed.'},
+            {'candidate': 'downloaded furniture, texture or sky assets',
+             'reason': 'Nothing was downloaded. Every object and surround under objects/ and surrounds/ is constructed procedurally by this script, and the sky is a declared gradient, so no third-party licence is claimed or needed.'},
+            {'candidate': 'walls, floors, ground sheet, sky and window as physical surfaces',
+             'reason': 'The whole surround is visual. There is no collider for any of it, so the body cannot lean on a wall and a ball cannot bounce off one. The only surface the engine solves is the ideal half space at the environment plane.'},
+            {'candidate': 'inserting a block, or any non-sphere object, as a physical body',
+             'reason': 'The scene has one collider, Sphere against a half space. A block, chair or pillow can be drawn and placed but never instantiated, so + Insert is offered only for the two balls.'},
+            {'candidate': 'outdoor terrain that is not flat',
+             'reason': 'The engine ground is a half space at a fixed offset. A grass field is that same plane with a tiled sheet drawn on it; slopes, steps and uneven ground would need a collider that does not exist.'},
+            {'candidate': 'illumination from the declared window or sky',
+             'reason': 'Tiles use one fixed key light with no shadows and no light transport. The window and sky are declared scenery, not light sources.'},
         ],
     }
 
@@ -1399,8 +1781,12 @@ def build(render=True):
         'counts': {'environments': len(catalogue['environments']), 'scenes': len(catalogue['scenes']),
                    'components': len(catalogue['components']), 'objects': len(catalogue['objects']),
                    'contact_ready_objects': sum(o['physical_contact_solved'] for o in catalogue['objects']),
+                   'surrounds': len(catalogue['surrounds']),
+                   'scene_placements': sum(len(s['placements']) for s in catalogue['scenes']),
                    'slots': len(slots), 'provenance_records': len(provenance),
-                   'thumbnails': len(list(THUMBS.glob('*.png'))), 'object_geometries': len(list((OUT / 'objects').glob('*.json')))},
+                   'thumbnails': len(list(THUMBS.glob('*.png'))),
+                   'object_geometries': len(list((OUT / 'objects').glob('*.json'))),
+                   'surround_geometries': len(list((OUT / 'surrounds').glob('*.json')))},
     }
     (OUT / 'manifest.json').write_text(json.dumps(manifest, indent=1) + '\n')
     return catalogue, manifest
@@ -1428,9 +1814,13 @@ def _scene_smoke_test(catalogue):
             frame = scene.step({'seconds': .02, 'sequence': 0})
             simulated = sorted(o['id'] for o in frame['objects'])
             expected = sorted(record['engine_object_ids'])
-            ok = simulated == expected and frame['scene_id'] == record['id']
+            inserted = scene.insert({'object': 'ball-large'})
+            twice = scene.insert({'object': 'ball-large', 'offset_m': [.15, 0., -.2]})
+            after = [o['id'] for o in twice['objects']]
+            duplicated = len(after) == len(set(after)) and len(after) == len(simulated) + 2
+            ok = simulated == expected and frame['scene_id'] == record['id'] and duplicated
             passed = passed and ok
-            detail.append(f"{record['id']}:{'ok' if ok else 'MISMATCH'} objects={simulated}")
+            detail.append(f"{record['id']}:{'ok' if ok else 'MISMATCH'} scene={simulated} after_two_inserts={sorted(after)}")
     finally:
         if area.exists() and area.is_relative_to(OUT):
             shutil.rmtree(area)
@@ -1506,8 +1896,9 @@ def self_test(catalogue, provenance, curves, radii, literals, render=True):
           'engine raises "Measured bed requires explicit surface foundation" without it')
 
     per_record = {r['structure_id']: r for r in provenance}
-    check('one provenance record per catalogue entry', set(per_record) == known,
-          f'records={len(per_record)} entries={len(known)}')
+    covered = known | {s['id'] for s in catalogue['surrounds']}
+    check('one provenance record per catalogue entry and surround', set(per_record) == covered,
+          f"records={len(per_record)} entries={len(known)} surrounds={len(catalogue['surrounds'])}")
     check('provenance records carry the schema and a tier',
           all(r['schema'] == PROVENANCE_SCHEMA and r['tier'] in ('measured', 'transferred', 'derived', 'synthesized')
               for r in provenance),
@@ -1562,6 +1953,52 @@ def self_test(catalogue, provenance, curves, radii, literals, render=True):
           all(json.loads((ROOT / o['geometry']).read_bytes())['construction'].startswith('procedural')
               for o in objects.values()),
           'all object geometry is constructed by this script; nothing downloaded')
+    # ---- worlds
+    surrounds = {s['id']: s for s in catalogue['surrounds']}
+    check('every scene declares a world with sky, ground and light',
+          all(set(s['world']) >= {'kind', 'sky', 'ground', 'light', 'physics'} for s in catalogue['scenes']),
+          str({s['id']: (s['world']['kind'], s['world']['sky']['id'], s['world']['ground']['type']) for s in catalogue['scenes']}))
+    check('every scene surround exists, hashes and matches the scene base environment',
+          all(s['world']['surround'] in surrounds
+              and sha(ROOT / surrounds[s['world']['surround']]['geometry']) == s['world']['surround_geometry_sha256']
+              and surrounds[s['world']['surround']]['base_environment'] == s['base_environment']
+              for s in catalogue['scenes']),
+          str({s['id']: s['world']['surround'] for s in catalogue['scenes']}))
+    check('surrounds are declared visual only, with no collider claimed',
+          all('no collider' in s['physics'].lower() or 'visual surround only' in s['physics'].lower()
+              for s in surrounds.values())
+          and all('visual surround only' in s['world']['physics'].lower() for s in catalogue['scenes']),
+          f'{len(surrounds)} surrounds')
+    check('interior scenes carry an enclosure and a cutaway list; outdoor scenes carry a ground sheet',
+          all((s['world']['enclosure_dimensions_m'] and s['world']['cutaway_parts'])
+              if s['world']['kind'] == 'interior' else
+              (s['world']['ground']['type'] == 'tiled_ground_sheet' and s['world']['sky']['type'] != 'none')
+              for s in catalogue['scenes']),
+          str({s['id']: s['world']['kind'] for s in catalogue['scenes']}))
+    check('at least one outdoor scene over the floor environment',
+          any(s['world']['kind'] == 'open_ground' and s['base_environment'] == 'floor' for s in catalogue['scenes']),
+          str([s['id'] for s in catalogue['scenes'] if s['world']['kind'] == 'open_ground']))
+
+    # ---- controls and instancing
+    controls = {s['id']: s['control'] for s in catalogue['slots']}
+    check('every component slot is a select with ordered options and a default that is one of them',
+          all(s['options'] and any(o['default'] for o in s['options'])
+              and s['default'] in [o['value'] for o in s['options']]
+              for s in catalogue['slots'] if s['control'] == 'select'),
+          str({s['id']: [o['value'] for o in s['options']] for s in catalogue['slots'] if s['control'] == 'select'}))
+    check('every select slot states what it is contingent on',
+          all('contingent_on' in s for s in catalogue['slots'] if s['control'] == 'select'),
+          str({s['id']: s['contingent_on'] for s in catalogue['slots'] if s['control'] == 'select'}))
+    check('the objects slot is an insert control listing only instantiable objects',
+          controls['objects'] == 'insert'
+          and {o['value'] for o in next(s for s in catalogue['slots'] if s['id'] == 'objects')['options']}
+          == {o['id'] for o in catalogue['objects'] if o['insertable']},
+          str([o['value'] for o in next(s for s in catalogue['slots'] if s['id'] == 'objects')['options']]))
+    repeated = {s['id']: s['repeated_objects'] for s in catalogue['scenes'] if s['repeated_objects']}
+    check('repeated placements resolve to distinct instance ids',
+          all(len({pl['instance'] for pl in s['placements']}) == len(s['placements']) for s in catalogue['scenes'])
+          and bool(repeated),
+          str(repeated))
     live = _scene_smoke_test(catalogue)
     check('each scene opens in the engine and steps', live['passed'], live['detail'])
 

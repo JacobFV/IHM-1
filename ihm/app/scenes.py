@@ -82,6 +82,7 @@ def scene_catalog(root, live):
                     entry['geometry_url'] = '/api/scene/object/' + record['id'] if present else None
                 target.append(entry)
         catalog['slots'] = derived['slots']
+        catalog['surrounds'] = derived.get('surrounds', [])
         catalog['exclusivity_model'] = derived['exclusivity_model']
         catalog['camera'] = derived['camera']
         catalog['verified'] = derived['verified']
@@ -118,6 +119,19 @@ def _resolve(root, catalog, ident, field):
 def thumbnail(root, ident, live):
     root = Path(root).resolve()
     return _resolve(root, scene_catalog(root, live), ident, 'thumbnail')
+
+
+def surround_geometry(root, ident, live):
+    """World surround geometry: walls, floors, ceilings, ground sheets. Visual only."""
+    root = Path(root).resolve()
+    catalog = scene_catalog(root, live)
+    entry = next((s for s in catalog.get('surrounds', []) if s['id'] == ident), None)
+    if entry is None or not entry.get('geometry'):
+        return None
+    file = (root / entry['geometry']).resolve()
+    if not file.is_relative_to(root) or not file.is_file():
+        return None
+    return file
 
 
 def object_geometry(root, ident, live):
