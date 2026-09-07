@@ -97,7 +97,12 @@ Open:
 - The bone pose is not a consistent articular configuration: gaps run from
   interpenetration to 5.03 mm, so no single cartilage thickness works.
 - The 30.907 L interstitium must be synthesized. It is the coupling matrix, not
-  merely missing volume.
+  merely missing volume. Composition is now sourced: adipose is 60.7 percent of
+  it, the fill weighs 31.7461 kg, and the body totals 70.7713 kg against a
+  declared 77.1107029 that no soft-tissue density can reach.
+- Two infrapatellar fat pads in the joint promotion candidate are the first
+  adipose geometry in the model, superseding the statement above that none
+  exists.
 - Materials: two literature sources cover 2408 entities, nu 0.45 and rho 1000
   are blanket assumptions, bone has no modulus.
 - libigl cannot enter the main venv on this aarch64 host; upstream ships no
