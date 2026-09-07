@@ -21,6 +21,28 @@ def read_experiment(root,kind):
             if not file.is_relative_to(root) or hashlib.sha256(file.read_bytes()).hexdigest()!=structure['geometry_sha256']:
                 raise ValueError('Hair strand geometry changed')
         return data
+    if kind=='provenance' or kind.startswith('provenance-'):
+        directory=root/'data/derived/structure-provenance-candidate-v1'
+        manifest=json.loads((directory/'manifest.json').read_bytes())
+        index_path=(directory/'index.json').resolve()
+        if hashlib.sha256(index_path.read_bytes()).hexdigest()!=manifest['outputs_sha256']['index.json']:
+            raise ValueError('Provenance index changed; rebuild scripts/build_structure_provenance.py')
+        index=json.loads(index_path.read_bytes())
+        if kind=='provenance':
+            # The index answers for the whole scene, so its heavy inputs are verified here rather than per structure.
+            for source,expected in manifest['inputs_sha256'].items():
+                file=(root/source).resolve()
+                if not file.is_relative_to(root) or hashlib.sha256(file.read_bytes()).hexdigest()!=expected:
+                    raise ValueError('Provenance input changed; rebuild '+source)
+            return {k:v for k,v in index.items() if k!='record_sha256'}
+        identity=kind.removeprefix('provenance-')
+        expected=index['record_sha256'].get(identity)
+        if expected is None:raise ValueError('No provenance record for that structure')
+        records=(directory/'records').resolve()
+        path=(records/(identity+'.json')).resolve()
+        if not path.is_relative_to(records) or hashlib.sha256(path.read_bytes()).hexdigest()!=expected:
+            raise ValueError('Provenance record changed; rebuild export')
+        return json.loads(path.read_bytes())
     if kind=='conforming-domains' or kind.startswith('conforming-domain-'):
         directory=root/'data/derived/conforming-domain-display-v1'
         index=json.loads((directory/'index.json').read_bytes())
