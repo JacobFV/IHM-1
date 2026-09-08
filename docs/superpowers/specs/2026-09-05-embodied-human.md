@@ -1,0 +1,7 @@
+# Embodied human extension
+
+The user expects a physically connected generic human: respiratory chest movement, peripheral nerves linking brain, muscles and skin sensors, fine vessels and body hair, and an immersive fixed 3D workspace. Existing anatomy is not evidence of these mechanisms. Existing 80-region IBM adapter is not the complete IBM-1 model; current mechanics has affine soft tissue and constrained bone orientation, without whole-body contact. These gaps must be stated accurately and reduced with executable mechanisms and tests.
+
+Independent deliverables: (1) fixed viewport and individually scrolling/toggleable panels; (2) respiratory chest-wall/diaphragm/rib mechanics driven by actual native respiration with recorded priors; (3) peripheral sensory/motor pathways, skin receptor transduction, delays and muscle activation binding into the IBM adapter; (4) reproducible source-constrained fine vascular and hair synthesis, with underlying topology/parameters and display materialization separated. All changes retain the canonical frame and IDs, pin source/runtime hashes, and preserve original geometry.
+
+No cosmetic oscillation may be described as endogenous respiratory mechanics. Generated vessels are inferred networks, not measured microangiography. Hair placement, nerve routes, receptors and unmeasured transfer coefficients carry explicit priors. Complete validated human physiology cannot be inferred from passing numerical tests. Build/runtime interfaces and visible coverage must state what actually executes.
