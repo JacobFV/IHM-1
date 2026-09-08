@@ -51,6 +51,16 @@ ASSETS={
  'penile_volume':'data/derived/material-domains/pelvis-0.004m/manifest.json',
  'penile_volume_data':'data/derived/material-domains/pelvis-0.004m/pelvic-domain.npz',
 }
+def _is_json_asset(key):
+    """Whether an asset is read as JSON or only ever verified by digest.
+
+    Derived from the recorded path, not a hand-kept list: a binary or source asset
+    added to ASSETS later would otherwise reach json.loads and raise a decode error
+    far from its cause, which is exactly how app/src/hair_dynamics.js broke load().
+    """
+    return ASSETS[key].endswith('.json')
+
+
 CANONICAL_ASSETS = ('canonical_anatomy', 'canonical_profile', 'canonical_brain',
                     'canonical_mechanics', 'canonical_body')
 
@@ -200,6 +210,7 @@ class ImplicitHuman:
         self._cache={};return self
     def _read(self,key):
         if key not in self.assets:raise ValueError('Required evidence unavailable: '+key)
+        if not _is_json_asset(key):raise ValueError('Not a JSON asset: '+key+'; verify it by digest instead of reading it')
         if key not in self._cache:
             asset=self.assets[key];path=(self.root/asset['path']).resolve()
             if not path.is_relative_to(self.root) or digest(path)!=asset['sha256']:raise ValueError('Evidence changed: '+key+'; reopen or rebuild the substrate')
@@ -378,7 +389,7 @@ class ImplicitHuman:
         self=cls.open(root);self.assets=data['assets'];self._cache={}
         for key in self.assets:
             if key not in ASSETS or self.assets[key]['path']!=ASSETS[key]:raise ValueError('unsupported evidence location')
-            if key in ('kidney_graph','penile_constitutive_source','penile_volume_data'):
+            if not _is_json_asset(key):
                 asset=self.assets[key];path=(self.root/asset['path']).resolve()
                 if not path.is_relative_to(self.root) or digest(path)!=asset['sha256']:
                     raise ValueError('Evidence changed: '+key+'; reopen or rebuild the substrate')
