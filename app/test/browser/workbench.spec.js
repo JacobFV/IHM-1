@@ -20,9 +20,28 @@ test("layers filter by member and expand to reveal members", async ({ page }) =>
   await expect(page.locator("#layers .layer")).not.toHaveCount(0);
   // Members are listed only when the system is expanded.
   await expect(page.locator("#layers .members")).toHaveCount(0);
+  const systems = page.locator("#layers .layer-row > label > span");
+  const before = await systems.count();
   await page.locator("#layer-search").fill("lung");
-  await expect(page.locator("#layers .layer-row > label > span")).toHaveText(["respiratory"]);
+  // Not a fixed list of systems: the atlas carries lung-named vessels in the
+  // arterial and venous systems as well as the respiratory one, and which
+  // systems match is a property of the model, not of the filter. What the
+  // filter owes us is that it narrows, and that every system it leaves
+  // standing genuinely holds a member matching what was typed.
+  await expect(systems).not.toHaveCount(before);
+  await expect(systems).not.toHaveCount(0);
   await expect(page.locator("#layers .members .check-row")).not.toHaveCount(0);
+  const shown = await page.locator("#layers .layer").evaluateAll((layers) =>
+    layers.map((l) => ({
+      system: l.querySelector(".layer-row > label > span")?.textContent ?? "",
+      members: [...l.querySelectorAll(".members .check-row")].map((r) => r.textContent ?? ""),
+    })));
+  expect(shown.length).toBeGreaterThan(0);
+  for (const { system, members } of shown) {
+    expect(members.length, `${system} is shown but lists no member`).toBeGreaterThan(0);
+    expect(members.some((m) => m.toLowerCase().includes("lung")),
+      `${system} is shown but no member matches`).toBe(true);
+  }
   await page.locator("#layer-search").fill("");
   await expect(page.locator("#layers .members")).toHaveCount(0);
   await page.locator("#layers .disclose").first().click();
