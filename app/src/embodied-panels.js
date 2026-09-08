@@ -56,7 +56,7 @@ export function mountEmbodiedPanels() {
   let low=Math.min(...good),high=Math.max(...good);const span=Math.max(high-low,Math.abs(high)*1e-6,1e-9);const dt=s.time_s.at(-1)-s.time_s[0];
   let d='',pen=false;for(let i=0;i<s.values.length;i++){if(!Number.isFinite(s.values[i])){pen=false;continue;}const x=400*(s.time_s[i]-s.time_s[0])/dt,y=82-74*(s.values[i]-low)/span;d+=`${pen?'L':'M'}${x.toFixed(2)},${y.toFixed(2)} `;pen=true;}
   const svg=document.createElementNS('http://www.w3.org/2000/svg','svg'),path=document.createElementNS('http://www.w3.org/2000/svg','path');
-  svg.setAttribute('viewBox','0 0 400 90');svg.setAttribute('role','img');svg.setAttribute('aria-label',`${info.label}, live body samples`);path.setAttribute('d',d);path.setAttribute('fill','none');path.setAttribute('stroke','#8ec9bd');path.setAttribute('stroke-width','1.5');svg.append(path);g.plot.replaceChildren(svg);
+  svg.setAttribute('viewBox','0 0 400 90');svg.setAttribute('role','img');svg.setAttribute('aria-label',`${info.label}, live body samples`);path.setAttribute('d',d);path.setAttribute('fill','none');path.setAttribute('stroke','currentColor');path.setAttribute('stroke-width','1.5');svg.append(path);g.plot.replaceChildren(svg);
   g.axis.textContent=`Live t ${s.time_s[0].toFixed(2)}–${s.time_s.at(-1).toFixed(2)} s · ${s.values.length} stored samples · range ${format(low)}–${format(high)} ${info.unit}`;
  }
  function disabled(value){for(const control of motor.querySelectorAll('input,select,button'))control.disabled=value;}

@@ -1,5 +1,4 @@
 import * as THREE from "three";
-import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import {
   filterStructures,
   geometryArrays,
@@ -14,11 +13,14 @@ import { WardrobeView } from "./clothing.js";
 import { DomainView, ROLE_LABELS } from "./domains.js";
 import { mountSceneInteraction } from "./scene-interaction.js";
 import { mountLeftColumn } from "./left-panel.js";
+import { labToHex, resolvePalette } from "./palette.js";
 import { mountPanes } from "./panes.js";
 import { mountProvenance } from "./provenance.js";
 import { mountGimbal } from "./gimbal.js";
+import { mountCameraOrbit } from "./camera-orbit.js";
 import { mountSurround } from "./surround.js";
 import { mountMicrovascularDetail } from "./microvascular-detail.js";
+import { tissueMaterial, tissueUVs, applyOpacity } from "./tissue-materials.js";
 
 const MODEL_ID = "ihm-body";
 const SPEEDS = [0.25, 0.5, 1, 2, 5, 10];
@@ -45,6 +47,8 @@ document.querySelector("#app").innerHTML = `
     <button id="speed" type="button" aria-expanded="false" aria-label="Playback speed">1x</button>
     <div id="speed-menu" role="group" aria-label="Playback rate" hidden></div>
   </div>
+  <div id="orientation" aria-hidden="true"><span data-edge="top"></span><span data-edge="bottom"></span><span data-edge="left"></span><span data-edge="right"></span></div>
+  <div id="scale-bar" aria-hidden="true" hidden><i></i><span></span></div>
   <p id="scene-status" role="status">Loading anatomy…</p>
 </div>`;
 
@@ -56,16 +60,33 @@ try {
   renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setPixelRatio(1);
   renderer.localClippingEnabled = true;
-  renderer.setClearColor(0x0d1416, 1);
+  renderer.setClearColor(0x0a0e11, 1);
   renderer.domElement.id = "scene";
   viewport.prepend(renderer.domElement);
   scene = new THREE.Scene();
-  camera = new THREE.PerspectiveCamera(35, 1, 0.01, 100000);
-  controls = new OrbitControls(camera, renderer.domElement);
+  camera = new THREE.PerspectiveCamera(35, 1, 0.02, 200);
+  // A pole-free orbit rather than a turntable. The canonical frame is x left, y
+  // superior, z anterior; a turntable orbits about one fixed axis, which was y,
+  // so the arc over the head -- around the coronal plane -- ran into a stop and
+  // the transverse view sat on a pole where no drag moved anything. See
+  // camera-orbit.js.
+  controls = mountCameraOrbit(camera, renderer.domElement);
   controls.enableDamping = true;
   scene.add(new THREE.HemisphereLight(0xd7f0ee, 0x26333d, 2));
   const light = new THREE.DirectionalLight(0xfff1da, 3);
   light.position.set(3, 4, 5);
+  light.castShadow = true;
+  light.shadow.mapSize.set(2048, 2048);
+  Object.assign(light.shadow.camera, {left:-4, right:4, top:4, bottom:-4, near:.1, far:20});
+  light.shadow.normalBias = .012;
+  // Front faces write the shadow map now that solids are single sided, so the
+  // depth it stores is the lit surface itself and a constant bias is enough to
+  // keep a surface from shadowing itself.
+  light.shadow.bias = -0.0004;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = .85;
   scene.add(light);
   const rim = new THREE.DirectionalLight(0x87c5ce, 2);
   rim.position.set(-3, 2, -4);
@@ -155,10 +176,12 @@ let hairDynamics = false;
 const left = mountLeftColumn($("left-column"), {
   onMaterialization: chooseMaterialization,
   onLayers: () => { refresh(); },
+  onOpacity: (system, value) => applySystemOpacity(system, value),
+  onPalette: (id, skinTone) => applyPalette(id, skinTone),
   onMember: (id) => selectStructure(structures.find((s) => s.id === id)),
   onClothing: (ids) => applyGarments(ids),
   onEnvironment: (selection, objects) => {
-    applyEnvironment(selection.environment);
+    applyEnvironment(selection.environment, selection, objects);
     applySurround(selection, objects);
   },
   onSimulation: (option, on) => {
@@ -173,11 +196,7 @@ const left = mountLeftColumn($("left-column"), {
     syncRun();
   },
 });
-// The declared surround: every environment and scene carries its sky, its
-// ground treatment and its enclosing geometry under `world`, and names the
-// parts to cut away so an interior can be seen into. All of it is scenery — the
-// catalogue's own world.physics says no collider exists for any of it — so it
-// is drawn into a group of its own that anatomy picking never reaches.
+// Catalogue geometry and server-owned environment state share canonical coordinates.
 let sceneCatalog = null, surround = null, surroundRequest = 0, framedScene = null;
 function applySurround(selection = {}, objects = []) {
   if (!surround || !sceneCatalog) return;
@@ -197,6 +216,29 @@ function applySurround(selection = {}, objects = []) {
     })
     .catch((error) => { if (request === surroundRequest) left.setRunNote("Surround unavailable: " + error.message); });
 }
+// Both clipping planes, set together from how far the camera is standing off,
+// and refreshed every frame because the wheel is not bounded. A near plane a
+// thousandth of the viewing distance spends almost the whole depth buffer on
+// the first few centimetres, and what is left cannot separate a mattress from
+// the sheet on it; a far plane that only ever grew kept the ratio at whatever
+// the widest scene had ever needed. A fiftieth and fortyfold hold a whole room
+// at a ratio of two thousand, which coincident surfaces survive.
+function clipTo(distance) {
+  if (!Number.isFinite(distance) || distance <= 0) return;
+  camera.near = distance / 50;
+  camera.far = distance * 40;
+}
+// The orbit dollies without limit, so the standoff that set the planes at the
+// last snap is not the standoff now. Recomputing costs one subtraction and only
+// touches the projection when the reader has actually moved.
+function clipToView() {
+  if (!camera || !controls) return;
+  const distance = camera.position.distanceTo(controls.target);
+  const near = distance / 50;
+  if (Math.abs(near - camera.near) < camera.near * 0.05) return;
+  clipTo(distance);
+  camera.updateProjectionMatrix();
+}
 // camera.view_direction_canonical points from the scene centre toward the
 // catalogue's camera; image_right_canonical is its right vector, which is how
 // this reading was checked rather than guessed.
@@ -207,23 +249,33 @@ function frameScene() {
   if (!Number.isFinite(half)) return;
   const centre = new THREE.Vector3(...(view.centre_m || [0, 0, 0]));
   const direction = new THREE.Vector3(...view.view_direction_canonical).normalize();
+  const up = new THREE.Vector3(...(view.image_up_canonical || [0, 1, 0]));
+  const gravityFrame = view.gravity_frames?.[left.environment];
+  if (gravityFrame?.rotation) {
+    const r = gravityFrame.rotation;
+    const transform = new THREE.Matrix3().set(...r[0], ...r[1], ...r[2]).transpose();
+    direction.applyMatrix3(transform); up.applyMatrix3(transform);
+    if (gravityFrame.centre) centre.fromArray(gravityFrame.centre).applyMatrix3(transform);
+  }
   const distance = half / Math.tan((camera.fov * Math.PI) / 360) * 1.15;
   controls.target.copy(centre);
   camera.position.copy(centre).addScaledVector(direction, distance);
-  camera.up.set(...(view.image_up_canonical || [0, 1, 0]));
-  camera.near = distance / 1000;
-  camera.far = Math.max(camera.far, distance * 40);
+  camera.up.copy(up);
+  // A catalogue scene carries its own up, and in a gravity frame that is not the
+  // superior axis. It is what a settled view should keep vertical from here on.
+  controls.upReference.copy(up).normalize();
+  clipTo(distance);
   camera.updateProjectionMatrix();
   controls.update();
   gimbal?.select(null);
 }
 
-// POST /api/embodied/sessions accepts one environment and nothing else, so the
-// component slots and scene objects are held as declared state until the
-// runtime accepts them.
-function applyEnvironment(id) {
+function applyEnvironment(id, selection = left.environmentSelection, objects = left.sceneObjects.map(i => i.id)) {
   if (!id) return;
-  sceneInteraction?.setEnvironment(id).then(syncRun).catch((e) => left.setRunNote(e.message));
+  const configuration = {objects};
+  for (const slot of ["scene", "bed_support_model", "mattress_material", "ambient_thermal"])
+    if (selection[slot]) configuration[slot] = selection[slot];
+  sceneInteraction?.setEnvironment(id, configuration).then(syncRun).catch((e) => left.setRunNote(e.message));
 }
 function syncRun() {
   if (!sceneInteraction) { left.setRun("Start body", true); return; }
@@ -280,16 +332,24 @@ function createGeometry(s, g) {
   geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
   if (indices) geometry.setIndex(new THREE.BufferAttribute(indices, 1));
   const color = s.color || "#9eb7b7";
+  // Whatever the reader last set this system to, which starts at the value the
+  // system was always drawn at -- skin translucent, everything else solid.
+  const opacity = left.opacity(s.system);
   let object;
   if (s.kind === "lines") {
     object = new (g.topology === "polyline" ? THREE.Line : THREE.LineSegments)(
-      geometry, new THREE.LineBasicMaterial({ color, transparent: true }));
+      geometry, applyOpacity(new THREE.LineBasicMaterial({ color }), opacity));
   } else {
     geometry.computeVertexNormals();
-    object = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({
-      color, roughness: 0.65, metalness: 0.05, side: THREE.DoubleSide,
-      transparent: true, opacity: s.system === "integumentary" ? 0.22 : 1 }));
+    // Tissue is drawn as tissue: the palette still decides the colour, and the
+    // material adds the grain and relief that colour alone cannot carry. See
+    // tissue-materials.js for why the maps are grey.
+    const material = tissueMaterial(s, { color, opacity });
+    tissueUVs(geometry, material.userData.tissueFamily);
+    object = new THREE.Mesh(geometry, material);
   }
+  object.castShadow = object.isMesh && s.system === "integumentary";
+  object.receiveShadow = object.isMesh;
   object.userData.structure = s;
   attachElasticHair(object, g);
   if (g.attachment?.kind === "MaterialPoint" && g.attachment.reference_triangles_m) {
@@ -298,6 +358,62 @@ function createGeometry(s, g) {
   }
   return object;
 }
+// Opacity is not visibility: this changes how a system is painted and leaves
+// every checkbox, and every object's `visible`, exactly where it was.
+function applySystemOpacity(system, value) {
+  objects.forEach((object) => {
+    if (object.userData.structure?.system !== system) return;
+    object.traverse((x) => {
+      if (!x.material) return;
+      for (const material of Array.isArray(x.material) ? x.material : [x.material]) {
+        const wasTransparent = material.transparent;
+        applyOpacity(material, value);
+        // Crossing the boundary between opaque and translucent changes which
+        // pass the material is compiled for, and three only notices if told.
+        if (material.transparent !== wasTransparent) material.needsUpdate = true;
+      }
+    });
+  });
+}
+
+// Choosing a palette repaints what is already in the scene and rewrites the
+// colour on the structure record, so geometry that loads later comes up in the
+// same palette. No geometry is refetched: the only thing that changes is the
+// material colour, and the record the renderer reads it from.
+const paletteCache = new Map();
+let paletteIndex = null, paletteBase = null, paletteRequest = 0;
+async function applyPalette(id, skinTone) {
+  if (!structures.length) return;
+  // The colour every structure started at, so a palette that does not name a
+  // structure leaves it exactly where it was rather than blanking it.
+  paletteBase ||= new Map(structures.map((s) => [s.id, s.color]));
+  const request = ++paletteRequest;
+  let palette;
+  try {
+    if (!paletteCache.has(id))
+      paletteCache.set(id, await api(`/api/body/palettes/${encodeURIComponent(id)}`));
+    palette = paletteCache.get(id);
+  } catch (error) {
+    paletteCache.delete(id);
+    if (request === paletteRequest) left.setPaletteApplied({ error: `Palette unavailable: ${error.message}` });
+    return;
+  }
+  if (request !== paletteRequest) return;
+  const tone = paletteIndex?.skin_tone_options?.[skinTone]?.colour;
+  const toneHex = labToHex(tone?.lab, tone?.illuminant_observer);
+  const { colours, missing, skinToneApplies } = resolvePalette({ palette, structures, base: paletteBase, toneHex });
+  for (const s of structures) {
+    const hex = colours.get(s.id);
+    if (!hex) continue;
+    s.color = hex;
+    const object = objects.get(s.id);
+    if (!object?.material) continue;
+    for (const material of Array.isArray(object.material) ? object.material : [object.material])
+      material.color?.set(hex);
+  }
+  left.setPaletteApplied({ skinToneApplies, fallbacks: missing.length });
+}
+
 function selectStructure(s) {
   if (!s) return;
   selected = s;
@@ -324,13 +440,17 @@ function resetCamera(plane = "coronal") {
     size = modelBounds.getSize(new THREE.Vector3()),
     distance = Math.max(size.y, size.x, size.z) * 1.85;
   controls.target.copy(center);
+  // The transverse view used to be nudged a millimetre off the axis because a
+  // turntable's azimuth degenerates on its pole; the orbit no longer has one, so
+  // the snap is exactly on axis. A snap also restores the superior axis as the
+  // upright reference, which is how a view carried over the head gets back up.
   const offset = plane === "sagittal" ? new THREE.Vector3(distance, 0, 0)
-    : plane === "transverse" ? new THREE.Vector3(0, distance, 0.001)
+    : plane === "transverse" ? new THREE.Vector3(0, distance, 0)
       : new THREE.Vector3(0, 0, distance);
   camera.position.copy(center).add(offset);
   camera.up.set(0, plane === "transverse" ? 0 : 1, plane === "transverse" ? -1 : 0);
-  camera.near = distance / 1000;
-  camera.far = distance * 20;
+  controls.upReference.set(0, 1, 0);
+  clipTo(distance);
   camera.updateProjectionMatrix();
   controls.update();
 }
@@ -345,6 +465,62 @@ if (camera) {
     gimbal = null;
   }
 }
+
+// A pose seam. How far a drag turns the camera is a number in degrees, and no
+// screenshot reports it, so the browser specs and app/test/orbit-isotropy.mjs
+// read the pose here and put the camera at a known start before dragging.
+// Nothing in the app calls this; it only reads and writes the camera.
+globalThis.__ihmCamera = {
+  pose() {
+    if (!camera || !controls) return null;
+    const direction = camera.position.clone().sub(controls.target).normalize();
+    return {
+      position: camera.position.toArray(),
+      target: controls.target.toArray(),
+      up: camera.up.toArray(),
+      quaternion: camera.quaternion.toArray(),
+      direction: direction.toArray(),
+    };
+  },
+  setPose({ position, target, up }) {
+    if (!camera || !controls) return null;
+    if (target) controls.target.fromArray(target);
+    if (position) camera.position.fromArray(position);
+    if (up) camera.up.fromArray(up).normalize();
+    camera.lookAt(controls.target);
+    controls.update();
+    return this.pose();
+  },
+  snap(plane) { resetCamera(plane); return this.pose(); },
+  // Damping spreads one drag over many frames. This runs the same update the
+  // render loop runs, so a measurement reads a finished camera rather than one
+  // still coasting.
+  settle(frames = 600) {
+    for (let i = 0; i < frames; i++) controls?.update();
+    return this.pose();
+  },
+};
+
+// What the renderer is actually painting a system at, read back from the
+// materials rather than from the panel that asked for it. The browser spec uses
+// it to tell a slider that moved from a body that changed.
+globalThis.__ihmLayers = {
+  opacity(system) {
+    const values = [];
+    objects.forEach((object) => {
+      if (object.userData.structure?.system !== system) return;
+      object.traverse((x) => { if (x.material?.opacity !== undefined) values.push(x.material.opacity); });
+    });
+    return values.length ? values.reduce((a, b) => a + b, 0) / values.length : null;
+  },
+  // The same readback for colour: what one structure's material is actually
+  // painted, not what the palette record said it should be.
+  colour(id) {
+    const material = objects.get(id)?.material;
+    const first = Array.isArray(material) ? material[0] : material;
+    return first?.color ? `#${first.color.getHexString()}` : null;
+  },
+};
 
 // ------------------------------------------------------------- transport ---
 $("speed-menu").replaceChildren(...SPEEDS.map((value) => {
@@ -540,13 +716,59 @@ function applyBodyFrame(frame, trajectory) {
   clothingView?.update(frame, trajectory?.centroids_m);
 }
 
+// ------------------------------------------------------------ annotation ---
+// What an imaging console prints on every frame: the anatomical direction at
+// each edge of the view, and a scale bar true at the orbit target's distance.
+// The canonical frame is x left, y superior, z anterior, so the letter at an
+// edge names the direction of the body that lies that way on the screen.
+const ORIENTATION = [["L", "R"], ["S", "I"], ["A", "P"]];
+const SCALE_STEPS = [0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5];
+const orientationEdges = Object.fromEntries(
+  [...document.querySelectorAll("#orientation span")].map((node) => [node.dataset.edge, node]));
+const orientationScratch = { axis: new THREE.Vector3(), turn: new THREE.Quaternion(), text: "" };
+function orientationLetter(axis) {
+  const parts = [axis.x, axis.y, axis.z];
+  const index = parts.map(Math.abs).indexOf(Math.max(...parts.map(Math.abs)));
+  return Math.abs(parts[index]) < 0.35 ? "" : ORIENTATION[index][parts[index] >= 0 ? 0 : 1];
+}
+function annotate() {
+  const { axis, turn } = orientationScratch;
+  group.getWorldQuaternion(turn).invert().multiply(camera.quaternion);
+  const letters = {
+    right: orientationLetter(axis.set(1, 0, 0).applyQuaternion(turn)),
+    left: orientationLetter(axis.set(-1, 0, 0).applyQuaternion(turn)),
+    top: orientationLetter(axis.set(0, 1, 0).applyQuaternion(turn)),
+    bottom: orientationLetter(axis.set(0, -1, 0).applyQuaternion(turn)),
+  };
+  const text = letters.left + letters.right + letters.top + letters.bottom;
+  if (text !== orientationScratch.text) {
+    orientationScratch.text = text;
+    for (const edge in letters) orientationEdges[edge].textContent = letters[edge];
+  }
+  const bar = $("scale-bar");
+  const height = viewport.clientHeight;
+  const distance = camera.position.distanceTo(controls.target);
+  if (!height || !(distance > 0) || modelBounds.isEmpty()) { bar.hidden = true; return; }
+  const metresPerPixel = 2 * distance * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2) / height;
+  const metres = [...SCALE_STEPS].reverse().find((step) => step / metresPerPixel <= 150) || SCALE_STEPS[0];
+  const pixels = Math.round(metres / metresPerPixel);
+  if (bar.dataset.pixels !== String(pixels)) {
+    bar.dataset.pixels = String(pixels);
+    bar.firstElementChild.style.width = `${pixels}px`;
+    bar.lastElementChild.textContent = metres >= 1 ? `${metres} m` : metres >= 0.01 ? `${Math.round(metres * 100)} cm` : `${Math.round(metres * 1000)} mm`;
+  }
+  bar.hidden = pixels < 12;
+}
+
 // ------------------------------------------------------------------ loop ---
 if (renderer) {
   renderer.setAnimationLoop((now) => {
     if (document.hidden || now - lastRender < 1000 / 30) return;
     lastRender = now;
     controls.update();
+    clipToView();
     gimbal?.update();
+    annotate();
     surround?.follow(camera);
     sceneInteraction?.update(now);
     const frames = bodyTrajectory?.frames;
@@ -599,6 +821,8 @@ function mountBody() {
     onFrame: (frame) => {
       const first = frame && !liveFrame;
       liveFrame = frame;
+      viewport.dataset.live = String(!!frame);
+      surround?.update(frame?.environment_state);
       if (frame) {
         if (first) for (const id of ["live", "live-signal-1", "motor", "scene"]) panes.show(id);
         const now = performance.now();
@@ -628,6 +852,16 @@ async function start() {
   defaults.add("integumentary");
   defaults.add("hair");
   left.setStructures(structures, defaults);
+  // The palette index names the default and the app keeps it: didactic is what
+  // the manifest already paints, so restoring it is a no-op rather than a
+  // recolour. Another palette is an explicit choice, and it survives a reload.
+  api("/api/body/palettes")
+    .then((index) => {
+      paletteIndex = index;
+      const choice = left.setPalettes(index);
+      return applyPalette(choice.palette, choice.skin_tone);
+    })
+    .catch((error) => left.setPaletteApplied({ error: `Palettes unavailable: ${error.message}` }));
   left.setWholeBody(true);
   left.setMaterializations([{ value: "body", label: "Whole body" }], "body");
   left.setMaterializationNote("The whole assembled body.");

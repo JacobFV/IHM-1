@@ -63,9 +63,17 @@ test("the environment section tells tiles, configuration and objects apart", asy
   await tile("studio").click();
   await expect(config("mattress_material")).toHaveCount(0);
   await expect(config("bed_support_model")).toHaveCount(0);
-  await expect(tile("bedroom")).toBeDisabled();
   // Ambient air is independent of the mechanical environment.
   await expect(config("ambient_thermal")).toBeVisible();
+  // A scene that names one environment is still offered from another, and says
+  // what pressing it will also do, because a requirement is a route rather than
+  // a wall. Configuration, which offers a real choice, stays withdrawn.
+  await expect(tile("bedroom")).toBeEnabled();
+  await expect(tile("bedroom")).toHaveAttribute("title", "Also selects Bed");
+  await tile("bedroom").click();
+  await expect(tile("bed")).toHaveAttribute("aria-pressed", "true");
+  await expect(tile("bedroom")).toHaveAttribute("aria-pressed", "true");
+  await expect(config("bed_support_model")).toBeVisible();
 });
 
 test("scene objects are additive inserts, not toggles", async ({ page }) => {
@@ -281,4 +289,254 @@ test("clicking a structure identifies it and answers where it came from", async 
   await expect(page.locator("[data-pane='selection'] h3")).toBeVisible();
   await expect(page.locator("#details .structure-provenance")).toContainText("Where this came from", { timeout: 60000 });
   await expect(page.locator("#details .structure-provenance")).toContainText("Originating dataset");
+});
+
+test("an equal drag turns the camera equally in every direction, and the arc over the head does not stop", async ({ page }) => {
+  // Every reading is a real drag on the canvas and a settled camera read back,
+  // and the software rasteriser makes both slow; the exhaustive sweep across
+  // five orientations lives in app/test/orbit-isotropy.mjs.
+  test.setTimeout(300000);
+  const errors = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.goto("/");
+  await expect(page.locator("#scene-status")).toHaveText("", { timeout: 240000 });
+  const box = await page.locator("#scene").boundingBox();
+  const centre = { x: box.x + box.width * 0.5, y: box.y + box.height * 0.5 };
+  // A drag of one canvas height is one full turn, so the expected angle is a
+  // number this test states rather than a value read off the thing measured.
+  const canvasHeight = await page.locator("#scene").evaluate((node) => node.clientHeight);
+  const PIXELS = 140;
+  const expected = (360 * PIXELS) / canvasHeight;
+  const angle = (a, b) => {
+    const d = Math.min(1, Math.max(-1, a[0] * b[0] + a[1] * b[1] + a[2] * b[2]));
+    return (Math.acos(d) * 180) / Math.PI;
+  };
+  // Damping spreads a drag over many frames; this runs the same update the
+  // render loop runs until it is spent, so a reading is of a finished camera.
+  const settle = () => page.evaluate(() => globalThis.__ihmCamera.settle(900));
+  const drag = async (dx, dy) => {
+    await page.mouse.move(centre.x, centre.y);
+    await page.mouse.down();
+    await page.mouse.move(centre.x + dx, centre.y + dy, { steps: 4 });
+    await page.mouse.up();
+    return settle();
+  };
+
+  // Three starts, two drag directions each: the same pixels must buy the same
+  // degrees whichever way they go and wherever they start. The transverse snap
+  // is the telling one -- it is exactly where a turntable's azimuth degenerates,
+  // and a drag there used to move the camera by a ten-thousandth of a degree.
+  const readings = [];
+  for (const plane of ["coronal", "sagittal", "transverse"])
+    for (const [dx, dy] of [[PIXELS, 0], [0, PIXELS]]) {
+      await page.evaluate((p) => globalThis.__ihmCamera.snap(p), plane);
+      const before = await settle();
+      const after = await drag(dx, dy);
+      readings.push({ plane, dx, dy, deg: angle(before.direction, after.direction) });
+    }
+  for (const reading of readings)
+    expect.soft(reading.deg, `${reading.plane} drag ${reading.dx},${reading.dy}`).toBeCloseTo(expected, 1);
+  const degrees = readings.map((r) => r.deg);
+  expect(Math.max(...degrees) / Math.min(...degrees)).toBeLessThan(1.02);
+
+  // The owner's complaint, as an assertion: hold a vertical drag from the front
+  // view and the camera travels the coronal plane, over the head, past the back
+  // and round. A turntable stops on the pole after a quarter turn.
+  await page.evaluate(() => globalThis.__ihmCamera.snap("coronal"));
+  let previous = await settle();
+  const first = previous;
+  let travelled = 0, overhead = false, behind = false;
+  // Four pulls of 200 px is 288 degrees: far enough round to pass behind the
+  // body and over the head, and deliberately short of a full turn so the snap
+  // below has somewhere to come back from.
+  for (let pull = 0; pull < 4; pull++) {
+    const now = await drag(0, -200);
+    travelled += angle(previous.direction, now.direction);
+    previous = now;
+    if (now.direction[1] > 0.8) overhead = true;
+    if (now.direction[2] < -0.8) behind = true;
+  }
+  expect(travelled).toBeCloseTo((360 * 4 * 200) / canvasHeight, 0);
+  expect(overhead, "the camera never reached the view over the head").toBe(true);
+  expect(behind, "the camera never carried on past the head to the back").toBe(true);
+
+  // A snap still establishes an upright view from wherever the sweep ended, and
+  // the gimbal still tracks the camera it mirrors.
+  // The sweep left the camera 72 degrees short of home, so the gimbal, which
+  // mirrors the camera every frame, must look different after the snap.
+  const gimbalBefore = await page.locator("#gimbal").screenshot();
+  await page.evaluate(() => globalThis.__ihmCamera.snap("coronal"));
+  const home = await settle();
+  expect(angle(home.direction, [0, 0, 1])).toBeLessThan(0.01);
+  expect(angle(home.up, [0, 1, 0])).toBeLessThan(0.01);
+  expect(angle(first.direction, home.direction)).toBeLessThan(0.01);
+  await page.waitForTimeout(800);
+  expect((await page.locator("#gimbal").screenshot()).equals(gimbalBefore)).toBe(false);
+  await expect(page.locator("#gimbal")).toHaveAttribute("data-selected", "coronal");
+  expect(errors).toEqual([]);
+});
+
+test("every system row has an opacity control that changes only that system", async ({ page }) => {
+  test.setTimeout(300000);
+  await page.goto("/");
+  await expect(page.locator("#scene-status")).toHaveText("", { timeout: 240000 });
+  const rows = page.locator("#layers .layer-row");
+  const count = await rows.count();
+  expect(count).toBeGreaterThan(3);
+  // One control on every system row, and the row at rest is otherwise what it
+  // was: a triangle, a checkbox, a swatch, a name and a count. No inline slider.
+  await expect(page.locator("#layers .layer-row .layer-settings")).toHaveCount(count);
+  await expect(page.locator("#layers .layer-row input[type=range]")).toHaveCount(0);
+  await expect(page.locator("#layer-opacity")).toBeHidden();
+
+  const painted = (system) => page.evaluate((s) => globalThis.__ihmLayers.opacity(s), system);
+  const control = (system) => page.locator(`#layers .layer-settings[data-system="${system}"]`);
+  const systems = await page.locator("#layers .layer-settings").evaluateAll((n) => n.map((x) => x.dataset.system));
+  expect(systems).toContain("integumentary");
+  // A system whose geometry is actually in the scene, so a change to it is a
+  // change to the body rather than to a number nothing paints.
+  let other = null;
+  for (const system of systems)
+    if (system !== "integumentary" && (await painted(system)) !== null) { other = system; break; }
+  expect(other, "no other system is currently painted").toBeTruthy();
+
+  // Opening one and then another leaves exactly one popover open.
+  await control("integumentary").click();
+  await expect(page.locator("#layer-opacity")).toBeVisible();
+  await expect(page.locator("#layer-opacity")).toHaveAttribute("data-system", "integumentary");
+  await expect(control("integumentary")).toHaveAttribute("aria-expanded", "true");
+  await control(other).click();
+  await expect(page.locator("#layer-opacity")).toHaveAttribute("data-system", other);
+  await expect(control("integumentary")).toHaveAttribute("aria-expanded", "false");
+  await expect(page.locator("#layer-opacity")).toHaveCount(1);
+
+  // The slider moves the body, not just the readout, and only its own system.
+  const untouched = await painted("integumentary");
+  await page.locator("#layer-opacity-range").fill("35");
+  await expect(page.locator("#layer-opacity-value")).toHaveText("35%");
+  expect(await painted(other)).toBeCloseTo(0.35, 2);
+  expect(await painted("integumentary")).toBeCloseTo(untouched, 5);
+  // Opacity is not visibility: the checkbox is untouched.
+  await expect(page.locator(`#layers .layer-row input[type=checkbox][value="${other}"]`)).toBeChecked();
+
+  // Escape closes it; so does a click outside.
+  await page.keyboard.press("Escape");
+  await expect(page.locator("#layer-opacity")).toBeHidden();
+  await control(other).click();
+  await expect(page.locator("#layer-opacity")).toBeVisible();
+  await page.locator("#layer-search").click();
+  await expect(page.locator("#layer-opacity")).toBeHidden();
+
+  // A row near the bottom of a tall column opens its popover on screen.
+  const last = page.locator("#layers .layer-settings").last();
+  await last.scrollIntoViewIfNeeded();
+  await last.click();
+  const placed = await page.locator("#layer-opacity").boundingBox();
+  const viewportHeight = await page.evaluate(() => window.innerHeight);
+  expect(placed.y).toBeGreaterThanOrEqual(0);
+  expect(placed.y + placed.height).toBeLessThanOrEqual(viewportHeight);
+  await page.keyboard.press("Escape");
+
+  // The value survives a reload, and still does not touch visibility.
+  await page.reload();
+  await expect(page.locator("#scene-status")).toHaveText("", { timeout: 240000 });
+  expect(await painted(other)).toBeCloseTo(0.35, 2);
+  await control(other).click();
+  await expect(page.locator("#layer-opacity-value")).toHaveText("35%");
+  await expect(page.locator(`#layers .layer-row input[type=checkbox][value="${other}"]`)).toBeChecked();
+});
+
+test("the Layers section picks a tissue colour palette, and palette and skin tone are separate axes", async ({ page }) => {
+  test.setTimeout(300000);
+  const errors = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.goto("/");
+  await expect(page.locator("#scene-status")).toHaveText("", { timeout: 240000 });
+
+  // The control belongs to Layers and is the same gear-and-popover idiom as the
+  // per-system opacity control, not a second kind of thing.
+  await expect(page.locator("[data-section='layers'] #palette-row #palette-settings")).toBeVisible();
+  await expect(page.locator("#tissue-palette")).toBeHidden();
+  // The build default is what the app opens at, and the popover says so in the
+  // server's own words rather than in a claim written here.
+  await expect(page.locator("#palette-current")).toHaveText("Didactic");
+
+  // Three structures whose colour the reader can see: the whole-body skin mesh,
+  // the lip, and the gingiva. Didactic paints the last two the same because they
+  // are one system; a tissue palette must not.
+  const painted = (id) => page.evaluate((i) => globalThis.__ihmLayers.colour(i), id);
+  const skin = "body-bp3d-FJ2810", lip = "body-bp3d-FJ2814", gingiva = "body-bp3d-FJ1252";
+  const skinDidactic = await painted(skin);
+  expect(skinDidactic).toMatch(/^#[0-9a-f]{6}$/);
+  expect(await painted(lip)).toBe(await painted(gingiva));
+
+  await page.locator("#palette-settings").click();
+  await expect(page.locator("#tissue-palette")).toBeVisible();
+  await expect(page.locator("#palette-settings")).toHaveAttribute("aria-expanded", "true");
+  await expect(page.locator("#palette-choice option")).toHaveText([
+    "Didactic", "Realistic (fresh, in vivo)", "Evidence tier",
+  ]);
+  // Skin tone is published beside the palettes, not inside one, and is its own
+  // control. Didactic declares no skin tone, so the control says so and is off.
+  await expect(page.locator("#skin-tone-choice")).toBeDisabled();
+  await expect(page.locator("#skin-tone-note")).toContainText("declares no skin tone");
+  await expect(page.locator("#palette-policy")).toContainText("didactic stays the default");
+
+  // The screenshot is taken before the click that is supposed to change it.
+  const beforePalette = await page.locator("#scene").screenshot();
+  await page.locator("#palette-choice").selectOption("realistic");
+  await expect(page.locator("#palette-current")).toHaveText("Realistic (fresh, in vivo)");
+  await expect(page.locator("#palette-note")).toContainText("not a formalin-fixed cadaver");
+  // A recolour, not a reload: the body is repainted where it stands.
+  // Both sides are re-read on every poll; comparing against one value read once
+  // here would compare the body against whatever it was before the click.
+  await expect.poll(async () => (await painted(lip)) === (await painted(gingiva)),
+    { timeout: 30000 }).toBe(false);
+  await page.waitForTimeout(1200);
+  expect((await page.locator("#scene").screenshot()).equals(beforePalette)).toBe(false);
+
+  // The skin tone moves the skin the palette declares a tone for, and leaves
+  // every tissue whose colour was measured on its own exactly where it was.
+  await expect(page.locator("#skin-tone-choice")).toBeEnabled();
+  const skinNeutral = await painted(skin), lipRealistic = await painted(lip);
+  const beforeTone = await page.locator("#scene").screenshot();
+  await page.locator("#skin-tone-choice").selectOption("ita_dark");
+  await expect.poll(() => painted(skin), { timeout: 30000 }).not.toBe(skinNeutral);
+  const skinDark = await painted(skin);
+  expect(await painted(lip)).toBe(lipRealistic);
+  await page.waitForTimeout(1200);
+  expect((await page.locator("#scene").screenshot()).equals(beforeTone)).toBe(false);
+
+  // Choosing a palette that declares no skin tone turns the tone control off
+  // again without losing the tone that was chosen.
+  await page.locator("#palette-choice").selectOption("evidence");
+  await expect(page.locator("#palette-current")).toHaveText("Evidence tier");
+  await expect(page.locator("#skin-tone-choice")).toBeDisabled();
+  await expect(page.locator("#skin-tone-choice")).toHaveValue("ita_dark");
+  await page.locator("#palette-choice").selectOption("realistic");
+  await expect.poll(() => painted(skin), { timeout: 30000 }).toBe(skinDark);
+
+  // Escape closes it, a click outside closes it, and opening it closes an open
+  // opacity popover: one popover at a time, as before.
+  await page.keyboard.press("Escape");
+  await expect(page.locator("#tissue-palette")).toBeHidden();
+  await page.locator("#layers .layer-settings").first().click();
+  await expect(page.locator("#layer-opacity")).toBeVisible();
+  await page.locator("#palette-settings").click();
+  await expect(page.locator("#layer-opacity")).toBeHidden();
+  await expect(page.locator("#tissue-palette")).toBeVisible();
+  await page.locator("#layer-search").click();
+  await expect(page.locator("#tissue-palette")).toBeHidden();
+
+  // Both axes survive a reload, and no geometry had to be refetched to apply
+  // them: the reloaded body comes up already painted.
+  await page.reload();
+  await expect(page.locator("#scene-status")).toHaveText("", { timeout: 240000 });
+  await expect(page.locator("#palette-current")).toHaveText("Realistic (fresh, in vivo)");
+  await expect.poll(() => painted(skin), { timeout: 60000 }).toBe(skinDark);
+  expect(skinDark).not.toBe(skinDidactic);
+  await page.locator("#palette-settings").click();
+  await expect(page.locator("#palette-choice")).toHaveValue("realistic");
+  await expect(page.locator("#skin-tone-choice")).toHaveValue("ita_dark");
+  expect(errors).toEqual([]);
 });

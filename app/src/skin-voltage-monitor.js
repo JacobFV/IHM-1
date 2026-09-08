@@ -31,7 +31,7 @@ export function mountSkinVoltageMonitor(host,{document:doc=globalThis.document}=
   }
   const svg=doc.createElementNS('http://www.w3.org/2000/svg','svg'),line=doc.createElementNS('http://www.w3.org/2000/svg','path');
   svg.setAttribute('viewBox','0 0 400 90');svg.setAttribute('role','img');svg.setAttribute('aria-label','Actual native bulk Skin tissue Vm samples');
-  line.setAttribute('d',path);line.setAttribute('stroke','#8ec9bd');line.setAttribute('stroke-width','1.5');line.setAttribute('fill','none');svg.append(line);plot.replaceChildren(svg);
+  line.setAttribute('d',path);line.setAttribute('stroke','currentColor');line.setAttribute('stroke-width','1.5');line.setAttribute('fill','none');svg.append(line);plot.replaceChildren(svg);
   axis.textContent=`${samples.time_s[0].toFixed(2)}–${samples.time_s.at(-1).toFixed(2)} s · ${good.length} finite samples · ${low.toPrecision(5)}–${high.toPrecision(5)} mV`;
  }};
 }

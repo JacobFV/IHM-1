@@ -11,8 +11,8 @@ const svg = (body) =>
   `<svg viewBox="0 0 64 48" aria-hidden="true" focusable="false">${body}</svg>`;
 
 const GENERIC = svg(
-  `<rect x="16" y="10" width="32" height="30" rx="4" fill="#48605f" stroke="#9fbdb8" stroke-width="1.4"/>
-   <path d="M16 20 H48" stroke="#9fbdb8" stroke-width="1.2"/>`,
+  `<rect x="16" y="10" width="32" height="30" rx="4" fill="#1c272b" stroke="#8ea3a9" stroke-width="1.4"/>
+   <path d="M16 20 H48" stroke="#8ea3a9" stroke-width="1.2"/>`,
 );
 
 const escape = (value) =>
@@ -43,22 +43,58 @@ export function mountTiles(host, { onChange }) {
   const slotSpec = (id) => slots.find((s) => s.id === id) || { id, exclusive: true };
   const isOn = (item) => slotsOf(item).some((slot) => chosen.get(slot) === item.id);
 
-  const met = (requires) =>
-    (requires || []).every((rule) => (rule.any_of || []).includes(chosen.get(rule.slot)));
-  const available = (item) =>
-    met(item.requires) && slotsOf(item).every((slot) => met(slotSpec(slot).requires));
+  // `state` is a slot -> id map, defaulting to the live selection. Everything
+  // that asks whether an entry is wearable takes one, so the same rules can be
+  // run against a hypothetical selection without disturbing the real one.
+  const met = (requires, state = chosen) =>
+    (requires || []).every((rule) => (rule.any_of || []).includes(state.get(rule.slot)));
+  const available = (item, state = chosen) =>
+    met(item.requires, state) && slotsOf(item).every((slot) => met(slotSpec(slot).requires, state));
 
-  const clear = (id) => {
-    for (const [slot, held] of [...chosen]) if (held === id) chosen.delete(slot);
+  const clearFrom = (state, id) => {
+    for (const [slot, held] of [...state]) if (held === id) state.delete(slot);
   };
-  function wear(item) {
+  const clear = (id) => clearFrom(chosen, id);
+  function wearInto(state, item) {
     // Everything the new entry's slots already hold comes off whole: a garment
     // is never left occupying half the slots it declares.
     for (const slot of slotsOf(item)) {
-      const held = chosen.get(slot);
-      if (held && held !== item.id) clear(held);
+      const held = state.get(slot);
+      if (held && held !== item.id) clearFrom(state, held);
     }
-    for (const slot of slotsOf(item)) chosen.set(slot, item.id);
+    for (const slot of slotsOf(item)) state.set(slot, item.id);
+  }
+  const wear = (item) => wearInto(chosen, item);
+
+  // A requirement is a route, not a wall.
+  //
+  // Four of the six scenes name `floor` as the environment they sit on, and the
+  // app opens on `bed`, so four of six tiles were drawn disabled with no
+  // indication that one press elsewhere would light them. They are not
+  // unavailable; they are one declared step away. This walks that step: the
+  // entries the tile needs are collected, deepest first, on a copy of the
+  // selection, and the press applies them in order before the tile itself.
+  //
+  // A rule that offers more than one way to be satisfied is left alone. Two
+  // options is a choice the catalogue has declined to make, and making it here
+  // would be the front end inventing a rule again.
+  function route(item, state = new Map(chosen), seen = new Set()) {
+    if (available(item, state)) return [];
+    if (seen.has(item.id)) return null;
+    seen.add(item.id);
+    const rules = [...(item.requires || []),
+                   ...slotsOf(item).flatMap((slot) => slotSpec(slot).requires || [])];
+    const steps = [];
+    for (const rule of rules) {
+      if (met([rule], state)) continue;
+      const options = (rule.any_of || []).map((id) => items.find((i) => i.id === id)).filter(Boolean);
+      if (options.length !== 1) return null;
+      const inner = route(options[0], state, seen);
+      if (inner === null) return null;
+      steps.push(...inner, options[0]);
+      wearInto(state, options[0]);
+    }
+    return available(item, state) ? steps : null;
   }
 
   // A choice can invalidate another slot's choice; drop what is no longer
@@ -109,14 +145,19 @@ export function mountTiles(host, { onChange }) {
     for (const spec of slots) {
       const group = config.filter((item) => homeOf(item) === spec.id);
       if (!group.length || !met(spec.requires)) continue;
-      const usable = group.filter(available);
+      const usable = group.filter((item) => available(item));
       if (!usable.length) continue;
       const row = el("label", "config-row");
       row.append(el("span", null, spec.label || spec.id));
       const select = document.createElement("select");
       select.dataset.slot = spec.id;
       if (!spec.required) select.append(new Option("—", ""));
-      for (const item of usable) select.append(new Option(item.label, item.id));
+      for (const item of usable) {
+        const option = new Option(item.label, item.id);
+        option.disabled = item.live_supported === false;
+        if (option.disabled) option.text += " · unavailable for live body";
+        select.append(option);
+      }
       select.value = chosen.get(spec.id) || "";
       select.onchange = () => {
         const next = items.find((i) => i.id === select.value);
@@ -137,7 +178,7 @@ export function mountTiles(host, { onChange }) {
   // the scene, and choosing an entry inserts it. What is already there is a
   // list underneath, each line removable on its own.
   function renderInserts(objects) {
-    const usable = objects.filter(available);
+    const usable = objects.filter((item) => available(item));
     if (usable.length) {
       const head = el("div", "insert-head");
       head.append(el("p", "tile-slot", slotSpec("objects").label || "Objects"));
@@ -212,16 +253,21 @@ export function mountTiles(host, { onChange }) {
     button.dataset.slot = slotsOf(item).join(" ");
     button.innerHTML = `${picture(item)}<span>${escape(item.label)}</span>`;
     const rule = slotSpec(homeOf(item));
-    const usable = available(item);
+    const steps = route(item);
+    const usable = steps !== null;
     button.disabled = !usable;
     if (!usable && rule.note) button.title = rule.note;
+    // What the press will do before it does it, named, so the environment tile
+    // changing under the reader is something they were told about.
+    else if (steps.length) button.title = `Also selects ${steps.map((s) => s.label || s.id).join(", ")}`;
     const on = isOn(item);
     button.setAttribute("aria-pressed", String(on));
     button.classList.toggle("on", on);
     button.onclick = () => {
-      if (!available(item)) return;
+      const path = route(item);
+      if (path === null) return;
       if (on && !rule.required) clear(item.id);
-      else wear(item);
+      else { for (const step of path) wear(step); wear(item); }
       settle();
       render();
       emit();

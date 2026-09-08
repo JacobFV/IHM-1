@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { environmentMaterial, materialUVs } from './environment-materials.js';
 import {deformSkinVertices,bodyTransform,geometryArrays} from './state.js';
 
 // Garments are synthesized around the retained skin's transverse sections.
@@ -142,7 +143,10 @@ export class ClothingView {
     for(const garment of this.materializations) {
       const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(garment.positions,3));
       geometry.setIndex(garment.indices);geometry.computeVertexNormals();
-      const material=new THREE.MeshStandardMaterial({color:garment.id==='shirt'?'#759b9a':'#273e54',roughness:.94,metalness:0,side:THREE.DoubleSide,transparent:false,opacity:1});
+      // Cloth, with the weave the fabric family already carries. A garment is an
+      // open shell, so it keeps both faces.
+      const material=environmentMaterial('fabric',garment.id==='shirt'?'#759b9a':'#273e54',{doubleSided:true});
+      materialUVs(geometry,'fabric');
       const mesh=new THREE.Mesh(geometry,material);mesh.name=garment.id;mesh.visible=this.enabled.get(garment.id);
       mesh.userData.reference=geometry.attributes.position.array.slice();mesh.userData.garment=garment;
       this.meshes.set(garment.id,mesh);this.group.add(mesh);
@@ -204,8 +208,8 @@ export class WardrobeView {
       geometry.setAttribute('position',new THREE.BufferAttribute(positions,3));
       geometry.setIndex(new THREE.BufferAttribute(indices,1));
       geometry.computeVertexNormals();
-      const mesh=new THREE.Mesh(geometry,new THREE.MeshStandardMaterial({
-        color:garment.colour||'#9aa7ad',roughness:.92,metalness:0,side:THREE.DoubleSide}));
+      materialUVs(geometry,'fabric');
+      const mesh=new THREE.Mesh(geometry,environmentMaterial('fabric',garment.colour||'#9aa7ad',{doubleSided:true}));
       mesh.name=id;mesh.renderOrder=this.order(garment);
       mesh.userData.reference=positions.slice();mesh.userData.garment=garment;
       if(this.clipping)mesh.material.clippingPlanes=this.clipping;

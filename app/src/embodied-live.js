@@ -60,7 +60,7 @@ export function frameScope(frame) {
  if(frame?.schema==='ihm.embodied-frame.v1')return [
   'Live articulated muscles ↔ pinned IBM/controller ↔ native physiology. Generic source registration and decoder calibration remain incomplete.',
   frame.mechanics?.body_environment?.scope,
-  'Native supports are computational contact proxies; a globally registered bed/floor mesh is not yet available in this canonical view.',...(frame.mechanics?.limitations||[]),frame.coupling?.metabolic_law,
+  frame.environment_state ? `Environment: ${frame.environment_state.contact_count} active body contacts. ${frame.environment_state.scope}` : 'Native supports are computational contact proxies; no scene contact owner is attached.',...(frame.mechanics?.limitations||[]),frame.coupling?.metabolic_law,
  ].filter(Boolean).join(' ');
  const s=frame?.scope||{};return [s.body_mechanics,s.body_rotations,s.body_gravity,s.body_environment,
   s.body_object_contact===false?'Body–object contact is not coupled.':null,

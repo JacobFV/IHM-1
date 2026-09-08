@@ -72,7 +72,7 @@ export function mountMicrovascularDetail(host,{request=fetchPatch,document:doc=g
   if(disposed||!response)return;
   const projection=projectMicrovascularPatch(response,{plane:plane.value,zoom:Number(zoom.value)});plot.replaceChildren();
   if(!projection.edges.length){status.textContent='No vessels intersect this local view.';return;}
-  const svg=svgEl('svg');svg.setAttribute('viewBox','0 0 400 300');svg.setAttribute('role','img');svg.setAttribute('aria-label','Local microvascular graph with physical vessel diameters');svg.style.width='100%';svg.style.height='300px';svg.style.background='#142225';
+  const svg=svgEl('svg');svg.setAttribute('viewBox','0 0 400 300');svg.setAttribute('role','img');svg.setAttribute('aria-label','Local microvascular graph with physical vessel diameters');svg.style.width='100%';svg.style.height='300px';svg.style.background='#0a0e11';
   const pressures=projection.edges.flatMap(({edge})=>edge.endpoint_pressure_pa||[]),low=Math.min(...pressures),high=Math.max(...pressures);
   for(const item of projection.edges){
    const {edge,points}=item,line=svgEl('polyline');line.setAttribute('points',points.map(point=>point.join(',')).join(' '));line.setAttribute('fill','none');line.setAttribute('stroke-width',String(item.diameterUnits));

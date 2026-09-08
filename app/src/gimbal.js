@@ -51,7 +51,7 @@ export function mountGimbal(canvas, { camera, onSelect, size = 108 }) {
     const fill = new THREE.Mesh(
       new THREE.PlaneGeometry(0.78, 0.78),
       new THREE.MeshBasicMaterial({
-        color: 0x86ccbb, transparent: true, opacity: 0.1,
+        color: 0x4fe0cb, transparent: true, opacity: 0.1,
         side: THREE.DoubleSide, depthWrite: false,
       }),
     );
@@ -59,7 +59,7 @@ export function mountGimbal(canvas, { camera, onSelect, size = 108 }) {
     fill.userData.plane = plane.id;
     const edge = new THREE.LineSegments(
       new THREE.EdgesGeometry(fill.geometry),
-      new THREE.LineBasicMaterial({ color: 0xbedeD6, transparent: true, opacity: 0.5, depthWrite: false }),
+      new THREE.LineBasicMaterial({ color: 0x9fd8d0, transparent: true, opacity: 0.5, depthWrite: false }),
     );
     edge.renderOrder = 2;
     edge.userData.plane = plane.id;
@@ -73,9 +73,9 @@ export function mountGimbal(canvas, { camera, onSelect, size = 108 }) {
     for (const [id, quad] of quads) {
       const on = id === selected, hot = id === hovered;
       quad.fill.material.opacity = on ? 0.3 : hot ? 0.22 : 0.1;
-      quad.fill.material.color.set(on || hot ? 0x9fe0cd : 0x86ccbb);
+      quad.fill.material.color.set(on || hot ? 0x86f2e2 : 0x4fe0cb);
       quad.edge.material.opacity = on ? 1 : hot ? 0.85 : 0.5;
-      quad.edge.material.color.set(on || hot ? 0x9fe0cd : 0xbeded6);
+      quad.edge.material.color.set(on || hot ? 0x86f2e2 : 0x9fd8d0);
     }
     canvas.dataset.hover = hovered || "";
     canvas.dataset.selected = selected || "";

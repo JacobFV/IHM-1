@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import { TransformControls } from 'three/addons/controls/TransformControls.js';
-import './scene-interaction.css';
 import {cursorSpring,advanceScene} from './scene-forces.js';
 import {bodyEndpoint,bodyEnvironment,bodyCommand,frameScope,materialOffset,materialPoint,createBodyOwner,closeBodyOwner,scheduleBodyIntakes} from './embodied-live.js';
 import {mountTemporalSpectrumMonitor} from './temporal-spectrum-monitor.js';
@@ -24,6 +23,7 @@ export function mountSceneInteraction({scene,camera,renderer,controls,group,getO
   let mode='select',session=null,state=null,running=false,pending=false,creating=null,drag=null,gizmoDragging=false;
   let lastStep=0,lastPoll=0,disposed=false,environment='bed',initializing=false,faulted=false,selectedId=null,lastError='',resetting=false,resetTask=null;
   let options={regional_skin:false,intake_mass:false};
+  let environmentSelection={};
   const panels=mountEmbodiedPanels();
   const skinVoltage=mountSkinVoltageMonitor($('skin-voltage-monitor'));
   const intakeMass=mountIntakeMassMonitor($('intake-mass-monitor'));
@@ -128,7 +128,7 @@ export function mountSceneInteraction({scene,camera,renderer,controls,group,getO
     if(!session){
       creating=(async()=>{
         onPauseReplay();running=true;status('Initializing body…');
-        const frame=await createBodyOwner(request,endpoint(),{environment:bodyEnvironment(environment,'embodied'),...options});
+        const frame=await createBodyOwner(request,endpoint(),{environment:bodyEnvironment(environment,'embodied'),environment_selection:environmentSelection,...options});
         session=frame.id;
         if(!session)throw Error('Body startup returned no session identity');
         if(disposed){await request(endpoint()+'/'+session+'/close',{});return;}
@@ -232,7 +232,11 @@ export function mountSceneInteraction({scene,camera,renderer,controls,group,getO
   function unload(){if(session)navigator.sendBeacon(endpoint()+'/'+session+'/close',new Blob(['{}'],{type:'application/json'}));}
   window.addEventListener('pagehide',unload);
   return {update,reset,start,pause,scheduleIntakes,
-    setEnvironment(name){environment=name;return session||creating?reset():Promise.resolve();},
+    setEnvironment(name,selection={}){
+      if(name===environment&&JSON.stringify(selection)===JSON.stringify(environmentSelection))return Promise.resolve();
+      environment=name;environmentSelection=structuredClone(selection);
+      return session||creating?reset():Promise.resolve();
+    },
     setOptions(next){options={regional_skin:!!next.regional_skin,intake_mass:!!next.intake_mass};return session||creating?reset():Promise.resolve();},
     get running(){return running;},
     get started(){return !!session||!!creating;},

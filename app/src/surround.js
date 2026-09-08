@@ -1,18 +1,16 @@
 import * as THREE from "three";
+import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+import { environmentMaterial, materialUVs } from "./environment-materials.js";
+import { canopyLeaves } from "./environment-foliage.js";
 
-// The world a scene declares: its enclosing geometry, the sky above it, the
-// ground under it and the objects standing in it. Every field read here is
-// served by /api/scene/catalog under `world`; nothing about a room's shape,
-// colour or extent is decided in this file.
-//
-// All of it is scenery. The catalogue says so in world.physics — no collider
-// exists for a wall, a floor sheet, a window or a piece of furniture — so every
-// mesh built here refuses to be raycast and can never be selected as anatomy.
+// Rendering follows catalogue geometry and accepted server environment frames.
+// Cutaways affect visibility only: hidden walls remain physical on the server.
 
 const UP = new THREE.Vector3(0, 1, 0);
 
 function scenery(mesh) {
   mesh.raycast = () => {};
+  mesh.castShadow = true; mesh.receiveShadow = true;
   mesh.userData.scenery = true;
   return mesh;
 }
@@ -77,14 +75,12 @@ function skyMesh(sky, up, radius) {
 // so it is drawn where the environment says it is and nowhere else.
 function groundGrid(ground, up, extent) {
   if (!ground || ground.type !== "ideal_half_space" || !Number.isFinite(ground.level_m)) return null;
-  const grid = new THREE.GridHelper(extent, Math.round(extent / 0.25), 0x4c6e70, 0x22383a);
-  grid.material.transparent = true;
-  grid.material.opacity = 0.55;
-  grid.material.depthWrite = false;
-  grid.quaternion.setFromUnitVectors(UP, up);
-  grid.position.copy(up).multiplyScalar(ground.level_m);
-  grid.renderOrder = -900;
-  return scenery(grid);
+  const geometry = new THREE.PlaneGeometry(extent, extent);
+  geometry.rotateX(-Math.PI / 2);
+  const mesh = new THREE.Mesh(materialUVs(geometry, "vinyl"), environmentMaterial("vinyl", 0xb9b7ac));
+  mesh.quaternion.setFromUnitVectors(UP, up);
+  mesh.position.copy(up).multiplyScalar(ground.level_m);
+  return scenery(mesh);
 }
 
 // A surround is one indexed mesh with a colour per face and a flat list of
@@ -94,7 +90,7 @@ function groundGrid(ground, up, extent) {
 function surroundMesh(data, cutaway) {
   const parts = data.parts || [];
   const faces = data.indices.length / 3;
-  const blocked = parts.length > 0 && faces % parts.length === 0 &&
+  const blocked = parts.length > 0 && parts.every(part => part.primitive !== "tiled_plane") && faces % parts.length === 0 &&
     data.positions.length / 3 % parts.length === 0 &&
     parts.every((part, index) => {
       const vertices = data.positions.length / 3 / parts.length;
@@ -130,9 +126,29 @@ function surroundMesh(data, cutaway) {
   geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
   geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
   geometry.computeVertexNormals();
-  const mesh = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({
-    vertexColors: true, roughness: 0.94, metalness: 0, side: THREE.DoubleSide,
-  }));
+  const materials = parts.map(part => environmentMaterial(part.colour || part.name, 0xffffff, {vertexColors:true, doubleSided:true}));
+  if (!materials.length) materials.push(environmentMaterial("paint", 0xffffff, {vertexColors:true, doubleSided:true}));
+  const faceParts = new Uint16Array(faces);
+  if (blocked) {
+    for (let f = 0; f < faces; f++) faceParts[f] = Math.floor(f / perFace);
+  } else if (parts.filter(p => p.primitive === "tiled_plane").length === 1 && parts.every(p => ["box", "tiled_plane"].includes(p.primitive))) {
+    let offset = 0;
+    for (let i = 0; i < parts.length; i++) {
+      const count = parts[i].primitive === "box" ? 12 : faces - 12 * (parts.length - 1);
+      faceParts.fill(i, offset, offset + count); offset += count;
+    }
+  }
+  // One draw per material run, not one draw per triangle (outdoor ground has thousands).
+  let start = 0, materialIndex = keep.length ? faceParts[keep[0]] : 0;
+  for (let n = 1; n <= keep.length; n++) {
+    const next = n === keep.length ? -1 : faceParts[keep[n]];
+    if (next !== materialIndex) {
+      geometry.addGroup(start * 3, (n - start) * 3, materialIndex);
+      start = n; materialIndex = next;
+    }
+  }
+  materialUVs(geometry, parts.some(p => /wood/.test(p.colour)) ? "wood" : "paint");
+  const mesh = new THREE.Mesh(geometry, materials);
   mesh.name = data.id;
   mesh.userData.cutaway = blocked ? [...cut] : [];
   mesh.userData.cutawayApplied = blocked;
@@ -140,17 +156,37 @@ function surroundMesh(data, cutaway) {
 }
 
 function objectMesh(data, colour, offset) {
-  const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(data.positions), 3));
-  geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(data.indices), 1));
-  geometry.computeVertexNormals();
-  const mesh = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({
-    color: Array.isArray(colour) ? new THREE.Color(...colour) : 0x9aa7ad,
-    roughness: 0.86, metalness: 0.02, side: THREE.DoubleSide,
-  }));
-  if (Array.isArray(offset) && offset.length === 3) mesh.position.fromArray(offset);
-  mesh.name = data.id;
-  return scenery(mesh);
+  const root = new THREE.Group(); root.name = data.id;
+  // Beveled edges preserve the authored extents and produce real highlight rolloff.
+  for (const part of data.parts || []) {
+    if (part.name.includes("canopy")) { root.add(canopyLeaves(part)); continue; }
+    let geometry, center;
+    if (part.primitive === "box") {
+      const low = new THREE.Vector3(...part.min_m), high = new THREE.Vector3(...part.max_m);
+      const size = high.clone().sub(low); center = high.add(low).multiplyScalar(.5);
+      geometry = new RoundedBoxGeometry(size.x, size.y, size.z, 3, Math.min(.012, size.x / 5, size.y / 5, size.z / 5));
+    } else if (part.primitive === "cylinder") {
+      geometry = new THREE.CylinderGeometry(part.radius_m, part.radius_m, part.height_m, 32);
+      if (part.axis === 2) geometry.rotateX(Math.PI / 2);
+      if (part.axis === 0) geometry.rotateZ(Math.PI / 2);
+      center = new THREE.Vector3(...part.centre_m);
+    } else {
+      geometry = new THREE.SphereGeometry(part.radius_m, 40, 28);
+      center = new THREE.Vector3(...part.centre_m);
+    }
+    geometry.translate(...center.toArray());
+    const name = part.colour || (part.name.includes("canopy") ? "canopy" : data.id);
+    const mesh = new THREE.Mesh(materialUVs(geometry, name), environmentMaterial(name, part.name === "trunk" ? 0x67513b : colour));
+    root.add(scenery(mesh));
+  }
+  if (!root.children.length) {
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.Float32BufferAttribute(data.positions, 3));
+    geometry.setIndex(data.indices); geometry.computeVertexNormals();
+    root.add(scenery(new THREE.Mesh(materialUVs(geometry, data.id), environmentMaterial(data.id, colour))));
+  }
+  if (offset?.length === 3) root.position.fromArray(offset);
+  return root;
 }
 
 export function mountSurround(scene, { api }) {
@@ -158,7 +194,8 @@ export function mountSurround(scene, { api }) {
   root.name = "surround";
   scene.add(root);
   const geometryCache = new Map();
-  let generation = 0;
+  let generation = 0, latestState = null;
+  const instancesById = new Map();
 
   const load = (url) => {
     if (!geometryCache.has(url)) geometryCache.set(url, api(url));
@@ -167,28 +204,68 @@ export function mountSurround(scene, { api }) {
   function empty() {
     root.traverse((node) => {
       if (node.geometry) node.geometry.dispose();
-      if (node.material) node.material.dispose();
+      if (node.material) for (const material of Array.isArray(node.material) ? node.material : [node.material]) material.dispose();
     });
-    root.clear();
+    root.clear(); instancesById.clear();
   }
 
+  function update(state) {
+    latestState = state;
+    if (!state) return;
+    for (const item of state.objects || []) {
+      const instance = instancesById.get(item.id);
+      if (!instance) continue;
+      if (item.kind === "rigid") {
+        const matrix = new THREE.Matrix4().set(
+          ...item.rotation_matrix[0], 0, ...item.rotation_matrix[1], 0,
+          ...item.rotation_matrix[2], 0, 0, 0, 0, 1);
+        instance.quaternion.setFromRotationMatrix(matrix);
+        const origin = new THREE.Vector3(...item.origin_m).applyQuaternion(instance.quaternion);
+        instance.position.fromArray(item.position_m).sub(origin);
+      } else {
+        let mesh = instance.userData.deformed;
+        if (!mesh) {
+          instance.traverse(node => {
+            if (node.geometry) node.geometry.dispose();
+            if (node.material) node.material.dispose();
+          });
+          instance.clear(); instance.position.set(0, 0, 0);
+          const geometry = new THREE.BufferGeometry();
+          geometry.setAttribute("position", new THREE.Float32BufferAttribute(item.positions, 3));
+          geometry.setIndex(item.indices); geometry.computeVertexNormals();
+          const name = item.kind === "cloth" ? "blanket" : "pillow";
+          mesh = scenery(new THREE.Mesh(materialUVs(geometry, name), environmentMaterial(name, item.kind === "cloth" ? 0x627e99 : 0xe9e3d7, {doubleSided:true})));
+          instance.add(mesh); instance.userData.deformed = mesh;
+        }
+        mesh.geometry.getAttribute("position").array.set(item.positions);
+        mesh.geometry.getAttribute("position").needsUpdate = true;
+        mesh.geometry.computeVertexNormals(); mesh.geometry.computeBoundingSphere();
+      }
+    }
+  }
   return {
+    update,
     group: root,
     // `entry` is the selected scene, or the environment when no scene is chosen;
     // `environment` is always the base environment record, because the sky axis
     // and the engine plane belong to it and a scene never changes them.
     async apply(entry, environment, instances = [], objectRecords = []) {
       const current = ++generation;
-      empty();
+      empty(); latestState = null;
       const world = entry?.world || environment?.world;
       if (!world) return { drawn: 0, note: "This environment declares no world." };
       const up = upAxis(environment);
+      scene.traverse(node => {
+        if (node.isDirectionalLight && node.castShadow) {
+          node.position.copy(new THREE.Vector3(3, 4, 5).applyQuaternion(new THREE.Quaternion().setFromUnitVectors(UP, up)));
+        }
+      });
       const extent = world.enclosure_dimensions_m
         ? Math.max(world.enclosure_dimensions_m.width, world.enclosure_dimensions_m.depth) * 1.2
         : (world.ground?.extent_m || 12);
       const sky = skyMesh(world.sky, up, 5);
       if (sky) root.add(sky);
-      const grid = groundGrid(world.ground, up, Math.max(6, extent));
+      const grid = world.surround_url ? null : groundGrid(world.ground, up, Math.max(6, extent));
       if (grid) root.add(grid);
       let drawn = sky ? 1 : 0;
       const notes = [];
@@ -203,24 +280,35 @@ export function mountSurround(scene, { api }) {
           drawn++;
         } catch (error) { notes.push("Surround geometry unavailable: " + error.message); }
       }
-      // A scene's own placements, plus whatever the reader has inserted. Both
-      // are drawn the same way, because the engine instantiates neither.
+      // Stable instance identities match the server, including repeated inserts.
       const records = new Map(objectRecords.map((o) => [o.id, o]));
       const placements = [
-        ...(entry?.placements || []).map((p) => ({ id: p.object, offset: p.offset_m })),
+        ...(entry?.placements || (environment?.id === "bed" ? ["bed-frame", "bed-mattress", "pillow", "blanket"].map(object => ({object})) : [])).map((p) => ({ id: p.object, offset: p.offset_m })),
         ...instances.map((id) => ({ id, offset: [0, 0, 0] })),
       ];
+      const counts = new Map();
+      for (const p of placements) { counts.set(p.id, (counts.get(p.id) || 0) + 1); p.instance = p.id + "-" + counts.get(p.id); }
       await Promise.all(placements.map(async (placement) => {
         const record = records.get(placement.id);
         if (!record?.geometry_url) { notes.push("No geometry for " + placement.id); return; }
         try {
           const data = await load(record.geometry_url);
           if (current !== generation) return;
-          root.add(objectMesh(data, record.colour_rgb, placement.offset));
+          const mesh = objectMesh(data, record.colour_rgb, placement.offset);
+          if (record.initial_mesh) {
+            mesh.traverse(node => { node.geometry?.dispose(); node.material?.dispose(); }); mesh.clear();
+            const geometry = new THREE.BufferGeometry();
+            geometry.setAttribute("position", new THREE.Float32BufferAttribute(record.initial_mesh.positions, 3));
+            geometry.setIndex(record.initial_mesh.indices); geometry.computeVertexNormals();
+            mesh.add(scenery(new THREE.Mesh(materialUVs(geometry, placement.id), environmentMaterial(placement.id, record.colour_rgb, {doubleSided:true}))));
+          }
+          mesh.userData.environmentInstance = placement.instance;
+          instancesById.set(placement.instance, mesh); root.add(mesh);
           drawn++;
         } catch (error) { notes.push(placement.id + ": " + error.message); }
       }));
       if (current !== generation) return { drawn, note: "" };
+      if (latestState) update(latestState);
       return { drawn, note: notes.join(" ") };
     },
     // Called every frame: the sky dome keeps the camera at its centre.
