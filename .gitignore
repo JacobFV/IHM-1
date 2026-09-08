@@ -9,3 +9,5 @@ artifacts/
 /data/derived/
 /.venv-physiology/
 /data/runtime/
+
+/test-results/

@@ -1,6 +1,0 @@
-.scene-modes,.scene-actions{display:flex;gap:5px;margin-top:8px}
-.scene-modes button,.scene-actions button{flex:1;padding:6px 5px;font-size:11px;margin-top:0}
-.scene-values{display:flex;gap:12px;justify-content:space-between}
-.scene-values span{color:var(--dim);font-size:11px}
-.scene-values b{display:block;color:var(--ink);font-size:17px;margin-top:4px;font-variant-numeric:tabular-nums}
-#scene-scope{font-size:11px;line-height:1.55}
