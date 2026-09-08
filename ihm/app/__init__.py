@@ -187,6 +187,14 @@ def create_server(root=None,port=8765,host='127.0.0.1'):
                 if path.startswith('/api/body/experiments/'):
                     from ihm.app.experiments import read_experiment
                     return self._send(read_experiment(root,path.removeprefix('/api/body/experiments/')))
+                if path=='/api/body/palettes':
+                    from ihm.app.experiments import read_palette
+                    return self._send(read_palette(root))
+                if path.startswith('/api/body/palettes/'):
+                    from ihm.app.experiments import read_palette
+                    ident=path.removeprefix('/api/body/palettes/')
+                    if not SAFE_ID.fullmatch(ident):return self._error('Invalid palette ID')
+                    return self._send(read_palette(root,ident))
                 if path=='/api/body/peripheral':
                     from ihm.assembly.body import CanonicalBody
                     return self._send(CanonicalBody.from_workspace(root).assets['peripheral'])

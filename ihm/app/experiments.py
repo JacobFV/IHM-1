@@ -200,3 +200,46 @@ def clothing_asset(root,ident,field):
     garment=next((g for g in data['garments'] if g['id']==ident),None)
     if garment is None or not garment.get(field):return None
     return _wardrobe_asset(root,garment[field],garment.get(field+'_sha256'))
+
+
+PALETTES='data/derived/tissue-colour-palette-candidate-v1'
+
+
+def read_palette(root,palette_id=None):
+    """List the named colour palettes, or return one, hash-verified against the build manifest.
+
+    Fails closed the same way read_experiment does: the manifest carries the hash of every
+    artifact it produced and of every input it read, and a mismatch is an error rather than a
+    silently stale palette. The manifest does not hash itself, so the index is the first thing
+    checked and everything else is checked through it.
+    """
+    root=Path(root).resolve()
+    directory=(root/PALETTES).resolve()
+    if not directory.is_relative_to(root):raise ValueError('Palette directory escapes the workspace')
+    manifest=json.loads((directory/'manifest.json').read_bytes())
+    if manifest.get('schema')!='ihm.tissue-colour-palette-manifest.v1':
+        raise ValueError('Palette manifest schema is not the one this reader understands')
+    if 'manifest.json' in manifest['outputs_sha256']:
+        raise ValueError('Palette manifest lists itself; the build is not self-consistent')
+    # The palettes are a projection of the display manifest; a changed input invalidates them.
+    for source,expected in manifest['inputs_sha256'].items():
+        file=(root/source).resolve()
+        if not file.is_relative_to(root) or not file.is_file():
+            raise ValueError('Palette input is missing: '+source)
+        if hashlib.sha256(file.read_bytes()).hexdigest()!=expected:
+            raise ValueError('Palette input changed; rebuild scripts/build_tissue_colour_palettes.py')
+    if not manifest.get('self_test',{}).get('passed'):
+        raise ValueError('Palette build did not pass its own self-test')
+    def artifact(relative):
+        expected=manifest['outputs_sha256'].get(relative)
+        if expected is None:raise ValueError('Palette artifact is not declared: '+relative)
+        path=(directory/relative).resolve()
+        if not path.is_relative_to(directory) or hashlib.sha256(path.read_bytes()).hexdigest()!=expected:
+            raise ValueError('Palette artifact changed; rebuild export')
+        return json.loads(path.read_bytes())
+    index=artifact('index.json')
+    if palette_id is None:
+        return {**index,'sources':artifact('sources.json'),'mucosa':artifact('mucosa.json')}
+    entry=next((p for p in index['palettes'] if p['id']==palette_id),None)
+    if entry is None:raise ValueError('Unknown palette')
+    return artifact(entry['path'])
