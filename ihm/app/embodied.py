@@ -127,13 +127,15 @@ class EmbodiedSessions:
         self.root=Path(root);self.lock=threading.Lock();self.actors={};self.creating=False;self.shutting_down=False
         self.creation_done=threading.Condition(self.lock)
     def create(self,data):
-        if not isinstance(data,dict) or set(data)-{'environment','regional_skin','intake_mass','ibm_candidate'}:raise ValueError('Unknown embodied configuration')
+        if not isinstance(data,dict) or set(data)-{'environment','regional_skin','intake_mass','ibm_candidate','environment_selection'}:raise ValueError('Unknown embodied configuration')
         intake_mass=data.get('intake_mass',False)
         if type(intake_mass) is not bool:raise ValueError('intake_mass must be boolean')
         regional_skin=data.get('regional_skin',False)
         if type(regional_skin) is not bool:raise ValueError('regional_skin must be boolean')
         environment=data.get('environment','supine')
         if environment not in ('free','supine','upright'):raise ValueError('Unknown articulated environment')
+        from ihm.assembly.environment_dynamics import resolve_selection
+        environment_selection,environment_options=resolve_selection(self.root,environment,data.get('environment_selection'))
         explicit='ibm_candidate' in data
         source_pin=resolve_ibm_candidate(self.root,data['ibm_candidate']) if explicit else resolve_source(self.root)
         with self.lock:
@@ -143,7 +145,7 @@ class EmbodiedSessions:
         try:
             from ihm.assembly.embodied import EmbodiedRuntime
             ident=uuid.uuid4().hex;output=self.root/'data/derived/embodied-sessions'/ident
-            options={'environment':environment,'regional_skin':regional_skin,'intake_mass':intake_mass,'source_pin':source_pin}
+            options={'environment':environment,'regional_skin':regional_skin,'intake_mass':intake_mass,'source_pin':source_pin,**({'environment_selection':environment_selection,**environment_options} if environment_selection is not None else {})}
             # The active default is a candidate like any other: re-resolved on the
             # owner thread and disclosed, never an unreported implicit selection.
             selected=dict(data['ibm_candidate']) if explicit else {'commit':ACTIVE_COMMIT,'manifest_sha256':source_pin.manifest_sha256}
