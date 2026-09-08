@@ -67,6 +67,108 @@ def read_native(directory):
     return dict(input_hashes=input_hashes,time_s=times.tolist(),physiology=physiology,compartments=compartments[1:],initial_compartments=compartments[0],summary=summary)
 
 
+SURFACE_OWNERSHIP_LANES=(
+ ('cross_structure_repair','data/derived/cross-structure-repair-v1',
+  ('manifest.json','summary.json','ownership-ledger.jsonl','coincidence.json','resolution.json',
+   'conflict-graph.json','conflict-components.json','entity-operations.jsonl','clusters.json'),
+  'every pairwise surface conflict in the acquired atlas, and which structure owns the disputed volume'),
+ ('conflict_free_atlas','data/derived/conflict-free-atlas-v1',
+  ('manifest.json','summary.json','conformity.json','residual-conflicts.json','annihilation.json',
+   'duplicates.json','hole-fill.json','entities.jsonl','conflict-census.json'),
+  'the repaired, mutually non-overlapping surfaces those ownership decisions imply'),
+)
+
+
+def surface_ownership(root,anatomy):
+    """Declare the promoted surface-ownership lanes as canonical sources.
+
+    Neither lane rewrites a reference surface, so neither can be declared through
+    ``sources``; they are a second, conforming representation of the same anatomy plus the
+    ledger that says who owns each disputed millilitre. Declaring them here with their
+    digests is what makes them part of the model rather than an unpromoted candidate, and
+    what lets any reader follow a structure back to the decision that shaped it.
+
+    The coverage numbers are computed, not asserted. The ledger resolves the surfaces its
+    two tet-ready parents produced; every canonical entity outside that set has no
+    ownership decision, and the count of those is reported rather than left implied.
+    """
+    root=Path(root)
+    lanes={}
+    for key,relative,artifacts,role in SURFACE_OWNERSHIP_LANES:
+        base=root/relative
+        lanes[key]={'path':relative,'role':role,
+                    'artifacts':{name:{'path':relative+'/'+name,'sha256':digest(base/name)}
+                                 for name in artifacts if (base/name).exists()}}
+    ledger=root/'data/derived/cross-structure-repair-v1/ownership-ledger.jsonl'
+    decided=set()
+    rows=0
+    for line in ledger.read_text().splitlines():
+        if not line.strip():continue
+        record=json.loads(line);rows+=1
+        decided.add(record['a']);decided.add(record['b'])
+    present={e['id'] for e in anatomy['entities']}
+    covered=json.loads((root/'data/derived/cross-structure-repair-v1/manifest.json').read_text())['per_entity_input_sha256']
+    return {'lanes':lanes,'decisions':rows,
+            'entities_with_a_decision':len(decided&present),
+            'entities_with_a_resolved_surface':len(set(covered)&present),
+            'canonical_entities':len(present),
+            'entities_without_a_resolved_surface':len(present-set(covered)),
+            'decisions_naming_an_entity_the_model_no_longer_has':len(decided-present),
+            'not_regenerated':'the lanes are promoted as shipped. Their inputs are the tet-ready '
+                              'surfaces, which are byte-identical to what they recorded, so a rerun '
+                              'is a chance to introduce drift rather than a source of new evidence. '
+                              'scripts/verify_cross_structure_ownership_reproduces.py replays every '
+                              'decision through the shipped rule at the roles canonical carries now.',
+            'coverage_limit':'entities without a resolved surface have no ownership decision at all. '
+                             'They are not certified conflict-free; they are unresolved. The '
+                             'tet-ready lanes have not been re-run over the promoted structures.'}
+
+
+def provenance_index(root,anatomy):
+    """Declare the promoted structure-provenance index as a canonical source.
+
+    Every structure in this model came from a dataset, a script or an explicit prior, and
+    anyone should be able to ask which. That answer lives in one index with one record
+    shape, and pointing at it from the body manifest is what makes traceability part of
+    the model rather than a side artifact. The completeness numbers are recomputed here
+    from the records themselves, so this cannot claim coverage the records do not have.
+    """
+    root=Path(root)
+    base=root/'data/derived/structure-provenance-v1'
+    if not (base/'index.json').is_file():
+        return {'present':False,
+                'reason':'run scripts/build_structure_provenance.py --output '
+                         'data/derived/structure-provenance-v1 --promoted'}
+    index=json.loads((base/'index.json').read_text())
+    complete=partial=absent=0
+    missing_fields={}
+    for e in anatomy['entities']:
+        path=base/'records'/(e['id']+'.json')
+        if not path.is_file():
+            absent+=1;continue
+        record=json.loads(path.read_text())
+        gaps=record.get('completeness',{}).get('missing',[])
+        if gaps:
+            partial+=1
+            for field in gaps:missing_fields[field]=missing_fields.get(field,0)+1
+        else:
+            complete+=1
+    return {'present':True,
+            'path':'data/derived/structure-provenance-v1',
+            'schema':index['schema'],
+            'index':{'path':'data/derived/structure-provenance-v1/index.json','sha256':digest(base/'index.json')},
+            'manifest':{'path':'data/derived/structure-provenance-v1/manifest.json','sha256':digest(base/'manifest.json')},
+            'schema_record':{'path':'data/derived/structure-provenance-v1/schema.json','sha256':digest(base/'schema.json')},
+            'audit':{'path':'data/derived/structure-provenance-v1/audit.json','sha256':digest(base/'audit.json')},
+            'records':index['record_count'],
+            'canonical_entity_coverage':{'entities':len(anatomy['entities']),'complete':complete,
+                                         'partial':partial,'no_record':absent,
+                                         'missing_field_counts':missing_fields,
+                                         'required_fields':'listed in the index schema; a record is '
+                                                           'complete when none of them is empty'},
+            'candidate_of_record':'data/derived/structure-provenance-candidate-v1'}
+
+
 def build(root):
     root=Path(root);directory=root/'data/derived/canonical'
     anatomy=json.loads((directory/'anatomy.json').read_text());profile=json.loads((directory/'profile.json').read_text())
@@ -75,7 +177,7 @@ def build(root):
         path=directory/(name+'.json');sources[name]={'path':str(path.relative_to(root)),'sha256':digest(path)}
     runtime_sources={name:{'path':'ihm/assembly/'+name+'.py','sha256':digest(root/'ihm/assembly'/f'{name}.py')} for name in ['body','body_protocol','body_runtime','body_states','contracts','interfaces','cosimulation','evidence','mechanics','brain','respiration','peripheral','certainty','temporal']}
     payload=dict(runtime_sources=runtime_sources,schema_version=1,model_id='ihm-body',name='IHM · one generic human',status='executable generic research assembly',validated_digital_twin=False,
-        entity_count=len(anatomy['entities']),profile=profile,frame=anatomy['frame'],sources=sources,certainty=summarize(anatomy),volume_bindings=build_bindings(anatomy),
+        entity_count=len(anatomy['entities']),profile=profile,frame=anatomy['frame'],sources=sources,surface_ownership=surface_ownership(root,anatomy),provenance_index=provenance_index(root,anatomy),certainty=summarize(anatomy),volume_bindings=build_bindings(anatomy),
         coupling_contract=[
             {'owner':'BioGears','state':'cardiorespiratory, blood, renal, endocrine, tissue fluid, lymph aggregate and thermal balances','direction':'native integrated physiology','spatial_resolution':'lumped compartments; vascular surfaces are not solved 3D flow lumens'},
             {'owner':'canonical mechanics','state':'rigid translation, affine tissue deformation and muscle attachment forces','direction':'native volumes → explicit synthesized shape transfer','feedback_applied':False},
@@ -91,7 +193,8 @@ def build(root):
             'Reduced mechanics does not resolve volumetric contact, joint articulation, vessel-wall fluid interaction or moving-body physiology.',
             'One-way partitioned coupling: mechanics and IBM neural outputs do not yet feed back into native physiology.',
             'Supine is a reference modeling condition; native engine posture limitations remain. The body display retains anatomical coordinates.',
-            'Temporal spectra describe selected finite trajectories; they are not independently validated predictor transfer functions.'])
+            'Temporal spectra describe selected finite trajectories; they are not independently validated predictor transfer functions.',
+            'Surface ownership is resolved for the acquired atlas only. Promoted display structures carry no ownership decision yet, so overlap between a promoted surface and an acquired one is unresolved rather than adjudicated.'])
     write_json(directory/'body.json',payload)
     return payload
 

@@ -90,16 +90,38 @@ def area(V,F):
     return float(np.linalg.norm(np.cross(V[F[:,1]]-V[F[:,0]],V[F[:,2]]-V[F[:,0]]),axis=1).sum()/2.0)
 
 
-def sources():
+def sources(report=None):
+    """Tet-ready surfaces to resolve, with the role and system canonical carries for each.
+
+    The two parent lanes were built before the canonical duplicate-surface collapse and
+    still list the five ids it dropped. A dropped id is a second authoring of a surface
+    the survivor already carries, byte for byte, so it must not enter the complex or the
+    conflict graph a second time; before this it raised KeyError here and the lane could
+    not be run at all against a collapsed canonical model. Skipped ids are returned in
+    ``report`` rather than discarded quietly, and any id that is absent for some other
+    reason still raises, because that would be a real inconsistency.
+    """
     anatomy=json.loads(ANATOMY.read_text())
     meta={e['id']:e for e in anatomy['entities']}
-    rows=[]
+    collapsed={d['id']:d['survivor']
+               for d in anatomy.get('duplicate_surface_collapse',{}).get('dropped',[])}
+    rows=[];skipped=[]
     for base in (MUSCLE,ENTITY):
         for line in (base/'entities.jsonl').read_text().splitlines():
-            r=json.loads(line);e=meta[r['entity_id']]
+            r=json.loads(line)
+            if r['entity_id'] not in meta:
+                if r['entity_id'] not in collapsed:
+                    raise KeyError('Tet-ready surface has no canonical entity: '+r['entity_id'])
+                skipped.append({'entity_id':r['entity_id'],'survivor':collapsed[r['entity_id']],
+                                'lane':base.name,'reason':'collapsed duplicate-authored surface; the '
+                                'survivor carries the same geometry and is already in this set'})
+                continue
+            e=meta[r['entity_id']]
             rows.append({'entity_id':r['entity_id'],'name':e['name'],'role':e['role'],'system':e['system'],
                          'lane':base.name,'path':base/r['output_path'],'sha256':r['output_sha256']})
     rows.sort(key=lambda r:r['entity_id'])
+    if report is not None:
+        report.extend(sorted(skipped,key=lambda r:r['entity_id']))
     return rows
 
 

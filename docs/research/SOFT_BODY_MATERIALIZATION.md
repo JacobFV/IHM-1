@@ -98,8 +98,9 @@ Open:
   interpenetration to 5.03 mm, so no single cartilage thickness works.
 - The 30.907 L interstitium must be synthesized. It is the coupling matrix, not
   merely missing volume. Composition is now sourced: adipose is 60.7 percent of
-  it, the fill weighs 31.7461 kg, and the body totals 70.7713 kg against a
-  declared 77.1107029 that no soft-tissue density can reach.
+  it, the fill weighs 31.7461 kg, and the body totals 70.7713 kg. The declared
+  77.1107029, which no soft-tissue density could reach, has been replaced by
+  that figure; see data/derived/entity-record-repair-promotion-v1/receipt.json.
 - Two infrapatellar fat pads in the joint promotion candidate are the first
   adipose geometry in the model, superseding the statement above that none
   exists.

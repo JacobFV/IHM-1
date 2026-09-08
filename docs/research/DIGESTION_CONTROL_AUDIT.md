@@ -68,7 +68,7 @@ Keep physiological CSV data-request names source-defined; nested stomach values 
 
 ## Initial state and source profile
 
-`data/derived/canonical/profile.json` identifies `IHMGenericMale`, age 44, 77.1107029 kg, body-fat fraction 0.21, height 1.7194712 m, with native patient SHA-256 `e965f38c8e2c4c1c4ede0be7bcab7f0332182ea1b44d75683f2cef0f563c7d49`. This is a generic source-derived profile, not independent digestion calibration.
+`data/derived/canonical/profile.json` identifies `IHMGenericMale`, age 44, 70.7713 kg (77.1107029 kg when this audit was written), body-fat fraction 0.21, height 1.7194712 m, with native patient SHA-256 `e965f38c8e2c4c1c4ede0be7bcab7f0332182ea1b44d75683f2cef0f563c7d49`. This is a generic source-derived profile, not independent digestion calibration.
 
 The inspected canonical `native_baseline_v1/states/native_stabilized.xml` has `NoMacros` stomach contents: 0 g carbohydrate/protein/fat, **500 mg calcium, 1 g sodium, 500 mL water**. Its liver glycogen is 117 g, muscle glycogen 592.199946 g, stored protein 109.996302 g, and stored fat 16298.516173 g. “No meal action” therefore does not mean an empty gut, depleted stores, or a defined overnight fast. Existing chyme/blood/tissue state must also be recorded.
 

@@ -10,7 +10,14 @@ def main():
     payload=json.loads((ROOT/'data/derived/canonical/mechanics.json').read_bytes())
     record=json.loads((ROOT/'data/derived/native-stream-smoke-n6e0pvqi/supine/smoke.json').read_bytes())
     native=record['initial'];reg=CanonicalRegistration(payload,native);projected=reg.project(native)
-    assert len(projected)==len(payload['entities'])==2408
+    # Not a literal count. It was 2408, then 2403 after the duplicate-surface collapse,
+    # and 4000 once the display promotion landed; a literal here only ever gets edited to
+    # match whatever the build now says. What this actually needs is that the projection
+    # covers the mechanics entity set exactly, and that mechanics agrees with the anatomy
+    # it was built from -- which a dropped or unprojected entity still fails.
+    anatomy=json.loads((ROOT/'data/derived/canonical/anatomy.json').read_bytes())
+    assert len(projected)==len(payload['entities'])==payload['counts']['entities']
+    assert {e['id'] for e in payload['entities']}=={e['id'] for e in anatomy['entities']}
     assert max(np.linalg.norm(e['translation_m']) for e in projected.values())<1e-14
     assert abs(np.linalg.det(reg.basis)-1)<1e-14
     assert all(np.array_equal(c,reg.global_map) for c in reg.maps.values())

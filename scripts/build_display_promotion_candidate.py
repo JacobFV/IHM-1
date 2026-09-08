@@ -43,8 +43,9 @@ import igl
 
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT));sys.path.insert(0,str(ROOT/'scripts'))
-from ihm.assembly.anatomy import (FRAME,MODEL_ID,ROTATION,LandmarkRegistration,mesh_properties,
-                                  normalized_name,physical_role)
+from ihm.assembly.anatomy import (FRAME,MODEL_ID,ROTATION,SURFACE_REGION_SYSTEMS,SURFACE_REGION_TOKENS,
+                                  LandmarkRegistration,mesh_properties,name_key,normalized_name,
+                                  physical_role,refine_role)
 from build_muscle_tet_ready_surfaces import (sha,write,signed_volume,weld_exact,diagnose,repair)
 from build_entity_tet_ready_surfaces import shape_metrics,analyse_patches
 from verify_muscle_tet_ready_surfaces import tetrahedralize,VOLUME_GATE
@@ -67,12 +68,8 @@ RECIPE_SCRIPTS=(ROOT/'scripts/build_muscle_tet_ready_surfaces.py',
 DENSITY_KEY={'muscle':'density','rigid_bone':'density_whole_skeleton','vascular':'density',
              'soft_organ':'density_soft_tissue','skin_layer':'density','skin':'density',
              'adipose':'density'}
-# Topographic surface regions are anatomy but not tissue volume; counting their enclosed volume as
-# tissue would double-count the skin they lie on.
-SURFACE_REGION_SYSTEMS={'integumentary'}
-SURFACE_REGION_TOKENS=('region','triangle','fossa','dorsum','surface','arch of foot','helix',
-                       'tragus','concha','auricle','lobule','angle of mouth','notch of auricle',
-                       'philtrum','groove','crus','crura','apex of','tubercle of auricle')
+# The topographic surface-region rule and the cross-source name key live in ihm.assembly.anatomy so
+# the canonical assembly and this lane cannot drift apart on what a role or a name match is.
 PART_TOKENS=(' head of ',' part of ',' belly of ',' branch of ',' layer of ',' portion of ',
              ' fibres of ',' fibers of ',' bundle of ',' root of ',' segment of ')
 FOREIGN_SPECIMEN_MODELS={'opensim-rajagopal':'Rajagopal2016 published model; the source record says '
@@ -162,26 +159,6 @@ def alias_verdict(agreement):
 def duplicate_verdict(agreement):
     r=agreement['surface_distance_over_diagonal']
     return bool(agreement['bbox_iou']>=DUPLICATE_IOU and r is not None and r<=DUPLICATE_DISTANCE_FRACTION)
-
-
-NAME_STOPWORDS={'of','the','a','muscle','bone','part'}
-
-
-def name_key(name):
-    """Side-preserving token multiset. Z-Anatomy writes 'X of hand.l' where BodyParts3D writes
-    'X of left hand'; the ordering differs, the tokens do not."""
-    text=normalized_name(name).replace('-',' ').replace(',',' ')
-    tokens=[t for t in text.replace('(',' ').replace(')',' ').split() if t not in NAME_STOPWORDS]
-    return tuple(sorted(tokens))
-
-
-def refine_role(name,system,base):
-    """physical_role plus one refinement this lane needs and does not fold back into the atlas."""
-    low=name.lower()
-    if system in SURFACE_REGION_SYSTEMS and not low.startswith('cavity of') \
-       and any(t in low for t in SURFACE_REGION_TOKENS):
-        return 'surface_region','topographic surface region of the body wall; not a tissue volume'
-    return base,None
 
 
 def name_part_hint(name):
@@ -489,10 +466,29 @@ def build(output,workers,limit,flags,skip_tetgen,timeout):
 
     # ---- stage 1: aliases -------------------------------------------------
     non_canonical=[s for s in manifest['structures'] if s['id'] not in entities]
+    # A display id whose canonical form was collapsed into a duplicate survivor is still an alias of
+    # that survivor, not a structure this body lacks. Without this the five collapsed BodyParts3D
+    # rows would fall through the id test, fail the name test, and be deleted as an unclassified
+    # model on the next run of a lane whose whole job is to not lose anatomy.
+    collapsed={d['id']:d['survivor'] for d in anatomy.get('duplicate_surface_collapse',{}).get('dropped',[])}
     aliases=[];residue=[];collisions=[];extent=[]
     name_jobs=[]
     for s in non_canonical:
         cid='body-'+s['id']
+        if cid in collapsed:
+            survivor=entities[collapsed[cid]]
+            aliases.append(dict(display_id=s['id'],display_model=s['model_id'],name=s['name'],
+                                surviving_id=survivor['id'],tier='collapsed_duplicate_alias',
+                                evidence='the canonical row for this display id was collapsed into an '
+                                         'identical duplicate-authored surface; the survivor is the '
+                                         'same structure, vertex for vertex',
+                                canonical_name=survivor['name'],
+                                collapse_evidence=anatomy['duplicate_surface_collapse']['evidence'],
+                                concept_sets_equal=set(c['concept_id'] for c in s.get('concepts',[]))==
+                                                   set(c['concept_id'] for c in survivor.get('concepts',[])),
+                                display_concepts=len(s.get('concepts',[])),
+                                canonical_concepts=len(survivor.get('concepts',[])),verified=True))
+            continue
         if cid in entities:
             e=entities[cid]
             record=dict(display_id=s['id'],display_model=s['model_id'],name=s['name'],

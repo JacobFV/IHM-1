@@ -18,7 +18,7 @@ One proper rigid least-squares fit maps source ground into canonical ground. The
 
 Canonical reference mesh points have fixed segment-local embeddings through the shared registration. Named bones use retained grouping; other tissues use an explicitly inferred nearest bone-envelope assignment. Initial geometry is preserved, but anatomical joint surfaces and continuous soft interfaces may disagree with source kinematics. Retained-state tests verify identity initialization, shared rigid motion, and wrench virtual-power invariance for all 2408 entities.
 
-Native segment masses and inertias are uniformly scaled together to an explicitly selected generic-body mass; source proportions are retained as a prior. Original native total is 85.26985 kg. Canonical mechanics total is 77.11070 kg. Root orchestration may select the native physiological saved-state weight, which includes baseline GI contents. Canonical attached tissues add no second body inertia. Cloth has its own explicit finite mass. Metabolic analysis mass is not added to mechanics.
+Native segment masses and inertias are uniformly scaled together to an explicitly selected generic-body mass; source proportions are retained as a prior. Original native total is 85.26985 kg. Canonical mechanics total is 70.77130 kg (77.11070 kg before the declared mass was composed over the acquired geometry). Root orchestration may select the native physiological saved-state weight, which includes baseline GI contents. Canonical attached tissues add no second body inertia. Cloth has its own explicit finite mass. Metabolic analysis mass is not added to mechanics.
 
 ## Environment and energy
 

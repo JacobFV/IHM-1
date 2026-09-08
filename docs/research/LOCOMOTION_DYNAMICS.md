@@ -135,7 +135,7 @@ This runner currently has **no deformable organ/tissue dynamics**, no canonical
 attachment transfer, no online physiological coupling, and no neural controller
 from IBM. It does not display its measured subject as the canonical generic body.
 
-The canonical body is 77.1107029 kg and uses heterogeneous anatomical evidence.
+The canonical body is 70.7713 kg and uses heterogeneous anatomical evidence. (It was 77.1107029 kg, an inherited BioGears constant, until the mass was composed over the acquired geometry.)
 Its existing Rajagopal registration was fitted to a different 75.337 kg model;
 neither registration nor a rigid transform may silently be reused here. A next
 unification should allocate each segment's mass across skeleton and deformable

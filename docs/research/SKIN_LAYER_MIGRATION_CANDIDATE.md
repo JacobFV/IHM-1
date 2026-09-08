@@ -39,7 +39,7 @@ raw shell area. Total shell thickness remains 0.0066 m. Unscaled proxy mass
 changes from 64.4865523954032 to 53.12043684568518 kg; the uniform normalization
 changes from 1.195763985446006 to 1.4516201574924263. Thus **all non-carrier proxy
 masses change**, including unchanged non-skin geometry. Their final sum plus
-six 1 mg carriers remains the existing 77.1107029 kg constraint. This is a
+six 1 mg carriers remains the existing mass constraint, 77.1107029 kg when this candidate was written and 70.7713 kg since. This is a
 correction to the existing overlapping atlas allocation, not measured weight
 loss, native body mass loss or a physiological material transfer.
 

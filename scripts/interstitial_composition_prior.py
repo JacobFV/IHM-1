@@ -772,9 +772,9 @@ def ledger(summary, cand, profile, rows, aux):
                              'density_gas_free_kg_m3': d_profile_gasfree,
                              'siri_fat_percent_gas_free': siri_profile_gasfree},
             'reading': 'the composed body is internally consistent: %.1f%% fat by densitometry against a '
-                       '%.1f%% compositional lower bound and a %.1f%% completed compositional estimate. The '
-                       'profile is not: forcing 77.1107 kg into the same gas-free volume gives %.1f%% fat, '
-                       'and into the raw envelope gives %.1f%%.'
+                       '%.1f%% compositional lower bound and a %.1f%% completed compositional estimate. '
+                       'Forcing the declared %.4f kg into the same gas-free volume gives %.1f%% fat, and '
+                       'into the raw envelope gives %.1f%%.'
                        % (siri_gasfree, 100 * fat_in_fill / total,
                           100 * (fat_in_fill
                                  + ICRP89['fat_fraction_of_adipose_tissue_adult']
@@ -785,11 +785,23 @@ def ledger(summary, cand, profile, rows, aux):
                                       - ICRP89['interstitial_adipose_fraction_of_total_adipose']
                                         * ICRP89['adipose_tissue_kg'])
                                  + ICRP89['essential_fat_fraction_of_lbm'] * aux['lean_body_mass_kg']) / total,
-                          siri_profile_gasfree, siri_profile_nogas),
+                          profile['mass_kg'], siri_profile_gasfree, siri_profile_nogas),
         },
         'verdict': {
-            'answer': 'NO. The profile 77.1107029 kg cannot be reconciled with this geometry, and it is the '
-                      'PROFILE that must yield.',
+            # The finding this artifact was built to make has been adopted: the
+            # canonical profile now declares the composed mass. The answer stays
+            # computed against whatever the profile declares, so this remains a
+            # live check rather than a record of a settled argument.
+            'answer': ('ADOPTED. The profile declares %.4f kg, which is the mass this geometry composes '
+                       'to within %.4f kg. The inherited BioGears StandardMale 77.1107029 kg it '
+                       'superseded could not be reconciled with this geometry.'
+                       % (profile['mass_kg'], abs(profile['mass_kg'] - total))
+                       if abs(profile['mass_kg'] - total) < .001 else
+                       'NO. The profile %.4f kg cannot be reconciled with this geometry, and it is the '
+                       'PROFILE that must yield.' % profile['mass_kg']),
+            'profile_mass_kg': profile['mass_kg'],
+            'profile_agrees_with_composition': bool(abs(profile['mass_kg'] - total) < .001),
+            'superseded_profile_mass_kg': 77.1107029,
             'composed_total_body_mass_kg': total,
             'partition_sensitivity_kg': [cases['voxel_10mm']['implied_total_body_mass_kg'], total],
             'residual_density_sensitivity_kg': [
@@ -799,8 +811,9 @@ def ledger(summary, cand, profile, rows, aux):
             'profile_bmi': profile['mass_kg'] / profile['height_m'] ** 2,
             'grounds': [
                 'the composed fill weighs %.4f kg over %.6f m3, a mean density of %.1f kg/m3. Reaching the '
-                'profile would need the void to weigh %.1f kg/m3, above ICRU-44 soft tissue 1060 and every '
-                'other soft tissue in that table; only bone is denser'
+                'declared profile needs the void to weigh %.1f kg/m3; the superseded 77.1107029 kg needed '
+                '1185.8 kg/m3, above ICRU-44 soft tissue 1060 and every other soft tissue in that table, '
+                'where only bone is denser'
                 % (c8['composed_fill_mass_kg'], void8, c8['composed_fill_density_kg_m3'],
                    c8['fill_density_required_to_reach_profile_kg_m3']),
                 'the answer is insensitive to the two free choices: swapping the 8 mm partition for the 10 mm '
@@ -810,18 +823,23 @@ def ledger(summary, cand, profile, rows, aux):
                    c8['residual_density_band']['upper_icru44_soft_1060']['total_body_mass_kg']
                    - c8['residual_density_band']['lower_water_1000']['total_body_mass_kg']),
                 'the geometry is measured on this specimen and two independent integrations of it agree to '
-                '0.026%; the profile mass is an inherited BioGears StandardMale constant whose own file '
+                '0.026%; the superseded mass was an inherited BioGears StandardMale constant whose own file '
                 'records it as a "generic synthesized reference profile, not a measured patient". Only the '
-                'height in that profile comes from the atlas',
+                'height in that profile ever came from the atlas',
                 'the composed body reproduces a coherent body composition at %.1f kg, BMI %.1f, %.1f%% fat by '
-                'densitometry. The profile at 77.1107 kg in this envelope is %.1f%% fat by the same relation, '
-                'which is not a body'
-                % (total, total / profile['height_m'] ** 2, siri_gasfree, siri_profile_nogas),
+                'densitometry. The declared %.4f kg in this envelope is %.1f%% fat by the same relation; the '
+                'superseded 77.1107 kg was -2.6%%, which is not a body'
+                % (total, total / profile['height_m'] ** 2, siri_gasfree, profile['mass_kg'],
+                   siri_profile_nogas),
             ],
-            'what_to_change': 'hold the geometry and the 21%% fat intent; replace mass_kg 77.1107029 with '
-                              '%.4f kg (BMI %.2f). Alternatively keep 77.1107 kg and declare the profile a '
-                              'different subject from the BodyParts3D specimen, in which case no mass ledger '
-                              'over this geometry can ever close.'
+            'what_to_change': ('nothing: the profile already declares %.4f kg (BMI %.2f), applied by '
+                               'scripts/promote_entity_record_repair.py through ihm/assembly/profile.py. '
+                               'body_fat_fraction 0.21 remains an unreconciled BioGears prior.'
+                               if abs(profile['mass_kg'] - total) < .001 else
+                               'hold the geometry and the 21%% fat intent; replace mass_kg with %.4f kg '
+                               '(BMI %.2f). Alternatively declare the profile a different subject from the '
+                               'BodyParts3D specimen, in which case no mass ledger over this geometry can '
+                               'ever close.')
                               % (total, total / profile['height_m'] ** 2),
         },
     }
@@ -1152,7 +1170,8 @@ def emit(outdir):
             'composed_fill_density_kg_m3': doc['mass_ledger']['cases']['voxel_8mm'][
                 'composed_fill_density_kg_m3'],
             'implied_total_body_mass_kg': doc['mass_ledger']['verdict']['composed_total_body_mass_kg'],
-            'profile_mass_kg': 77.1107029,
+            'profile_mass_kg': doc['mass_ledger']['verdict']['profile_mass_kg'],
+            'superseded_profile_mass_kg': 77.1107029,
             'verdict': doc['mass_ledger']['verdict']['answer'],
         },
         'not_established': doc['not_established'],
@@ -1253,17 +1272,40 @@ def self_test():
         hi = c['residual_density_band']['upper_icru44_soft_1060']['total_body_mass_kg']
         assert lo < c['implied_total_body_mass_kg'] < hi, (name, lo, hi)
         assert 68.0 < lo and hi < 74.0, (name, lo, hi)
-        assert c['fill_density_required_to_reach_profile_kg_m3'] > 1100.0, name
+        # The declared profile now sits inside the void's own density band. At
+        # the superseded 77.1107029 kg this required 1185.8 kg/m3, above every
+        # ICRU-44 soft tissue; only bone is denser. Asserted against the band
+        # rather than a literal, so the gate survives the next mass revision.
+        required = c['fill_density_required_to_reach_profile_kg_m3']
+        if led['verdict']['profile_agrees_with_composition']:
+            # The declared mass IS the composed mass at the 8 mm partition, so
+            # the fill density it demands must be that case's own composed fill
+            # density, apart from the 1e-4 kg rounding of the declared figure
+            # over the void. At either partition the demanded density must be a
+            # tissue rather than bone: at the superseded 77.1107029 kg it was
+            # 1185.8 kg/m3, above every ICRU-44 soft tissue.
+            assert 900.0 < required < 1060.0, (name, required)
+            if abs(c['implied_total_body_mass_kg'] - led['verdict']['profile_mass_kg']) < .001:
+                rounding = .0001 / c['void_volume_m3']
+                assert abs(required - c['composed_fill_density_kg_m3']) <= rounding, (name, required)
+        else:
+            assert required > 1100.0, (name, required)
     tot = led['verdict']['composed_total_body_mass_kg']
     assert 69.0 < tot < 73.0, tot
-    assert led['verdict']['answer'].startswith('NO.')
+    assert led['verdict']['answer'].startswith('ADOPTED.'), led['verdict']['answer']
+    assert led['verdict']['profile_agrees_with_composition'], led['verdict']
+    assert led['verdict']['superseded_profile_mass_kg'] == 77.1107029
     assert abs(led['cases']['voxel_10mm']['implied_total_body_mass_kg'] - tot) < 0.5, 'partition sensitive'
-    assert led['verdict']['profile_bmi'] > led['verdict']['implied_bmi'] + 1.5
+    assert abs(led['verdict']['profile_bmi'] - led['verdict']['implied_bmi']) < 0.01, led['verdict']
 
-    # the composed body is densitometrically coherent and the profile is not
+    # the composed body is densitometrically coherent, and so now is the profile
+    # once lung and gut gas are removed, which two-compartment densitometry
+    # requires. At the superseded 77.1107029 kg the gas-free figure was negative.
     dm = led['densitometry']
     assert 0.0 < dm['composed_body']['siri_fat_percent'] < 35.0, dm['composed_body']
-    assert dm['profile_body']['siri_fat_percent_with_gas'] < 0.0, dm['profile_body']
+    assert 0.0 < dm['profile_body']['siri_fat_percent_gas_free'] < 35.0, dm['profile_body']
+    assert (dm['profile_body']['siri_fat_percent_with_gas']
+            > dm['profile_body']['siri_fat_percent_gas_free']), dm['profile_body']
     assert dm['lung_gas_m3'] > 0.0
     assert led['body_fat']['fat_fraction_lower_bound'] < dm['composed_body']['siri_fat_percent'] / 100.0
 
@@ -1317,7 +1359,8 @@ def self_test():
         'adipose_volume_fraction_of_void': comp['adipose_volume_fraction_of_void'],
         'composed_fill_density_kg_m3': led['cases']['voxel_8mm']['composed_fill_density_kg_m3'],
         'implied_total_body_mass_kg': tot,
-        'profile_mass_kg': 77.1107029,
+        'profile_mass_kg': led['verdict']['profile_mass_kg'],
+        'superseded_profile_mass_kg': 77.1107029,
         'canonical_assets_modified': False,
     }
     print(json.dumps(report, indent=2))

@@ -13,6 +13,9 @@ class Checks(unittest.TestCase):
   for name,t in zip(ids,[.0001,.0015,.005]):
    entities.append({'id':name,'role':'skin_layer','reference_geometry':deepcopy(s.ref),'volume_m3':2*t,'shell':{'thickness_m':t,'depth_interval_m':[depth,depth+t],'geometry_materialized':False}});depth+=t
   self.a={'entities':[skin,*entities],'assumption_ledger':[{'id':'SKIN-LAYER-PRIOR','statement':'old'}]}
+  # An arbitrary fixture constraint, not the canonical body mass: migrate_copy
+  # normalizes to whatever mass_allocation.target_mass_kg the payload it is
+  # handed declares. The canonical profile is 70.7713 kg.
   self.m={'entities':[],'links':[],'muscles':[{'retained':'path'}],'mass_allocation':{'target_mass_kg':77.1107029},'source_files':{}}
   for e in self.a['entities']:
    self.m['entities'].append({'id':e['id'],'role':e['role'],'reference_geometry':deepcopy(s.ref),'volume_m3':e.get('volume_m3',.000002),'mass_role':'numerical_boundary_carrier' if e['role']=='skin' else 'material_partition_proxy','material':{'density':{'value':1000}},'bounds_m':{'min':[0,0,0],'max':[1,1,1]}})

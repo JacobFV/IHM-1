@@ -49,7 +49,31 @@ class BodyTests(unittest.TestCase):
         from ihm.assembly.body import CanonicalBody
         body=CanonicalBody.from_workspace(ROOT)
         self.assertEqual(body.describe()['entity_count'],len(body.entities))
-        self.assertGreaterEqual(len(body.entities),2408)
+        # The entity count is not a literal here. It was 2408, then 2403 after five
+        # duplicate-authored BodyParts3D surfaces collapsed, and 4000 once the display
+        # promotion landed; a literal goes stale on the next legitimate change and then
+        # gets edited to whatever the build now says, which checks nothing. What does not
+        # go stale is the arithmetic the count has to satisfy: every entity has exactly one
+        # evidence kind, the acquired rows are the full BP scaffold minus the recorded
+        # collapse, and the promoted rows are exactly the promote decisions the recorded
+        # ledger carries. A silent drop, a silent addition or a divergence from the ledger
+        # still fails all three.
+        from ihm.assembly.anatomy import BP_SOURCE_SURFACE_COUNT
+        anatomy=json.loads((ROOT/'data/derived/canonical/anatomy.json').read_text())
+        counts=anatomy['counts'];collapse=anatomy['duplicate_surface_collapse']['dropped']
+        promotion=anatomy['display_structure_promotion']
+        self.assertEqual(len(body.entities),len(anatomy['entities']))
+        self.assertEqual(len(body.entities),counts['entities'])
+        self.assertEqual(sum(counts['evidence_kinds'].values()),len(body.entities))
+        self.assertEqual(sum(counts['roles'].values()),len(body.entities))
+        self.assertEqual(sum(counts['systems'].values()),len(body.entities))
+        self.assertEqual(counts['evidence_kinds']['source_geometry'],
+                         BP_SOURCE_SURFACE_COUNT-len(collapse))
+        self.assertEqual(len(collapse),counts['collapsed_duplicate_surfaces'])
+        self.assertEqual(counts['promoted_display_structures'],
+                         promotion['decision_counts']['promote'])
+        self.assertEqual(len(promotion['ids']),counts['promoted_display_structures'])
+        self.assertEqual(len(promotion['promoted']),counts['promoted_display_structures'])
         self.assertIsNone(body.describe()['certainty']['calibrated_confidence_score'])
         self.assertFalse(body.describe()['validated_digital_twin'])
         self.assertTrue(all(b['entity_id'] in body.entities for b in body.payload['volume_bindings']))

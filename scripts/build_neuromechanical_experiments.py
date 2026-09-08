@@ -41,6 +41,16 @@ def observe(mechanics,muscle):
         muscle_forces_n={muscle['id']:0.})
 
 
+# The canonical mass allocation is a uniform partition of one declared body mass over the
+# proxy volumes, so admitting new structures to that partition lowers every existing mass.
+# The display promotion took this subdomain's masses to 0.567 of what they were and its
+# natural frequency to about 1.33 times, and the two-times-refined path error below went
+# from 0.95 mm to 2.06 mm, past its 1 mm bound. Halving both steps here recovers only 9% of
+# that (2.06 mm to 1.88 mm), so it is not a mechanics-substep convergence artifact: the
+# error grows monotonically over the 0.4 s trial, to about 4.7% of the 40 mm path
+# excursion, which is accumulated phase drift in the delayed reflex loop rather than
+# integration error. The steps are therefore left where they were and the bound is left
+# where it is; the check is failing for a real reason and is meant to say so.
 def run_trial(payload,muscle,nerve,fixed,endpoint,direction,*,dt=.00005,duration=.4,mode='intact',resume_test=False):
     params=ReflexParameters(loop_delay_s=.06 if mode=='delayed' else .02)
     mechanics=BodyMechanics.from_dict(deepcopy(payload))
@@ -130,7 +140,7 @@ def run_suite(root,output_dir):
         motor_response_onset_s=activation_onset,maximum_path_difference_m=maxdiff,time_refinement_maximum_path_error_m=refinement,
         muscle=muscle,nerve_id=nerve,retained_subdomain=payload,fixed_entities=fixed,free_entity=endpoint,
         external_force_direction=direction.tolist(),runtime_sources=receipts,controller_source=GEYER_HERR_URL,
-        experiment=dict(load_n=20,start_s=.1,end_s=.25,duration_s=.4,exchange_step_s=.00005,feedback_exchange_latency_s=.00005),
+        experiment=dict(load_n=20,start_s=.1,end_s=.25,duration_s=.4,exchange_step_s=trials['intact']['dt_s'],feedback_exchange_latency_s=trials['intact']['dt_s'],refined_step_s=refined['dt_s']),
         ownership='Independent extracted mechanics experiment; not additive mass in a simultaneous canonical body solve',
         limitations=['TA fiber length is a reference-calibrated stiff-tendon path proxy, not native CE.',
             'Published feedback coefficients transferred to canonical muscle and inferred support; not human stretch-reflex calibration.',

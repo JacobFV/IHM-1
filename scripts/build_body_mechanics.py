@@ -59,7 +59,11 @@ def points(e):
 
 
 def main():
-    folder=BASE/'data/derived/canonical';anatomy_path=folder/'anatomy.json'
+    folder=BASE/'data/derived/canonical';anatomy_path=folder/'anatomy.json';profile_path=folder/'profile.json'
+    # The mass constraint is the canonical profile's, read from the artifact
+    # rather than restated here, so the ledger cannot silently disagree with it.
+    profile=json.loads(profile_path.read_text());target_mass=float(profile['mass_kg'])
+    if not target_mass>0:raise ValueError('Canonical profile must declare a positive body mass')
     anatomy=json.loads(anatomy_path.read_text());entities=anatomy['entities'];byid={e['id']:e for e in entities}
     bones=[e for e in entities if e['role']=='rigid_bone'];bone_names={e['name'].lower():e for e in bones}
     specs=[]
@@ -76,7 +80,11 @@ def main():
             basis='unclosed-surface signed integral volume prior; open boundaries and orientation are unresolved' if volume==signed else 'ellipsoid bounds volume prior; no usable oriented surface integral'
         if e['role']=='skin':volume=float(e.get('surface_area_m2',0)*.000001 or volume);basis='1 micrometer numerical carrier for skin boundary; physical layer masses belong to skin-layer entities'
         elif e['role']=='vascular':volume=float(e.get('surface_area_m2',0)*.0003 or volume);basis='surface area times assumed 0.3 mm wall thickness; lumen excluded'
-        mat=material(e);carrier=e['role'] in ('skin','lymphatic_network') or 'cavity of' in e['name'].lower()
+        # A topographic body-wall region is a named patch of the skin, not a
+        # tissue volume of its own; giving it a proxy mass would allocate the
+        # same tissue twice and take that mass off every real structure through
+        # the uniform normalizer below. Numerical inertia only, like the skin.
+        mat=material(e);carrier=e['role'] in ('skin','lymphatic_network','surface_region') or 'cavity of' in e['name'].lower()
         mass=0. if carrier else volume*mat['density']['value']
         # Isotropic moment with mean box principal inertia; rigid SO(3) dynamics
         # avoids an unmeasured body inertia tensor and its false precision.
@@ -89,7 +97,7 @@ def main():
                       'reference_geometry':e['reference_geometry'],
                       **({'shell':deepcopy(e['shell'])} if 'shell' in e else {}),
                       **({'physical_surface_support':deepcopy(e['physical_surface_support'])} if 'physical_surface_support' in e else {})})
-    total=sum(e['mass_kg'] for e in specs);carriers=sum(e['mass_role']=='numerical_boundary_carrier' for e in specs);factor=(77.1107029-carriers*1e-6)/total
+    total=sum(e['mass_kg'] for e in specs);carriers=sum(e['mass_role']=='numerical_boundary_carrier' for e in specs);factor=(target_mass-carriers*1e-6)/total
     for e in specs:
         e['mass_kg']*=factor;e['inertia_diagonal_kg_m2']=[v*factor for v in e['inertia_diagonal_kg_m2']]
         if e['mass_role']=='numerical_boundary_carrier':
@@ -211,9 +219,9 @@ def main():
         for anchor in [m['anchors'][0],m['anchors'][-1]]:
             edges.append(link(id,anchor['entity_id'],c,'muscle_or_connective_attachment_support',young=20000.,area=1e-5,length=.02))
     payload={'schema_version':1,'model_id':'ihm-body','frame':'bodyparts3d-display-m','units':{'length':'m','mass':'kg','time':'s','force':'N','stress':'Pa','energy':'J'},'entities':specs,'links':edges,'muscles':muscles,'native_muscles':native_records,
-             'source_files':{str(p.relative_to(BASE)):hashlib.sha256(p.read_bytes()).hexdigest() for p in [anatomy_path,BASE/'data/derived/opensim/native_corrected/baseline/mechanics.json',BASE/'data/derived/anatomy/opensim__Rajagopal__Rajagopal2016.json']},'sources':SOURCES,
+             'source_files':{str(p.relative_to(BASE)):hashlib.sha256(p.read_bytes()).hexdigest() for p in [anatomy_path,profile_path,BASE/'data/derived/opensim/native_corrected/baseline/mechanics.json',BASE/'data/derived/anatomy/opensim__Rajagopal__Rajagopal2016.json']},'sources':SOURCES,
              'registration':{key:{'scale':g['scale'].tolist(),'translation_m':g['offset'].tolist(),'canonical_bones':[e['id'] for e in g['candidates']],'source_bounds':g['source_bounds'],'target_bounds':g['target_bounds']} for key,g in bodygroups.items()},
-             'mass_allocation':{'target_mass_kg':77.1107029,'numerical_carrier_mass_kg':carriers*1e-6,'numerical_carrier_count':carriers,'exclusions':'skin parent, lymphatic network structural graph and cardiac cavities carry only 1 milligram numerical inertia each; material volume zero; this inertia is debited from the material mass allocation','unscaled_proxy_mass_kg':total,'uniform_scale':factor,'basis':'generic physiology mass constraint, allocated by estimated tissue volume and density; overlapping atlas representations and bounding-volume approximations are not a measured compartment partition'},
+             'mass_allocation':{'target_mass_kg':target_mass,'target_mass_source':{'path':str(profile_path.relative_to(BASE)),'field':'mass_kg','sha256':hashlib.sha256(profile_path.read_bytes()).hexdigest()},'numerical_carrier_mass_kg':carriers*1e-6,'numerical_carrier_count':carriers,'exclusions':'skin parent, lymphatic network structural graph and cardiac cavities carry only 1 milligram numerical inertia each; material volume zero; this inertia is debited from the material mass allocation','unscaled_proxy_mass_kg':total,'uniform_scale':factor,'basis':'generic physiology mass constraint, allocated by estimated tissue volume and density; overlapping atlas representations and bounding-volume approximations are not a measured compartment partition'},
              'rest_state':'stress-free anatomy, zero activation, no gravity; no native pretension transplanted; unsupported gait/postural predictions',
              'reduction_priors':{'active_force_length_width':param(.45,'normalized fiber length',[.25,.75],'assumed_prior','reduced-muscle-law'),'max_log_shortening':param(.35,'1',[.1,.5],'assumed_prior','reduced-muscle-law'),'passive_fmax_fraction_per_fiber_length':param(.05,'1',[.01,.2],'assumed_prior','reduced-muscle-law')},
              'solver':{'rigid':'rigid translation; reference orientations constrained with audited holding moments; linearly implicit attachment stiffness/damping, 2 ms substeps','soft':'affine compressible neo-Hookean; quasi-static hydrostatic boundary solve and volume-preserving muscle shape','muscle':'registered polyline force gradient; active Gaussian force-length reduction, passive tension-only linear spring; NOT reimplementation of Millard equilibrium','coupling':'equal/opposite forces on every path segment and support, moments about body centers','gravity':'disabled; whole body is in unloaded reference configuration'},

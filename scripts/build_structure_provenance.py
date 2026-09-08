@@ -24,6 +24,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from ihm.assembly.anatomy import physical_role
 OUT = ROOT/'data/derived/structure-provenance-candidate-v1'
+PROMOTED = ROOT/'data/derived/structure-provenance-v1'
 SCHEMA_ID = 'ihm.structure-provenance.v1'
 
 TIERS = {
@@ -87,6 +88,50 @@ def git(*args):
         return None
 
 
+_WORKING_TREE = {}
+
+
+def working_tree():
+    """What the repository actually looked like when this build ran.
+
+    A build whose entire purpose is traceability must not answer 'which commit produced
+    this' with a bare null. It usually cannot answer with a commit either: this tree is
+    routinely dirty, and a commit id would then name content that is not what ran. So it
+    answers with all three of the things that are true -- the commit HEAD is on, the tree
+    that commit points at, and an explicit digest over every path git reports as modified,
+    taken from the bytes on disk. Together those pin the exact state; the commit alone
+    does not, and null says nothing at all.
+
+    Read-only. Nothing here writes an object, an index entry or a ref.
+    """
+    if _WORKING_TREE:
+        return dict(_WORKING_TREE)
+    head = git('rev-parse', 'HEAD')
+    porcelain = git('status', '--porcelain') or ''
+    dirty = sorted({line[3:].split(' -> ')[-1].strip().strip('"')
+                    for line in porcelain.splitlines() if line.strip()})
+    entries = []
+    for relative in dirty:
+        path = ROOT/relative
+        entries.append(relative+':'+(sha256_file(path) if path.is_file() else 'absent'))
+    _WORKING_TREE.update({
+        'head_commit': head,
+        'head_tree': git('rev-parse', 'HEAD^{tree}'),
+        'head_committed_at': git('log', '-1', '--format=%cI'),
+        'clean': not dirty,
+        'dirty_paths': dirty,
+        'dirty_path_count': len(dirty),
+        'dirty_digest': hashlib.sha256('\n'.join(entries).encode()).hexdigest() if entries else None,
+        'dirty_digest_method': 'sha256 over sorted "<path>:<sha256 of the bytes on disk>" lines for '
+                               'every path git status reports, "absent" for a deleted one',
+        'guarantees': 'head_commit plus head_tree plus dirty_digest identify the exact bytes this '
+                      'build read. head_commit alone does not while dirty_path_count is nonzero.',
+        'does_not_guarantee': 'the dirty content is not stored anywhere, so this state can be '
+                              'recognised again but not reconstructed from the repository. Only a '
+                              'build on a clean tree is reproducible from its commit alone.'})
+    return dict(_WORKING_TREE)
+
+
 class Builds:
     """Every retained derived build that names a geometry file, inverted path->build and sha256->build."""
     FIELDS = ('source_geometry_sha256', 'per_entity_input_sha256', 'inputs_sha256', 'source_hashes', 'artifacts_sha256')
@@ -148,8 +193,9 @@ class Builds:
 
 
 class Provenance:
-    def __init__(self, verify=True):
+    def __init__(self, verify=True, out=OUT):
         self.verify = verify
+        self.out = Path(out)
         self.manifest = read_json(ROOT/'data/derived/app/manifest.json')
         self.anatomy = read_json(ROOT/'data/derived/canonical/anatomy.json')
         self.bp_index = {m['element_id']: m for m in read_json(ROOT/'data/derived/anatomy/bodyparts3d_index.json')['meshes']}
@@ -192,7 +238,7 @@ class Provenance:
 
     # --- shared helpers -------------------------------------------------
     def _load_resolution(self):
-        path = OUT/'hash-resolution.json'
+        path = self.out/'hash-resolution.json'
         if not path.is_file():
             return {}
         kept = {}
@@ -237,9 +283,21 @@ class Provenance:
             path = ROOT/relative
             commit = git('log', '-1', '--format=%H', '--', relative)
             dirty = git('status', '--porcelain', '--', relative)
+            tracked = git('ls-files', '--', relative)
+            if commit:
+                reason = None
+            elif not path.is_file():
+                reason = 'the script named by this record is not present in the working tree'
+            elif not tracked:
+                reason = 'the script is present but not tracked in git, so no commit contains it'
+            else:
+                reason = 'git is unavailable or this path has no commit history'
             self.scripts[relative] = {'script': relative, 'script_sha256': sha256_file(path) if path.is_file() else None,
-                                      'commit': commit, 'commit_covers_working_tree': (dirty == '' or dirty is None) and commit is not None,
-                                      'uncommitted_changes': bool(dirty)}
+                                      'commit': commit, 'commit_absent_reason': reason,
+                                      'commit_covers_working_tree': (dirty == '' or dirty is None) and commit is not None,
+                                      'uncommitted_changes': bool(dirty),
+                                      'working_tree': {k: working_tree()[k] for k in
+                                                       ('head_commit', 'head_tree', 'clean', 'dirty_path_count', 'dirty_digest')}}
         return dict(self.scripts[relative])
 
     def licence(self, dataset_key, declared, url=None, declared_in=None):
@@ -647,8 +705,11 @@ SCHEMA = {'schema': SCHEMA_ID,
           'honesty_rule': 'An empty field is emitted where the repository holds no evidence. No licence, hash, commit or residual is inferred.'}
 
 
-def build(verify=True):
-    provenance = Provenance(verify)
+def build(verify=True, out=OUT, promoted=False):
+    out = Path(out)
+    out = out if out.is_absolute() else (ROOT/out)
+    relative_out = str(out.resolve().relative_to(ROOT))
+    provenance = Provenance(verify, out)
     records = {}
     for structure in provenance.manifest['structures']:
         records[structure['id']] = provenance.record(structure)
@@ -662,19 +723,19 @@ def build(verify=True):
              'assumptions': entity.get('assumptions', []), 'source': {},
              'display_geometry': {'source_vertices': entity.get('source_vertex_count'), 'source_faces': entity.get('source_face_count')}},
             display_present=False)
-    OUT.mkdir(parents=True, exist_ok=True)
-    (OUT/'records').mkdir(exist_ok=True)
-    for stale in (OUT/'records').glob('*.json'):
+    out.mkdir(parents=True, exist_ok=True)
+    (out/'records').mkdir(exist_ok=True)
+    for stale in (out/'records').glob('*.json'):
         if stale.stem not in records:
             stale.unlink()
     record_hashes = {}
     for identity, record in records.items():
-        record_hashes[identity] = write_json(OUT/'records'/f'{identity}.json', record)
+        record_hashes[identity] = write_json(out/'records'/f'{identity}.json', record)
     report = audit(provenance, records)
-    schema_sha = write_json(OUT/'schema.json', SCHEMA)
-    audit_sha = write_json(OUT/'audit.json', report)
-    index = {'schema': SCHEMA_ID, 'schema_path': 'data/derived/structure-provenance-candidate-v1/schema.json',
-             'schema_sha256': schema_sha, 'records_directory': 'data/derived/structure-provenance-candidate-v1/records',
+    schema_sha = write_json(out/'schema.json', SCHEMA)
+    audit_sha = write_json(out/'audit.json', report)
+    index = {'schema': SCHEMA_ID, 'schema_path': relative_out+'/schema.json',
+             'schema_sha256': schema_sha, 'records_directory': relative_out+'/records',
              'record_count': len(records), 'canonical_entities_without_display_structure': missing_entities,
              'display_structures': len(provenance.manifest['structures']),
              'datasets': provenance.datasets, 'tiers': TIERS,
@@ -683,11 +744,11 @@ def build(verify=True):
              'audit_summary': {k: report[k] for k in ('field_coverage', 'unanswerable_before', 'unanswerable_after',
                                                       'hash_verification', 'derived_artifact_coverage', 'unfilled')},
              'record_sha256': record_hashes,
-             'canonical_assets_modified': False,
-             'promotion_performed': False,
+             'canonical_assets_modified': promoted,
+             'promotion_performed': promoted,
              'display_gating': 'none; this record does not select, hide, colour or order any structure'}
-    index_sha = write_json(OUT/'index.json', index)
-    resolution_sha = write_json(OUT/'hash-resolution.json', {
+    index_sha = write_json(out/'index.json', index)
+    resolution_sha = write_json(out/'hash-resolution.json', {
         'purpose': 'files located by content hash where the retained metadata recorded a hash but no path',
         'search_roots': HASH_SEARCH_ROOTS,
         'resolved': {digest: relative for digest, relative in sorted(provenance.resolved.items())
@@ -701,22 +762,26 @@ def build(verify=True):
                 'outputs_sha256': {'schema.json': schema_sha, 'index.json': index_sha, 'audit.json': audit_sha,
                                    'hash-resolution.json': resolution_sha,
                                    'records_sha256_of_index_field': sha256_json(record_hashes)},
+                'working_tree': working_tree(),
                 'record_count': len(records), 'hash_verification_enabled': verify,
-                'canonical_assets_modified': False, 'promotion_performed': False,
+                'canonical_assets_modified': promoted, 'promotion_performed': promoted,
                 'limitations': [
-                    'A candidate for review. No canonical file is written and no structure is promoted.',
+                    'A candidate for review. No canonical file is written and no structure is promoted.'
+                    if not promoted else
+                    'Promoted. This index is the traceability record the canonical body manifest points at; '
+                    'it indexes the canonical entity set as it stands and is rebuilt whenever that set changes.',
                     'Licence is emitted only where this repository retains a declaration or a licence file; opensim-rajagopal and betse have none and are left empty.',
                     'Residuals are copied from the registration reports that measured them. Structures placed by an exact recorded transform carry residual null with a stated reason, not a zero.',
                     'The tier states the kind of evidence behind the geometry. It does not rank structures and nothing in the viewer gates on it.',
                     'derived_artifacts is a retained-build cross-reference matched by geometry path and hash; it does not assert that a build is current.']}
-    manifest_sha = write_json(OUT/'manifest.json', manifest)
+    manifest_sha = write_json(out/'manifest.json', manifest)
     print(json.dumps({'records': len(records), 'index_sha256': index_sha, 'manifest_sha256': manifest_sha,
                       'unanswerable_before': report['unanswerable_before'], 'unanswerable_after': report['unanswerable_after'],
                       'tiers': report['tier_counts'], 'hash_verification': report['hash_verification']}, indent=1))
     return index, report
 
 
-def self_test():
+def self_test(out=OUT):
     """Exercise the shape rules on synthetic inputs inside a temporary directory only."""
     failures = []
     with tempfile.TemporaryDirectory() as temporary:
@@ -737,15 +802,15 @@ def self_test():
         failures.append(f'empty record misjudged: {empty}')
     if set(TIERS) != {'measured', 'transferred', 'derived', 'synthesized'}:
         failures.append('tier vocabulary drifted from the four declared tiers')
-    if not (OUT/'index.json').exists():
+    if not (out/'index.json').exists():
         print(json.dumps({'self_test': 'shape checks only; no build present yet', 'failures': failures}, indent=1))
         return 1 if failures else 0
-    index = read_json(OUT/'index.json')
+    index = read_json(out/'index.json')
     if index['schema'] != SCHEMA_ID:
         failures.append('index schema id drifted')
     checked = 0
     for identity, expected in list(index['record_sha256'].items())[::250]:
-        path = OUT/'records'/f'{identity}.json'
+        path = out/'records'/f'{identity}.json'
         if not path.exists() or sha256_file(path) != expected:
             failures.append('record hash mismatch: '+identity)
         else:
@@ -753,8 +818,8 @@ def self_test():
             if record['schema'] != SCHEMA_ID or record['structure_id'] != identity:
                 failures.append('record identity mismatch: '+identity)
             checked += 1
-    manifest = read_json(OUT/'manifest.json')
-    if manifest['outputs_sha256']['index.json'] != sha256_file(OUT/'index.json'):
+    manifest = read_json(out/'manifest.json')
+    if manifest['outputs_sha256']['index.json'] != sha256_file(out/'index.json'):
         failures.append('manifest does not bind the emitted index')
     for path, expected in manifest['inputs_sha256'].items():
         if expected and sha256_file(ROOT/path) != expected:
@@ -768,7 +833,13 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--self-test', action='store_true')
     parser.add_argument('--no-verify-hashes', action='store_true')
+    parser.add_argument('--output', type=Path, default=OUT,
+                        help='where to write. Defaults to the candidate directory; pass '
+                             'data/derived/structure-provenance-v1 for the promoted index, which '
+                             'leaves the candidate directory intact as its own provenance record.')
+    parser.add_argument('--promoted', action='store_true',
+                        help='record this build as the promoted index rather than a candidate')
     arguments = parser.parse_args()
     if arguments.self_test:
-        raise SystemExit(self_test())
-    build(verify=not arguments.no_verify_hashes)
+        raise SystemExit(self_test(arguments.output))
+    build(verify=not arguments.no_verify_hashes, out=arguments.output, promoted=arguments.promoted)

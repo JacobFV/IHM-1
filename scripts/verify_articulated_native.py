@@ -13,7 +13,14 @@ def main():
     output=Path(tempfile.mkdtemp(prefix='articulated-acceptance-',dir=ROOT/'data/derived'));started=time.monotonic();plant=None
     try:
         plant=ArticulatedBodyPlant(ROOT,output/'plant',environment='supine',target_mass_kg=77.6122029,augmented_registration=args.augmentation_registration,enable_garments=args.garments)
-        initial=plant.snapshot();assert len(initial['muscles'])==92 and len(initial['entities'])==2408
+        # The entity count is read from the canonical mechanics the plant was built on,
+        # not written here: it was 2408, then 2403 after the duplicate-surface collapse,
+        # then 4000 once the display promotion landed, and a literal only ever gets
+        # rewritten to match. The 77.6122029 kg is the native 22-body patient mass, which
+        # is scaled independently of the canonical proxy partition and is deliberately
+        # not the profile.
+        expected=json.loads((ROOT/'data/derived/canonical/mechanics.json').read_bytes())['counts']['entities']
+        initial=plant.snapshot();assert len(initial['muscles'])==92 and len(initial['entities'])==expected
         assert initial['total_muscle_metabolic_w']>0 and all(initial[k]==0 for k in ENERGIES)
         checkpoint=plant.checkpoint();dt=.00005 if args.garments else .002
         baseline=plant.advance(dt);plant.restore(checkpoint);repeat=plant.advance(dt)

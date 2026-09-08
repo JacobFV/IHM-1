@@ -13,7 +13,7 @@ parameter was fitted to obtain a desired core temperature.
 ## Inputs and initialization
 
 BioGears donor revision is `3f16a5fa1dade9c511b88d923606fa51cc35e95d`.
-The generic male profile is 77.1107029 kg, 1.7194712 m, age 44, fat fraction
+The generic male profile is 70.7713 kg (77.1107029 kg when this audit was written), 1.7194712 m, age 44, fat fraction
 0.21; these are generic priors, not measurements of the user. Native skin
 area is 1.9012784297 m². The actual environment is 22 °C air and mean radiant
 temperature, 0.1 m/s air speed, 60% relative humidity and 0.5 clo.

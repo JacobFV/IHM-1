@@ -1059,24 +1059,41 @@ def ledger(mech, profile, unmod, part):
             'skin_epidermis_plus_dermis_volume_m3': skin_only_v,
             'skin_epidermis_plus_dermis_mass_kg': skin_only_v * 1100.,
             'icrp_skin_kg': ICRP_ADULT_MALE['skin_kg'],
-            'note': 'the canonical skin slab is %.4f m2 against a %.5f m2 watertight envelope, a factor '
-                    'of %.3f. The 1.6 mm epidermis-plus-dermis prior is itself well supported: at the '
-                    'envelope area and ICRP skin density it weighs %.3f kg against the ICRP reference '
-                    '%.1f kg. It is the AREA that is wrong, not the thickness. The three layers also '
-                    'occupy no voxel in either partition, so their %.3f kg is mass with no place to be'
+            'defect_retired': bool(abs(slab_area / env_area - 1.) < .01),
+            'note': ('the canonical skin layer area is %.4f m2 against a %.5f m2 watertight envelope, a '
+                     'factor of %.3f: the layers are extruded from the exterior component and the '
+                     'two-sided slab defect is retired. The 1.6 mm epidermis-plus-dermis prior is well '
+                     'supported: at the envelope area and ICRP skin density it weighs %.3f kg against '
+                     'the ICRP reference %.1f kg. The three layers still occupy no voxel in either '
+                     'partition, so their %.3f kg is mass with no place to be'
+                     if abs(slab_area / env_area - 1.) < .01 else
+                     'the canonical skin slab is %.4f m2 against a %.5f m2 watertight envelope, a factor '
+                     'of %.3f. The 1.6 mm epidermis-plus-dermis prior is itself well supported: at the '
+                     'envelope area and ICRP skin density it weighs %.3f kg against the ICRP reference '
+                     '%.1f kg. It is the AREA that is wrong, not the thickness. The three layers also '
+                     'occupy no voxel in either partition, so their %.3f kg is mass with no place to be')
                     % (slab_area, env_area, slab_area / env_area, skin_only_v * 1100.,
                        ICRP_ADULT_MALE['skin_kg'], layer_m)},
         'fill': {'void_volume_m3': void10, 'uniform_fill_cases': fills,
                  'composed_fill_case': split,
                  'density_required_to_reach_profile_kg_m3': required,
-                 'note': 'reaching the %.4f kg profile from this geometry needs the void to weigh '
-                         '%.0f kg/m3. Adipose tissue is 950 and no ICRU-44 soft tissue exceeds 1060. '
-                         'Only bone is denser than the required fill'
+                 'required_fill_is_physical': bool(FILL_ADIPOSE <= required <= 1060.),
+                 'note': ('reaching the %.4f kg profile from this geometry needs the void to weigh '
+                          '%.0f kg/m3, which lies between adipose 950 and interstitial fluid 1010 and '
+                          'below the ICRU-44 soft-tissue ceiling 1060. The void can carry this profile '
+                          'without inventing density'
+                          if FILL_ADIPOSE <= required <= 1060. else
+                          'reaching the %.4f kg profile from this geometry needs the void to weigh '
+                          '%.0f kg/m3. Adipose tissue is 950 and no ICRU-44 soft tissue exceeds 1060. '
+                          'Only bone is denser than the required fill')
                          % (target, required)},
         'reconciliation': {
             'profile_mass_kg': target, 'profile_height_m': profile['height_m'],
             'profile_body_fat_fraction': fat, 'profile_bmi': bmi_profile,
-            'profile_basis': 'inherited BioGears StandardMale prior; only height comes from the atlas',
+            'profile_basis': 'composed over this specimen\'s own measured interior; see '
+                             'data/derived/interstitial-composition-prior-v1/ledger.json. It supersedes '
+                             'the inherited BioGears StandardMale 77.1107029 kg constant. Height comes '
+                             'from the atlas; age, sex and body_fat_fraction remain BioGears priors',
             'siri_body_density_kg_m3': siri_density * 1000.,
             'siri_implied_body_volume_m3': siri_volume,
             'siri_note': 'Siri two-compartment densitometry, %%fat = 495/D - 450. At %.0f%% fat the '
@@ -1093,22 +1110,36 @@ def ledger(mech, profile, unmod, part):
                                              fills['all_interstitial']['implied_total_mass_kg']
                                              / profile['height_m'] ** 2],
             'icrp_reference': ICRP_ADULT_MALE,
-            'verdict': 'NO. The %.4f kg profile and this geometry cannot both stand without inventing '
-                       'volume. Two independent routes agree. Densitometry: at the profile 21%% fat the '
-                       'profile mass needs %.2f L and the envelope measures %.2f L, short by %.2f L, and '
-                       'forcing %.4f kg into %.2f L needs a mean density of %.0f kg/m3, which the Siri '
-                       'relation maps to %.1f%% body fat. Composition: weighing every owned voxel at a '
-                       'sourced tissue density and filling the void with anything between adipose and '
-                       'interstitial fluid gives %.1f to %.1f kg. The geometry is a BMI %.1f to %.1f '
-                       'body; the profile is BMI %.1f. The profile is a BioGears inheritance, the '
-                       'geometry is BodyParts3D, and they were never the same person'
-                       % (target, siri_volume * 1000, env_m3 * 1000, (siri_volume - env_m3) * 1000,
-                          target, env_m3 * 1000, target / env_m3, 495. / (target / env_m3 / 1000.) - 450.,
+            'mass_within_geometry_supported_range': bool(fills['all_adipose']['implied_total_mass_kg']
+                                                         <= target
+                                                         <= fills['all_interstitial']['implied_total_mass_kg']),
+            'verdict': ('The %.4f kg profile is inside the range this geometry supports. Composition: '
+                        'weighing every owned voxel at a sourced tissue density and filling the void '
+                        'with anything between adipose and interstitial fluid gives %.1f to %.1f kg, '
+                        'BMI %.1f to %.1f, and the profile sits at %.4f kg and BMI %.1f inside both. '
+                        'The residual disagreement is no longer the mass: at the declared %.0f%% fat '
+                        'the Siri relation wants %.2f L against a %.2f L measured envelope, %.2f L '
+                        'apart, and forcing %.4f kg into %.2f L implies %.1f%% fat. That envelope is '
+                        'the raw one, still holding residual lung and gut gas that two-compartment '
+                        'densitometry excludes, so this route bounds the declared body_fat_fraction, '
+                        'not the mass. body_fat_fraction remains an unreconciled BioGears prior.'
+                        if fills['all_adipose']['implied_total_mass_kg'] <= target
+                           <= fills['all_interstitial']['implied_total_mass_kg'] else
+                        'NO. The %.4f kg profile and this geometry cannot both stand without inventing '
+                        'volume. Composition: weighing every owned voxel at a sourced tissue density '
+                        'and filling the void with anything between adipose and interstitial fluid '
+                        'gives %.1f to %.1f kg, BMI %.1f to %.1f, and the profile is %.4f kg at BMI '
+                        '%.1f, outside it. Densitometry: at the declared %.0f%% fat the profile mass '
+                        'needs %.2f L against a %.2f L envelope, short by %.2f L, and forcing %.4f kg '
+                        'into %.2f L needs %.1f%% body fat by the Siri relation.')
+                       % (target,
                           fills['all_adipose']['implied_total_mass_kg'],
                           fills['all_interstitial']['implied_total_mass_kg'],
                           fills['all_adipose']['implied_total_mass_kg'] / profile['height_m'] ** 2,
                           fills['all_interstitial']['implied_total_mass_kg'] / profile['height_m'] ** 2,
-                          bmi_profile)},
+                          target, bmi_profile, fat * 100, siri_volume * 1000, env_m3 * 1000,
+                          (siri_volume - env_m3) * 1000, target, env_m3 * 1000,
+                          495. / (target / env_m3 / 1000.) - 450.)},
     }
 
 
@@ -1125,6 +1156,7 @@ def conflicts(mech):
     lung_m = sum(e['mass_kg'] for e in mech['entities'] if 'lung' in e['name'].lower())
     bone_v = sum(e['material_volume_m3'] for e in mech['entities'] if e['role'] == 'rigid_bone')
     bone_m = sum(e['mass_kg'] for e in mech['entities'] if e['role'] == 'rigid_bone')
+    bone_n = sum(1 for e in mech['entities'] if e['role'] == 'rigid_bone')
 
     def ratio(a, b):
         return None if not a or not b else max(a / b, b / a)
@@ -1170,9 +1202,9 @@ def conflicts(mech):
         'too stiff in confined compression')
     add('rigid_bone.young_modulus', None, 1.70e10, 'Pa', 'reilly1975',
         'the canonical rigid_bone entities carry NO elastic constant of any kind: no Young modulus, no '
-        'Poisson ratio, no shear modulus, no Lame parameter. 257 entities and 5.585 L. For a soft-body '
+        'Poisson ratio, no shear modulus, no Lame parameter. %d entities and %.3f L. For a soft-body '
         'materialization in which bone is a very stiff inclusion rather than a rigid body, this is the '
-        'single largest hole in the table')
+        'single largest hole in the table' % (bone_n, bone_v * 1000.))
     add('rigid_bone.density_effective', bone_m / bone_v, 1300., 'kg/m3', 'icrp89',
         'the canonical nominal is 1900 with prior range 1500-2200, and the uniform scale pushes the '
         'effective density to %.0f, outside its own declared prior. 2272 exceeds fresh marrow-free bone '
@@ -1341,10 +1373,16 @@ def self_test():
     doc = build()
     a, c, l, t = doc['audit'], doc['conflicts'], doc['mass_ledger'], doc['tier_census']
 
-    # audit reproduces the shipped totals exactly
-    assert abs(a['totals']['mass_kg'] - 77.1107029) < 1e-6, a['totals']
+    # audit reproduces the shipped totals exactly. The mass constraint is read
+    # from the canonical profile rather than restated here: it is 70.7713 kg
+    # composed over this specimen's own measured interior, which superseded the
+    # inherited 77.1107029 kg BioGears constant. The bone count is 233, not the
+    # 257 this asserted before, because 23 intervertebral discs left rigid_bone
+    # for cartilage and one duplicate-authored hyoid row was collapsed away.
+    declared = json.loads((ROOT / 'data/derived/canonical/profile.json').read_text())['mass_kg']
+    assert abs(a['totals']['mass_kg'] - declared) < 1e-6, (a['totals'], declared)
     assert a['roles']['rigid_bone']['fields']['young_modulus']['distinct_values'] == []
-    assert a['roles']['rigid_bone']['fields']['young_modulus']['entities_without_field'] == 257
+    assert a['roles']['rigid_bone']['fields']['young_modulus']['entities_without_field'] == 233
     assert set(a['roles']['cartilage']['fields']['poisson_ratio']['distinct_values']) == {0.45}
     assert a['young_modulus_basis_share']['absent']['volume_fraction'] > 0.09
     assert len(a['distinct_literature_sources_cited']) == 4
@@ -1389,12 +1427,26 @@ def self_test():
     assert abs(sum(r['candidate_mass_kg'] for r in g['rows']) - g['candidate_mass_kg']) < 1e-9
     assert abs(sum(r['owned_volume_m3'] for r in g['rows']) - g['total_owned_volume_m3']) < 1e-12
     assert abs(g['canonical_mass_kg'] - 49.468) < 0.01, g['canonical_mass_kg']
+    # The mass ledger now closes. It did not before: at the inherited 77.1107029
+    # kg the void had to weigh 1185.8 kg/m3, denser than every ICRU-44 soft
+    # tissue, and the Siri relation mapped that to a negative fat fraction. At
+    # the composed 70.7713 kg the required fill is between adipose and
+    # interstitial fluid and the profile sits inside the supported range.
     f = l['fill']
-    assert f['density_required_to_reach_profile_kg_m3'] > 1100., f
+    assert FILL_ADIPOSE < f['density_required_to_reach_profile_kg_m3'] < 1060., f
+    assert f['required_fill_is_physical'], f
     lo, hi = l['reconciliation']['geometry_supported_mass_range_kg']
     assert 68. < lo < hi < 73., (lo, hi)
-    assert l['reconciliation']['siri_fat_at_that_density_percent'] < 0., l['reconciliation']
-    assert l['skin_slab_defect']['area_ratio'] > 1.9, l['skin_slab_defect']
+    assert lo <= l['reconciliation']['profile_mass_kg'] <= hi, l['reconciliation']
+    assert l['reconciliation']['mass_within_geometry_supported_range'], l['reconciliation']
+    # The declared body_fat_fraction is still not reconciled with the raw
+    # envelope, which retains the lung and gut gas densitometry excludes.
+    assert l['reconciliation']['siri_fat_at_that_density_percent'] > 30., l['reconciliation']
+    # The two-sided slab defect is retired: the layers now extrude from the
+    # exterior component, which agrees with the watertight envelope to 0.045%.
+    assert abs(l['skin_slab_defect']['area_ratio'] - 1.) < .001, l['skin_slab_defect']
+    assert l['skin_slab_defect']['defect_retired'], l['skin_slab_defect']
+    assert abs(l['skin_slab_defect']['phantom_volume_m3']) < 1e-5, l['skin_slab_defect']
     assert abs(l['skin_slab_defect']['layer_thickness_m'] - 0.0066) < 1e-6
 
     # conflicts: the four indefensible cells are all present and flagged

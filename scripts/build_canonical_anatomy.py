@@ -12,9 +12,39 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT/'scripts'))
 from ihm.assembly.skin_layers import physical_skin_support
-from ihm.assembly.anatomy import (FRAME, MODEL_ID, ROTATION, LandmarkRegistration,
-    mesh_properties, normalized_name, physical_role, read_geometry, sha256, verify_assembly, write_json)
+from ihm.assembly.anatomy import (BP_SOURCE_SURFACE_COUNT, FRAME, MODEL_ID, ROTATION, LandmarkRegistration,
+    attach_regional_support, duplicate_surface_survivors, mesh_properties, name_key, normalized_name,
+    read_geometry, refine_role, sha256, surface_identity_key, verify_assembly, write_json)
 OUT = ROOT/'data/derived/canonical'
+PROMOTION = ROOT/'data/derived/display-promotion-candidate-v1'
+
+
+def promotion_ledger():
+    """The display structures the promotion lane resolved as genuinely absent anatomy.
+
+    The lane's alias resolution has two halves. The geometric half -- surface
+    agreement under the recorded thresholds -- needs libigl and a full pairwise
+    sweep, so it is read here as a hashed measurement, exactly as the acquired
+    source index is. The lexical half is re-derived below on every build against
+    the entity set that actually exists, so a stale ledger cannot slip a
+    structure in that the current canonical model already carries by name.
+    """
+    manifest = json.loads((PROMOTION/'manifest.json').read_text())
+    ledger = PROMOTION/'decisions.jsonl'
+    digest = sha256(ledger)
+    if digest != manifest['artifacts_sha256']['decisions.jsonl']:
+        raise ValueError('Display promotion decision ledger does not match its manifest digest')
+    rows = [json.loads(line) for line in ledger.read_text().splitlines() if line.strip()]
+    promoted = [r for r in rows if r['decision'] == 'promote']
+    if any(r['display_model'] != 'z-anatomy' for r in promoted):
+        raise ValueError('Only Z-Anatomy authored surfaces are promotable through this path')
+    return {'path': str(PROMOTION.relative_to(ROOT)),
+            'manifest_sha256': sha256(PROMOTION/'manifest.json'),
+            'decisions_sha256': digest,
+            'thresholds': manifest['thresholds'],
+            'decision_counts': {k: sum(r['decision'] == k for r in rows)
+                                for k in sorted({r['decision'] for r in rows})},
+            'ids': {r['display_id'] for r in promoted}}
 
 
 def file_record(path):
@@ -31,8 +61,9 @@ def uncertainty(kind, registration=None):
 
 
 def entity_from_geometry(identity, source_id, name, system, path, vertices, faces, evidence_kind, provenance, assumptions):
+    role, refinement = refine_role(name, system)
     return {'id': identity, 'model_id': MODEL_ID, 'source_id': source_id, 'name': name,
-            'system': system, 'role': physical_role(name, system), 'evidence_kind': evidence_kind,
+            'system': system, 'role': role, 'role_refinement_note': refinement, 'evidence_kind': evidence_kind,
             'reference_geometry': {**file_record(path), 'frame': FRAME, 'units': 'm', 'representation': 'triangular_surface'},
             **mesh_properties(vertices, faces), 'provenance': provenance, 'assumptions': assumptions,
             'uncertainty': uncertainty(evidence_kind, 'z_anatomy' if evidence_kind == 'registered_geometry' else None),
@@ -134,7 +165,7 @@ def build():
     manifest = json.loads((ROOT/'data/derived/app/manifest.json').read_text())
     bp_model = next(x for x in manifest['models'] if x['id'] == 'bodyparts3d')
     bp_structures = [x for x in manifest['structures'] if x['model_id'] == 'bodyparts3d']
-    if len(bp_structures) != 2234:
+    if len(bp_structures) != BP_SOURCE_SURFACE_COUNT:
         raise ValueError('Canonical build requires the complete 2,234-mesh BP scaffold')
     bp_index = {x['element_id']: x for x in json.loads((ROOT/'data/derived/anatomy/bodyparts3d_index.json').read_text())['meshes']}
     from build_extended_anatomy import validate_provenance, validate_cached_sources
@@ -144,6 +175,7 @@ def build():
     za_structures = {x['id']: x for x in za_fragment['structures']}
     entities, structures = [], []
     bp_by_name = {}
+    surface_keys = {}
     for s in bp_structures:
         identity = 'body-' + s['id']
         source_path = ROOT/'data/derived/app/geometry'/f'{s["id"]}.json.gz'
@@ -171,6 +203,7 @@ def build():
         e['concepts'] = s.get('concepts', [])
         e['classification'] = s.get('classification', {})
         entities.append(e)
+        surface_keys[identity] = surface_identity_key(vertices, faces)
         bp_by_name.setdefault(normalized_name(s['name']), e)
         display = copy.deepcopy(s)
         display.update(id=identity, model_id=MODEL_ID, geometry_url='/api/geometry/'+identity,
@@ -179,7 +212,31 @@ def build():
                        uncertainty=e['uncertainty'], assumptions=e['assumptions'])
         structures.append(display)
         if len(entities) % 500 == 0:
-            print(f'Canonical scaffold: {len(entities)}/2234', flush=True)
+            print(f'Canonical scaffold: {len(entities)}/{BP_SOURCE_SURFACE_COUNT}', flush=True)
+
+    # A handful of BP surfaces are authored twice under two element ids. Two rows
+    # for one physical structure double-count its volume, its mass and every
+    # link anchored on it, and let a support span a structure to itself. The
+    # dropped ids stay on disk as the provenance of the collapse; only the
+    # duplicate entity row and its display structure leave the assembly.
+    by_id = {e['id']: e for e in entities}
+    survivors = duplicate_surface_survivors(surface_keys)
+    collapse = {'rule': 'decoded reference surfaces identical vertex for vertex and facet for facet; survivor is the lexicographically earlier canonical id',
+                'evidence': 'raw decoded array hash plus order-independent facet-set hash; the stored .json.gz differ on gzip framing alone',
+                'geometry_retained': True,
+                'dropped': [{'id': identity, 'survivor': keep, 'name': by_id[identity]['name'],
+                             'source_id': by_id[identity]['source_id'],
+                             'dropped_geometry_path': by_id[identity]['reference_geometry']['path'],
+                             'survivor_geometry_path': by_id[keep]['reference_geometry']['path'],
+                             'surface_identity_key': surface_keys[identity]}
+                            for identity, keep in sorted(survivors.items())]}
+    if survivors:
+        entities = [e for e in entities if e['id'] not in survivors]
+        structures = [x for x in structures if x['id'] not in survivors]
+        for key, e in list(bp_by_name.items()):
+            if e['id'] in survivors:
+                bp_by_name[key] = by_id[survivors[e['id']]]
+        print(f'Collapsed {len(survivors)} duplicate-authored surfaces', flush=True)
 
     source, target, anchors = [], [], []
     for z in za_index['meshes']:
@@ -208,13 +265,9 @@ def build():
                       source_index=file_record(ROOT/'data/derived/anatomy/extended/source_index.json'))
     exclusions, jacobians = [], []
     missing_essential_organs = {'za-b0e9cdd77cc7f9fe', 'za-2de3d6737090b6f5', 'za-984141fb35e90177', 'za-915a592641ffe9b0', 'za-0667ce7832fc9367', 'za-05ffc920dd6517bb'}
-    for z in za_index['meshes']:
-        if z['id'] not in missing_essential_organs and z['system'] != 'lymphatic' and 'parathyroid' not in z['name'].lower():
-            continue
-        name = normalized_name(z['name'])
-        if name in bp_by_name:
-            exclusions.append({'source_id': z['id'], 'canonical_id': bp_by_name[name]['id'], 'reason': 'existing canonical organ; do not duplicate'})
-            continue
+    promotion = promotion_ledger()
+
+    def import_registered(z, assumptions):
         path_source = ROOT/z['source_geometry_path']
         if sha256(path_source) != z['source_geometry_sha256']:
             raise ValueError('Z source geometry checksum mismatch: '+z['id'])
@@ -224,6 +277,7 @@ def build():
         transformed = registration.transform(vertices)
         jacobians.extend(registration.jacobian_determinants(vertices).tolist())
         identity = 'body-' + z['id']
+        name = normalized_name(z['name'])
         path = OUT/'geometry'/f'{identity}.json.gz'
         write_json(path, {'positions': transformed.ravel().tolist(), 'indices': faces.ravel().tolist(), 'units': 'm',
                          'frame': FRAME, 'registration_id': 'z_anatomy', 'source_geometry_sha256': z['source_geometry_sha256']})
@@ -231,7 +285,7 @@ def build():
             {'source_ids': [z['id']], 'files': [file_record(path_source)],
              'source': copy.deepcopy(za_structures[z['id']]['source']), 'registration_id': 'z_anatomy',
              'dependency_group': 'bodyparts3d-derived-reference', 'license': 'CC-BY-SA-4.0'},
-            ['CANONICAL-GENERIC-REFERENCE', 'Z-LANDMARK-REGISTRATION'])
+            list(assumptions))
         entities.append(e)
         s = copy.deepcopy(za_structures[z['id']])
         s.update(id=identity, name=name, model_id=MODEL_ID, geometry_url='/api/geometry/'+identity,
@@ -240,6 +294,45 @@ def build():
                  calibration_status='registered generic anatomy; not independently measured',
                  uncertainty=e['uncertainty'], assumptions=e['assumptions'], display_geometry={'resolution': 'full-source registered', 'source_vertices': len(vertices), 'source_faces': len(faces), 'surface_only': True})
         structures.append(s)
+        return e
+
+    for z in za_index['meshes']:
+        if z['id'] not in missing_essential_organs and z['system'] != 'lymphatic' and 'parathyroid' not in z['name'].lower():
+            continue
+        name = normalized_name(z['name'])
+        if name in bp_by_name:
+            exclusions.append({'source_id': z['id'], 'canonical_id': bp_by_name[name]['id'], 'reason': 'existing canonical organ; do not duplicate'})
+            continue
+        import_registered(z, ('CANONICAL-GENERIC-REFERENCE', 'Z-LANDMARK-REGISTRATION'))
+
+    # Every remaining Z-Anatomy surface the promotion lane resolved as absent
+    # from this body by id, by name and by geometry. The lexical half of that
+    # resolution is re-derived here against the entity set as it actually
+    # stands, including the three shell layers and the lymphatic network that
+    # are appended below, so a name the model already carries can never be
+    # promoted a second time.
+    pending_names = {'epidermis', 'dermis', 'hypodermis', 'lymphatic network'}
+    existing_names = {e['name'].lower() for e in entities} | pending_names
+    existing_keys = {name_key(e['name']) for e in entities} | {name_key(n) for n in pending_names}
+    promoted_records = []
+    for z in za_index['meshes']:
+        if z['id'] not in promotion['ids']:
+            continue
+        name = normalized_name(z['name'])
+        if 'body-'+z['id'] in {e['id'] for e in entities}:
+            raise ValueError('Promoted id already canonical: '+z['id'])
+        if name in existing_names or name_key(z['name']) in existing_keys:
+            raise ValueError('Promoted structure restates a canonical name: %s (%s)' % (z['id'], name))
+        e = import_registered(z, ('CANONICAL-GENERIC-REFERENCE', 'Z-LANDMARK-REGISTRATION', 'DISPLAY-STRUCTURE-PROMOTION'))
+        existing_names.add(name)
+        existing_keys.add(name_key(z['name']))
+        promoted_records.append({'source_id': z['id'], 'canonical_id': e['id'], 'name': name,
+                                 'system': e['system'], 'role': e['role']})
+    if len(promoted_records) != len(promotion['ids']):
+        missing = sorted(promotion['ids'] - {r['source_id'] for r in promoted_records})
+        raise ValueError('Promoted ids absent from the acquired source index: %r' % missing[:10])
+    promotion['promoted'] = promoted_records
+    promotion['ids'] = sorted(promotion['ids'])
     reg_report['jacobian_determinant_min_at_vertices'] = float(min(jacobians))
     reg_report['jacobian_determinant_max_at_vertices'] = float(max(jacobians))
     reg_report['jacobian_vertex_samples'] = len(jacobians)
@@ -275,17 +368,7 @@ def build():
     skin['mechanical_representation'] = 'boundary support for three shell layers; avoid double-counting parent mass'
     # A support relation establishes a spatial substrate without claiming a
     # histological attachment or a physiological flow connection.
-    bones = [e for e in entities if e['role'] == 'rigid_bone']
-    centers = np.array([e['centroid_m'] for e in bones])
-    for e in entities:
-        if e['role'] == 'skin_layer':
-            continue
-        distance = np.linalg.norm(centers - np.array(e['centroid_m']), axis=1)
-        if e['role'] == 'rigid_bone':
-            distance[[i for i, b in enumerate(bones) if b['id'] == e['id']]] = np.inf
-        index = int(np.argmin(distance))
-        e['connections'].append({'entity_id': bones[index]['id'], 'relation': 'regional_spatial_support',
-            'distance_m': float(distance[index]), 'evidence': 'inferred nearest bone bounding-box center; not an attachment or contact constraint'})
+    attach_regional_support(entities)
     graph_entity, graph_structure, graph_registration = register_lymphatic_graph(bp_by_name, entities)
     entities.append(graph_entity)
     structures.append(graph_structure)
@@ -294,12 +377,17 @@ def build():
         {'id': 'CANONICAL-GENERIC-REFERENCE', 'kind': 'reference selection', 'statement': 'The adult male BP atlas defines one generic body and its size. Dependent derivative sources add missing structures without adding independent subjects.'},
         {'id': 'Z-LANDMARK-REGISTRATION', 'kind': 'inferred geometry', 'statement': 'Shared named bone bounding-box centers constrain affine plus smooth residual deformation. Between anchors, smoothness is a model assumption; registration does not establish measured tissue boundaries.', 'smoothing_prior': .002, 'held_out_rms_m': reg_report['held_out_rms_m']},
         {'id': 'SKIN-LAYER-PRIOR', 'kind': 'constitutive geometry prior', 'statement': 'Epidermis/dermis/hypodermis shell quadrature uses a reviewed exterior component of the acquired skin asset and nonoverlapping inward depth intervals. Inner/seam components remain in source geometry but do not duplicate layer volume; exterior exclusivity and self-intersections remain unvalidated. Uniform thickness and ranges are explicit engineering assumptions; no patient measurement or regional thickness field is asserted.', 'values': [{'layer': n, 'thickness_m': t, 'prior_range_m': r} for n,t,r in layers]},
-        {'id': 'REGIONAL-SUPPORT', 'kind': 'spatial relation prior', 'statement': 'Nearest-bone relations provide a regional indexing substrate. They are not insertion sites, contacts, joints, or physiological exchange pathways.'}]
+        {'id': 'REGIONAL-SUPPORT', 'kind': 'spatial relation prior', 'statement': 'Nearest-bone relations provide a regional indexing substrate. They are not insertion sites, contacts, joints, or physiological exchange pathways.'},
+        {'id': 'DUPLICATE-ENTITY-COLLAPSE', 'kind': 'source record repair', 'statement': 'Source surfaces authored twice under two element ids are one physical structure and are collapsed to one entity. Identity is decoded-array equality plus an order-independent facet-set hash, not the stored gzip digest, which differs on framing alone. Nothing anatomical separates the two rows, so the surviving id is the lexicographically earlier one; that is a recorded choice, not evidence. Both geometry files remain on disk as the provenance of the collapse.', 'dropped': [d['id'] for d in collapse['dropped']], 'survivors': sorted({d['survivor'] for d in collapse['dropped']})},
+        {'id': 'DISPLAY-STRUCTURE-PROMOTION', 'kind': 'source selection', 'statement': 'Z-Anatomy authored surfaces that this body does not already carry are part of the model, not display decoration. A surface is promoted only when it is absent by canonical id, absent by normalized name and by side-preserving name token multiset, and absent by geometry under the recorded alias thresholds; the lexical tests are re-derived on every build and a restated name aborts it. Promoted surfaces are registered by the same affine plus thin-plate-spline fit as every other Z addition and add no independent measured subject. Open shells are promoted with volume null rather than closed, and topographic body-wall regions are roled surface_region so their enclosed volume is not counted as tissue.', 'thresholds': promotion['thresholds'], 'evidence': {'path': promotion['path'], 'manifest_sha256': promotion['manifest_sha256'], 'decisions_sha256': promotion['decisions_sha256'], 'decision_counts': promotion['decision_counts']}, 'promoted': len(promotion['promoted'])},
+        {'id': 'DISC-ROLE-FROM-FMA', 'kind': 'role classification', 'statement': 'Intervertebral disc role follows the record\'s own FMA is-a anchor FMA55107, a cartilage organ, so a disc is compliant rather than a rigid bone. The role vocabulary has no fibrocartilage entry, so cartilage is nearest, not exact, and the disc keeps system skeletal alongside every other cartilage in the atlas. Disc geometry, volume and bounds are unchanged; only the role metadata was wrong. BodyParts3D spells it "disk", which is why the pre-existing "intervertebral disc" rule never fired.'}]
     assembly = {'schema_version': 1, 'model_id': MODEL_ID, 'name': 'IHM · canonical generic human',
         'frame': {'id': FRAME, 'units': 'm', 'axes': {'x': 'left', 'y': 'superior', 'z': 'anterior'},
                   'origin': 'center of acquired BP full-body axis-aligned bounds', 'source_transform': bp_model['display_transform']},
         'entities': entities, 'registrations': {'z_anatomy': reg_report, 'lymphatic_pose': graph_registration}, 'assumption_ledger': assumptions,
-        'counts': {'entities': len(entities), 'systems': dict(Counter(e['system'] for e in entities)), 'roles': dict(Counter(e['role'] for e in entities)), 'evidence_kinds': dict(Counter(e['evidence_kind'] for e in entities))},
+        'duplicate_surface_collapse': collapse,
+        'display_structure_promotion': promotion,
+        'counts': {'entities': len(entities), 'bp_source_surface_count': BP_SOURCE_SURFACE_COUNT, 'collapsed_duplicate_surfaces': len(collapse['dropped']), 'promoted_display_structures': len(promotion['promoted']), 'systems': dict(Counter(e['system'] for e in entities)), 'roles': dict(Counter(e['role'] for e in entities)), 'evidence_kinds': dict(Counter(e['evidence_kind'] for e in entities))},
         'limits': ['Reference surface assembly, not a validated volumetric anatomical mesh.', 'Source meshes may contain overlaps, open surfaces and interfaces; support relations do not certify contact.', 'Bone landmarks and derivative atlases are not independent subject measurements.', 'Lymph node groups preserve authored group meshes; their number is not an individual lymph-node count.', 'Anatomical support connections alone do not establish physiological causality.']}
     write_json(OUT/'anatomy.json', assembly)
     model = copy.deepcopy(bp_model)

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Numerical constitutive and canonical assembly checks (no empirical claims)."""
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -105,7 +106,16 @@ def main():
         assert max(np.linalg.norm(e['translation_m']) for e in sustained['entities'].values())<.5
         assert sustained['audit']['internal_force_residual_n']<1e-7
     assert np.linalg.norm((stable.mass[:,None]*stable.v).sum(axis=0))<1e-6
-    assert abs(sum(e['mass_kg'] for e in payload['entities'])-77.1107029)<1e-8
+    # The mass constraint is the canonical profile's, not a literal restated
+    # here: 70.7713 kg composed over this specimen's own measured interior,
+    # superseding the inherited 77.1107029 kg BioGears constant. Reading it from
+    # profile.json rather than from the mechanics ledger keeps this a real gate
+    # on the normalizer, and the digest check keeps the two from drifting apart.
+    profile=json.loads((BASE/'data/derived/canonical/profile.json').read_text())
+    declared=float(profile['mass_kg'])
+    assert payload['mass_allocation']['target_mass_kg']==declared
+    assert payload['mass_allocation']['target_mass_source']['sha256']==hashlib.sha256((BASE/'data/derived/canonical/profile.json').read_bytes()).hexdigest()
+    assert abs(sum(e['mass_kg'] for e in payload['entities'])-declared)<1e-8
     report={'status':'pass','entities':len(ids),'muscles':len(payload['muscles']),'native_muscles':80,'links':len(payload['links']),'time_refinement_displacement_difference_m':float(np.linalg.norm(end[1]-end[2])),'sustained_activation_duration_s':1.,'transactional_invalid_inputs':True,'constitutive_gradient_objectivity':True,'source_parameter_fidelity_80':True,'whole_graph_connected':True,'empirical_validation':False}
     (BASE/'data/derived/canonical/mechanics_verification.json').write_text(json.dumps(report,indent=2)+'\n')
     print(json.dumps(report))
