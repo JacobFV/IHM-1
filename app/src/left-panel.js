@@ -64,6 +64,21 @@ function saveOpacity() {
 }
 export const layerOpacity = (name) =>
   savedOpacity.has(name) ? savedOpacity.get(name) : (DEFAULT_OPACITY[name] ?? 1);
+// Which materialization the reader last chose, kept the same way the opacity
+// values are. What the stored value means is not decided here: the caller
+// checks it against the materializations the server currently publishes.
+const MATERIALIZATION_STORE = "ihm.materialization.v1";
+export function readMaterialization() {
+  try {
+    const saved = localStorage.getItem(MATERIALIZATION_STORE);
+    return typeof saved === "string" && saved ? saved : null;
+  } catch {
+    return null;
+  }
+}
+export function writeMaterialization(value) {
+  try { localStorage.setItem(MATERIALIZATION_STORE, value); } catch {}
+}
 function section(id, title, ...children) {
   const node = el("section", "column-section");
   node.dataset.section = id;

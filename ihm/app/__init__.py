@@ -184,6 +184,9 @@ def create_server(root=None,port=8765,host='127.0.0.1'):
                     return self._send(CanonicalBody.from_workspace(root).describe())
                 if path=='/api/body/coverage':
                     return self._send(read_json(derived/'audits/execution-coverage.json'))
+                if path=='/api/body/materializations':
+                    from ihm.app.materializations import materialization_tiers
+                    return self._send(materialization_tiers(root,self.server.manifest()[0]))
                 if path.startswith('/api/body/experiments/'):
                     from ihm.app.experiments import read_experiment
                     return self._send(read_experiment(root,path.removeprefix('/api/body/experiments/')))

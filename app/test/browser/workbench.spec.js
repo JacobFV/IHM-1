@@ -559,3 +559,69 @@ test("the Layers section picks a tissue colour palette, and palette and skin ton
   await expect(page.locator("#skin-tone-choice")).toHaveValue("ita_dark");
   expect(errors).toEqual([]);
 });
+
+test("the Materialization list offers fidelity tiers and keeps the complete body reachable", async ({ page, request }) => {
+  // Two whole materializations are drawn here, both on the software rasteriser.
+  test.setTimeout(420000);
+  const errors = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  // The tiers, their membership and their measured cost are the server's,
+  // derived from the manifest and the colocation audits. This test states none
+  // of those numbers; it checks that what is published is what is offered and
+  // what is drawn.
+  const index = await (await request.get("/api/body/materializations")).json();
+  expect(index.tiers.length).toBeGreaterThanOrEqual(3);
+  const opening = index.tiers.find((t) => t.value === index.default);
+  const complete = index.tiers.at(-1);
+  expect(opening).toBeTruthy();
+  expect(complete.omits).toEqual([]);
+  expect(complete.structures).toBeGreaterThan(opening.structures);
+
+  let fetched = 0;
+  page.on("request", (r) => { if (r.url().includes("/api/geometry/")) fetched++; });
+  await page.goto("/");
+  await page.locator("#materialization option[value^='conforming-domain-']").first().waitFor({ state: "attached" });
+  const labels = await page.locator("#materialization option").evaluateAll((n) => n.map((o) => o.textContent));
+  // Every published tier is offered, ahead of the conforming domains, and each
+  // says how much of the implicit model it draws.
+  for (const [i, tier] of index.tiers.entries())
+    expect(labels[i].replace(/,/g, ""), `the ${tier.value} option does not say how much it draws`)
+      .toContain(String(tier.structures));
+  expect(labels.length, "the conforming domains are offered alongside the tiers").toBeGreaterThan(index.tiers.length);
+  // The complete body is still on the menu, and it is offered at its measured
+  // price rather than behind a vague warning.
+  expect(labels[index.tiers.length - 1], "the complete body carries no measured price")
+    .toMatch(/~\d+ s to load, ~\d+ MB/);
+
+  await expect(page.locator("#materialization")).toHaveValue(index.default);
+  await expect(page.locator("[data-section='materialization'] .note")).toContainText(opening.note);
+  await expect(page.locator("#scene-status")).toHaveText("", { timeout: 240000 });
+  const openingFetches = fetched;
+  expect(openingFetches).toBeGreaterThan(0);
+
+  // Choosing the complete model draws what the opening tier left out, and does
+  // it where the page stands: nothing here reloads it.
+  await page.evaluate(() => { window.__thisPageWasNotReloaded = true; });
+  await page.locator("#materialization").selectOption(complete.value);
+  await expect(page.locator("[data-section='materialization'] .note")).toContainText(complete.note);
+  await expect(page.locator("#scene-status")).toHaveText("", { timeout: 240000 });
+  expect(fetched - openingFetches, "the complete model drew nothing the opening tier had not")
+    .toBeGreaterThan(0);
+  expect(await page.evaluate(() => window.__thisPageWasNotReloaded === true)).toBe(true);
+
+  // Back to the smaller tier and forward again: the scene already holds those
+  // surfaces, so nothing is fetched a second time.
+  const held = fetched;
+  await page.locator("#materialization").selectOption(index.default);
+  await expect(page.locator("[data-section='materialization'] .note")).toContainText(opening.note);
+  await expect(page.locator("#scene-status")).toHaveText("", { timeout: 120000 });
+  await page.locator("#materialization").selectOption(complete.value);
+  await expect(page.locator("[data-section='materialization'] .note")).toContainText(complete.note);
+  await expect(page.locator("#scene-status")).toHaveText("", { timeout: 120000 });
+  expect(fetched - held, "switching tiers refetched geometry the scene already held").toBe(0);
+
+  // The choice survives a reload, the way the opacity and palette choices do.
+  await page.reload();
+  await expect(page.locator("#materialization")).toHaveValue(complete.value, { timeout: 120000 });
+  expect(errors).toEqual([]);
+});

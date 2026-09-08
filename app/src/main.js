@@ -12,7 +12,7 @@ import { attachElasticHair, updateElasticHair } from "./hair-view.js";
 import { WardrobeView } from "./clothing.js";
 import { DomainView, ROLE_LABELS } from "./domains.js";
 import { mountSceneInteraction } from "./scene-interaction.js";
-import { mountLeftColumn } from "./left-panel.js";
+import { mountLeftColumn, readMaterialization, writeMaterialization } from "./left-panel.js";
 import { labToHex, resolvePalette } from "./palette.js";
 import { mountPanes } from "./panes.js";
 import { mountProvenance } from "./provenance.js";
@@ -168,6 +168,11 @@ let manifest = null, structures = [];
 let objects = new Map(), generation = 0, loadController;
 let selected = null, clothingView = null, clothingRequest = 0, clothingCatalog = null;
 let domainView = null, domainRequest = 0, materialization = "body";
+// The implicit model keeps every structure; a materialization draws a subset
+// of it. Which subset, what it is called and what it costs are all the
+// server's, derived from the manifest and the colocation audits. Nothing
+// here knows a structure count or an identifier.
+let fidelityIndex = null, fidelityOmits = new Set(), conformingDomains = [];
 let bodyTrajectory = null, bodyError = "Body trajectory unavailable";
 let liveFrame = null, sceneInteraction = null;
 let playing = false, speed = 1, lastTick = 0, lastRender = 0, lastLiveVisual = 0;
@@ -286,10 +291,10 @@ function syncRun() {
 // -------------------------------------------------------------- rendering --
 function visibleRows() {
   return filterStructures(structures, MODEL_ID, left.systems, "")
-    .filter((s) => !left.hidden.has(s.id));
+    .filter((s) => !left.hidden.has(s.id) && !fidelityOmits.has(s.id));
 }
 function refresh() {
-  if (!manifest || materialization !== "body") return;
+  if (!manifest || !wholeBody()) return;
   loadVisible(visibleRows());
 }
 async function loadVisible(rows) {
@@ -573,7 +578,7 @@ new ResizeObserver(syncInsets).observe(document.documentElement);
 function loadClothing() {
   const request = ++clothingRequest;
   clothingView?.dispose(); clothingView = null;
-  if (materialization !== "body" || !group) return;
+  if (!wholeBody() || !group) return;
   const skin = structures.find((s) => s.id === "body-bp3d-FJ2810");
   if (!skin || request !== clothingRequest) return;
   clothingView = new WardrobeView(group, { fetchGeometry: (url) => api(url) });
@@ -608,6 +613,41 @@ function openingOutfit(catalog) {
 }
 
 // -------------------------------------------------------- materialization --
+// A fidelity tier is a whole-body materialization; a conforming domain is not.
+const fidelityTier = (value = materialization) =>
+  fidelityIndex?.tiers?.find((t) => t.value === value) || null;
+const wholeBody = (value = materialization) => value === "body" || !!fidelityTier(value);
+// What a tier costs, in the numbers it was measured at through this app. A
+// materialization the reader is warned about vaguely is one they cannot judge.
+function fidelityPrice(tier) {
+  const cost = tier?.cost || {};
+  return Number.isFinite(cost.time_to_ready_s) && Number.isFinite(cost.js_heap_mb)
+    ? `~${cost.time_to_ready_s} s to load, ~${cost.js_heap_mb} MB` : "";
+}
+// Every tier is offered, the complete one included, each labelled with the count
+// it draws and with what that cost when it was measured.
+function materializationOptions() {
+  const tiers = fidelityIndex?.tiers?.map((t) => {
+    const price = fidelityPrice(t);
+    return {
+      value: t.value,
+      label: `${t.label} · ${t.structures.toLocaleString()} structures${price ? " · " + price : ""}`,
+    };
+  }) || [{ value: "body", label: "Whole body" }];
+  return [...tiers, ...conformingDomains];
+}
+// Switching tiers is a change of membership, not a reload: what the scene
+// already holds stays loaded and only what the tier newly asks for is fetched.
+function applyFidelity(value) {
+  const tier = fidelityTier(value);
+  fidelityOmits = new Set(tier?.omits || []);
+  // The closed menu truncates, so the tier that is actually in force says here
+  // what it draws and what it cost.
+  const price = fidelityPrice(tier);
+  left.setMaterializationNote(tier
+    ? `${tier.note}${price ? ` Measured here at ${price}.` : ""}`
+    : "The whole assembled body. Conforming tetrahedral domains are listed above.");
+}
 async function chooseMaterialization(value) {
   const request = ++domainRequest;
   materialization = value;
@@ -618,10 +658,11 @@ async function chooseMaterialization(value) {
   syncRun();
   domainView?.close(); domainView = null;
   panes.hide("domain");
-  left.setWholeBody(value === "body");
-  if (value === "body") {
+  left.setWholeBody(wholeBody(value));
+  if (wholeBody(value)) {
     $("scene-status").textContent = "";
-    left.setMaterializationNote("The whole assembled body. Conforming tetrahedral domains are listed above.");
+    applyFidelity(value);
+    if (fidelityTier(value)) writeMaterialization(value);
     refresh(); loadClothing(); setupFrames();
     return;
   }
@@ -863,9 +904,20 @@ async function start() {
     })
     .catch((error) => left.setPaletteApplied({ error: `Palettes unavailable: ${error.message}` }));
   left.setWholeBody(true);
-  left.setMaterializations([{ value: "body", label: "Whole body" }], "body");
-  left.setMaterializationNote("The whole assembled body.");
   resetCamera();
+  // Which structures this materialization draws is settled before the first one
+  // is fetched, so a saved choice opens at its own fidelity rather than loading
+  // one body and then another.
+  try {
+    fidelityIndex = await api("/api/body/materializations");
+    const saved = readMaterialization();
+    materialization = fidelityTier(saved) ? saved : fidelityIndex.default;
+    applyFidelity(materialization);
+    left.setMaterializations(materializationOptions(), materialization);
+  } catch (error) {
+    left.setMaterializations(materializationOptions(), materialization);
+    left.setMaterializationNote("Materialization fidelity unavailable · " + error.message);
+  }
   refresh();
   await loadClothing();
   mountBody();
@@ -904,17 +956,19 @@ async function start() {
       left.setRunNote("Scene catalog unavailable: " + error.message);
     });
   api("/api/body/experiments/conforming-domains").then((index) => {
-    left.setMaterializations(
-      [{ value: "body", label: "Whole body" },
-        ...index.domains.map((d) => ({ value: "conforming-domain-" + d.id, label: d.title }))],
-      materialization);
+    conformingDomains = index.domains.map((d) => ({ value: "conforming-domain-" + d.id, label: d.title }));
+    left.setMaterializations(materializationOptions(), materialization);
   }).catch((error) => left.setMaterializationNote("Conforming domains unavailable: " + error.message));
-  try {
-    const data = await api("/api/body/trajectory?view=display");
-    if (!validBodyTrajectory(data)) throw Error("No valid computed body frames available");
-    bodyTrajectory = data;
-    bodyError = "";
-  } catch (error) { bodyError = error.message; }
-  setupFrames();
+  // The recorded trajectory is tens of megabytes and nothing has asked to play
+  // it yet, so the scene is ready without it. setupFrames already reports an
+  // absent trajectory rather than substituting anything for it.
+  api("/api/body/trajectory?view=display")
+    .then((data) => {
+      if (!validBodyTrajectory(data)) throw Error("No valid computed body frames available");
+      bodyTrajectory = data;
+      bodyError = "";
+    })
+    .catch((error) => { bodyError = error.message; })
+    .finally(setupFrames);
 }
 start();
