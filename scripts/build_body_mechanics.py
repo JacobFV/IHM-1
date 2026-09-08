@@ -10,21 +10,40 @@ import numpy as np
 from scipy.spatial import cKDTree
 BASE=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(BASE))
+from ihm.assembly import tissue_materials
 
 SOURCES={
  'organs':{'url':'https://pubmed.ncbi.nlm.nih.gov/33176223/','finding':'Ex-vivo microindentation: kidney/liver E 0.5–3 kPa, heart spatially 1–30 kPa. Scale/species/measurement transfer is uncertain.'},
  'muscle_tension':{'url':'https://pubmed.ncbi.nlm.nih.gov/11181594/','finding':'In-vivo human soleus/tibialis anterior specific tension study. Generic 0.3 MPa is a synthesis prior, not every-muscle measurement.'},
  'tendon':{'url':'https://pubmed.ncbi.nlm.nih.gov/10562354/','finding':'In-vivo tibialis anterior tendon tangent Young modulus at maximal load 1.2 GPa. Transfer to other tendons is an assumption.'},
- 'opensim':{'url':'https://github.com/opensim-org/opensim-models/tree/master/Models/Rajagopal','finding':'Rajagopal2016 source model muscle force, fiber, slack length and pennation parameters; native corrected wrapping export.'}}
+ 'opensim':{'url':'https://github.com/opensim-org/opensim-models/tree/master/Models/Rajagopal','finding':'Rajagopal2016 source model muscle force, fiber, slack length and pennation parameters; native corrected wrapping export.'},
+ **tissue_materials.SOURCES}
 
 
 def param(value,unit,prior,basis,group,sources=()):
     return {'value':float(value),'unit':unit,'prior_range':prior,'basis':basis,'dependency_group':group,'sources':list(sources),'confidence_percent':None}
 
 
+def tissue_density(e):
+    """Sourced tissue density, with the record that says where it came from.
+
+    Every non-bone entity used to carry 1000 kg/m3 and every bone 1900. Neither
+    is a tissue density; both are replaced by ihm.assembly.tissue_materials,
+    which cites the same publications the candidate material table already
+    carries, and marks each row transferred or assumed.
+    """
+    value,record=tissue_materials.density(e['name'],e['role'])
+    lo,hi=(900.,1400.) if record['tissue_class']!='skeleton_with_marrow' else (1100.,1900.)
+    if record['tissue_class']=='lung':lo,hi=200.,600.
+    out=param(value,'kg/m3',[lo,hi],'source_informed_prior' if record['tier']=='transferred' else 'assumed_prior','mass-allocation',[record['source']])
+    out['tissue_class']=record['tissue_class'];out['tier']=record['tier'];out['note']=record['note']
+    out['measured_on_this_specimen']=False
+    return out
+
+
 def material(e):
     role=e['role'];name=e['name'].lower()
-    if role=='rigid_bone':return {'density':param(1900,'kg/m3',[1500,2200],'assumed_prior','mass-allocation')}
+    if role=='rigid_bone':return {'density':tissue_density(e)}
     young=3000.;ran=[500.,30000.];source=['organs']
     if role=='muscle':young=20000.;ran=[5000.,100000.];source=[]
     elif role in ('tendon','ligament'):young=1.2e9 if role=='tendon' else 1e8;ran=[1e8,1.5e9] if role=='tendon' else [1e7,1e9];source=['tendon']
@@ -43,7 +62,7 @@ def material(e):
          'poisson_ratio':param(nu,'1',[.3,.49],'assumed_prior',group),
          'shear_modulus':param(mu,'Pa',None,'derived_from_E_nu',group,source),
          'lame_lambda':param(lam,'Pa',None,'derived_from_E_nu',group,source),
-         'density':param(1900 if role=='rigid_bone' else 1000,'kg/m3',[1500,2200] if role=='rigid_bone' else [900,1100],'assumed_prior','mass-allocation')}
+         'density':tissue_density(e)}
     if role=='muscle':out['active_specific_tension']=param(300000,'Pa',[100000,600000],'source_informed_prior','muscle-specific-tension',['muscle_tension'])
     return out
 
@@ -78,8 +97,15 @@ def main():
                 signed=abs(float(np.einsum('ij,ij->i',triangles[:,0],np.cross(triangles[:,1],triangles[:,2])).sum()/6))
             volume=signed if 1e-12<signed<float(np.prod(ext)) else float(np.prod(ext)*np.pi/6)
             basis='unclosed-surface signed integral volume prior; open boundaries and orientation are unresolved' if volume==signed else 'ellipsoid bounds volume prior; no usable oriented surface integral'
-        if e['role']=='skin':volume=float(e.get('surface_area_m2',0)*.000001 or volume);basis='1 micrometer numerical carrier for skin boundary; physical layer masses belong to skin-layer entities'
-        elif e['role']=='vascular':volume=float(e.get('surface_area_m2',0)*.0003 or volume);basis='surface area times assumed 0.3 mm wall thickness; lumen excluded'
+        # What the surface encloses is not always what the entity is made of. A
+        # closed surface's signed integral measures its own solid; an OPEN one
+        # does not, and for an anatomical sheet it is the volume of whatever the
+        # sheet wraps. A hollow viscus is one closed surface around wall AND
+        # lumen. Both rules live in ihm.assembly.tissue_materials so the canonical
+        # assembly and every candidate builder reach the same answer.
+        volume,representation=tissue_materials.material_volume(
+            e['name'],e['role'],volume,e.get('surface_area_m2'),bool(e.get('watertight_edge_incidence')))
+        if representation['rule']!='solid':basis=representation['basis']
         # A topographic body-wall region is a named patch of the skin, not a
         # tissue volume of its own; giving it a proxy mass would allocate the
         # same tissue twice and take that mass off every real structure through
@@ -91,7 +117,7 @@ def main():
         inertia=float(mass*np.sum(ext*ext)/18)
         axis=np.asarray(e.get('principal_axis',[0,1,0]));axis=axis/max(np.linalg.norm(axis),1e-12)
         specs.append({'id':e['id'],'name':e['name'],'role':e['role'],'constitutive':'rigid' if e['role']=='rigid_bone' else 'affine_boundary_carrier' if carrier else 'affine_neo_hookean',
-                      'centroid_m':e['centroid_m'],'bounds_m':e['bounds_m'],'volume_m3':volume,'volume_basis':basis,'material':mat,
+                      'centroid_m':e['centroid_m'],'bounds_m':e['bounds_m'],'volume_m3':volume,'volume_basis':basis,'volume_representation':representation,'material':mat,
                       'mass_kg':mass,'mass_role':'numerical_boundary_carrier' if carrier else 'material_partition_proxy','inertia_diagonal_kg_m2':[inertia]*3,'fiber_axis':axis.tolist(),
                       'uncertainty':{'biological':'unquantified generic prior; no empirical calibration','discretization':'one affine solid per surface, rigid isotropic-inertia reduction'},
                       'reference_geometry':e['reference_geometry'],
@@ -221,7 +247,13 @@ def main():
     payload={'schema_version':1,'model_id':'ihm-body','frame':'bodyparts3d-display-m','units':{'length':'m','mass':'kg','time':'s','force':'N','stress':'Pa','energy':'J'},'entities':specs,'links':edges,'muscles':muscles,'native_muscles':native_records,
              'source_files':{str(p.relative_to(BASE)):hashlib.sha256(p.read_bytes()).hexdigest() for p in [anatomy_path,profile_path,BASE/'data/derived/opensim/native_corrected/baseline/mechanics.json',BASE/'data/derived/anatomy/opensim__Rajagopal__Rajagopal2016.json']},'sources':SOURCES,
              'registration':{key:{'scale':g['scale'].tolist(),'translation_m':g['offset'].tolist(),'canonical_bones':[e['id'] for e in g['candidates']],'source_bounds':g['source_bounds'],'target_bounds':g['target_bounds']} for key,g in bodygroups.items()},
-             'mass_allocation':{'target_mass_kg':target_mass,'target_mass_source':{'path':str(profile_path.relative_to(BASE)),'field':'mass_kg','sha256':hashlib.sha256(profile_path.read_bytes()).hexdigest()},'numerical_carrier_mass_kg':carriers*1e-6,'numerical_carrier_count':carriers,'exclusions':'skin parent, lymphatic network structural graph and cardiac cavities carry only 1 milligram numerical inertia each; material volume zero; this inertia is debited from the material mass allocation','unscaled_proxy_mass_kg':total,'uniform_scale':factor,'basis':'generic physiology mass constraint, allocated by estimated tissue volume and density; overlapping atlas representations and bounding-volume approximations are not a measured compartment partition'},
+             'mass_allocation':{'target_mass_kg':target_mass,'target_mass_source':{'path':str(profile_path.relative_to(BASE)),'field':'mass_kg','sha256':hashlib.sha256(profile_path.read_bytes()).hexdigest()},'numerical_carrier_mass_kg':carriers*1e-6,'numerical_carrier_count':carriers,'exclusions':'skin parent, lymphatic network structural graph and cardiac cavities carry only 1 milligram numerical inertia each; material volume zero; this inertia is debited from the material mass allocation','unscaled_proxy_mass_kg':total,'uniform_scale':factor,'basis':'generic physiology mass constraint, allocated by estimated tissue volume and sourced tissue density; overlapping atlas representations and bounding-volume approximations are not a measured compartment partition',
+                                'material_assignment':{'owner':'ihm/assembly/tissue_materials.py',
+                                    'densities':{k:{'value_kg_m3':v[0],'source':v[1],'tier':v[2]} for k,v in tissue_materials.DENSITY.items()},
+                                    'thicknesses':{k:{'value_m':v[0],'tier':v[1],'sweep_m':list(v[2])} for k,v in tissue_materials.THICKNESS.items()},
+                                    'entities_by_volume_rule':{k:sum(e['volume_representation']['rule']==k for e in specs) for k in sorted({e['volume_representation']['rule'] for e in specs})},
+                                    'entities_by_tissue_class':{k:sum((e['material'].get('density') or {}).get('tissue_class')==k for e in specs) for k in sorted(tissue_materials.DENSITY)},
+                                    'statement':'no density here was measured on this specimen; every one is a reference-table row, and every membrane and wall thickness is an assumed prior swept in data/derived/tissue-material-assignment-candidate-v1/assignment.json. An OPEN surface signed integral is not a measurement of the entity: for an anatomical sheet it is the volume of what the sheet wraps, and for a hollow viscus the enclosed volume carries lumen as well as wall.'}},
              'rest_state':'stress-free anatomy, zero activation, no gravity; no native pretension transplanted; unsupported gait/postural predictions',
              'reduction_priors':{'active_force_length_width':param(.45,'normalized fiber length',[.25,.75],'assumed_prior','reduced-muscle-law'),'max_log_shortening':param(.35,'1',[.1,.5],'assumed_prior','reduced-muscle-law'),'passive_fmax_fraction_per_fiber_length':param(.05,'1',[.01,.2],'assumed_prior','reduced-muscle-law')},
              'solver':{'rigid':'rigid translation; reference orientations constrained with audited holding moments; linearly implicit attachment stiffness/damping, 2 ms substeps','soft':'affine compressible neo-Hookean; quasi-static hydrostatic boundary solve and volume-preserving muscle shape','muscle':'registered polyline force gradient; active Gaussian force-length reduction, passive tension-only linear spring; NOT reimplementation of Millard equilibrium','coupling':'equal/opposite forces on every path segment and support, moments about body centers','gravity':'disabled; whole body is in unloaded reference configuration'},

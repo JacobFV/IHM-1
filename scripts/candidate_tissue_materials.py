@@ -1152,6 +1152,17 @@ def conflicts(mech):
     for e in mech['entities']:
         by_role.setdefault(e['role'], e)
     scale = mech['mass_allocation']['uniform_scale']
+    # The canonical densities are READ, not assumed. They used to be a single
+    # 1000 kg/m3 for every soft tissue and 1900 for bone; the tissue-material
+    # assignment replaced both, so hardcoding either here would make this audit
+    # describe a table that no longer exists.
+    def canonical_density(entity):
+        return ((entity.get('material') or {}).get('density') or {}).get('value')
+    soft = [e for e in mech['entities'] if e['role'] not in ('rigid_bone',)
+            and e['mass_role'] != 'numerical_boundary_carrier' and canonical_density(e)]
+    soft_rho = (sum(canonical_density(e) * e['material_volume_m3'] for e in soft)
+                / max(sum(e['material_volume_m3'] for e in soft), 1e-30))
+    lung_rho = canonical_density(ents['inferior lobe of left lung'])
     lung_v = sum(e['material_volume_m3'] for e in mech['entities'] if 'lung' in e['name'].lower())
     lung_m = sum(e['mass_kg'] for e in mech['entities'] if 'lung' in e['name'].lower())
     bone_v = sum(e['material_volume_m3'] for e in mech['entities'] if e['role'] == 'rigid_bone')
@@ -1182,9 +1193,13 @@ def conflicts(mech):
         'the candidate is a LARGE-STRAIN tensile modulus of excised parenchyma and the canonical is a '
         'small-strain prior, so the factor is partly a regime difference; but 2 kPa carries no source at '
         'all and lung is not the softest tissue in the body')
-    add('soft_organ.lung.density_effective', 1000. * scale, 384., 'kg/m3', 'kanematsu2015',
-        'the canonical gives lung the same 1000 kg/m3 as every other soft tissue and then scales it to '
-        '1195.8. ICRP 110 reference lung is 384')
+    add('soft_organ.lung.density_effective', lung_rho * scale, 384., 'kg/m3', 'kanematsu2015',
+        'RESOLVED as a nominal conflict. The canonical lung density is now %.0f kg/m3, ICRP 110 '
+        'reference lung, assigned by ihm/assembly/tissue_materials.py; it was 1000, the same value '
+        'every other soft tissue carried. What remains is the uniform normalizer, which multiplies '
+        'every nominal density by %.4f and so puts the EFFECTIVE lung density at %.0f: the mass '
+        'constraint is still met by scaling density rather than by correcting volume'
+        % (lung_rho, scale, lung_rho * scale))
     add('soft_organ.lung.mass', lung_m, ICRP_ADULT_MALE['lung_with_blood_kg'], 'kg', 'icrp89',
         'the five canonical lobes hold %.4f m3 and are assigned %.3f kg. The ICRP reference lung with '
         'blood is 1.2 kg and healthy whole-lung mass by CT at functional residual capacity is '
@@ -1206,18 +1221,24 @@ def conflicts(mech):
         'materialization in which bone is a very stiff inclusion rather than a rigid body, this is the '
         'single largest hole in the table' % (bone_n, bone_v * 1000.))
     add('rigid_bone.density_effective', bone_m / bone_v, 1300., 'kg/m3', 'icrp89',
-        'the canonical nominal is 1900 with prior range 1500-2200, and the uniform scale pushes the '
-        'effective density to %.0f, outside its own declared prior. 2272 exceeds fresh marrow-free bone '
-        '(1900-2000, ICRP 89 para 434) and approaches dry mineralised matrix (2300). The atlas geometry '
-        'is whole bones including the marrow cavity, for which ICRP 89 gives 1300' % (bone_m / bone_v))
+        'RESOLVED as a nominal conflict. The canonical nominal is now 1300, ICRP 89 whole fresh adult '
+        'skeleton, which is the density that matches whole-bone atlas geometry because that geometry '
+        'encloses the marrow cavity; it was 1900, marrow-free cortical bone. The uniform normalizer '
+        'still moves the effective density to %.0f. Volume cross-check: the atlas skeleton is %.3f L, '
+        'so at 1300 it weighs %.2f kg against the ICRP 89 reference 10.5 kg -- a bone VOLUME shortfall '
+        'that this table does not close and does not hide by raising the density back'
+        % (bone_m / bone_v, bone_v * 1000., bone_v * 1300.))
     add('soft_organ.liver.young_modulus', ents['caudate lobe of liver']['material']['young_modulus']['value'],
         6000., 'Pa', 'rouviere2006',
         'candidate is E = 3G from the 2.0 kPa healthy-liver MRE shear modulus. Note also that the atlas '
         'has no whole-liver entity, only a caudate lobe and its duct')
-    add('all_soft_tissue.density_effective', 1000. * scale, 1060., 'kg/m3', 'icru44_nist',
-        'not a 2x conflict, but the canonical effective soft-tissue density of %.1f sits outside its own '
-        'declared prior range of 900-1100 and above every soft tissue in ICRU-44, whose maximum is 1060 '
-        'for whole blood' % (1000. * scale))
+    add('all_soft_tissue.density_effective', soft_rho * scale, 1060., 'kg/m3', 'icru44_nist',
+        'the canonical nominal soft-tissue density is now a per-tissue table averaging %.1f kg/m3 by '
+        'volume, where it was a single 1000. The EFFECTIVE density after the uniform normalizer is '
+        '%.1f. The normalizer now scales mass UP by %.1f%% instead of down, which is the expected '
+        'sign: the entity set does not tile the body, the interstitial complement is not an entity, '
+        'and the mass it should carry is spread over the entities instead'
+        % (soft_rho, soft_rho * scale, 100. * (scale - 1.)))
     add('muscle.young_modulus', by_role['muscle']['material']['young_modulus']['value'], 11730., 'Pa',
         'chakouch2015', 'NOT a conflict: the canonical 20 kPa assumed prior is within 1.7x of E = 3G from '
         'in-vivo MRE. It still carries no source')
@@ -1382,10 +1403,23 @@ def self_test():
     declared = json.loads((ROOT / 'data/derived/canonical/profile.json').read_text())['mass_kg']
     assert abs(a['totals']['mass_kg'] - declared) < 1e-6, (a['totals'], declared)
     assert a['roles']['rigid_bone']['fields']['young_modulus']['distinct_values'] == []
-    assert a['roles']['rigid_bone']['fields']['young_modulus']['entities_without_field'] == 233
+    # 334, not the 233 this asserted before: the display promotion added 101
+    # registered bone surfaces, and every one of them still carries no elastic
+    # constant of any kind. The hole got bigger, and the number says so.
+    assert a['roles']['rigid_bone']['fields']['young_modulus']['entities_without_field'] == 334
     assert set(a['roles']['cartilage']['fields']['poisson_ratio']['distinct_values']) == {0.45}
     assert a['young_modulus_basis_share']['absent']['volume_fraction'] > 0.09
-    assert len(a['distinct_literature_sources_cited']) == 4
+    # 7, not 4: the tissue-material assignment added ICRU-44, ICRP 89 and the
+    # ICRP 110 tabulation to the canonical source block, because the canonical
+    # densities now cite them instead of being unsourced constants.
+    assert len(a['distinct_literature_sources_cited']) == 7
+    # The canonical density block is no longer one number for every soft tissue.
+    assert a['roles']['soft_organ']['fields']['density']['distinct_values'] == [384.0, 1060.0]
+    assert a['roles']['rigid_bone']['fields']['density']['distinct_values'] == [1300.0]
+    assert a['roles']['skin_layer']['fields']['density']['distinct_values'] == [950.0, 1100.0]
+    for role, slot in a['roles'].items():
+        assert slot['fields']['density']['entities_without_field'] == 0, role
+        assert 'no_source' not in slot['fields']['density']['sources'], role
 
     # every source record is complete and every material row points at a real source
     for key, s in SOURCES.items():
@@ -1453,11 +1487,18 @@ def self_test():
     fields = {r['field']: r for r in c['canonical_vs_candidate']}
     assert fields['rigid_bone.young_modulus']['canonical'] is None
     assert fields['cartilage.poisson_ratio']['over_2x']
-    assert fields['soft_organ.lung.density_effective']['over_2x']
     assert fields['ligament.young_modulus']['over_2x']
     assert not fields['tendon.young_modulus']['over_2x']
     assert not fields['vascular.young_modulus']['over_2x']
-    assert c['over_2x_count'] >= 6, c['over_2x_count']
+    # RESOLVED by the tissue-material assignment: canonical lung is now ICRP 110
+    # 384 kg/m3 and canonical bone is ICRP 89 whole-skeleton 1300, so neither
+    # nominal density conflicts with this table any more. The residual factor on
+    # both is the uniform normalizer, not the density row, and it is under 2x.
+    assert not fields['soft_organ.lung.density_effective']['over_2x'], fields[
+        'soft_organ.lung.density_effective']
+    assert not fields['rigid_bone.density_effective']['over_2x'], fields[
+        'rigid_bone.density_effective']
+    assert c['over_2x_count'] >= 4, c['over_2x_count']
     assert len(c['literature_vs_literature']) == 3
 
     # writing goes to a temporary root, never the repo

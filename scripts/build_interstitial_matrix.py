@@ -764,6 +764,48 @@ def stage_composition(compartments, sweep, anatomy, prior, profile, mechanics, r
 
     declared_fat_fraction = profile['body_fat_fraction']
     ledger_fat_kg = declared_fat_fraction * LEDGER_TARGET_KG
+
+    # The fill can only carry adipose that lies outside every segmented structure,
+    # so the rest of the declared body fat has to be INSIDE entity geometry, and
+    # until an entity carried an adipose density none of it could be located. The
+    # canonical material assignment (ihm/assembly/tissue_materials.py) gives the
+    # hypodermis shell 950 kg/m3, which is what it is made of; this reads that
+    # assignment back rather than restating it, and reports the double count it
+    # creates against this build's own subcutaneous compartment instead of
+    # netting it out.
+    canonical_tissue_volume = sum(e.get('material_volume_m3') or 0.0 for e in mechanics['entities'])
+    adipose_entities = [e for e in mechanics['entities']
+                        if ((e.get('material') or {}).get('density') or {}).get('tissue_class')
+                        == 'adipose']
+    entity_adipose_volume = sum(e.get('material_volume_m3') or e.get('volume_m3') or 0.0
+                                for e in adipose_entities)
+    entity_adipose_mass = sum((e.get('material_volume_m3') or e.get('volume_m3') or 0.0)
+                              * e['material']['density']['value'] for e in adipose_entities)
+    entity_side_adipose = {
+        'question': 'is there any adipose-density material inside entity geometry at all, and if '
+                    'so how much of the required fat does it locate?',
+        'entities': [{'id': e['id'], 'name': e['name'],
+                      'volume_m3': e.get('material_volume_m3') or e.get('volume_m3'),
+                      'density_kg_m3': e['material']['density']['value'],
+                      'density_source': e['material']['density'].get('sources'),
+                      'density_tier': e['material']['density'].get('tier')}
+                     for e in adipose_entities],
+        'adipose_tissue_volume_m3': entity_adipose_volume,
+        'adipose_tissue_mass_kg': entity_adipose_mass,
+        'fat_in_that_adipose_kg': entity_adipose_mass * fat_of_adipose,
+        'source': 'data/derived/canonical/mechanics.json, material.density.tissue_class == adipose',
+        'double_count_against_this_fill': {
+            'shell_volume_m3': hypodermis_shell_volume,
+            'this_build_subcutaneous_compartment_m3': comp.get('subcutaneous', 0.0),
+            'statement': 'the hypodermis shell has no volumetric geometry, is skipped by the '
+                         'occupancy pass, and therefore lies inside the void this build fills. Its '
+                         'adipose and this build\'s subcutaneous adipose describe overlapping '
+                         'space. Neither is netted out here: the fill is the measured complement '
+                         'of the entity set and the shell is a canonical entity, and retiring one '
+                         'in favour of the other is the act of materialising this matrix as a '
+                         'first-class structure, which is a separate lane.',
+        },
+    }
     marrow_and_essential = {
         'yellow_marrow_note': 'inside the canonical bone geometry, so it is entity volume, not void; '
                               'not counted in the fill fat here',
@@ -869,6 +911,7 @@ def stage_composition(compartments, sweep, anatomy, prior, profile, mechanics, r
                 'fat_carried_by_the_fill_kg': fat_mass,
                 'implied_fat_inside_entity_geometry_kg': ledger_fat_kg - fat_mass,
                 'implied_fraction_of_entity_mass': (ledger_fat_kg - fat_mass) / max(entity_mass, 1e-12),
+                'entity_side_adipose': entity_side_adipose,
                 'icrp89_cross_check': {
                     'reference_male_mass_kg': reference['total_body_mass_kg'],
                     'reference_total_adipose_kg': reference['adipose_tissue_kg'],
@@ -891,12 +934,47 @@ def stage_composition(compartments, sweep, anatomy, prior, profile, mechanics, r
                     'residual_minus_scaled_non_separable_fat_kg': (ledger_fat_kg - fat_mass)
                         - (reference['adipose_tissue_kg'] - reference['separable_adipose_kg'])
                         * LEDGER_TARGET_KG / reference['total_body_mass_kg'] * fat_of_adipose,
+                    'residual_after_entity_side_adipose_kg': (ledger_fat_kg - fat_mass
+                                                              - entity_adipose_mass * fat_of_adipose),
+                    'residual_after_entity_side_adipose_minus_scaled_non_separable_fat_kg': (
+                        ledger_fat_kg - fat_mass - entity_adipose_mass * fat_of_adipose
+                        - (reference['adipose_tissue_kg'] - reference['separable_adipose_kg'])
+                        * LEDGER_TARGET_KG / reference['total_body_mass_kg'] * fat_of_adipose),
+                    'reading': 'the fill locates %.4f kg of the %.4f kg of declared body fat and '
+                               'the entity-side adipose locates a further %.4f kg, leaving %.4f kg '
+                               'that must be non-separable fat inside other tissue. ICRP 89 scaled '
+                               'to this body puts non-separable fat at %.4f kg, so the residual is '
+                               '%.4f kg away from what the reference says it should be.'
+                               % (fat_mass, ledger_fat_kg, entity_adipose_mass * fat_of_adipose,
+                                  ledger_fat_kg - fat_mass - entity_adipose_mass * fat_of_adipose,
+                                  (reference['adipose_tissue_kg'] - reference['separable_adipose_kg'])
+                                  * LEDGER_TARGET_KG / reference['total_body_mass_kg'] * fat_of_adipose,
+                                  ledger_fat_kg - fat_mass - entity_adipose_mass * fat_of_adipose
+                                  - (reference['adipose_tissue_kg'] - reference['separable_adipose_kg'])
+                                  * LEDGER_TARGET_KG / reference['total_body_mass_kg'] * fat_of_adipose),
                 },
             },
         },
         'mass_closure': {
             'composed_total_body_mass_kg': total_mass,
             'declared_total_body_mass_kg': LEDGER_TARGET_KG,
+            'entity_side_against_the_canonical_material_assignment': {
+                'this_build_entity_volume_m3': entity_volume,
+                'this_build_entity_mass_kg': entity_mass,
+                'canonical_assigned_tissue_volume_m3': canonical_tissue_volume,
+                'canonical_assigned_tissue_volume_excluding_shells_m3': canonical_tissue_volume
+                    - sum((r or {}).get('volume_m3') or 0.0 for r in skin_layers.values()),
+                'canonical_assigned_unscaled_mass_kg': mechanics_allocation['unscaled_proxy_mass_kg'],
+                'statement': 'this build weighs the entity side as EXCLUSIVE VOXEL OCCUPANCY times '
+                             'one mean owned density. That occupancy counts every voxel a surface '
+                             'encloses, including the muscle a fascia sheet wraps and the lumen a '
+                             'viscus surface encloses, so it is larger than the tissue the '
+                             'canonical material assignment says those entities hold. The two are '
+                             'printed side by side rather than reconciled: reconciling them means '
+                             're-attributing the occupancy pass, which is a geometry lane, not a '
+                             'material one, and it is why the declared mass still falls outside '
+                             'the residual-density band below.',
+            },
             'difference_kg': total_mass - LEDGER_TARGET_KG,
             'relative_difference': total_mass / LEDGER_TARGET_KG - 1.0,
             'declared_inside_residual_density_band': (
