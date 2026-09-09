@@ -152,6 +152,49 @@ def repair(vertices,faces):
     return np.asarray(mesh.vertices),np.asarray(mesh.faces)
 
 
+def cap_boundaries(vertices,faces,maximum_loops=64):
+    """Close every open boundary loop with a fan to its own centroid.
+
+    Cutting a surface into per-segment pieces leaves each piece open, and SimTK
+    refuses an open mesh.  trimesh's `fill_holes` only closes small holes -- on
+    these cuts it adds zero to sixteen triangles and leaves the loop open -- so
+    the cap is built explicitly: chain the unmatched directed edges into loops
+    and fan each loop to a new vertex at its centroid, with the winding that
+    makes each cap face carry the REVERSE of its boundary half-edge.
+
+    The caps are invented surface.  They sit at the joint, between two segments,
+    which is where nothing outside the body can reach; the area they add is
+    returned so it is reported rather than absorbed into the skin's own.
+    """
+    faces=[tuple(int(v) for v in f) for f in faces]
+    directed={}
+    for a,b,c in faces:
+        for u,v in ((a,b),(b,c),(c,a)):directed[(u,v)]=directed.get((u,v),0)+1
+    boundary=[e for e in directed if (e[1],e[0]) not in directed]
+    if not boundary:return np.asarray(vertices),np.asarray(faces,dtype=np.int64),0.
+    successors={}
+    for u,v in boundary:successors.setdefault(u,[]).append(v)
+    remaining=set(boundary);loops=[]
+    while remaining:
+        if len(loops)>maximum_loops:raise ValueError('boundary is not a small set of loops')
+        start=next(iter(remaining))[0];loop=[];node=start
+        while True:
+            options=successors.get(node)
+            if not options:raise ValueError('open boundary chain does not close')
+            following=options.pop()
+            if (node,following) not in remaining:raise ValueError('boundary edge visited twice')
+            remaining.discard((node,following));loop.append((node,following));node=following
+            if node==start:break
+        loops.append(loop)
+    vertices=list(np.asarray(vertices));added=0.
+    for loop in loops:
+        ring=np.asarray([vertices[u] for u,_ in loop])
+        centre=len(vertices);vertices.append(ring.mean(axis=0))
+        for u,v in loop:
+            faces.append((v,u,centre))
+            added+=float(np.linalg.norm(np.cross(vertices[u]-vertices[centre],vertices[v]-vertices[centre])))/2
+    return np.asarray(vertices),np.asarray(faces,dtype=np.int64),added
+
 def controls():
     """Cases whose answer is known: convex bodies must print a hull ratio of 1."""
     import trimesh

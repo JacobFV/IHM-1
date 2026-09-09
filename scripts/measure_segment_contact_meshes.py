@@ -76,19 +76,21 @@ def summarise(state):
                              mesh_faces=c.get('mesh_faces'))
                         for c in sorted(contacts,key=lambda c:-abs(c['force_n'][1]))])
 
-def run(arm,bundle,replace_feet,steps,dt,work,pose,stops):
+def run(arm,bundle,replace_feet,steps,dt,work,pose,stops,material=None):
     out=work/('arm-'+arm)
     stream=NativeMechanicalStream(ROOT,out,environment='upright',target_mass_kg=TARGET_MASS_KG,
                                   initial_pose=pose,augmented_registration=REGISTRATION,
                                   coordinate_limits=stops,
                                   segment_contact_meshes=None if bundle is None else str(bundle.relative_to(ROOT)),
+                                  segment_contact_material=material,
                                   segment_contact_replaces_source_feet=replace_feet)
     try:
         started=time.monotonic()
         initial=stream.snapshot()
         report=dict(arm=arm,bundle=None if bundle is None else str(bundle.relative_to(ROOT)),
                     replaces_source_feet=replace_feet,steps=steps,dt_s=dt,
-                    weight_n=TARGET_MASS_KG*9.81,initial=summarise(initial))
+                    weight_n=TARGET_MASS_KG*9.81,contact_material=stream.segment_contact_material if bundle is not None else None,
+                    initial=summarise(initial))
         if bundle is not None:
             low=lowest_points(initial,bundle)
             report['initial']['lowest_mesh_vertex_above_floor_m']=min(low.values())-FLOOR_Y_M
@@ -128,15 +130,31 @@ if __name__=='__main__':
     stops=crawl.joint_stops()
     work=ROOT/args.work;work.mkdir(parents=True,exist_ok=True)
     work=Path(work)/('run-'+str(int(time.time())));work.mkdir()
-    arms={'spheres':(None,False),
-          'mesh_proxy':(ROOT/'data/derived/segment-contact-meshes/stance-bone-proxy',False),
-          'mesh_all':(ROOT/'data/derived/segment-contact-meshes/stance-bone-all',True)}
-    selected=args.arm or list(arms)
+    skin_bundle=ROOT/'data/derived/segment-contact-meshes/skin'
+    # The skin arm's layer is not chosen here: E, Poisson ratio and thickness come
+    # from the canonical skin-layer entities the bundle recorded, so the arm
+    # measures what THIS body's declared skin does, not what a tuned number does.
+    skin_material=None
+    if (skin_bundle/'manifest.json').exists():
+        declared=json.loads((skin_bundle/'manifest.json').read_text())['skin_material']
+        skin_material=dict(youngs_modulus_pa=declared['youngs_modulus_pa'],
+                           poissons_ratio=declared['poissons_ratio'],
+                           layer_thickness_m=declared['layer_thickness_m'])
+    arms={'spheres':(None,False,None),
+          'mesh_proxy':(ROOT/'data/derived/segment-contact-meshes/stance-bone-proxy',False,None),
+          'mesh_all':(ROOT/'data/derived/segment-contact-meshes/stance-bone-all',True,None),
+          'skin':(skin_bundle,True,skin_material),
+          # The same 112k faces of skin, with the source foot spheres KEPT.
+          # The skin never reaches the floor in this pose, so this arm is the
+          # cost of CARRYING the geometry, separated from the cost of a plant
+          # that is collapsing -- two things the `skin` arm's number mixes.
+          'skin_carried':(skin_bundle,False,skin_material)}
+    selected=args.arm or [n for n in arms if n!='skin']
     reports=[]
     for name in selected:
-        bundle,replace=arms[name]
+        bundle,replace,material=arms[name]
         print('== '+name,flush=True)
-        try:reports.append(run(name,bundle,replace,args.steps,args.dt,work,pose,stops))
+        try:reports.append(run(name,bundle,replace,args.steps,args.dt,work,pose,stops,material))
         except Exception as error:reports.append(dict(arm=name,failed=repr(error)))
         print(json.dumps(reports[-1].get('cost',reports[-1]),indent=2),flush=True)
     out=ROOT/args.out;out.parent.mkdir(parents=True,exist_ok=True)
