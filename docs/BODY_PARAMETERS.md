@@ -4,15 +4,28 @@ Ask for a tall person and get one. Ask for a female person and get told, with
 numbers, exactly what is missing.
 
     ihm/body_parameters.py                        the schema
-    ihm/native/model_scaling.py                   measure and scale the mechanical body
+    ihm/body_scaling.py                           the exponent table: no exponent is typed
+    ihm/native/model_scaling.py                   measure and scale the mechanical SCAFFOLD
     scripts/describe_body_parameters.py           print the schema; resolve a request
-    scripts/materialize_stature_variant.py        build a scaled body
+    scripts/materialize_body_variant.py           build a whole body: scaffold AND body
+    scripts/materialize_stature_variant.py        the scaffold half of that
+    scripts/scale_anatomical_body.py              the 4,000 anatomical entities
+    scripts/scale_nerve_conduction.py             146 routes, 1,743 conduction delays
+    scripts/scale_skin_patches.py                 1,326 patches; count fixed, area s**2
+    scripts/scale_muscle_and_tissue.py            PCSA, force, mass, 117 ligaments
+    scripts/measure_stature_allometry.py          is geometric similarity even true
     scripts/verify_stature_scaling.py             gate it, including on purpose broken
     scripts/audit_sex_specific_anatomy.py         what sex anatomy exists, measured
     scripts/index_anthropometry.py                sex-stratified proportions from NHANES
     scripts/measure_anisotropic_pelvis_error.py   why proportions are not a knob
 
 `data/derived/` is gitignored throughout. The scripts are the artifacts.
+
+**Section 4 is the one to read if you only read one.** Sections 1-3 describe the
+parametrization as it was when it reached only the scaffold. Section 4 is where
+it reaches the body, and it is also where the single most important fact about
+the whole thing lives: the native engine renormalises the scaled mass straight
+back out.
 
 ## 1. The schema
 

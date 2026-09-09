@@ -1,14 +1,19 @@
 # the body's tissue as mechanics, and where it stops being possible
 
-625 of the bound body's 4,000 entities are tissue structures — ligaments,
+645 of the bound body's 4,000 entities are tissue structures — ligaments,
 capsules, menisci, discs, cartilage, bursae, fascia, retinacula, adipose — every
 one of them with real mesh geometry, and the plant carried force elements for
 **none** of them. They existed as geometry and not as mechanics.
 
-This file records what closing that got, what it did not, and — the part that
-matters most — **the specific reason each remaining class cannot be closed on
-this plant**, because three of them are blocked for three different reasons and
-only one of the three is a missing solver.
+**117 of them now carry force**, and **66 of those hold the plant inside its own
+declared joint ranges better than the engineering joint stops they replace** —
+6.08° of worst excursion against the stops' 5.30° and a bare plant's 17.43°, with
+no stops present at all. The other 51 make the plant worse, for a reason that is
+measured rather than guessed.
+
+This file records that, and — the part that matters most — **the specific reason
+each remaining class cannot be closed on this plant**, because they are blocked
+for three different reasons and only one of the three is a missing solver.
 
 Everything here is from `scripts/build_tissue_force_elements.py`,
 `scripts/measure_tissue_mechanics.py`, `scripts/measure_ligament_moments.py`,
@@ -139,33 +144,37 @@ slack in the pose its geometry was registered in.
 ## What they do to the plant, and what they cost
 
 25 advances of 10 ms from the stance pose, same mass, same excitation, only the
-force set differing.
+force set differing. `admissible` is the 66-element subset the filter two
+sections below selects.
 
-| arm | weight at t=0 | momentum residual | s/advance median | worst |
+| arm | elements | weight at t=0 | momentum residual | s/advance median |
 |---|---:|---:|---:|---:|
-| `bare` | **761.3757 N** | 4.9e-14 | 0.115 | 0.130 |
-| `stops` — what the plant does today | **761.3757 N** | 4.9e-14 | 0.115 | 0.128 |
-| `ligaments` — 105 elements | **761.3757 N** | 6.4e-13 | 0.170 | 0.452 |
-| `ligaments_capsules` — 117 | **761.3757 N** | 3.2e-12 | 0.271 | 0.968 |
-| `stops_ligaments` | **761.3757 N** | 6.4e-13 | 0.160 | 0.837 |
-| `stops_ligaments_capsules` | **761.3757 N** | 3.2e-12 | 0.196 | 1.123 |
+| `bare` | 0 | **761.3757 N** | 4.9e-14 | 0.073 |
+| `stops` — what the plant does today | 0 | **761.3757 N** | 4.9e-14 | 0.064 |
+| `ligaments` | 105 | **761.3757 N** | 6.4e-13 | 0.215 |
+| `ligaments_capsules` | 117 | **761.3757 N** | 3.2e-12 | 0.303 |
+| `stops_ligaments` | 105 | **761.3757 N** | 6.4e-13 | 0.162 |
+| `admissible` | 66 | **761.3757 N** | 1.1e-12 | 0.134 |
+| `stops_admissible` | 66 | **761.3757 N** | 1.1e-12 | 0.106 |
 
 **Standing weight is 761.3757 N in every arm, to the last digit** — 77.6122029 ×
 9.81. That is the gate that says the new elements did not invent or lose external
 force, and they are internal forces so they were never allowed to.
 
-The momentum residual rises from 4.9e-14 to 6.4e-13 and 3.2e-12. That is not
-drift: the ligament arm carries **12 kN** of internal tension at t=0 and the
-capsule arm **27 kN**, so the residual is about 1e-16 of the forces being summed,
-the same relative floor the bare arm sits at. An absolute threshold here would
-be comparing against the wrong thing.
+The momentum residual rises from 4.9e-14 to between 6.4e-13 and 3.2e-12. That is
+not drift: the ligament arm carries **12 kN** of internal tension at t=0 and the
+capsule arm **27 kN**, so the residual sits at about 1e-16 of the forces being
+summed — the same relative floor the bare arm sits at. An absolute threshold here
+would be comparing against the wrong thing.
 
-**Cost is 1.5× with ligaments and 2.4× with capsules on the median, and 3.5× and
-7.4× on the worst advance.** The plant stays affordable; the tail grows.
+**Cost is 1.8× the bare plant for the admissible set and 2.9–4.1× for the full
+one, on the median.** The machine was shared and loaded while these ran, so the
+worst-advance column is not reported as a tissue cost: the bare arm's own worst
+advance was 1.04 s against a 0.073 s median in the same run.
 
 ---
 
-## The gate the brief set — and it fails
+## The gate the brief set — it fails on the full set and passes on the filtered one
 
 > *with ligaments carrying load, the joint stops should become less necessary —
 > measure the range excursion with ligaments and without, on the same trajectory*
@@ -174,32 +183,47 @@ be comparing against the wrong thing.
 973 mm crawl came from. Worst excursion past the model's **own declared**
 coordinate ranges:
 
-| arm | worst excursion | coordinate |
-|---|---:|---|
-| `bare` | 17.4° | hip_rotation_l |
-| `stops` at 30 N·m/rad | **5.3°** | hip_rotation_l |
-| `ligaments` | **32.8°** | hip_rotation_r |
-| `ligaments_capsules` | 34.2° | hip_rotation_r |
-| `stops_ligaments` | 10.6° | hip_rotation_l |
-| `stops_ligaments_capsules` | 11.7° | hip_rotation_l |
+| arm | elements | worst excursion | coordinate |
+|---|---:|---:|---|
+| `bare` | 0 | 17.43° | hip_rotation_l |
+| `stops` at 30 N·m/rad — today's plant | 0 | 5.30° | hip_rotation_l |
+| `ligaments` | 105 | **32.78°** | hip_rotation_r |
+| `ligaments_capsules` | 117 | 34.22° | hip_rotation_r |
+| `stops_ligaments` | 105 | 10.63° | hip_rotation_l |
+| `stops_ligaments_capsules` | 117 | 11.69° | hip_rotation_l |
+| **`admissible`, no stops at all** | 66 | **6.08°** | hip_rotation_l |
+| **`stops_admissible`** | 66 | **4.05°** | hip_rotation_l |
 
-**Ligaments do not make the joint stops less necessary. They roughly double the
-excursion, and adding them to the stops makes the stops worse.** Said plainly
-because it is the result.
+Two results, and they are opposite.
 
-### Why, per coordinate, in closed form
+**The derived set as a whole makes the plant worse.** 105 ligaments roughly
+double the excursion, 17.4° → 32.8°, and adding them to the stops takes 5.3° to
+10.6°. Said plainly because it is the result.
+
+**The kinematically admissible 66, with no joint stops at all, hold the plant to
+6.08°** — within a degree of what the 30 N·m/rad engineering stops achieve, and
+achieved by 66 tension elements whose stiffness came from the body's own declared
+ligament modulus and whose attachments came from the structures' own surfaces
+rather than from a stated constant. Both together give **4.05°**, better than
+either. And at the end of that run **no element is past ultimate strain**: max
+strain 0.136, 20 of 66 loaded, 781 N of total tension.
+
+So the brief's gate is answered: *ligaments can carry what the joint stops are
+standing in for, but only the ones whose attachment geometry survives a
+kinematic check, and that is 66 of 117.*
+
+### Why the other 51 make it worse
 
 A line element under tension `F` makes a generalized force `−F·dl/dq`. Summing
 that over the derived set gives the passive moment the ligaments make about each
 coordinate, as a function of that coordinate — arithmetic, not a rollout, so it
 is exact.
 
-At `hip_rotation_l` the ligament moment is **−26 N·m at neutral**, reaching
-−153 N·m at +56°, and in the direction the plant actually drifts it never exceeds
-**+4.4 N·m**. The ligaments *drive* that coordinate out of its range and never
-pull it back. At `knee_angle_r` they oppose flexion with **−648 N·m at 90°**,
-which is not a knee. The ankle is the one joint whose curve has the right shape:
-zero near the reference, positive for dorsiflexion, negative for plantarflexion.
+On the **full** set, at `hip_rotation_l` the ligament moment is **−26 N·m at
+neutral**, reaching −153 N·m at +56°, and in the direction the plant actually
+drifts it never exceeds **+4.4 N·m**. Those elements *drive* the coordinate out
+of its range and never pull it back. At `knee_angle_r` they oppose flexion with
+**−648 N·m at 90°**, which is not a knee.
 
 The dominant elements at 90° of knee flexion say what is wrong:
 
@@ -218,25 +242,33 @@ exist in OpenSim and this model already carries 52 wrap objects, but a
 `Blankevoort1991Ligament` built from a two-point path has none, and fitting one
 per joint from bone geometry is a piece of work that has not been done.
 
-### The filter that follows from that, and what it leaves
+### The filter, and what it is not
 
 An element that passes ligament ultimate strain **inside the declared range of a
 joint it spans** is an attachment in the wrong place, not a ligament. Sweeping
 each element over every coordinate on the chain between its two bodies, one at a
-time, **66 of 117 are admissible**. The threshold is not a knob tuned until a
-count looked right: the same 66 pass at 10% strain and at 17.1%, then 70 at 25%,
-80 at 40%, 95 at 60%. There is a real gap there.
+time with the rest at the reference pose, **66 of 117 are admissible** — 57
+ligaments and 9 capsules. The threshold is not a knob tuned until a count looked
+right: the same 66 pass at 10% strain and at 17.1%, then 70 at 25%, 80 at 40%,
+95 at 60%. There is a real gap there.
 
-And the admissible set is **nearly silent**. Outside the declared range it makes
-≤ 2.2 N·m at every coordinate except the metatarsophalangeal joints (32 N·m),
-against the joint stop's 15.7 N·m at the same excursion; six coordinates have no
-admissible element spanning them at all.
+It is a **screen, not a proof**, and it shows: at the stance pose five of the
+admissible 66 are past ultimate strain anyway, all of them right-shoulder
+elements, because the stance pose differs from the reference in `arm_rot_r` by
+34° *and* `arm_flex_r` by 11° at once and the sweep moves one coordinate at a
+time. Two coordinates together can be worse than either alone. That is stated in
+the script and is what happened.
 
-**So on this scaffold a derived ligament either has a big moment arm and is
-wrong, or is right and has no moment arm.** No subset both stays inside ligament
-failure strain and restrains a joint. That is the finding, and it is a property
-of straight-line paths, not of the ligament model or of the attachment
-derivation, both of which pass their own gates.
+**The single-coordinate moment sweep understates the filtered set.** Measured
+about one coordinate with everything else at the reference pose, the admissible
+66 make ≤ 2.2 N·m outside the declared range at every coordinate except the
+metatarsophalangeal joints, and six coordinates have no admissible element
+spanning them at all — which reads as a set that can do nothing. In the prone
+rollout the same 66 hold the plant better than the joint stops, because the
+rollout is far from the reference pose in several coordinates at once and the
+elements load there. The two measurements do not disagree; the sweep is a
+one-dimensional slice of a 33-dimensional restraint, and quoting it alone would
+have been the "compared against the wrong thing" error again.
 
 ### One thing that only became visible because something carried load
 
@@ -248,7 +280,12 @@ stops push them back toward the model's, so the two pull in opposite directions
 there. Neither artifact was wrong on its own terms; they disagree, and nothing
 had ever asked them to agree.
 
----
+### How to switch them on
+
+`NativeMechanicalStream(..., tissue_ligaments='data/derived/tissue-force-elements-v1',
+tissue_ligament_admissible_only=True)`. The flag is not defaulted on: the bundle
+carries all 117 elements and which subset a run wants is the caller's statement,
+not a silent default. **Every measurement above says to pass it.**
 
 ## Cartilage, menisci and discs: a DATA gap, not a mechanics gap
 
@@ -389,9 +426,11 @@ measured:
 | **joint capsule (inadmissible)** | 3 of 12 | same. |
 
 And the part that *is* now mechanics: **105 ligaments and 12 joint capsules
-carry tension between two rigid bodies, 66 of them within their own failure
-strain across the joint's whole declared range.** They do not replace the joint
-stops and the measurement says so.
+carry tension between two rigid bodies, and the 66 of them that stay within their
+own failure strain across a spanned joint's whole declared range hold the plant
+to 6.08° past its declared ranges with no joint stops at all** — against 5.30°
+for the 30 N·m/rad engineering stops and 17.43° for a bare plant. Running both
+gives 4.05°.
 
 ---
 
@@ -399,8 +438,10 @@ stops and the measurement says so.
 
 1. **A wrap surface per scaffold joint**, fitted from the bone geometry, so a
    ligament path bends where a real one does. This is the single change that
-   would turn the 48 inadmissible ligaments from wrong into useful, and it is
-   what stands between the derived set and a real passive joint restraint.
+   would turn the 48 inadmissible ligaments from wrong into useful, and those 48
+   are the cruciates, the collaterals and the ankle ligaments — the ones that
+   carry a real joint's restraint. The admissible 66 already do the stops' job;
+   these would be the ones that do a knee's.
 2. **Articular cartilage geometry.** Acquisition, not modelling. Until it exists
    there is no articular surface to make physical, and the knee is the only joint
    with intra-articular geometry to start from.

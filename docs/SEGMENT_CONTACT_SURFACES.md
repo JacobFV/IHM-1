@@ -311,15 +311,20 @@ three negative controls, six published lengths at 0.70–1.04x, three published
 Blankevoort stiffnesses at 0.44–2.03x, and two independent implementations of the
 path length agreeing to 3.3e-16 m.
 
-What that did NOT buy is the thing the joint stops are standing in for. On a 2 s
-prone drop the worst excursion past the model's declared ranges goes 17.4 deg
-bare, 5.3 deg with the stops, and **32.8 deg with the ligaments** — they roughly
-double it. The reason is measured per coordinate: a real cruciate is
-near-isometric because it wraps and its femoral footprint sits near the flexion
-axis, while a straight line between two attachment centroids sits 22 mm off that
-axis, so the derived ACL reads **77% strain at 90 deg of knee flexion** against a
-17.1% ultimate. 66 of the 117 elements never pass ultimate strain inside the
-declared range, and that admissible subset makes under 2.2 N.m at almost every
-coordinate. **A derived ligament on this scaffold either has a large moment arm
-and is wrong, or is right and has no moment arm.** The missing machinery is a
-wrap surface per joint.
+What that buys is measured, and it is two opposite things. **The derived set as
+a whole makes the plant worse**: on a 2 s prone drop the worst excursion past the
+model's declared ranges goes 17.4 deg bare, 5.3 deg with the stops, and **32.8
+deg with all 105 ligaments**. The reason is measured per coordinate — a real
+cruciate is near-isometric because it wraps and its femoral footprint sits near
+the flexion axis, while a straight line between two attachment centroids sits
+22 mm off that axis, so the derived ACL reads **77% strain at 90 deg of knee
+flexion** against a 17.1% ultimate.
+
+**But the 66 elements that never pass ultimate strain inside a spanned joint's
+own declared range hold the plant to 6.08 deg with NO joint stops present** —
+against 5.30 deg for the 30 N.m/rad engineering stops, and 4.05 deg with both.
+That is the joint stop's job done by tension elements whose stiffness came from
+the body's own declared ligament modulus and whose attachments came from the
+structures' own surfaces, rather than from a stated constant. The 51 that fail
+the check are the cruciates, the collaterals and the ankle ligaments, and what
+they need is a wrap surface per joint.
