@@ -128,6 +128,33 @@ int main(int argc,char** argv){try{
    force->setName("support_"+b.getName());force->connectSocket_sphere(*sphere);force->connectSocket_half_space(*plane);model.addComponent(force);
   }
  }
+ // Optional joint stops at the coordinate ranges the source model already
+ // DECLARES.  Nothing else in this plant enforces them: every rotational
+ // coordinate carries <clamped>true</clamped> and a <range>, the model holds zero
+ // CoordinateLimitForce, and clamping is not applied during forward dynamics.
+ // Measured, an unloaded prone foot reaches 2.52 rad of plantarflexion against a
+ // declared +/-0.873, because PassiveAnkleDamping is literally "-0.1*qdot".  The
+ // LIMIT here is the model's own; only the stop's stiffness, damping and
+ // transition width are engineering constants, and the caller names all three.
+ // Opt-in, because installing a stop changes the plant and the identified stance
+ // linearization was solved without one.
+ if(fs::exists(source/"coordinate_limits.txt")){
+  std::ifstream limits(source/"coordinate_limits.txt");std::string schema;int count;limits>>schema>>count;
+  if(!limits||schema!="IHM_COORDINATE_LIMITS_V1"||count<1||count>model.getCoordinateSet().getSize())throw std::runtime_error("invalid coordinate limit schema/count");
+  const double to_degrees=180./SimTK::Pi;
+  for(int i=0;i<count;i++){
+   std::string name;double lower,upper,stiffness,damping,transition;
+   limits>>name>>lower>>upper>>stiffness>>damping>>transition;
+   if(!limits||!std::isfinite(lower)||!std::isfinite(upper)||upper<=lower||!(stiffness>0)||!(damping>=0)||!(transition>0))throw std::runtime_error("invalid coordinate limit record");
+   const auto& c=model.getCoordinateSet().get(name);
+   if(c.isDependent(initial)||c.getMotionType()!=Coordinate::Rotational)throw std::runtime_error("coordinate limits require independent rotational coordinates");
+   // CoordinateLimitForce takes rotational limits and transition in DEGREES and
+   // its stiffness per degree; the caller states everything in radians.
+   auto* stop=new CoordinateLimitForce(name,upper*to_degrees,stiffness/to_degrees,lower*to_degrees,stiffness/to_degrees,damping,transition*to_degrees,true);
+   stop->setName("declared_range_stop_"+name);model.addForce(stop);
+  }
+  std::string extra;if(limits>>extra)throw std::runtime_error("trailing coordinate limit data");
+ }
  model.finalizeConnections();SimTK::State state=model.initSystem();state.setTime(0);
  // Material registration belongs to the retained source pose. An optional
  // initialization must move that same body, not silently redefine its geometry.

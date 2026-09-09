@@ -33,7 +33,7 @@ fast crash into a slow one and nothing else.
 The state entering the first slow advance, measured:
 
 ```
-pro_sup_r        11.03 rad/s     (after bouncing off its own q=0 clamp)
+pro_sup_r        11.03 rad/s
 elbow_flex_l      4.97 rad/s
 arm_flex_r        4.93 rad/s
 arm26_BIClong_l   3.05 m/s of fibre velocity
@@ -46,6 +46,12 @@ the force–velocity curve is being extrapolated, the equilibrium muscle's
 inversion is ill-conditioned, and the error controller has to shrink the step
 without bound.
 
+(An earlier version of this note said `pro_sup_r` had bounced off its own q=0
+clamp. That was an inference from `<clamped>true</clamped>`, and it is wrong:
+nothing enforces a coordinate clamp in this plant. See
+`docs/NATIVE_JOINT_LIMITS.md` — measured, `ankle_angle_r` reaches 2.52 rad
+against a declared range of ±0.873.)
+
 And the arm chain had no motor drive at all. The source model declares 26
 `CoordinateActuator` torque ports — lumbar ×3, and per side shoulder
 flexion/adduction/rotation, elbow, forearm pronation — and **no controller was
@@ -53,8 +59,7 @@ ever connected to them**, so their controls were identically zero for the whole
 run. The arms were a rag doll riding a walking body. `pro_sup` is worse than the
 others: the source `ExpressionBasedCoordinateForceSet` damps shoulder, elbow,
 hip, knee, ankle and toe, and has no term for forearm pronation at all, so that
-coordinate has neither drive nor damping nor a limit force, only a hard
-coordinate clamp at 0 to bounce off.
+coordinate has neither drive nor damping nor any limit whatsoever.
 
 ## The fix
 

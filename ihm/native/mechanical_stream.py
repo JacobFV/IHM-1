@@ -27,7 +27,7 @@ class NativeCommandRejected(ValueError):
     """Native command explicitly rejected after transactional rollback."""
 
 class NativeMechanicalStream:
-    def __init__(self,root,output,*,environment='supine',target_mass_kg,augmented_registration=None,surface_contact_manifest=None,surface_sensor_indices=(),bed_material=None,instance_mass_variant=None,initial_pose=None):
+    def __init__(self,root,output,*,environment='supine',target_mass_kg,augmented_registration=None,surface_contact_manifest=None,surface_sensor_indices=(),bed_material=None,instance_mass_variant=None,initial_pose=None,coordinate_limits=None):
         self.root=Path(root).resolve();self.output=Path(output).resolve()
         if self.output.exists() or not self.output.is_relative_to(self.root):raise ValueError('Fresh owned native output directory required')
         if environment not in ('free','supine','upright') or finite(target_mass_kg)<=0:raise ValueError('Invalid native environment or mass')
@@ -98,6 +98,18 @@ class NativeMechanicalStream:
             bed=load_bed(self.root,bed_material)
             bed['implementation_sha256']=sha(self.root/'ihm/assembly/bed_compression.py')
         self.output.mkdir(parents=True);source=self.output/'inputs';source.mkdir()
+        stops=None
+        if coordinate_limits is not None:
+            stops=[]
+            for item in coordinate_limits:
+                if set(item)!={'coordinate','lower_rad','upper_rad','stiffness_nm_per_rad','damping_nm_s_per_rad','transition_rad'}:raise ValueError('Coordinate limit requires coordinate/lower_rad/upper_rad/stiffness_nm_per_rad/damping_nm_s_per_rad/transition_rad')
+                if not isinstance(item['coordinate'],str) or re.fullmatch(r'[A-Za-z0-9_]+',item['coordinate']) is None:raise ValueError('Invalid coordinate limit name')
+                row={k:(item[k] if k=='coordinate' else finite(item[k])) for k in ('coordinate','lower_rad','upper_rad','stiffness_nm_per_rad','damping_nm_s_per_rad','transition_rad')}
+                if row['upper_rad']<=row['lower_rad'] or row['stiffness_nm_per_rad']<=0 or row['damping_nm_s_per_rad']<0 or row['transition_rad']<=0:raise ValueError('Invalid coordinate limit values')
+                stops.append(row)
+            if not stops or len({r['coordinate'] for r in stops})!=len(stops):raise ValueError('Nonempty unique coordinate limits required')
+            (source/'coordinate_limits.txt').write_text('IHM_COORDINATE_LIMITS_V1 '+str(len(stops))+'\n'+''.join(
+                ' '.join([r['coordinate'],*(str(r[k]) for k in ('lower_rad','upper_rad','stiffness_nm_per_rad','damping_nm_s_per_rad','transition_rad'))])+'\n' for r in stops))
         pose=None
         if initial_pose is not None:
             if not isinstance(initial_pose,dict) or not initial_pose or any(not isinstance(name,str) or re.fullmatch(r'[A-Za-z0-9_]+',name) is None for name in initial_pose):raise ValueError('Initial pose requires a nonempty coordinate mapping')
@@ -105,6 +117,7 @@ class NativeMechanicalStream:
             (source/'initial_pose.txt').write_text('IHM_INITIAL_POSE_V1 '+str(len(pose))+'\n'+''.join(name+' '+str(value)+'\n' for name,value in pose.items()))
         original=self.root/'data/raw/mechanics/opensim-core/OpenSim/Examples/Moco/example3DWalking';inputs={}
         if pose is not None:inputs['initial_pose.txt']=sha(source/'initial_pose.txt')
+        if stops is not None:inputs['coordinate_limits.txt']=sha(source/'coordinate_limits.txt')
         overrides=self.source_overrides
         for name in SOURCE_FILES:
             if augmentation is not None and name=='subject_walk_scaled.osim':origin=self.root/augmentation['model_path']
@@ -135,6 +148,7 @@ class NativeMechanicalStream:
         command=[limiter,'--as=4294967296','--','nice','-n','10',*engine_command]
         self.lock=threading.RLock();self.closed=False;self.tokens=set();self.log=(self.output/'engine.log').open('w')
         execution={'schema':'ihm.native-mechanical-stream.v1','command':command,'engine_command':engine_command,'address_space_limit_bytes':4294967296,'source_sha256':inputs,'build':manifest,'target_mass_kg':target_mass_kg,
+                   'coordinate_limits':stops,'coordinate_limits_basis':'Joint stops at the coordinate ranges the source model already declares; nothing else in this plant enforces them. The LIMIT is the model\'s own -- the stiffness, damping and transition width are explicit engineering constants stated by the caller, not measured ligament properties.',
                    'initial_pose':pose,'initial_pose_basis':'Explicit source coordinate initialization after contact reference construction, before muscle equilibrium and energy reference; no ongoing pose constraint or equilibrium claim',
                    'instance_mass_variant':self.instance_mass_variant,'mass_reference_id':self.identity if self.instance_mass_variant is not None else None,'bed_material':bed,'surface_contact_manifest':surface_manifest,'augmented_registration':augmentation,'checkpoint_scope':'Complete in-process SimTK State including effective mass/inertia, excitation/load commands, work accumulators and local mass owner inventory/sequence/receipt; native process must remain alive. Call release(checkpoint) after accepted intervals.',
                    'support_scope':('Retained posterior skin quadrature with prior-based confined neo-Hookean layers in series with the explicitly identified measured conservative mattress compression curve; no calibrated damping or hysteresis, and an infinite native support-plane footprint.' if bed is not None else 'Retained posterior skin quadrature with prior-based confined neo-Hookean layers against an infinite rigid support plane; no mattress compliance.' if surface_manifest is not None else 'Upright source foot contacts plus unilateral non-foot COM spheres inscribed in inertia-derived ellipsoids; transferred source foot material, no balance support or anatomical skin fidelity.' if environment=='upright' else 'No contact support in free environment.' if environment=='free' else 'Supine unilateral engineering posterior spheres from source COM and inertia ellipsoid approximation; source foot contact parameters transferred, not calibrated mattress.'),

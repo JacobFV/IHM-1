@@ -23,7 +23,7 @@ and the report says so.
 """
 from __future__ import annotations
 
-import argparse, json, math, os, shutil, sys, time, traceback, uuid
+import argparse, json, math, os, re, shutil, sys, time, traceback, uuid
 from pathlib import Path
 
 for _v in ('OMP_NUM_THREADS', 'OPENBLAS_NUM_THREADS', 'MKL_NUM_THREADS',
@@ -49,45 +49,65 @@ ARM_PORT = {'arm_flex': 'shoulder_flex', 'arm_add': 'shoulder_add',
 LUMBAR_PORT = {'lumbar_extension': 'lumbar_ext', 'lumbar_bending': 'lumbar_bend',
                'lumbar_rotation': 'lumbar_rot'}
 
-# Every port gets the SAME shaping, applied to its own effective inertia:
-# kp = I w^2 and kd = 2 z I w, with one w and one z for the whole body.  The
-# numbers below were measured, not chosen.
+# Every port is shaped the same way -- kp = I w^2, kd = 2 z I w on its own
+# effective inertia -- but w is chosen PER PORT, because the ports differ by a
+# factor of 200 in inertia and a single w is wrong at both ends.
 #
-# The failure being avoided is at BOTH ends.  Too soft and the port lets its
-# coordinate run: the first crawl attempt put the right elbow at 10.6 rad/s
-# while its own target moved at 4.5 rad/s, which dragged arm26_BIClong_r to
-# 38.1 optimal fibre lengths per second against the muscle's maximum of 10 --
-# 3.8x outside the force-velocity curve's domain, where the equilibrium muscle
-# inversion is ill-conditioned and the Simbody error controller collapses its
-# step.  Too stiff and the 100 Hz command update itself is the instability: a
-# sweep over (w, z) at 0.6 s of settling counted torque commands driven to their
-# +/-1 ceiling, and z = 2.1 chattered the arm chain to a peak coordinate speed of
-# 47.9 rad/s at w = 14 and 110.3 at w = 20, saturating 392 and 500 commands out
-# of 780, against 1-8 for every z <= 1.0.  Over-damping a zero-order-held port is
-# not a safe direction; it is the other cliff.
+# Too soft and the port lets its coordinate run.  The first crawl attempt put
+# the right elbow at 10.6 rad/s while its own target moved at 4.5 rad/s, which
+# dragged arm26_BIClong_r to 38.1 optimal fibre lengths per second against the
+# muscle's maximum of 10 -- outside the force-velocity curve's domain, where the
+# equilibrium muscle inversion is ill-conditioned and the Simbody error
+# controller collapses its step.  And at w = 10 the forearm pronation port holds
+# with 0.15 N.m/rad, which is nothing: pro_sup left its declared range.
 #
-# w = 10 rad/s, z = 0.9 sits between them, and puts kd*dt/I at 0.18 -- an order
-# of magnitude inside the kd*dt/I < 2 stability limit for a held damper.
-# Effective inertias are read off the source segment masses and inertias.
+# Too stiff and the 100 Hz command update is itself the instability.  A sweep at
+# 0.6 s of settling, counting torque commands driven to their +/-1 ceiling out of
+# 780: z = 2.1 chattered the arm chain to a peak coordinate speed of 47.9 rad/s
+# at w = 14 and 110.3 at w = 20, saturating 392 and 500 commands, against 1-8 for
+# every z <= 1.0.  Over-damping a zero-order-held port is the other cliff.
+#
+# So w is the largest value satisfying two measured constraints at once:
+#   kd*dt/I <= 0.6      -- an order inside the kd*dt/I < 2 held-damper limit
+#   I w^2 * 0.5 <= 50   -- the port does not saturate its 50 N.m ceiling until
+#                          the error reaches half a radian, so it regulates
+#                          rather than bangs
+OPTIMAL_FORCE_NM = 50.0   # every declared CoordinateActuator in the source model
+
+# Effective inertias MEASURED on the prone plant, not estimated from segment
+# masses: from the settled pose, 10 N.m for one 10 ms step on each port against
+# an otherwise identical control step, I_eff = tau*dt/dv.  The estimates they
+# replace were wrong by 2.2x at the shoulder and 3x at the lumbar, which is
+# exactly enough to put a port on the wrong side of the stability boundary.
 PORT_INERTIA_KG_M2 = {
-    'arm_flex': 0.35, 'arm_add': 0.35,     # whole arm about the shoulder
-    'arm_rot': 0.02,                       # humerus about its own long axis
-    'elbow_flex': 0.05,                    # forearm + hand about the elbow
-    'pro_sup': 0.0015,                     # radius + hand about the forearm axis
-    'lumbar_extension': 1.00, 'lumbar_bending': 1.00, 'lumbar_rotation': 1.00,
+    'arm_flex': 0.1606, 'arm_add': 0.2907,
+    'arm_rot': 0.0134,
+    'elbow_flex': 0.0342,
+    'pro_sup': 0.00122,
+    'lumbar_extension': 0.3037, 'lumbar_bending': 0.4038, 'lumbar_rotation': 0.2021,
 }
-PORT_NATURAL_FREQUENCY_RAD_S = 10.0
 PORT_DAMPING_RATIO = 0.9
+# 0.6 and 0.5 rad, and the binding consideration is WALL CLOCK, not saturation.
+# Softening to 0.36 and 1.0 rad does saturate fewer commands -- 0 against 124
+# over 2 s of settling -- but it lets the arm chain run, and a soft-port rollout
+# costs 0.860 s per 10 ms advance against 0.13 s for these.  A port soft enough
+# to look tidy on a saturation count is the same port that stalls the
+# integrator; the count is not the metric that matters.
+PORT_DAMPER_STABILITY_MARGIN = 0.6         # kd*dt/I, against a limit of 2
+PORT_SATURATION_ERROR_RAD = 0.5
 
 
 def _gains(inertia):
-    w, z = PORT_NATURAL_FREQUENCY_RAD_S, PORT_DAMPING_RATIO
+    z = PORT_DAMPING_RATIO
+    w_damper = PORT_DAMPER_STABILITY_MARGIN / (2 * z * DT)
+    w_torque = math.sqrt(OPTIMAL_FORCE_NM
+                         / (inertia * PORT_SATURATION_ERROR_RAD))
+    w = min(w_damper, w_torque)
     return inertia * w * w, 2 * z * inertia * w
 
 
 ARM_GAINS = {k: _gains(v) for k, v in PORT_INERTIA_KG_M2.items() if k in ARM_PORT}
 LUMBAR_GAINS = {k: _gains(v) for k, v in PORT_INERTIA_KG_M2.items() if k in LUMBAR_PORT}
-OPTIMAL_FORCE_NM = 50.0
 
 MUSCLE_GROUPS = {
     'hipflex':  ('iliacus', 'psoas', 'recfem', 'sart', 'tfl'),
@@ -131,10 +151,40 @@ def limb_pd(state, targets):
     return out
 
 
-def open_stream(out_dir, pose):
+# The stop's LIMIT is the model's own declared range.  Its stiffness, damping
+# and transition width are explicit engineering constants, not ligament
+# measurements: 1000 N.m/rad stops an ankle against the ~150 N.m the
+# plantarflexors can make within 0.15 rad, and the 5 degree transition is
+# CoordinateLimitForce's own smoothing so the stop is not an impact.
+# Swept at IDENTICAL port gains -- the first sweep of this compared a no-stop row
+# against stopped rows at different port gains, which is the same "compared
+# against the wrong thing" the log keeps recording, and it read as though the
+# stops cost wall clock.  They do not.  Over 3 s of the seed pattern:
+#
+#   k (N.m/rad)  s / advance   worst excursion past the declared range
+#   none              0.515    1.450 rad  (ankle_angle_r -- the folded foot)
+#    300             0.937     0.139 rad
+#    100             0.505     0.192 rad
+#     30             0.264     0.220 rad
+#
+# A stop at 30 N.m/rad is HALF the wall clock of no stop at all and holds the
+# plant 6.6x closer to its declared range, because a plant kept out of absurd
+# configurations is a plant the error controller can integrate.  Only 300, which
+# is genuinely stiff, costs anything.
+JOINT_STOP = {'stiffness_nm_per_rad': 30.0, 'damping_nm_s_per_rad': 1.5,
+              'transition_rad': 0.35}
+
+
+def joint_stops():
+    return [dict(coordinate=name, lower_rad=lo, upper_rad=hi, **JOINT_STOP)
+            for name, (lo, hi) in sorted(declared_ranges().items())]
+
+
+def open_stream(out_dir, pose, stops=True):
     return NativeMechanicalStream(ROOT, out_dir, environment='upright',
                                   target_mass_kg=TARGET_MASS_KG, initial_pose=pose,
-                                  augmented_registration=REGISTRATION)
+                                  augmented_registration=REGISTRATION,
+                                  coordinate_limits=joint_stops() if stops else None)
 
 
 def contact_summary(state):
@@ -352,6 +402,59 @@ def plant_summary(state, command, muscle_names):
 # termination that names the muscle -- the plant has left the muscle model's
 # validity domain, and a result computed past this point is not about the model
 # anyone declared.
+# Nothing enforces the model's declared coordinate ranges.  Every rotational
+# coordinate carries <clamped>true</clamped> and a <range>, the model holds ZERO
+# CoordinateLimitForce, and clamping is not applied during forward dynamics --
+# measured, the first prone crawl the search found reached 2.52 rad of ankle
+# plantarflexion against a declared range of +/-0.873, i.e. 145 degrees, with the
+# feet folded back on themselves, and bought most of its travel that way.  The
+# only joint stops in the plant are the exponential terms of the source
+# ExpressionBasedCoordinateForceSet, and PassiveAnkleDamping is literally
+# "-0.1*qdot": damping and no limit.  pro_sup has no passive force at all.
+#
+# The tolerance is 0.35 rad and that number is measured, not chosen.  The
+# declared ranges and the source's own passive limits DISAGREE -- the hip
+# rotation stop is centred at +/-0.92 rad against a declared +/-0.698 -- so a
+# body lying still, driven at 0.02 tonic excitation, already sits 0.240 rad
+# outside its declared range at hip_rotation_l.  A guard at the range itself
+# would reject a body doing nothing.  0.35 rad admits that and still rejects a
+# folded ankle by a factor of five.  The worst excursion is reported for every
+# run whether or not the guard fires.
+DECLARED_RANGE_TOLERANCE_RAD = 0.35
+_RANGE_SENTINEL_RAD = 18.0     # arm_flex and friends carry +/-10 rad, i.e. no range
+
+
+def declared_ranges(model_path=BUNDLE / 'model.osim'):
+    """Rotational coordinate ranges as the source model declares them."""
+    text = Path(model_path).read_text()
+    out = {}
+    for m in re.finditer(r'<Coordinate name="([^"]+)">(.*?)</Coordinate>', text, re.S):
+        found = re.search(r'<range>([^<]*)</range>', m.group(2))
+        if not found:
+            continue
+        lo, hi = (float(v) for v in found.group(1).split())
+        if hi - lo > _RANGE_SENTINEL_RAD or m.group(1) in ('pelvis_tx', 'pelvis_ty', 'pelvis_tz'):
+            continue
+        out[m.group(1)] = (lo, hi)
+    return out
+
+
+_RANGES = None
+
+
+def worst_range_excursion(state):
+    global _RANGES
+    if _RANGES is None:
+        _RANGES = declared_ranges()
+    worst, culprit = 0.0, None
+    for name, (lo, hi) in _RANGES.items():
+        value = state['coordinates'][name]['value']
+        past = max(lo - value, value - hi, 0.0)
+        if past > worst:
+            worst, culprit = past, name
+    return worst, culprit
+
+
 MAXIMUM_CONTRACTION_VELOCITY_OFL_S = 10.0
 # The guard is set at 1.5x the model's maximum, not at it.  Measured: the plant
 # crosses 10 briefly and harmlessly on an ankle whip (11.8 ofl/s on edl_r with
@@ -384,6 +487,9 @@ def diverged(state):
     worst, culprit = maximum_normalized_fibre_velocity(state)
     if worst > FIBRE_VELOCITY_GUARD_OFL_S:
         return 'fibre_velocity_beyond_%.0f_ofl_s_%s' % (FIBRE_VELOCITY_GUARD_OFL_S, culprit)
+    past, coordinate = worst_range_excursion(state)
+    if past > DECLARED_RANGE_TOLERANCE_RAD:
+        return 'beyond_declared_range_%s_by_%.2frad' % (coordinate, past)
     return None
 
 
@@ -403,6 +509,7 @@ def rollout(params, muscle_names, horizon_s=8.0, record=False, work_dir=None,
     started = time.time()
     advance_wall_max = 0.0
     fibre_worst, fibre_culprit = 0.0, None
+    range_worst, range_culprit = 0.0, None
     outside_domain_s = 0.0
     trace = None if trace_path is None else Path(trace_path).open('w')
     try:
@@ -422,6 +529,9 @@ def rollout(params, muscle_names, horizon_s=8.0, record=False, work_dir=None,
                 fibre_worst, fibre_culprit = worst, culprit
             if worst > MAXIMUM_CONTRACTION_VELOCITY_OFL_S:
                 outside_domain_s += DT
+            past, coordinate = worst_range_excursion(state)
+            if past > range_worst:
+                range_worst, range_culprit = past, coordinate
             u = pattern.excitation(t_s)
             targets = pattern.limb_targets(t_s)
             if record:
@@ -490,6 +600,9 @@ def rollout(params, muscle_names, horizon_s=8.0, record=False, work_dir=None,
         'peak_normalized_fibre_velocity_ofl_s': fibre_worst,
         'peak_normalized_fibre_velocity_muscle': fibre_culprit,
         'muscle_maximum_contraction_velocity_ofl_s': MAXIMUM_CONTRACTION_VELOCITY_OFL_S,
+        'worst_excursion_past_declared_range_rad': range_worst,
+        'worst_excursion_coordinate': range_culprit,
+        'declared_range_tolerance_rad': DECLARED_RANGE_TOLERANCE_RAD,
         'seconds_outside_muscle_force_velocity_domain': outside_domain_s,
         'fraction_outside_muscle_force_velocity_domain': (
             None if t_end <= 0 else outside_domain_s / t_end),
