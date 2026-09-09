@@ -40,6 +40,12 @@ SOMATIC = [
  ('ilioinguinal','lumbar','inguinal region',[.08,-.12,.06]),
  ('iliohypogastric','lumbar','suprapubic wall',[.08,-.04,.08]),
  ('posterior_femoral_cutaneous','sacral','posterior thigh skin',[.10,-.35,-.07]),
+ # Every route above is a ventral ramus. Without a dorsal ramus the entire
+ # paravertebral skin strip and the deep back had no declared trunk, and a
+ # dermatomal partition had to either leave it uninnervated or assert that the
+ # back of the trunk is supplied by the intercostal nerve, which supplies the
+ # front. One representative mid-thoracic posterior branch, not all 31 pairs.
+ ('dorsal_ramus','thoracic','paravertebral skin and deep back',[.035,.36,-.105]),
 ]
 VISCERAL = [
  ('vagus','solitary','representative gastric wall',[.06,.18,.03]),
