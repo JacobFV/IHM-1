@@ -968,6 +968,9 @@ def main():
     ap.add_argument("--height", type=int, default=1080)
     ap.add_argument("--fps", type=int, default=25)
     ap.add_argument("--ssaa", type=int, default=2)
+    ap.add_argument("--frame-shift", type=float, default=0.0,
+                    help="metres to slide the subjects right in frame; 0 keeps "
+                         "the framing the shipped render used")
     ap.add_argument("--stride", type=int, default=1)
     ap.add_argument("--max-frames", type=int, default=0)
     ap.add_argument("--check", action="store_true", help="print FK landmarks and exit")
@@ -1137,6 +1140,11 @@ def main():
                                         math.sin(el),
                                         math.cos(el) * math.sin(az)])
         eye[1] = max(eye[1], 0.35)
+        cam = Camera(eye, target, fov_deg=27.0, aspect=aspect)
+        # push the subjects to the right of frame so they clear the readout
+        # cards on the left; done by sliding the look-at point along the
+        # camera's own right vector, which keeps the orbit itself unchanged
+        target = target - cam.right * a.frame_shift
         cam = Camera(eye, target, fov_deg=27.0, aspect=aspect)
 
         ext = (centre[0] - 3.0, centre[0] + 3.0, centre[2] - 3.0, centre[2] + 3.0)
