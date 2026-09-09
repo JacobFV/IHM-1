@@ -100,7 +100,7 @@ FEMALE_OVER_MALE = {
     'waist_over_hip':   0.9194355202181121,   # d = 1.07, soft tissue only
 }
 
-#: Bodies scaled by ``leg_segment_scale``.  Isotropic per segment, and that is a
+#: Bodies scaled by ``leg_length_ratio``.  Isotropic per segment, and that is a
 #: decision with a reason: ``walker_knee_r`` takes its three translation
 #: functions in a frame rotated by (-1.64, 1.45, 1.57) rad inside ``femur_r``,
 #: so a LONG-AXIS-ONLY femur scale has no componentwise meaning there and
@@ -200,10 +200,17 @@ PARAMETERS = (
         derived=(),
     ),
     dict(
-        name='pelvis_width_scale', unit='dimensionless', kind='continuous',
+        name='pelvis_breadth_ratio', unit='dimensionless', kind='continuous',
         range=(0.85, 1.20), default=1.0, status='implemented',
         body='mechanical',
-        basis=('Medio-lateral (model z) factor on the pelvis body alone. It moves '
+        basis=('Hip-joint-centre separation RELATIVE TO STATURE, as a multiple of '
+               "the source subject's. Defining it against stature rather than as "
+               'a raw geometric factor is what makes it the quantity NHANES '
+               'actually measures, and it is what lets it compose with '
+               'stature_m: the materializer solves for the raw medio-lateral '
+               'factor that lands the measured ratio on the request. '
+               'Realised as a medio-lateral (model z) factor on the pelvis body '
+               'alone. It moves '
                'the pelvis mass centre, its wrap objects, the muscle path points '
                'and markers attached to it, and the parent offset frames of the '
                'hip, back and ground_pelvis joints -- so the hip joint centres '
@@ -233,13 +240,13 @@ PARAMETERS = (
             'geometric knob that accepts any value.'),
     ),
     dict(
-        name='shoulder_width_scale', unit='dimensionless', kind='continuous',
+        name='shoulder_breadth_ratio', unit='dimensionless', kind='continuous',
         range=(0.85, 1.20), default=1.0, status='implemented',
         body='mechanical',
-        basis=('Medio-lateral (model z) factor on the torso body alone, which '
-               'separates the acromial joint centres and so sets shoulder '
-               'breadth against pelvic breadth. Measured effect: acromial '
-               'separation goes as the factor exactly and the '
+        basis=('Acromial-joint-centre separation RELATIVE TO STATURE, as a '
+               "multiple of the source subject's, realised as a medio-lateral "
+               '(model z) factor on the torso body alone. Measured effect: '
+               'acromial separation goes as the solved factor exactly and the '
                'shoulder-over-hip breadth ratio follows.'),
         range_basis='Engineering bounds.',
         source=MECHANICAL_MODEL,
@@ -257,15 +264,17 @@ PARAMETERS = (
             'catalogued here.'),
     ),
     dict(
-        name='leg_segment_scale', unit='dimensionless', kind='continuous',
+        name='leg_length_ratio', unit='dimensionless', kind='continuous',
         range=(0.85, 1.20), default=1.0, status='implemented',
         body='mechanical',
-        basis=('Uniform factor on each lower-limb segment -- femur, tibia, '
-               'patella, talus, calcaneus, toes, both sides -- applied before '
-               'the global stature factor, so it changes leg length RELATIVE to '
-               'the trunk. Measured effect: femur and tibia lengths go as the '
-               'factor, and after the stature correction the leg-over-stature '
-               'ratio moves while stature itself does not.'),
+        basis=('(femur + tibia) length RELATIVE TO STATURE, as a multiple of the '
+               "source subject's, realised as a uniform factor on each "
+               'lower-limb segment -- femur, tibia, patella, talus, calcaneus, '
+               'toes, both sides. Self-referential, because the legs are 48% of '
+               'stature: shortening them shortens stature too, so the '
+               'materializer solves the fixed point on the MEASURED model rather '
+               'than assuming the raw factor is the ratio. Measured effect: the '
+               'leg-over-stature ratio moves and stature itself does not.'),
         range_basis=('The measured target is the female/male ratio of upper leg '
                      'length over stature, %.5f (d = 0.44): women\'s thighs are '
                      '2.6%% shorter relative to stature. That is a small effect '
@@ -302,7 +311,7 @@ PARAMETERS = (
                "CHANGED BY THIS PARAMETER, in either direction."),
         range_basis=(
             "sex='female' now sets four measured PROPORTIONS -- stature, mass, "
-            'pelvis_width_scale and leg_segment_scale -- each the female/male '
+            'pelvis_breadth_ratio and leg_length_ratio -- each the female/male '
             'ratio of survey-weighted NHANES means applied to THIS subject, and '
             'each of which changes the running mechanical body in a way that is '
             'measured and gated (scripts/verify_body_proportions.py). It stopped '
@@ -376,6 +385,103 @@ def _check_continuous(spec, value):
         raise BodyParameterError('%s must be a finite value in [%g, %g], got %r'
                                  % (spec['name'], lo, hi, value))
     return value
+
+
+def sex_presets(sex):
+    """Default parameter values for a sex, as measured ratios on THIS subject.
+
+    Not population means substituted for the subject.  The source subject is one
+    measured man; the female preset is that man's own measurements multiplied by
+    the female/male ratio of survey-weighted NHANES means, which keeps whatever
+    is idiosyncratic about him and changes only what the population says differs
+    by sex.  Substituting the female mean outright would have silently swapped
+    subjects, and this repository's ledger has that error in it already.
+    """
+    if sex == 'male':
+        return {}
+    if sex != 'female':
+        raise BodyParameterError('No preset for sex=%r' % (sex,))
+    return {
+        'stature_m': MECHANICAL_STATURE_M * FEMALE_OVER_MALE['stature'],
+        'mass_kg': MECHANICAL_TARGET_MASS_KG * FEMALE_OVER_MALE['mass'],
+        'pelvis_breadth_ratio': FEMALE_OVER_MALE['hip_over_stature'],
+        'leg_length_ratio': FEMALE_OVER_MALE['upper_leg_over_stature'],
+        # shoulder_breadth_ratio is deliberately absent. BMX_J carries no
+        # biacromial breadth, so there is no measured value to put here, and a
+        # guessed one would be the only unmeasured number in the preset.
+    }
+
+
+def anisotropic_factors(resolved):
+    """{body: (fx, fy, fz)} for ``ihm.native.anisotropic_scaling``.
+
+    Empty when every proportional parameter is 1.0, which is what lets a
+    stature-only request keep taking the exact isotropic path.
+    """
+    factors = {}
+    pelvis = resolved.get('pelvis_breadth_ratio', 1.0)
+    if pelvis != 1.0:
+        factors['pelvis'] = (1.0, 1.0, pelvis)
+    shoulder = resolved.get('shoulder_breadth_ratio', 1.0)
+    if shoulder != 1.0:
+        factors['torso'] = (1.0, 1.0, shoulder)
+    leg = resolved.get('leg_length_ratio', 1.0)
+    if leg != 1.0:
+        for body in LEG_SEGMENT_BODIES:
+            factors[body] = (leg, leg, leg)
+    return factors
+
+
+#: Measured by ``scripts/audit_sex_specific_anatomy.py``.  Held here so the
+#: realisation block below states the absence in numbers rather than in prose.
+SEX_ANATOMY_COUNTS = {'simulated_entities': 4000, 'display_entities': 8979,
+                      'male_specific_simulated': 32, 'male_specific_display': 78,
+                      'female_specific_simulated': 0, 'female_specific_display': 0,
+                      'mammary_gland_nipple_areola_either_sex': 0}
+
+
+def sex_realisation(sex, resolved, presets):
+    """Exactly what ``sex`` changed and exactly what it did not.
+
+    This block exists so that the label cannot be quoted without the caveat.
+    ``docs/DIRECTION.md``: *a scaled male mesh with surfaces bolted onto it is
+    not a female body, and must not be labelled one.*
+    """
+    changed = {}
+    for name, value in sorted(presets.items()):
+        default = BY_NAME[name]['default']
+        changed[name] = {'from': default, 'to': value,
+                         'applied': resolved[name] == value,
+                         'ratio': (value / default) if default else None}
+    return {
+        'sex': sex,
+        'what_changed': changed if sex != 'male' else {},
+        'what_did_not_change': {
+            'anatomical_entities': dict(
+                SEX_ANATOMY_COUNTS,
+                note=('The entity set is identical for both values of this '
+                      'parameter. There is no female-specific entity to add and '
+                      'the male genital tract is not removed.')),
+            'mesh_source': ('BodyParts3D 4.0 is male-only; Z-Anatomy is male and '
+                            'not an independent subject; the OpenSim models are '
+                            '50th-percentile male. No catalogued source ships a '
+                            'female whole-body mesh.'),
+            'shoulder_breadth_ratio': ('left at 1.0 in every preset: BMX_J carries '
+                                     'no biacromial or bideltoid breadth, so '
+                                     'there is no measured value.'),
+            'hormones': ('ihm/native/reproductive.py runs a menstrual-cycle '
+                         'gonadotropin model whose E2, P4 and inhibin are '
+                         'prescribed functions of time, coupled to nothing, on a '
+                         'body with testes. This parameter does not reach it.'),
+            'hair': ('ihm/assembly/hair_fields.py labels 7 of 21 fields '
+                     'androgen-dependent as metadata strings with no hormone '
+                     'input and no measured female values.'),
+        },
+        'honest_summary': (
+            'Male anatomy at %s-typical proportions.' % sex
+            if sex != 'male' else
+            'The source subject: male anatomy at its own measured proportions.'),
+    }
 
 
 def resolve(request=None):

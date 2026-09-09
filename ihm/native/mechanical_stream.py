@@ -84,6 +84,14 @@ class NativeMechanicalStream:
             geometric_scale=augmentation.get('geometric_scale')
             if geometric_scale is not None and finite(geometric_scale)!=1.0 and 'subject_walk_scaled_FunctionBasedPathSet.xml' not in overrides:
                 raise ValueError('A geometrically scaled model must supply a scaled FunctionBasedPathSet')
+            # An ANISOTROPIC variant is the sharper case, and it needs its own
+            # guard because geometric_scale can be exactly 1.0 for one: widening
+            # a pelvis changes no global factor. It also cannot be repaired by a
+            # coefficient scale at all -- 50 of 80 paths move and 30 do not -- so
+            # the path set must have been REFITTED, not rescaled.
+            if augmentation.get('anisotropic_scale') and 'subject_walk_scaled_FunctionBasedPathSet.xml' not in overrides:
+                raise ValueError('An anisotropically scaled model must supply a REFITTED FunctionBasedPathSet; '
+                                 'no single coefficient factor can carry the muscle paths across a shape change')
             self.source_overrides=overrides
         self.surface_sensor_identity={}
         surface_manifest=None;surface_bytes=None;surface_input=None

@@ -39,11 +39,16 @@ able to fail.  Five arms:
     given.
 
 ``polyline``
-    The independent-representation check this repository already trusts:
-    fitted polynomial length against a straight-line walk of the model's own
-    ``PathPoint`` locations.  Different file, different elements, different code.
-    The ratio is 5.1% off at the reference pose because the polyline does not
-    model wrapping; what must not move is the ratio, between shipped and refit.
+    The independent-representation check this repository already trusts, pointed
+    at the right question.  A straight-line walk of the model's own ``PathPoint``
+    locations, computed in Python by forward kinematics over the ``.osim`` -- a
+    different file section reached by different code from anything OpenSim
+    evaluated.  It ignores wrapping, so its ratio to a true path length is not 1.
+    What is checked is that the refit and the model's own ``GeometryPath``s put
+    that ratio in the SAME place.  An earlier draft of this arm demanded instead
+    that refitting not move the ratio away from the SHIPPED set's, which quietly
+    assumed the shipped set was right; the truth arm shows it is 16.7x further
+    from the model's own paths than the refit is.
 
 ``sabotage``
     A refit of a DIFFERENT body -- the pelvis widened by the measured female
@@ -91,19 +96,17 @@ def reference_pose(model_path):
             for c in ET.parse(model_path).getroot().iter('Coordinate')}
 
 
-def polynomial_over_polyline(model_path, pathset_path):
-    """{muscle: fitted polynomial length / path-point polyline length} at default pose."""
-    fitted = FittedMomentArms(pathset_path)
-    polyline = path_point_polyline_lengths(model_path, default_pose_frames(model_path))
-    pose = reference_pose(model_path)
-    out = {}
-    for name in fitted.paths:
-        if name not in polyline or polyline[name] <= 0:
-            continue
-        out[name] = fitted.length_and_moment_arms(name, pose)[0] / polyline[name]
-    if not out:
-        raise ValueError('No muscle is present in both representations')
-    return out
+def default_pose_table(model_path, destination):
+    """A one-row coordinate trajectory at the model's declared default pose."""
+    import xml.etree.ElementTree as ET
+    root = ET.parse(model_path).getroot()
+    labels, values = ['time'], [0.0]
+    for joint in root.find('.//JointSet/objects'):
+        for coordinate in joint.iter('Coordinate'):
+            labels.append('/jointset/%s/%s/value' % (joint.get('name'), coordinate.get('name')))
+            values.append(float(coordinate.findtext('default_value')))
+    pf.write_sto(destination, labels, [values])
+    return len(labels) - 1
 
 
 def run(work, threads, reuse):
@@ -223,27 +226,73 @@ def run(work, threads, reuse):
         'refit_vs_scaled_truth_rms_m': tracks_truth['rms_m'],
         'noise_floor_scaled_m': ISOTROPIC_SCALE * noise_length['rms_m'],
         'refit_over_noise_floor': refit_check['rms_m'] / (ISOTROPIC_SCALE * noise_length['rms_m']),
-        'passed': (geometry_check['rms_m'] < 1e-9
+        'geometry_tolerance_m': 1e-5,
+        'geometry_tolerance_basis': (
+            'Not 0. The sampler calls Model::assemble, and this model carries 4 '
+            'CoordinateCouplerConstraints; the assembler solves them to its own '
+            'tolerance, and the two models solve them fractionally differently. '
+            'The residual is 1.4e-7 m and its worst muscle is gaslat_l, which '
+            'crosses the coupled walker knee -- so it is the assembler, not the '
+            'scaling. That scale_model is EXACT is established without a solver '
+            'by verify_stature_scaling.py, whose identity arm reproduces every '
+            'path length to relative error 0.0 straight from the XML.'),
+        'passed': (geometry_check['rms_m'] < 1e-5
                    and refit_check['rms_m'] <= 2.0 * ISOTROPIC_SCALE * noise_length['rms_m'])}
 
     # ---- arm: polyline ---------------------------------------------------
-    shipped_ratio = polynomial_over_polyline(MODEL, SHIPPED)
-    refit_ratio = polynomial_over_polyline(MODEL, fit_a)
-    common = sorted(set(shipped_ratio) & set(refit_ratio))
-    drift = {name: refit_ratio[name] / shipped_ratio[name] - 1 for name in common}
-    worst = max(drift, key=lambda n: abs(drift[n]))
+    # The polyline is computed in Python, by forward kinematics over the .osim's
+    # own PathPoint elements -- a different file section reached by different
+    # code from anything OpenSim evaluated above. It ignores wrap objects, so
+    # its ratio to a true path length is not 1. What it can do is say whether
+    # the refit sits where the model's own GeometryPaths sit: r_refit and
+    # r_truth must agree, and a systematic error anywhere in the OpenSim-side
+    # pipeline would separate them.
+    polyline = path_point_polyline_lengths(MODEL, default_pose_frames(MODEL))
+    pose_table = work / 'default_pose.sto'
+    default_pose_table(MODEL, pose_table)
+
+    def at_default_pose(name, pathset=None):
+        out = work / (name + '.csv')
+        if not (reuse and out.exists()):
+            pf.sample(MODEL, pose_table, out, pathset=pathset,
+                      log=work / (name + '.samplelog'))
+        lengths = {}
+        with open(out) as handle:
+            next(handle)
+            for line in handle:
+                _row, _t, actuator, quantity, _c, value = line.rstrip('\n').split(',')
+                if quantity == 'length':
+                    lengths[actuator.rsplit('/', 1)[-1]] = float(value)
+        return lengths
+
+    truth_pose = at_default_pose('pose-truth')
+    refit_pose = at_default_pose('pose-refit-a', fit_a)
+    shipped_pose = at_default_pose('pose-shipped', SHIPPED)
+    common = sorted(set(polyline) & set(refit_pose) & set(shipped_pose))
+    ratio = lambda d: {n: d[n] / polyline[n] for n in common}  # noqa: E731
+    r_truth, r_refit, r_shipped = ratio(truth_pose), ratio(refit_pose), ratio(shipped_pose)
+    refit_drift = {n: r_refit[n] / r_truth[n] - 1 for n in common}
+    shipped_drift = {n: r_shipped[n] / r_truth[n] - 1 for n in common}
+    worst = max(refit_drift, key=lambda n: abs(refit_drift[n]))
+    worst_shipped = max(shipped_drift, key=lambda n: abs(shipped_drift[n]))
     summary['arms']['polyline'] = {
-        'note': ('fitted polynomial length over a straight-line walk of the '
-                 "model's own PathPoint locations, at the default pose. The "
-                 'ratio is not 1 -- the polyline does not wrap -- and that is not '
-                 'what is checked. What is checked is that refitting does not '
-                 'move it.'),
+        'note': ('polynomial length over a Python-side path-point polyline at '
+                 'the default pose, for the refit and for the GeometryPath '
+                 'truth. The ratio is not 1 -- the polyline does not wrap -- and '
+                 'that is not what is checked; what is checked is that the refit '
+                 'and the truth put it in the same place. The shipped path set '
+                 'is scored the same way as the baseline.'),
         'muscles': len(common),
-        'shipped_mean_ratio': sum(shipped_ratio[n] for n in common) / len(common),
-        'refit_mean_ratio': sum(refit_ratio[n] for n in common) / len(common),
-        'worst_muscle': worst,
-        'worst_relative_drift': drift[worst],
-        'passed': abs(drift[worst]) < 0.02}
+        'truth_mean_ratio': sum(r_truth[n] for n in common) / len(common),
+        'refit_mean_ratio': sum(r_refit[n] for n in common) / len(common),
+        'shipped_mean_ratio': sum(r_shipped[n] for n in common) / len(common),
+        'refit_worst_muscle': worst,
+        'refit_worst_drift_from_truth': refit_drift[worst],
+        'shipped_worst_muscle': worst_shipped,
+        'shipped_worst_drift_from_truth': shipped_drift[worst_shipped],
+        'wrap_gap_truth_vs_polyline': max(abs(r_truth[n] - 1) for n in common),
+        'passed': (abs(refit_drift[worst]) < 0.02
+                   and abs(refit_drift[worst]) <= abs(shipped_drift[worst_shipped]))}
 
     # ---- arm: sabotage ---------------------------------------------------
     wrong_body = pf.compare(refit_wide_on_base, truth, 'length')
