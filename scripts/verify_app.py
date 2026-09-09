@@ -29,6 +29,28 @@ try:
  assert tiers['tiers'][0]['structures']<tiers['tiers'][-1]['structures']
  g=get(m['structures'][0]['geometry_url']);assert len(g['positions'])>10 and len(g['indices'])>3
  coverage=get('/api/anatomy/coverage');assert coverage
+ # The ring's structure and its magnitudes. Arrow width in the app IS the
+ # magnitude, so what a magnitude means has to survive a round trip: a measured
+ # near-zero and an edge nobody measured are different kinds and stay different.
+ graph=get('/api/brain/graph')
+ assert graph['counts']['routes']==144 and graph['counts']['routes_with_fibre_classes']==142
+ assert graph['counts']['ports']['total']==483
+ assert (graph['counts']['cord_muscles_mapped'],graph['counts']['cord_segments_used'])==(81,20)
+ kinds={e['id']:e['magnitude_kind'] for e in graph['edges']}
+ assert kinds['cortex.stance_correction']=='measured' and kinds['cord.arc.stretch']=='declared'
+ assert kinds['peripheral-nerve-left-median']=='unmeasured'
+ stance=next(e for e in graph['edges'] if e['id']=='cortex.stance_correction')
+ leak=next(e for e in graph['edges'] if e['id']=='cortex.postcentral_to_precentral')
+ assert stance['magnitude']==1.0 and 0.0003<=leak['magnitude']<=0.0007
+ optic=next(e for e in graph['edges'] if e['id']=='peripheral-nerve-left-optic')
+ assert len(optic['fibres'])==3 and optic['magnitude'] is None
+ assert [f['fibre_class'] for f in optic['fibres']]==['retinal_magno','retinal_parvo','retinal_konio']
+ assert all(s.get('anchor_m') for s in graph['systems'])
+ # With no body running there is no live magnitude, and the payload says so
+ # rather than presenting the stored values as this tick's.
+ state=get('/api/brain/state')
+ assert state['live'] is False and state['basis']=='measured-not-live' and state['edges']=={}
+ assert rejected('/api/brain/state?session=not-a-session')==400
  assert get('/api/anatomy/fidelity')['summary']['source_triangles']==6681030
  lymph=get('/api/lymphatic');assert len(lymph['nodes'])==996 and len(lymph['edges'])==1117
  assert lymph['directed'] is False and all(e['flow_ml_s'] is None for e in lymph['edges'])
