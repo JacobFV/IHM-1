@@ -42,6 +42,8 @@ import xml.etree.ElementTree as ET
 
 import numpy as np
 
+from .model_scaling import _scale_function_output
+
 WRAP_SHAPE_POLICIES = ('axis_aware', 'translate_only')
 
 
@@ -198,6 +200,50 @@ def scale_model_anisotropic(model_bytes, factors, *, wrap_shape='axis_aware',
                     entry['length_factor'] = length_factor
             report['wraps'].append(entry)
             bump('WrapObject')
+
+    # 3. CustomJoint translation transform functions.  These output a LENGTH in
+    #    the joint's parent offset frame -- the walker knee's three translations
+    #    are the tibiofemoral roll-glide -- so they move with a scaled parent.
+    #    Componentwise scaling is only defined when the offset frame is aligned
+    #    with the body it sits in; ``walker_knee_r``'s is rotated by
+    #    (-1.64, 1.45, 1.57) rad, so an anisotropic femur raises here rather than
+    #    silently producing a knee that translates along the wrong axes.
+    for joint in root.iter('CustomJoint'):
+        transform = joint.find('SpatialTransform')
+        if transform is None:
+            continue
+        socket = joint.findtext('socket_parent_frame') or ''
+        frames = {frame.get('name'): frame for frame in (joint.find('frames') or [])}
+        frame = frames.get(socket.rsplit('/', 1)[-1])
+        if frame is None:
+            continue
+        parent = (frame.findtext('socket_parent') or '')
+        body = parent.rsplit('/', 1)[-1]
+        if parent.rsplit('/', 1)[0] != '/bodyset' or body not in factors:
+            continue
+        factor = factors[body]
+        isotropic = float(factor.max() - factor.min()) < 1e-12
+        aligned = float(np.abs(_vec(frame.findtext('orientation') or '0 0 0')).max()) < 1e-12
+        for axis in transform:
+            if not (axis.get('name') or '').startswith('translation'):
+                continue
+            direction = _vec(axis.findtext('axis'))
+            if isotropic:
+                component = float(factor[0])
+            else:
+                nonzero = np.flatnonzero(np.abs(direction) > 1e-12)
+                if not aligned or nonzero.size != 1:
+                    raise ValueError(
+                        'Joint %s takes its translations in a frame that is '
+                        'rotated in body %s, or along a non-principal axis %r. '
+                        'An anisotropic scale of that body has no componentwise '
+                        'meaning here.' % (joint.get('name'), body, direction.tolist()))
+                component = float(factor[nonzero[0]])
+            for child in axis:
+                if child.tag in ('coordinates', 'axis'):
+                    continue
+                _scale_function_output(child, component)
+                bump('translation_axis')
 
     report['limitation'] = (
         'Wrap objects: every one in this model is a rotated WrapCylinder, and a '

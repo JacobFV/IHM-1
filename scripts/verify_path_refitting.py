@@ -122,9 +122,9 @@ def run(work, threads, reuse):
 
     def do_fit(name, model_path, settings=None):
         out = work / name
-        produced = out / (Path(model_path).stem + '_FunctionBasedPathSet.xml')
-        if reuse and produced.exists():
-            return produced
+        produced = sorted(out.glob('*_FunctionBasedPathSet.xml')) if out.exists() else []
+        if reuse and len(produced) == 1:
+            return produced[0]
         started = time.time()
         result = pf.fit(model_path, COORDINATES, out, settings=settings,
                         threads=threads, log=work / (name + '.log'))
