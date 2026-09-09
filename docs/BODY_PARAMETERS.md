@@ -27,6 +27,7 @@ numbers, exactly what is missing.
     scripts/materialize_proportional_variant.py   build a re-proportioned body
     scripts/audit_hormone_axis_anatomy.py         which hormone fields have an organ
     scripts/audit_hair_sex_dependence.py          what a female hair field would need
+    scripts/verify_proportional_variant_native.py  does the ENGINE accept it
 
 `data/derived/` is gitignored throughout. The scripts are the artifacts.
 
@@ -468,9 +469,52 @@ or a fascia would need to constrain. Both are in the registration.
   together in that direction. Bi-iliac breadth is measured by no catalogued
   source, in either sex. And `BMXLEG` is inguinal crease to proximal tibia, not
   the OpenSim hip-centre-to-knee-centre length.
-- **No native run has been accepted on any of it.** `native_acceptance_complete`
-  is `false`. Every number above is measured on XML and on OpenSim's own path
-  evaluator, not on a simulation.
+- **The correspondence problem is not solved, it is declared** (above).
+- **Nothing here walks, stands, or is driven by anything.** The native check
+  below is an *acceptance*, not behaviour.
+
+#### The engine accepts it, and finding that out found a defect
+
+`verify_proportional_variant_native.py` loads the variant and the base body
+through `NativeMechanicalStream` under the same requested mass and prints both,
+because one body's numbers alone say nothing. Five 2 ms steps, then close.
+
+| | variant | base |
+|---|---|---|
+| muscles / coordinates / bodies | 98 / 33 / 22 | 98 / 33 / 22 |
+| plant mass | 66.0928 kg | 66.0928 kg |
+| normalised fibre length | **0.569 – 1.278** | 0.573 – 1.281 |
+| integrated 5 × 2 ms | yes | yes |
+| worst step | 0.228 s | 0.294 s |
+
+`native_acceptance_complete` is `true` on this variant, and it means exactly what
+the registration says it means: *the plant instantiated this geometry with these
+refitted muscle paths and integrated*.
+
+**The first run of this check failed, and the failure was real.** The variant's
+normalised fibre length came out at **0.381** against the base's 0.573, on
+`fhl_l` and `fhl_r` — **below the Millard active force-length floor of about
+0.47**, so flexor hallucis longus was producing no active force at all.
+
+The cause: `scale_model` puts the *global* isotropic factor on every
+`optimal_fiber_length` and `tendon_slack_length`, and the per-muscle correction —
+0.8965 for the leg against the global 0.9447 — went only into `catalog.json`.
+**The engine reads fibre and tendon lengths from the `.osim` and never from the
+catalog.** A 5.4% error in a musculotendon that is 90% tendon lands almost
+entirely on the fibre: 0.38 m × 0.054 = 20.5 mm of extra tendon against a 43 mm
+optimal fibre, which is the 0.594 that was observed.
+
+That is this repository's recurring shape — *a quantity computed correctly, then
+applied to the wrong object* — and no XML gate had caught it. Two gates now do,
+and both would have caught it without launching the engine:
+
+- **muscle operating point does not move**: `(path length at the default pose −
+  tendon slack) / optimal fibre length`, dimensionless, which is what the
+  equilibrium solve lands on. It moved by 0.594 under the defect; it now moves by
+  **1.1e-15**.
+- **per-muscle fibre factor reached the model, not only the catalog**: reads the
+  `.osim` back and requires each muscle to carry its own measured path ratio.
+  **2.2e-16**.
 
 ### The hormone cluster
 

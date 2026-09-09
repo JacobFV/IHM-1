@@ -292,6 +292,14 @@ stops push them back toward the model's, so the two pull in opposite directions
 there. Neither artifact was wrong on its own terms; they disagree, and nothing
 had ever asked them to agree.
 
+### Rendered
+
+`ibm1-progress-archive/video/tissue_prone_drop_three_arms.mp4` — the same 2 s
+prone drop three times on 429 bone surfaces of the real anatomy: bare, with all
+105 ligaments, and with the joint stops plus the admissible 66. The centre panel
+is a negative result rendered on purpose. The anatomy is posed from the plant, as
+always; nothing there is a body moving itself.
+
 ### How to switch them on
 
 `NativeMechanicalStream(..., tissue_ligaments='data/derived/tissue-force-elements-v1',

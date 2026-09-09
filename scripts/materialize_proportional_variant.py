@@ -164,6 +164,37 @@ def per_muscle_fibre_scale(base_model, variant_model, work):
     return {name: after[name] / before[name] for name in shared}
 
 
+def apply_fibre_scale(model_bytes, fibre_scale, already_applied):
+    """Put the per-muscle fibre and tendon factor into the model the engine loads.
+
+    ``scale_model`` has already multiplied every ``optimal_fiber_length`` and
+    ``tendon_slack_length`` by the global isotropic factor, so what is applied
+    here is the residual ``fibre_scale[muscle] / already_applied``.  A muscle
+    with no measured factor raises rather than silently keeping the global one:
+    that silence is exactly what the defect this function fixes was made of.
+    """
+    root = ET.fromstring(model_bytes)
+    touched = 0
+    for force_set in root.iter('ForceSet'):
+        for muscle in force_set.find('objects'):
+            node = muscle.find('optimal_fiber_length')
+            if node is None:
+                continue
+            name = muscle.get('name')
+            if name not in fibre_scale:
+                raise ValueError('No measured path ratio for muscle %s; refusing to '
+                                 'leave it on the global factor' % name)
+            residual = fibre_scale[name] / already_applied
+            for tag in ('optimal_fiber_length', 'tendon_slack_length'):
+                child = muscle.find(tag)
+                if child is not None:
+                    child.text = repr(float(child.text) * residual)
+            touched += 1
+    if not touched:
+        raise ValueError('No muscles found to rescale')
+    return ET.tostring(root, encoding='utf-8', xml_declaration=True)
+
+
 def default_pose_table(model_path, destination):
     """A one-row coordinate trajectory at a model's declared default pose."""
     root = ET.parse(model_path).getroot()
@@ -252,22 +283,39 @@ def materialize(output, request, *, threads=6, keep_work=False):
         contact_bytes, raw['leg'] * global_scale)
     (output / CONTACT).write_bytes(scaled_contact)
 
-    # --- 3. refit ---------------------------------------------------------
+    # --- 3. fibre and tendon lengths, per muscle, IN THE MODEL -------------
+    # This step exists because leaving it out was a real defect, caught by the
+    # native acceptance run and by nothing on the XML side. scale_model has
+    # already put the GLOBAL factor on every optimal_fiber_length; the
+    # per-muscle correction went only into catalog.json, and the engine reads
+    # fibre and tendon lengths from the .osim. On the female variant that left
+    # flexor hallucis longus 5.4% long in a musculotendon that is 90% tendon,
+    # which lands almost entirely on the fibre: its normalised fibre length came
+    # out at 0.381, below the Millard active force-length floor of about 0.47,
+    # so it produced no active force at all.
     work = output / 'refit'
+    work.mkdir(parents=True, exist_ok=True)
+    fibre_scale = per_muscle_fibre_scale(
+        ROOT / registration['model_path'], model_path, work)
+    patched = apply_fibre_scale(model_path.read_bytes(), fibre_scale, global_scale)
+    model_path.write_bytes(patched)
+
+    # --- 4. refit ---------------------------------------------------------
+    # After the patch, because the fit reads geometry and the patch does not
+    # touch geometry -- but doing it in this order means the file the fitter
+    # read is the file that ships.
     fitted = pf.fit(model_path, ROOT / RAW / COORDINATES, work,
                     threads=threads, log=output / 'refit.log')
     shutil.copyfile(fitted, output / PATHSET)
 
-    # --- 4. gates ---------------------------------------------------------
-    gates, evidence = gate(model_path, output / PATHSET, ROOT / registration['model_path'],
-                           ROOT / RAW / PATHSET, base_measurements, final,
-                           requested, catalog, work, threads)
-
-    fibre_scale = per_muscle_fibre_scale(
-        ROOT / registration['model_path'], model_path, work)
     scaled_catalog, without_paths = scale_catalog_per_muscle(
         catalog, fibre_scale, raw['leg'] * global_scale, force_scale)
     (output / 'catalog.json').write_text(json.dumps(scaled_catalog, indent=2) + '\n')
+
+    # --- 5. gates ---------------------------------------------------------
+    gates, evidence = gate(model_path, output / PATHSET, ROOT / registration['model_path'],
+                           ROOT / RAW / PATHSET, base_measurements, final,
+                           requested, catalog, work, threads, fibre_scale, global_scale)
 
     if not keep_work:
         shutil.rmtree(work, ignore_errors=True)
@@ -334,7 +382,7 @@ def materialize(output, request, *, threads=6, keep_work=False):
 
 
 def gate(model_path, pathset, base_model, base_pathset, base_measurements,
-         final, requested, catalog, work, threads):
+         final, requested, catalog, work, threads, fibre_scale, global_scale):
     """Everything that must hold, measured on the artifacts that were written."""
     results, evidence = [], {}
 
@@ -397,6 +445,75 @@ def gate(model_path, pathset, base_model, base_pathset, base_measurements,
               'proportional change would not have reached the muscles at all.'
               % (necessity['rms_m'] / REFIT_NOISE_FLOOR_M, necessity['worst_actuator'],
                  necessity['max_actuator_rms_m']))))
+
+    # 5b. The gate that would have caught the fibre defect without the engine.
+    #     Musculotendon slack -- (path length at the default pose - tendon slack)
+    #     over optimal fibre length -- is dimensionless and is what the engine's
+    #     equilibrium solve lands on. Under a correct per-muscle rescale it must
+    #     not move between the base body and the variant. Under the defect it
+    #     moved by 0.594 on flexor hallucis longus.
+    def slack_ratio(model, path_lengths):
+        out = {}
+        for force_set in ET.parse(model).getroot().iter('ForceSet'):
+            for muscle in force_set.find('objects'):
+                node = muscle.find('optimal_fiber_length')
+                if node is None or muscle.get('name') not in path_lengths:
+                    continue
+                optimal = float(node.text)
+                tendon = float(muscle.findtext('tendon_slack_length'))
+                out[muscle.get('name')] = (path_lengths[muscle.get('name')] - tendon) / optimal
+        return out
+
+    def default_lengths(model, tag):
+        table = work / (tag + '_slack.sto')
+        default_pose_table(model, table)
+        series = pf.sample(model, table, work / (tag + '_slack.csv'),
+                           log=work / (tag + '_slack.log'))
+        return {key[0].rsplit('/', 1)[-1]: values[0]
+                for key, values in series.items() if key[1] == 'length'}
+
+    base_slack = slack_ratio(base_model, default_lengths(base_model, 'base'))
+    variant_slack = slack_ratio(model_path, default_lengths(model_path, 'variant'))
+    shared = sorted(set(base_slack) & set(variant_slack))
+    drift = {n: variant_slack[n] - base_slack[n] for n in shared}
+    worst_slack = max(shared, key=lambda n: abs(drift[n]))
+    results.append(dict(
+        gate='muscle operating point does not move',
+        muscles=len(shared), worst_muscle=worst_slack,
+        expected=0.0, measured=drift[worst_slack],
+        relative_error=abs(drift[worst_slack]), tolerance=0.02,
+        note=('(path length at the default pose - tendon slack) / optimal fibre '
+              'length, a dimensionless quantity the engine\'s equilibrium solve '
+              'lands on. It caught a real defect: the per-muscle fibre factor '
+              'reached catalog.json and not the .osim the engine loads, which '
+              'moved this by 0.594 on fhl and put it below the Millard active '
+              'force-length floor.')))
+
+    # 5c. The per-muscle factor is IN the model, not only in the catalog.
+    model_ratio = {}
+    for force_set in ET.parse(model_path).getroot().iter('ForceSet'):
+        for muscle in force_set.find('objects'):
+            node = muscle.find('optimal_fiber_length')
+            if node is not None:
+                model_ratio[muscle.get('name')] = float(node.text)
+    base_ratio = {}
+    for force_set in ET.parse(base_model).getroot().iter('ForceSet'):
+        for muscle in force_set.find('objects'):
+            node = muscle.find('optimal_fiber_length')
+            if node is not None:
+                base_ratio[muscle.get('name')] = float(node.text)
+    mismatch = {n: model_ratio[n] / base_ratio[n] / fibre_scale[n] - 1
+                for n in model_ratio if n in base_ratio and n in fibre_scale}
+    worst_ratio = max(mismatch, key=lambda n: abs(mismatch[n]))
+    results.append(dict(
+        gate='per-muscle fibre factor reached the model, not only the catalog',
+        muscles=len(mismatch), worst_muscle=worst_ratio,
+        expected=0.0, measured=mismatch[worst_ratio],
+        relative_error=abs(mismatch[worst_ratio]), tolerance=1e-9,
+        note=('the engine reads optimal_fiber_length and tendon_slack_length from '
+              'the .osim and never from catalog.json; this reads the .osim back '
+              'and requires each muscle to carry its OWN measured path ratio '
+              'rather than the global factor')))
 
     # 6. Physiology, from the catalog's own fibre lengths.
     pose = {c.get('name'): float(c.findtext('default_value'))
