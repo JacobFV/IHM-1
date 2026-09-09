@@ -274,6 +274,7 @@ export function mountSceneInteraction({scene,camera,renderer,controls,group,getO
     get running(){return running;},
     get started(){return !!session||!!creating;},
     get state(){return state;},
+    get session(){return session;},
     get active(){return !!session||!!creating||pending;},
     dispose(){disposed=true;skinVoltage.dispose();intakeMass.dispose();spectrum.dispose();intake.dispose();running=false;unload();window.removeEventListener('pagehide',unload);gizmo.dispose();scene.remove(gizmo.getHelper());group.remove(environmentGroup,gizmoTarget,arrow);
       renderer.domElement.removeEventListener('pointerdown',down,true);renderer.domElement.removeEventListener('pointermove',move,true);renderer.domElement.removeEventListener('pointerup',up,true);renderer.domElement.removeEventListener('pointercancel',up,true);}};

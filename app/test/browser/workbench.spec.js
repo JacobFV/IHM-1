@@ -133,11 +133,10 @@ test("the viewport carries only the gimbal, the transport and two column icons",
   await page.mouse.up();
   await page.waitForTimeout(800);
   expect((await page.locator("#gimbal").screenshot()).equals(before)).toBe(false);
-  await expect(page.locator("#speed")).toHaveText("1x");
-  await page.locator("#speed").click();
-  await expect(page.locator("#speed-menu button")).toHaveText(["0.25x", "0.5x", "1x", "2x", "5x", "10x"]);
-  await page.locator("#speed-menu button").getByText("5x", { exact: true }).click();
-  await expect(page.locator("#speed")).toHaveText("5x");
+  // Playback rate belongs to a recording, so the control is not on screen until
+  // one is open; the simulation runs at the rate it computes at.
+  await expect(page.locator("#speed")).toBeHidden();
+  await expect(page.locator("#transport")).toHaveAttribute("data-owner", "simulation");
   // The composed body-state legend is gone, not shortened.
   await expect(page.locator("#flow-legend")).toHaveCount(0);
   await expect(page.getByText("tissue transforms")).toHaveCount(0);

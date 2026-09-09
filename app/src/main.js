@@ -22,6 +22,9 @@ import { mountGimbal } from "./gimbal.js";
 import { mountCameraOrbit } from "./camera-orbit.js";
 import { mountSurround } from "./surround.js";
 import { mountMicrovascularDetail } from "./microvascular-detail.js";
+import { transportState, recordingCatalog, recordingHeader, RECORDING } from "./transport.js";
+import { mountPromptBar } from "./prompt-bar.js";
+import { mountRing } from "./ring.js";
 import { tissueMaterial, tissueUVs, applyOpacity } from "./tissue-materials.js";
 
 const MODEL_ID = "ihm-body";
@@ -44,13 +47,24 @@ document.querySelector("#app").innerHTML = `
   <aside id="left-column" aria-label="Body controls"></aside>
   <canvas id="gimbal" width="108" height="108" aria-label="Body plane views · drag the scene to turn it"></canvas>
   <aside id="pane-column" aria-label="Panes"></aside>
-  <div id="transport">
-    <span id="transport-label">Recording</span>
-    <button id="play" type="button" aria-label="Play recorded body" disabled>▶</button>
-    <button id="speed" type="button" aria-expanded="false" aria-label="Playback speed">1x</button>
+  <div id="recording-header" role="status" hidden>
+    <span class="eyebrow">Recording</span>
+    <b id="recording-name"></b>
+    <span id="recording-detail"></span>
+    <button id="recording-close" type="button">Close recording</button>
+  </div>
+  <div id="ring-host"></div>
+  <div id="transport" role="group" aria-label="Transport">
+    <span id="transport-label">Simulation</span>
+    <button id="play" type="button" aria-label="Run or hold the simulation">▶</button>
+    <input id="time" type="range" min="0" max="0" value="0" aria-label="Scrub the open recording" hidden disabled>
+    <button id="speed" type="button" aria-expanded="false" aria-label="Playback speed" hidden>1x</button>
     <div id="speed-menu" role="group" aria-label="Playback rate" hidden></div>
+    <button id="open-recording" type="button" aria-expanded="false" aria-label="Open a recording">Open recording…</button>
+    <div id="recording-menu" role="group" aria-label="Recordings" hidden></div>
   </div>
   <div id="live-readout" role="status" hidden><i></i><span id="live-readout-text"></span></div>
+  <div id="prompt-host"></div>
   <div id="orientation" aria-hidden="true"><span data-edge="top"></span><span data-edge="bottom"></span><span data-edge="left"></span><span data-edge="right"></span></div>
   <div id="scale-bar" aria-hidden="true" hidden><i></i><span></span></div>
   <p id="scene-status" role="status">Loading anatomy…</p>
@@ -140,12 +154,18 @@ for (const id of ["live-body", "live-motor", "intake", "intake-mass",
   host.append(el("p", "note", "Start the body to inspect its computed state."));
   liveHosts[id] = host;
 }
+// A recording is a document you open, not a mode you switch into. This pane
+// says which one is open and what it is; the scrubbing itself belongs to the
+// transport, because while a recording is open the transport IS the
+// recording's — the way a video player's scrubber is obviously not a camera.
 const playbackBody = el("div");
 playbackBody.innerHTML =
-  `<input id="time" type="range" min="0" max="0" value="0" aria-label="Recorded body frame" disabled>` +
-  `<p id="time-value" class="note">No recorded frames</p>` +
-  `<p class="note">Scrubs a stored trajectory. The simulation is started from Simulation in the left column.</p>`;
+  `<p id="time-value" class="note">No recording is open. The simulation is live.</p>` +
+  `<p id="recording-source" class="note"></p>` +
+  `<p class="note">Opening a recording holds the simulation and hands the transport to the recording. Close it to hand the transport back.</p>`;
 
+const ringPanelHost = el("div");
+ringPanelHost.id = "ring-pane";
 const panes = mountPanes(paneHost, [
   { id: "selection", title: "Selection", content: selectionBody, open: true },
   { id: "live", title: "Live body", content: liveHosts["live-body"] },
@@ -159,7 +179,8 @@ const panes = mountPanes(paneHost, [
   { id: "temporal-spectrum", title: "Live Laplace spectrum", content: liveHosts["temporal-spectrum"] },
   { id: "microvessels", title: "Local microvessels", content: microvascularHost },
   { id: "scene", title: "Body interaction", content: bodyInteraction },
-  { id: "playback", title: "Recording playback", content: playbackBody, open: true },
+  { id: "signal-graph", title: "Signal graph", content: ringPanelHost, open: true },
+  { id: "playback", title: "Recording", content: playbackBody },
   { id: "domain", title: "Material owners", content: (() => {
       const node = el("div");
       node.innerHTML = `<div id="domain-roles"></div><p id="domain-selected" class="note">Click a surface to identify the owner that carries it.</p>`;
@@ -181,7 +202,10 @@ let domainView = null, domainRequest = 0, materialization = "body";
 let fidelityIndex = null, fidelityOmits = new Set(), conformingDomains = [];
 let bodyTrajectory = null, bodyError = "Body trajectory unavailable";
 let liveFrame = null, sceneInteraction = null;
+// A recording is open or it is not; that one fact decides what the transport is.
+let recording = null, recordingData = null, recordingError = "";
 let playing = false, speed = 1, lastTick = 0, lastRender = 0, lastLiveVisual = 0;
+let ring = null, brainGraph = null, brainStateTimer = 0, lastLeaders = 0;
 let hairDynamics = false;
 
 const left = mountLeftColumn($("left-column"), {
@@ -198,13 +222,6 @@ const left = mountLeftColumn($("left-column"), {
   onSimulation: (option, on) => {
     if (option === "hair") { hairDynamics = on; updateFrame(); return; }
     sceneInteraction?.setOptions(left.options).then(syncRun).catch((e) => left.setRunNote(e.message));
-  },
-  onRun: () => {
-    if (!sceneInteraction) return;
-    if (!sceneInteraction.started) sceneInteraction.start().then(syncRun).catch((e) => left.setRunNote(e.message));
-    else if (sceneInteraction.running) { sceneInteraction.pause(); syncRun(); }
-    else sceneInteraction.start().then(syncRun).catch((e) => left.setRunNote(e.message));
-    syncRun();
   },
 });
 // Catalogue geometry and server-owned environment state share canonical coordinates.
@@ -289,8 +306,9 @@ function applyEnvironment(id, selection = left.environmentSelection, objects = l
   sceneInteraction?.setEnvironment(id, configuration).then(syncRun).catch((e) => left.setRunNote(e.message));
 }
 function syncRun() {
-  if (!sceneInteraction) { left.setRun("Start body", true); syncTransport(); return; }
-  left.setRun(!sceneInteraction.started ? "Start body" : sceneInteraction.running ? "Pause body" : "Resume body");
+  if (!sceneInteraction) { left.setRun("Body view not mounted"); syncTransport(); return; }
+  left.setRun(!sceneInteraction.started ? "Body stopped · press play in the transport"
+    : sceneInteraction.running ? "Body running" : "Body held");
   left.lockDynamics(sceneInteraction.started);
   syncTransport();
 }
@@ -551,13 +569,99 @@ $("speed").onclick = () => {
   $("speed-menu").hidden = !open;
   $("speed").setAttribute("aria-expanded", String(open));
 };
+// ONE control. What it runs or holds is whatever the transport is attached to:
+// the simulation, always, unless a recording is open. There is no shared button
+// and no mode toggle -- opening a recording is opening a document.
 $("play").onclick = () => {
-  if (liveFrame) return;
-  playing = !playing;
-  lastTick = performance.now();
-  $("play").textContent = playing ? "❚❚" : "▶";
+  const model = transportModel();
+  if (model.disabled) return;
+  if (model.owner === RECORDING) {
+    playing = !playing;
+    lastTick = performance.now();
+    syncTransport();
+    return;
+  }
+  if (!sceneInteraction) { left.setRunNote("The body view is not mounted."); return; }
+  if (sceneInteraction.running) { sceneInteraction.pause(); syncRun(); return; }
+  sceneInteraction.start().then(syncRun).catch((e) => left.setRunNote(e.message));
+  syncRun();
 };
-$("time").oninput = updateFrame;
+$("time").oninput = () => { updateFrame(); syncTransport(); };
+
+// -- opening a recording -----------------------------------------------------
+$("open-recording").onclick = async () => {
+  const menu = $("recording-menu");
+  const open = menu.hidden;
+  menu.hidden = !open;
+  $("open-recording").setAttribute("aria-expanded", String(open));
+  if (!open) return;
+  menu.replaceChildren(el("p", "note", "Reading what has been computed…"));
+  const scenarios = await api("/api/scenarios").catch(() => null);
+  const entries = recordingCatalog({
+    canonical: { available: !bodyError, detail: bodyTrajectory
+      ? `${bodyTrajectory.frames.length} computed frames` : "The materialized native run for this body." },
+    scenarios,
+  });
+  menu.replaceChildren();
+  if (!entries.length) {
+    menu.append(el("p", "note", bodyError
+      ? `No recording is available: ${bodyError}`
+      : "No computed recording is available yet."));
+    return;
+  }
+  for (const entry of entries) {
+    const button = el("button", null, entry.label);
+    button.type = "button";
+    button.append(el("small", null, entry.detail));
+    button.onclick = () => { menu.hidden = true; $("open-recording").setAttribute("aria-expanded", "false"); openRecording(entry); };
+    menu.append(button);
+  }
+};
+document.addEventListener("pointerdown", (event) => {
+  const menu = $("recording-menu");
+  if (!menu.hidden && !$("transport").contains(event.target)) {
+    menu.hidden = true;
+    $("open-recording").setAttribute("aria-expanded", "false");
+  }
+});
+$("recording-close").onclick = () => closeRecording();
+
+async function openRecording(entry) {
+  // Opening a recording holds the simulation. It does not close the session:
+  // the body is still there, held at its last accepted state, and closing the
+  // recording hands the transport straight back to it.
+  if (sceneInteraction?.running) sceneInteraction.pause();
+  syncRun();
+  playing = false;
+  recording = entry;
+  recordingError = "";
+  $("recording-header").hidden = false;
+  $("recording-name").textContent = entry.label;
+  $("recording-detail").textContent = "loading…";
+  try {
+    if (entry.id === "canonical" && bodyTrajectory) recordingData = bodyTrajectory;
+    else {
+      const data = await api(entry.url);
+      if (!validBodyTrajectory(data)) throw Error("No valid computed body frames in this recording");
+      recordingData = data;
+    }
+  } catch (error) {
+    recordingData = null;
+    recordingError = error.message;
+  }
+  $("recording-source").textContent = recordingError
+    ? recordingError : `${entry.label} · ${entry.detail}`;
+  setupFrames();
+}
+function closeRecording() {
+  recording = null;
+  recordingData = null;
+  recordingError = "";
+  playing = false;
+  $("recording-header").hidden = true;
+  $("recording-source").textContent = "";
+  setupFrames();
+}
 
 // -------------------------------------------------------------- toggles ----
 function syncInsets() {
@@ -576,6 +680,13 @@ for (const [id, side] of [["toggle-left", "left-column"], ["toggle-right", "pane
   };
 syncInsets();
 new ResizeObserver(syncInsets).observe(document.documentElement);
+// The prompt panel grows upward from the bottom edge, and the transport sits
+// above it. What "above" is has to be measured, not guessed at, or a five-entry
+// retrieval covers the play button.
+new ResizeObserver(() => {
+  viewport.style.setProperty("--prompt-inset", `${$("prompt-host").offsetHeight || 48}px`);
+  ring?.resize();
+}).observe($("prompt-host"));
 
 // ------------------------------------------------------------- clothing ----
 // The wardrobe is 33 registered, cloth-simulated garments served whole by the
@@ -658,7 +769,10 @@ function applyFidelity(value) {
 async function chooseMaterialization(value) {
   const request = ++domainRequest;
   materialization = value;
-  playing = false; $("play").textContent = "▶";
+  // A conforming tetrahedral volume is static and a recording is a trajectory;
+  // they cannot both own the view, and the volume is what was just asked for.
+  if (recording && !wholeBody(value)) closeRecording();
+  playing = false;
   try { if (sceneInteraction) await sceneInteraction.reset(); }
   catch (error) { left.setMaterializationNote("Body cleanup must finish first: " + error.message); return; }
   if (request !== domainRequest) return;
@@ -701,42 +815,74 @@ function renderDomainRoles() {
     box.onchange = () => { domainView.setRoleVisible(box.dataset.role, box.checked); renderDomainRoles(); };
 }
 
-// The bottom centre is one slot with two tenants. A live body owns it while it
-// runs, because a greyed-out transport reads as a broken play button rather
-// than as "this control belongs to the recording, and the recording is not
-// what you are looking at". Nothing here starts or stops the simulation; that
-// is the run button in the Simulation section, and the copy says so.
+// The bottom centre is ONE control with one meaning: run or hold whatever the
+// transport is attached to. It is attached to the simulation, because the
+// simulation is the app; it is attached to a recording only while one is open,
+// and then the header above says which one. Nothing about this is a tooltip.
+function transportModel() {
+  return transportState({
+    open: !!recording,
+    recording,
+    frames: recordingData?.frames.length || 0,
+    index: Number($("time").value) || 0,
+    playing,
+    recordingError,
+    started: !!sceneInteraction?.started,
+    running: !!sceneInteraction?.running,
+    busy: !!sceneInteraction && sceneInteraction.started && !sceneInteraction.state,
+    staticVolume: !!domainView,
+  });
+}
 function syncTransport() {
+  const model = transportModel();
+  const transport = $("transport");
+  transport.dataset.owner = model.owner;
+  transport.dataset.empty = String(model.disabled);
+  $("transport-label").textContent = model.label;
+  $("play").textContent = model.symbol;
+  $("play").disabled = model.disabled;
+  $("play").title = model.title;
+  $("play").setAttribute("aria-label", model.title);
+  $("time").hidden = !model.scrub;
+  $("time").disabled = !model.scrub || model.frames < 2;
+  $("time").max = Math.max(0, model.frames - 1);
+  $("speed").hidden = !model.speed;
+  if (!model.speed) { $("speed-menu").hidden = true; $("speed").setAttribute("aria-expanded", "false"); }
+  $("open-recording").textContent = recording ? "Open another…" : "Open recording…";
+
+  const header = recordingHeader(recording, {
+    frames: model.frames, index: model.index,
+    time_s: recordingData?.frames[model.index]?.time_s,
+    error: recordingError,
+  });
+  $("recording-header").hidden = !header;
+  // The header owns the top strip while it is up, so what sits under it has to
+  // know how tall it actually is rather than assume.
+  viewport.style.setProperty("--header-inset",
+    header ? `${($("recording-header").offsetHeight || 32) + 8}px` : "0px");
+  if (header) {
+    $("recording-name").textContent = header.name;
+    $("recording-detail").textContent = header.detail;
+    $("recording-header").dataset.failed = String(header.failed);
+  }
+  // The live badge is the body's own clock and stays readable while a recording
+  // is open, because the body is still there, held.
   const live = !!liveFrame;
-  const frames = domainView ? 0 : bodyTrajectory?.frames.length || 0;
-  $("transport").hidden = live;
   $("live-readout").hidden = !live;
   if (live) {
     const running = !!sceneInteraction?.running;
     $("live-readout").dataset.running = String(running);
     $("live-readout-text").textContent =
-      `${running ? "Live" : "Paused"} · ${liveFrame.time_s.toFixed(2)} s computed`;
-    return;
+      `${running ? "Live" : "Held"} · ${liveFrame.time_s.toFixed(2)} s computed`;
   }
-  const why = domainView ? "A conforming volume is static; there is nothing to play."
-    : bodyError ? `No recording loaded: ${bodyError}`
-    : frames < 2 ? "No recording loaded yet."
-    : "";
-  $("play").title = why || "Play the recorded body trajectory. This does not run the simulation.";
-  $("transport").dataset.empty = String(!!why);
-  $("transport-label").textContent = why ? "No recording" : "Recording";
 }
 
 // ---------------------------------------------------------------- frames ---
 function setupFrames() {
-  const frames = domainView ? 0 : bodyTrajectory?.frames.length || 0;
-  const live = !!liveFrame;
-  $("play").disabled = live || frames < 2;
-  $("time").disabled = live || !frames;
+  const frames = recording ? recordingData?.frames.length || 0 : 0;
   $("time").max = Math.max(0, frames - 1);
-  if (!live) $("time").value = 0;
+  if (!recording) $("time").value = 0;
   playing = false;
-  $("play").textContent = "▶";
   syncTransport();
   updateFrame();
 }
@@ -745,16 +891,25 @@ function updateFrame() {
     $("time-value").textContent = "Static conforming volume · nothing is integrated in time here.";
     return;
   }
+  // An open recording is what you are looking at. Nothing else can claim the
+  // view while it is open, which is the whole point of opening it.
+  if (recording) {
+    const frame = recordingData?.frames[Number($("time").value)];
+    applyBodyFrame(frame, recordingData);
+    $("time-value").textContent = frame
+      ? `${recording.label} · recorded · ${Number(frame.time_s).toFixed(3)} s`
+      : recordingError || "This recording holds no readable frames.";
+    return;
+  }
   if (liveFrame) {
     const reference = Object.fromEntries(Object.entries(liveFrame.entities).map(([id, state]) =>
       [id, state.centroid_m.map((x, i) => x - (state.translation_m?.[i] || 0))]));
     applyBodyFrame(liveFrame, { centroids_m: reference });
-    $("time-value").textContent = `Live body · ${liveFrame.time_s.toFixed(3)} s`;
+    $("time-value").textContent = `No recording is open. Live body · ${liveFrame.time_s.toFixed(3)} s.`;
     return;
   }
-  const frame = bodyTrajectory?.frames[Number($("time").value)];
-  applyBodyFrame(frame, bodyTrajectory);
-  $("time-value").textContent = frame ? `Recorded · ${Number(frame.time_s).toFixed(3)} s` : bodyError;
+  applyBodyFrame(null, null);
+  $("time-value").textContent = "No recording is open. The simulation is live.";
 }
 function applyBodyFrame(frame, trajectory) {
   const skinField = frame?.respiration?.skin_field;
@@ -847,16 +1002,23 @@ if (renderer) {
     annotate();
     surround?.follow(camera);
     sceneInteraction?.update(now);
-    const frames = bodyTrajectory?.frames;
-    if (playing && frames?.length && !liveFrame && !domainView) {
+    // Only an OPEN recording advances here. The simulation advances in
+    // sceneInteraction.update, because it is a simulation and not a film.
+    const frames = recording ? recordingData?.frames : null;
+    if (playing && frames?.length && !domainView) {
       const index = Number($("time").value);
       const interval = 1000 * ((frames[index + 1]?.time_s ?? frames[index].time_s + 0.1) - frames[index].time_s) / speed;
       if (now - lastTick >= interval) {
         $("time").value = (index + 1) % frames.length;
         updateFrame();
+        syncTransport();
         lastTick = now;
       }
     }
+    // The leaders track the orbit, but re-measuring 26 label boxes every frame
+    // is layout work for a line that moves a pixel; ten times a second is
+    // indistinguishable and costs a fortieth of it.
+    if (now - lastLeaders >= 100) { lastLeaders = now; ring?.follow(); }
     renderer.render(scene, camera);
   });
   const ray = new THREE.Raycaster();
@@ -884,17 +1046,70 @@ if (renderer) {
 }
 document.addEventListener("visibilitychange", () => { lastRender = 0; lastTick = performance.now(); });
 
+// ------------------------------------------------------- ring & prompt bar -
+// The ring is the ablation made continuous: everything exchanging signal with
+// the highlighted system, each arrow drawn at the width its contribution was
+// measured at. See ring.js for why there is no flow animation in it.
+const projectScratch = new THREE.Vector3();
+function projectCanonical(point) {
+  if (!camera || !group || !Array.isArray(point)) return null;
+  projectScratch.set(point[0], point[1], point[2]);
+  group.localToWorld(projectScratch);
+  projectScratch.project(camera);
+  const w = viewport.clientWidth, h = viewport.clientHeight;
+  if (!w || !h) return null;
+  return [(projectScratch.x * 0.5 + 0.5) * w, (-projectScratch.y * 0.5 + 0.5) * h];
+}
+function mountRingAndPrompt() {
+  ring = mountRing($("ring-host"), { project: projectCanonical, panelHost: ringPanelHost });
+  mountPromptBar($("prompt-host"), {
+    post: async (body) => {
+      const response = await fetch("/api/brain/prompt", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      let payload = null;
+      try { payload = await response.json(); } catch {}
+      if (!response.ok) {
+        const error = Error(payload?.error || `Prompt request failed (${response.status})`);
+        error.httpStatus = response.status;
+        throw error;
+      }
+      return payload;
+    },
+  });
+  new ResizeObserver(() => ring?.resize()).observe(viewport);
+  api("/api/brain/graph")
+    .then((graph) => { brainGraph = graph; ring.setGraph(graph); refreshBrainState(); })
+    .catch((error) => {
+      $("ring-host").append(el("p", "note ring-basis",
+        `Signal graph unavailable: ${error.message}. Nothing is drawn in its place.`));
+    });
+}
+// Per-edge magnitudes. With no body running this comes back saying so, and the
+// ring shows the measured values labelled measured — it never fills the gap.
+async function refreshBrainState() {
+  if (!brainGraph || !ring) return;
+  const session = sceneInteraction?.session;
+  try {
+    ring.setState(await api(`/api/brain/state${session ? `?session=${encodeURIComponent(session)}` : ""}`));
+  } catch { /* the graph's own measured values stand */ }
+}
+
 // ------------------------------------------------------------------ boot ---
 function mountBody() {
   configureSurfaceAssets({onReady:()=>updateFrame(),onError:error=>left.setRunNote(error.message)});
   if (!renderer) return;
+  mountRingAndPrompt();
   sceneInteraction = mountSceneInteraction({
     scene, camera, renderer, controls, group,
     getObjects: () => objects, getEnvironmentObjects: () => surround?.interactiveObjects||[],
     onSelect: selectStructure,
     mount: sceneControls, monitor: sceneMonitor,
     onStatus: (text) => left.setRunNote(text),
-    onPauseReplay: () => { playing = false; $("play").textContent = "▶"; $("play").disabled = true; $("time").disabled = true; syncTransport(); },
+    // A body coming up no longer has to disable anything: the transport it
+    // shares with nothing is already the simulation's.
+    onPauseReplay: () => { syncTransport(); },
     onFrame: (frame) => {
       const first = frame && !liveFrame;
       liveFrame = frame;
@@ -904,7 +1119,8 @@ function mountBody() {
         if (first) for (const id of ["live", "live-signal-1", "motor", "scene"]) panes.show(id);
         const now = performance.now();
         if (!document.hidden && (first || now - lastLiveVisual >= 200)) { lastLiveVisual = now; updateFrame(); syncTransport(); }
-      } else setupFrames();
+        if (now - brainStateTimer >= 1000) { brainStateTimer = now; refreshBrainState(); }
+      } else { setupFrames(); refreshBrainState(); }
       syncRun();
     },
   });

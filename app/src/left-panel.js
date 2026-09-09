@@ -366,10 +366,13 @@ export function mountLeftColumn(host, hooks) {
     boxes.set(item.id, box);
     dynamics.append(label);
   }
-  const run = el("button", "run", "Start body");
-  run.type = "button";
+  // No run button here. There is ONE transport, at the bottom of the viewport,
+  // and it runs or holds the simulation; a second button that also started the
+  // body is exactly the two-verbs-for-one-thing this column used to have. What
+  // stays is the state, named.
+  const run = el("p", "run-state", "Body stopped");
   run.id = "run-body";
-  run.onclick = () => hooks.onRun();
+  run.setAttribute("role", "status");
   const runNote = el("p", "note", "");
   runNote.id = "run-note";
   runNote.setAttribute("role", "status");
@@ -531,10 +534,7 @@ export function mountLeftColumn(host, hooks) {
       clothingSection.hidden = !on;
       environmentSection.hidden = !on;
     },
-    setRun(label, disabled = false) {
-      run.textContent = label;
-      run.disabled = disabled;
-    },
+    setRun(label) { run.textContent = label; },
     setRunNote(text) { runNote.textContent = text; },
     lockDynamics(locked) {
       for (const item of DYNAMICS)

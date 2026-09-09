@@ -432,17 +432,27 @@ input[type="range"]:disabled::-moz-range-thumb { background: var(--faint); }
 #time-value { font-size: 11px; }
 
 /* -- transport ---------------------------------------------------------- */
+/* ONE control, and what it is attached to is written on it: SIMULATION, or
+   RECORDING while a recording is open. The two used to be separate buttons that
+   looked identical, with the difference carried by a tooltip. */
 #transport {
-  position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 6;
+  position: absolute; left: 50%; bottom: calc(var(--prompt-inset, 48px) + 22px);
+  transform: translateX(-50%); z-index: 6;
   display: flex; align-items: center; gap: 0;
 }
 #transport > button {
   min-width: 40px; height: 32px; padding: 0 12px; font-size: 11.5px; color: var(--ink);
+  border-right: 0; border-radius: 0;
 }
-#transport > button:first-of-type { border-right: 0; border-radius: 0; }
-#transport > button:nth-of-type(2) { border-radius: 0 var(--radius) var(--radius) 0; }
+#transport > button:last-of-type { border-right: 1px solid var(--line); border-radius: 0 var(--radius) var(--radius) 0; }
 #transport > button:hover:not(:disabled) { color: var(--accent); }
 #transport > button[aria-expanded="true"] { color: var(--accent); }
+#transport > input[type="range"] {
+  width: 200px; height: 32px; margin: 0; padding: 0 8px; border-radius: 0;
+  background: var(--ground); border: 1px solid var(--line); border-right: 0;
+  box-shadow: var(--shadow);
+}
+#transport > input[type="range"][hidden] { display: none; }
 #transport-label {
   display: flex; align-items: center; height: 32px; padding: 0 10px;
   background: var(--ground); border: 1px solid var(--line); border-right: 0;
@@ -450,16 +460,60 @@ input[type="range"]:disabled::-moz-range-thumb { background: var(--faint); }
   font-family: var(--mono); font-size: 10px; letter-spacing: .06em; text-transform: uppercase;
   color: var(--faint); user-select: none; white-space: nowrap;
 }
-/* Nothing to play is a state worth reading, not a control worth reaching for. */
+/* The transport says which noun it is holding, in the accent when it is the
+   live simulation, so the two states are never mistaken for one another. */
+#transport[data-owner="simulation"] #transport-label { color: var(--accent); }
+#transport[data-owner="recording"] #transport-label { color: var(--ink); }
+#open-recording { font-family: var(--sans); font-size: 11px; color: var(--dim); }
+#recording-menu {
+  position: absolute; bottom: 40px; right: 0; min-width: 260px; z-index: 8;
+  background: var(--ground-solid); border: 1px solid var(--line-strong);
+  border-radius: var(--radius); box-shadow: var(--shadow); padding: 4px;
+  display: flex; flex-direction: column; gap: 2px;
+}
+#recording-menu[hidden] { display: none; }
+#recording-menu button {
+  text-align: left; padding: 6px 8px; background: transparent; border: 0;
+  border-radius: var(--radius); color: var(--ink); font-size: 12px;
+}
+#recording-menu button:hover { background: var(--well-hover); color: var(--accent); }
+#recording-menu button small { display: block; color: var(--faint); font-family: var(--mono); font-size: 10px; }
+#recording-menu .note { margin: 4px 8px; }
+
+/* The header a video player has and a camera does not: which recording this is.
+   It only exists while one is open. */
+#recording-header {
+  /* A title bar across the top of the view, the way a player names the file it
+     is playing. It owns the strip; everything else moves down under it. */
+  position: absolute; left: var(--left-inset, 12px); right: var(--right-inset, 12px);
+  top: 12px; z-index: 7;
+  display: flex; align-items: center; gap: 10px; padding: 6px 10px;
+  background: var(--ground); border: 1px solid var(--accent-line);
+  border-radius: var(--radius); box-shadow: var(--shadow); white-space: nowrap;
+}
+#recording-header .eyebrow { color: var(--accent); }
+#recording-close { margin-left: auto; }
+#recording-header[hidden] { display: none; }
+#recording-header b { font-weight: 600; }
+#recording-detail { font-family: var(--mono); font-size: 11px; color: var(--dim); }
+#recording-close {
+  background: var(--well); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 3px 8px; font-size: 11px; color: var(--dim);
+}
+#recording-close:hover { color: var(--accent); border-color: var(--accent-line); }
+.run-state { font-family: var(--mono); font-size: 11px; color: var(--dim); margin: 6px 0 2px; }
+
+/* Nothing to run is a state worth reading, not a control worth reaching for. */
 #transport[data-empty="true"] { opacity: .55; }
 #transport[data-empty="true"] #transport-label { color: var(--faint); }
 
 /* An explicit display would otherwise defeat the hidden attribute outright. */
 #transport[hidden], #live-readout[hidden] { display: none; }
 
-/* Same slot as the transport, never both. */
+/* The body's own clock, above the transport. Both are visible at once now:
+   the body is still there while a recording is open, held. */
 #live-readout {
-  position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 6;
+  position: absolute; left: 50%; bottom: calc(var(--prompt-inset, 48px) + 60px); transform: translateX(-50%); z-index: 6;
   display: flex; align-items: center; gap: 8px; padding: 0 12px; height: 32px;
   background: var(--ground); border: 1px solid var(--accent-line); border-radius: var(--radius);
   box-shadow: var(--shadow); font-family: var(--mono); font-size: 11.5px; color: var(--ink);
@@ -471,7 +525,7 @@ input[type="range"]:disabled::-moz-range-thumb { background: var(--faint); }
 @keyframes live-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
 @media (prefers-reduced-motion: reduce) { #live-readout[data-running="true"] > i { animation: none; } }
 
-#speed-menu { bottom: 40px; left: 50%; transform: translateX(-50%); min-width: 76px; }
+#speed-menu { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); min-width: 76px; }
 #speed-menu button { text-align: center; font-family: var(--mono); font-size: 11.5px; padding: 4px 12px; }
 
 /* -- transient status --------------------------------------------------- */
@@ -517,3 +571,187 @@ input[type="range"]:disabled::-moz-range-thumb { background: var(--faint); }
 .palette-popover .opacity-title:not(:first-child) { margin-top: 4px; }
 
 .pane-body .live-input-label[hidden] { display: none; }
+
+/* -- the ring ----------------------------------------------------------- */
+/* Around the body, everything currently exchanging signal with the highlighted
+   system. Arrow width IS the measured magnitude, linearly, so a dead path looks
+   dead: there is no glow, no dash animation and no minimum "visible" weight
+   beyond a hairline that exists only so a measured-zero edge is still clickable.
+   See ring.js. */
+#ring-host { position: absolute; inset: 0; z-index: 5; pointer-events: none; }
+#ring-host > * { pointer-events: auto; }
+.ring-leaders {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  pointer-events: none; overflow: visible;
+}
+.ring-leaders path { fill: none; stroke: var(--line-strong); }
+.ring-layer { position: absolute; inset: 0; pointer-events: none; }
+.ring-layer[hidden] { display: none; }
+.ring-item {
+  position: absolute; transform: translate(-50%, -50%); pointer-events: auto;
+  display: flex; align-items: center; gap: 6px; max-width: 230px;
+  padding: 3px 7px; background: var(--ground); border: 1px solid var(--line);
+  border-radius: var(--radius); box-shadow: var(--shadow); text-align: left;
+  max-width: 250px;
+}
+.ring-item[data-side="l"] { transform: translate(-100%, -50%); }
+.ring-item[data-side="r"] { transform: translate(0, -50%); }
+.ring-item:hover { border-color: var(--accent-line); }
+.ring-item.is-active { border-color: var(--accent); }
+.ring-item.is-dim { opacity: .22; }
+.ring-label {
+  font-size: 11px; color: var(--ink); white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis; max-width: 190px;
+}
+.ring-magnitude { font-family: var(--mono); font-size: 9.5px; color: var(--faint); white-space: nowrap; }
+.ring-item[data-kind="live"] .ring-magnitude { color: var(--accent); }
+.ring-item[data-kind="unmeasured"] .ring-magnitude { color: var(--faint); font-style: italic; }
+.ring-gauge { flex: none; width: 20px; height: 16px; overflow: visible; }
+.ring-gauge.wide { width: 120px; }
+.ring-gauge.hero { width: 100%; height: 20px; }
+.ring-gauge line { stroke: var(--dim); stroke-linecap: butt; }
+.ring-item[data-kind="live"] .ring-gauge line,
+.ring-rank li[data-kind="live"] .ring-gauge line { stroke: var(--accent); }
+.ring-arrowhead { fill: var(--dim); }
+.ring-more { margin: 0; padding: 3px 8px; }
+.ring-more[hidden] { display: none; }
+
+.ring-controls {
+  /* clear of the left column's own edge toggle, which lives at the same corner */
+  position: absolute; left: calc(var(--left-inset, 12px) + 36px);
+  top: calc(12px + var(--header-inset, 0px)); z-index: 6;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 5px;
+  width: min(420px, 40%); pointer-events: none;
+}
+.ring-systems { display: flex; flex-wrap: wrap; gap: 3px; pointer-events: auto; }
+.ring-systems button {
+  padding: 3px 8px; font-size: 11px; color: var(--dim);
+  background: var(--ground); border: 1px solid var(--line);
+  border-radius: var(--radius); box-shadow: var(--shadow);
+}
+.ring-systems button:hover { color: var(--accent); }
+.ring-systems button[aria-pressed="true"] { color: var(--accent-ink); background: var(--accent); border-color: var(--accent); }
+.ring-fold { font-family: var(--mono); }
+.ring-basis {
+  margin: 0; padding: 4px 8px;
+  background: var(--ground); border: 1px solid var(--line); border-radius: var(--radius);
+}
+/* A live basis and a stored one are not the same claim, and never look alike. */
+.ring-basis[data-live="true"] { border-color: var(--accent-line); color: var(--ink); }
+.ring-basis[hidden] { display: none; }
+
+.ring-panel {
+  /* It lives in the column of panes with the other readouts, which leaves the
+     whole middle of the view to the ring. */
+  display: block; max-height: 44vh; overflow: auto;
+}
+.ring-panel[hidden] { display: none; }
+.ring-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; }
+.ring-head h3 { margin: 2px 0 6px; font-size: 13px; font-weight: 600; width: 100%; }
+.ring-back { background: transparent; border: 0; color: var(--accent); font-size: 11px; padding: 0; }
+.ring-rank { list-style: none; margin: 6px 0; padding: 0; display: grid; gap: 3px; }
+.ring-rank li {
+  display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 1px 8px;
+  padding-bottom: 3px;
+}
+.ring-rank .ring-gauge.wide { grid-column: 1 / -1; width: 100%; height: 9px; }
+.ring-rank-name {
+  background: transparent; border: 0; padding: 0; text-align: left; font-size: 11px;
+  color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.ring-rank-name:hover { color: var(--accent); }
+.ring-figures { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; margin: 8px 0; }
+.ring-figures dt { font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--dim); }
+.ring-figures dd { margin: 0; font-size: 11.5px; }
+.ring-fibres { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 10.5px; }
+.ring-fibres td { padding: 2px 6px 2px 0; border-bottom: 1px solid var(--line); color: var(--dim); }
+.ring-fibres td:first-child { color: var(--ink); }
+.ring-measurement { font-size: 11.5px; line-height: 1.5; margin: 8px 0 4px; }
+.ring-warn { font-size: 11px; color: var(--ink); border-left: 2px solid var(--line-strong); padding-left: 8px; margin: 6px 0; }
+
+/* -- the prompt bar ----------------------------------------------------- */
+/* Every output on this path is a RETRIEVAL from the corpus, not a generation,
+   and the top-1 similarity is not a confidence. Both are said on the panel,
+   next to the numbers, because a single returned image without them would be
+   the most misleading thing this app could show. */
+#prompt-host {
+  position: absolute; left: var(--left-inset, 12px); right: var(--right-inset, 12px);
+  bottom: 14px; z-index: 7; display: flex; flex-direction: column; gap: 8px;
+}
+.prompt-bar {
+  display: flex; align-items: center; gap: 8px; padding: 6px;
+  background: var(--ground); border: 1px solid var(--line);
+  border-radius: var(--radius); box-shadow: var(--shadow);
+}
+.prompt-bar input[type="text"] { flex: 1; min-width: 160px; height: 30px; }
+.prompt-want { flex: none; width: auto; min-width: 96px; height: 30px; }
+.prompt-arrow { font-family: var(--mono); color: var(--faint); flex: none; }
+.prompt-attach {
+  position: relative; display: inline-flex; align-items: center; gap: 6px;
+  padding: 0 10px; height: 30px; border: 1px solid var(--line);
+  border-radius: var(--radius); background: var(--well); cursor: pointer;
+  font-family: var(--mono); font-size: 10px; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--dim); white-space: nowrap;
+}
+.prompt-attach:hover { color: var(--accent); border-color: var(--accent-line); }
+.prompt-attach input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.prompt-chip {
+  font-family: var(--mono); font-size: 10.5px; color: var(--dim); cursor: pointer;
+  padding: 3px 8px; border: 1px solid var(--line); border-radius: var(--radius);
+  max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.prompt-chip[hidden] { display: none; }
+.prompt-send {
+  height: 30px; padding: 0 14px; border: 1px solid var(--accent-line);
+  background: var(--accent-dim); color: var(--accent); border-radius: var(--radius);
+}
+.prompt-send:hover:not(:disabled) { background: var(--accent); color: var(--accent-ink); }
+.prompt-panel {
+  max-height: 46vh; overflow: auto; padding: 10px 12px;
+  background: var(--ground); border: 1px solid var(--line);
+  border-radius: var(--radius); box-shadow: var(--shadow);
+}
+.prompt-panel[hidden] { display: none; }
+.prompt-panel .prompt-status { margin: 0; font-size: 12px; }
+.prompt-panel[data-state="absent"] .prompt-status,
+.prompt-panel[data-state="error"] .prompt-status { color: var(--ink); }
+.prompt-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+.prompt-flag {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .14em;
+  padding: 3px 8px; border: 1px solid var(--accent-line); border-radius: var(--radius);
+  color: var(--accent); background: var(--accent-dim); white-space: nowrap;
+}
+.prompt-head .note { margin: 0; }
+.prompt-strip { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px; }
+.prompt-cell { width: 116px; flex: none; }
+.prompt-rank { font-family: var(--mono); font-size: 10px; color: var(--dim); margin-bottom: 3px; }
+.prompt-cell[data-top="true"] .prompt-rank { color: var(--accent); }
+.prompt-thumb {
+  width: 116px; height: 116px; display: grid; place-items: center; overflow: hidden;
+  background: var(--well); border: 1px solid var(--line);
+}
+.prompt-cell[data-top="true"] .prompt-thumb { border-color: var(--accent); }
+.prompt-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.prompt-thumb-text { font-size: 11px; color: var(--dim); padding: 6px; text-align: center; }
+.prompt-cell-label { font-size: 11px; margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.prompt-bars { display: grid; gap: 3px; margin: 10px 0 6px; }
+.prompt-bar-row { display: grid; grid-template-columns: 150px 1fr 64px; align-items: center; gap: 8px; }
+.prompt-bar-name { font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.prompt-bar-track { height: 10px; background: var(--well); border: 1px solid var(--line); }
+.prompt-bar-track i { display: block; height: 100%; background: var(--accent-line); }
+.prompt-bar-row:first-child .prompt-bar-track i { background: var(--accent); }
+.prompt-bar-value { font-family: var(--mono); font-size: 10.5px; color: var(--dim); text-align: right; }
+.prompt-figures { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; margin: 6px 0; }
+.prompt-figures dt { font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--dim); }
+.prompt-figures dd { margin: 0; font-family: var(--mono); font-size: 11.5px; }
+.prompt-caveats { margin: 8px 0 0; padding-left: 16px; }
+.prompt-caveats li { font-size: 11px; line-height: 1.55; color: var(--dim); margin-bottom: 4px; }
+#recording-header[data-failed="true"] { border-color: var(--line-strong); }
+#recording-header[data-failed="true"] #recording-detail { color: var(--ink); }
+/* The ranked list is a list, not a row of buttons: the name is clickable text.
+   The pane's default button chrome would turn a 30-entry ranking into a wall. */
+.pane-body .ring-rank-name, .pane-body .ring-back {
+  border: 0; background: transparent; padding: 0; margin: 0; height: auto; width: auto;
+}
+.pane-body .ring-rank-name:hover, .pane-body .ring-back:hover { background: transparent; color: var(--accent); }
+.ring-panel .ring-head h3 { font-size: 12.5px; }

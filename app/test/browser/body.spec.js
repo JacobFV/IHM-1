@@ -8,32 +8,88 @@ const trajectory = {
   ],
 };
 
-test("a computed trajectory drives the transport and the playback pane", async ({ page }) => {
+// The distinction the redesign exists to make: the transport is the
+// simulation's until a recording is explicitly opened, and while one is open
+// the header names it and the transport scrubs it. No shared button, no mode
+// toggle, and nothing carried by a tooltip.
+test("the transport belongs to the simulation until a recording is opened", async ({ page }) => {
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.route("**/api/body/trajectory*", (route) => route.fulfill({ json: trajectory }));
   await page.goto("/");
-  await expect(page.locator("#play")).toBeEnabled({ timeout: 240000 });
+  await expect(page.locator("#transport")).toHaveAttribute("data-owner", "simulation");
+  await expect(page.locator("#transport-label")).toHaveText("Simulation");
+  await expect(page.locator("#play")).toHaveAttribute("title", /Run the simulation/);
+  // The old control's title said "This does not run the simulation". Nothing
+  // in this app says that any more, because nothing needs to.
+  await expect(page.locator("#play")).not.toHaveAttribute("title", /does not run/);
+  await expect(page.locator("#recording-header")).toBeHidden();
+  await expect(page.locator("#time")).toBeHidden();
+  await expect(page.locator("#speed")).toBeHidden();
+  await expect(page.locator("#time-value")).toHaveText(/No recording is open/);
+
+  await page.locator("#open-recording").click({ force: true });
+  await page.locator("#recording-menu button").first().click({ force: true });
+  await expect(page.locator("#transport")).toHaveAttribute("data-owner", "recording", { timeout: 240000 });
+  await expect(page.locator("#transport-label")).toHaveText("Recording");
+  await expect(page.locator("#recording-header")).toBeVisible();
+  await expect(page.locator("#recording-name")).toHaveText("Canonical trajectory");
+  await expect(page.locator("#time")).toBeVisible();
+  await expect(page.locator("#speed")).toBeVisible();
   await page.locator("#time").fill("1");
   await page.locator("#time").dispatchEvent("input");
-  await expect(page.locator("#time-value")).toHaveText("Recorded \u00b7 1.000 s");
-  // The bottom-centre control names its tenant, so it cannot be read as the
-  // simulation's play button.
-  await expect(page.locator("#transport-label")).toHaveText("Recording");
-  await expect(page.locator("#transport")).toHaveAttribute("data-empty", "false");
-  await expect(page.locator("#live-readout")).toBeHidden();
+  await expect(page.locator("#time-value")).toHaveText("Canonical trajectory · recorded · 1.000 s");
+  await expect(page.locator("#recording-detail")).toHaveText(/frame 2 \/ 2/);
+
+  // Closing hands the transport straight back to the live body.
+  await page.locator("#recording-close").click({ force: true });
+  await expect(page.locator("#transport")).toHaveAttribute("data-owner", "simulation");
+  await expect(page.locator("#recording-header")).toBeHidden();
+  await expect(page.locator("#time")).toBeHidden();
   expect(errors).toEqual([]);
 });
 
-test("an unavailable trajectory never substitutes animated anatomy", async ({ page }) => {
+test("an unavailable recording says why rather than looking broken", async ({ page }) => {
   await page.route("**/api/body/trajectory*", (route) =>
     route.fulfill({ status: 409, json: { error: "Canonical trajectory is stale; rematerialize the native run" } }));
   await page.goto("/");
-  await expect(page.locator("#time-value")).toHaveText("Canonical trajectory is stale; rematerialize the native run");
-  await expect(page.locator("#play")).toBeDisabled();
-  await expect(page.locator("#time")).toBeDisabled();
-  // A dead play button must say why it is dead rather than look broken.
-  await expect(page.locator("#transport-label")).toHaveText("No recording");
-  await expect(page.locator("#transport")).toHaveAttribute("data-empty", "true");
-  await expect(page.locator("#play")).toHaveAttribute("title", /No recording loaded/);
+  // A stale trajectory is not a broken app: the simulation's own transport is
+  // untouched by it, and the recording that will not load is never offered.
+  await expect(page.locator("#transport")).toHaveAttribute("data-owner", "simulation", { timeout: 240000 });
+  await expect(page.locator("#play")).toBeEnabled();
+  await page.locator("#open-recording").click({ force: true });
+  await expect(page.locator("#recording-menu")).not.toContainText("Reading what has been computed");
+  await expect(page.locator("#recording-menu")).not.toContainText("Canonical trajectory");
+  const entries = page.locator("#recording-menu button");
+  if (await entries.count()) {
+    // Opening one that will not load still names it, and says why instead of
+    // reciting a frame count the file does not deliver.
+    await entries.first().click({ force: true });
+    await expect(page.locator("#recording-header")).toHaveAttribute("data-failed", "true");
+    await expect(page.locator("#recording-detail")).toHaveText(/stale/);
+    await expect(page.locator("#play")).toBeDisabled();
+    await expect(page.locator("#play")).toHaveAttribute("title", /stale/);
+  } else {
+    await expect(page.locator("#recording-menu")).toContainText(/No recording is available|No computed recording/);
+  }
+});
+
+test("the ring draws a dead path dead and the load-bearing one thick", async ({ page }) => {
+  await page.goto("/");
+  const items = page.locator(".ring-item");
+  await expect(items.first()).toBeVisible({ timeout: 240000 });
+  // With no body running the basis is stored measurement, and it says so.
+  await expect(page.locator("#ring-basis")).toHaveAttribute("data-live", "false");
+  await expect(page.locator("#ring-basis")).toContainText(/Measured, not live/);
+
+  await page.locator('#ring-systems button[data-system="cord"]').click({ force: true });
+  const widths = await page.locator("#ring-panel .ring-rank .ring-gauge line")
+    .evaluateAll((nodes) => nodes.map((n) => Number(n.getAttribute("stroke-width"))));
+  expect(widths.length).toBeGreaterThan(4);
+  // The severed-cortex result is the one thick arrow; everything below it is a
+  // hairline, because everything below it was measured to be one.
+  expect(Math.max(...widths)).toBeGreaterThan(10);
+  expect(widths.filter((w) => w <= 1).length).toBeGreaterThan(3);
+  await expect(page.locator("#ring-panel")).toContainText("100.0% · measured");
+  await expect(page.locator("#ring-panel")).toContainText("not measured");
 });
