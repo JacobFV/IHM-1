@@ -280,6 +280,20 @@ def register(model, local_clouds, anatomy_clouds, segments):
     solution = least_squares(residual, x0, bounds=(lo, hi), xtol=1e-13, ftol=1e-13)
     scale, rot, t, q = unpack(solution.x)
 
+    # The pelvis translations were held at zero during the fit, because they
+    # are degenerate with the similarity's translation.  That leaves a
+    # reference pose whose pelvis sits at the ground origin, and playing a
+    # trajectory whose pelvis_ty is a real standing height would then lift the
+    # whole anatomy by a metre.  Put the reference pose back on the floor --
+    # lowest bone vertex at ground y = 0, the same convention the trajectory
+    # uses -- and move the similarity by exactly the opposite amount, so
+    # A . T_ref is unchanged and every residual above still holds.
+    posed = model.forward(q)
+    lowest = min(float(((posed[s][:3, :3] @ local_clouds[s].T).T
+                        + posed[s][:3, 3])[:, 1].min()) for s in segments)
+    q["pelvis_ty"] = -lowest
+    t = t - scale * rot @ np.array([0.0, -lowest, 0.0])
+
     transforms = model.forward(q)
     per_segment = {}
     for s in segments:

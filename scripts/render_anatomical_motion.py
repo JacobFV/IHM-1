@@ -678,13 +678,14 @@ def overlay(rb, image, width, height, title, binding, rows, drawn, kept_area,
     bound = sum(1 for r in rows.values() if r["segment"])
     fit = binding["registration"]
     lines = [
-        f"t = {t:6.2f} s   " + "   ".join(
+        f"t = {t:6.2f} s   " + ("FALLEN   " if frame.get("fallen") else "")
+        + "   ".join(
             f"{name} {value:.2f}" if isinstance(value, (int, float))
             else f"{name} {value}"
             for name, value in (("phase", frame.get("phase")),
                                 ("swing", frame.get("swing_side")),
-                                ("fallen", frame.get("fallen")))
-            if value is not None),
+                                )
+            if value is not None and not isinstance(value, bool)),
         (f"{drawn} anatomical surfaces drawn of {bound} bound "
          f"({kept_area/max(total_area,1e-9)*100:.0f}% of the selected surface "
          f"area)" if drawn else "skin surface only; the other "
@@ -693,8 +694,10 @@ def overlay(rb, image, width, height, title, binding, rows, drawn, kept_area,
         f"22 OpenSim segments  ·  registration residual "
         f"{fit['segment_centroid_residual_rms_m']*1000:.0f} mm RMS  ·  "
         f"cross-specimen, not measurement error",
-        f"{trajectory.name}: colour on the 80 driven muscles is their own "
-        f"excitation; the other muscle surfaces are not driven",
+        (f"{trajectory.name}: colour on the 80 driven muscles is their own "
+         f"excitation; the other muscle surfaces are not driven" if drawn
+         else f"{trajectory.name}: skin position is a linear blend of the 22 "
+              f"segment transforms, solved once on the rest topology"),
     ]
     if any(c.startswith("pelvis_t") for c in absent):
         lines.append("this trajectory carries no pelvis translation, so the "

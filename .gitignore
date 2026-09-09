@@ -24,3 +24,6 @@ artifacts/
 /data/derived/forced-gait-corpus/
 /data/derived/forced-gait-smoke/
 /data/derived/pose-corpus/
+
+# run logs (regenerable; the script and its receipt are the artifact)
+/logs/
