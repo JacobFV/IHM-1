@@ -7,7 +7,7 @@
 and it is also the reason it cannot change proportions: the fitted muscle path
 polynomials can only be carried across an isotropic change, because path length
 is homogeneous of degree one in the geometry only when the whole geometry moves
-together.  A wider pelvis moves 50 of 80 paths and leaves 30 alone.
+together.  A wider pelvis moves 56 of 98 paths and leaves 42 alone.
 
 So this script refits.  ``scripts/native_polynomial_path_fit.cpp`` drives
 OpenSim's ``PolynomialPathFitter`` over the shaped model's real ``GeometryPath``s,

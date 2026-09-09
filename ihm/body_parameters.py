@@ -217,7 +217,8 @@ PARAMETERS = (
                'separate and the femurs are the same femurs at a wider stance. '
                'Measured effect on the body: hip joint separation goes as the '
                'factor exactly, segment mass fractions shift, and 50 of the 80 '
-               'fitted muscle paths change length while 30 do not. That last '
+               'fitted muscle paths change length while 42 do not (56 of 98 on the '
+               'deployed lumbar model, 50 of 80 on the example). That last '
                'fact is the whole reason this parameter needed the refitter: no '
                'single polynomial coefficient factor can represent it.'),
         range_basis=('Engineering bounds around the measured span. The female/male '
@@ -542,7 +543,8 @@ def resolve(request=None):
         limitations.append(
             'This request is ANISOTROPIC: %d bodies carry per-axis factors. The '
             'fitted muscle path polynomials CANNOT be carried across it by a '
-            'coefficient scale -- 50 of 80 paths move and 30 do not -- so the '
+            'coefficient scale -- 56 of 98 paths move on the deployed model and '
+            '42 do not -- so the '
             'variant must be built by scripts/materialize_proportional_variant.py, '
             'which refits them, and a coefficient-scaled path set beside an '
             'anisotropic model is a body whose muscles belong to a different '

@@ -87,7 +87,7 @@ class NativeMechanicalStream:
             # An ANISOTROPIC variant is the sharper case, and it needs its own
             # guard because geometric_scale can be exactly 1.0 for one: widening
             # a pelvis changes no global factor. It also cannot be repaired by a
-            # coefficient scale at all -- 50 of 80 paths move and 30 do not -- so
+            # coefficient scale at all -- 56 of 98 paths move and 42 do not -- so
             # the path set must have been REFITTED, not rescaled.
             if augmentation.get('anisotropic_scale') and 'subject_walk_scaled_FunctionBasedPathSet.xml' not in overrides:
                 raise ValueError('An anisotropically scaled model must supply a REFITTED FunctionBasedPathSet; '
