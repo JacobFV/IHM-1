@@ -402,7 +402,7 @@ A gate that has never been seen to fail is not a gate.
 
 ### Proportions, and what they measurably do
 
-`materialize_proportional_variant.py --sex female`. Seven gates, all passing,
+`materialize_proportional_variant.py --sex female`. Nine gates, all passing,
 measured on the artifact that was written:
 
 | quantity | change | target |
@@ -680,10 +680,10 @@ done; the others have moved.
 An honest summary of the current state, for anything that quotes it: *male
 anatomy including a complete genital tract and no breast of either sex; one
 implemented isotropic size parameter and three implemented anisotropic
-proportional parameters, gated against a measured refit noise floor; a path
-refitter that beats the shipped path set by 16.7× on the model's own muscles; a
-`sex` parameter that moves four measured proportions and zero anatomical
-entities; and no female-specific geometry anywhere.*
+proportional parameters, gated against a measured refit noise floor and accepted
+by the plant; a path refitter that beats the shipped path set by 16.7× on the
+model's own muscles; a `sex` parameter that moves four measured proportions and
+zero anatomical entities; and no female-specific geometry anywhere.*
 
 ---
 
