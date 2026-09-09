@@ -215,6 +215,52 @@ int main(int argc,char** argv){try{
    force->setName("support_"+b.getName());force->connectSocket_sphere(*sphere);force->connectSocket_half_space(*plane);model.addComponent(force);
   }
  }
+ // Optional TISSUE FORCE ELEMENTS.  625 of the real body's 4,000 entities are
+ // tissue structures -- 311 ligaments, 36 joint capsules, menisci, discs,
+ // cartilage -- every one with real mesh geometry, and until this file existed
+ // the plant carried force elements for NONE of them.  They were geometry and
+ // not mechanics, and what stood in for them was the CoordinateLimitForce block
+ // below, whose limits are the model's own but whose stiffness is a stated
+ // engineering constant.
+ //
+ // A ligament here is a Blankevoort1991Ligament: tension only, zero force below
+ // its slack length, a quadratic toe region to `transition_strain` and linear
+ // above it, with damping only while it is stretched AND lengthening.  Its two
+ // attachment points are derived from the structure's OWN surface by
+ // scripts/build_tissue_force_elements.py -- the anatomy binding assigns each
+ // entity to one segment, but the per-vertex vote it is built from partitions
+ // the surface between two, and each side's own tip centroid is an attachment.
+ //
+ // These are INTERNAL forces between two bodies of the same model, so they can
+ // change how the plant moves and cannot change its momentum balance.  The
+ // residual reported below is the gate that says so.
+ struct LigamentRow {std::string name,tissue_class,body1,body2;SimTK::Vec3 p1,p2;double stiffness,slack,transition,damping;};
+ std::vector<LigamentRow> ligament_rows;
+ if(fs::exists(source/"tissue_ligaments.txt")){
+  std::ifstream spec(source/"tissue_ligaments.txt");std::string schema;int count;spec>>schema>>count;
+  if(!spec||schema!="IHM_TISSUE_LIGAMENTS_V1"||count<1||count>2048)throw std::runtime_error("invalid tissue ligament schema/count");
+  std::set<std::string> seen;
+  for(int i=0;i<count;i++){
+   LigamentRow row;spec>>row.name>>row.tissue_class>>row.body1;
+   for(int k=0;k<3;k++)spec>>row.p1[k];
+   spec>>row.body2;for(int k=0;k<3;k++)spec>>row.p2[k];
+   spec>>row.stiffness>>row.slack>>row.transition>>row.damping;
+   if(!spec||row.name.empty()||!row.p1.isFinite()||!row.p2.isFinite())throw std::runtime_error("invalid tissue ligament record");
+   if(row.name.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_")!=std::string::npos)throw std::runtime_error("invalid tissue ligament name");
+   if(!(row.stiffness>0)||!(row.slack>0)||!(row.transition>0)||!(row.damping>=0))throw std::runtime_error("tissue ligament needs positive stiffness, slack length and transition strain");
+   if(row.body1==row.body2)throw std::runtime_error("a ligament must span two different bodies");
+   model.getBodySet().get(row.body1);model.getBodySet().get(row.body2);
+   if(!seen.insert(row.name).second)throw std::runtime_error("duplicate tissue ligament name");
+   ligament_rows.push_back(row);
+  }
+  std::string extra;if(spec>>extra)throw std::runtime_error("trailing tissue ligament data");
+  for(const auto& row:ligament_rows){
+   auto* ligament=new Blankevoort1991Ligament(row.name,model.getBodySet().get(row.body1),row.p1,
+                                              model.getBodySet().get(row.body2),row.p2,row.stiffness,row.slack);
+   ligament->set_transition_strain(row.transition);ligament->set_damping_coefficient(row.damping);
+   model.addForce(ligament);
+  }
+ }
  // Optional joint stops at the coordinate ranges the source model already
  // DECLARES.  Nothing else in this plant enforces them: every rotational
  // coordinate carries <clamped>true</clamped> and a <range>, the model holds zero
@@ -464,6 +510,33 @@ int main(int argc,char** argv){try{
     o<<",\"contact_basis\":\"SimTK sphere-sphere collision through OpenSim HuntCrossleyForce, one force per object/body-element pair; ground contact uses the transferred source foot law\"}";
    }
    o<<']';
+  }
+  if(!ligament_rows.empty()){
+   // Tissue force elements are INTERNAL: each acts equally and oppositely on
+   // two bodies of this model, so nothing here enters the momentum balance and
+   // nothing here is a contact.  They are emitted in their own block for that
+   // reason -- a reader that added them to `contact_force_n` would be counting
+   // a force the world never applied.
+   o<<",\"tissue_ligaments\":[";bool ligament_first=true;
+   double loaded=0,total_tension=0,peak_strain=-1e30,peak_force=0;std::string peak_name;
+   for(const auto& row:ligament_rows){
+    const auto& element=model.getComponent<Blankevoort1991Ligament>("/forceset/"+row.name);
+    const double force=element.getTotalForce(state),strain=element.getStrain(state),length=element.getLength(state);
+    if(force>1e-9){loaded+=1;total_tension+=force;}
+    if(strain>peak_strain){peak_strain=strain;}
+    if(force>peak_force){peak_force=force;peak_name=row.name;}
+    if(!ligament_first)o<<',';ligament_first=false;
+    o<<"{\"name\":";str(o,row.name);o<<",\"tissue_class\":";str(o,row.tissue_class);
+    o<<",\"body1\":";str(o,row.body1);o<<",\"body2\":";str(o,row.body2);
+    o<<",\"length_m\":";num(o,length);o<<",\"slack_length_m\":";num(o,row.slack);
+    o<<",\"strain\":";num(o,strain);o<<",\"spring_force_n\":";num(o,element.getSpringForce(state));
+    o<<",\"damping_force_n\":";num(o,element.getDampingForce(state));o<<",\"total_force_n\":";num(o,force);
+    o<<",\"linear_stiffness_n\":";num(o,row.stiffness);o<<'}';
+   }
+   o<<"],\"tissue_ligament_summary\":{\"elements\":"<<ligament_rows.size()<<",\"loaded\":"<<(long)loaded;
+   o<<",\"total_tension_n\":";num(o,total_tension);o<<",\"maximum_strain\":";num(o,peak_strain);
+   o<<",\"maximum_force_n\":";num(o,peak_force);o<<",\"maximum_force_element\":";str(o,peak_name);
+   o<<",\"basis\":\"Blankevoort1991Ligament, tension only; internal to the model, so it enters no contact total and no momentum balance\"}";
   }
   o<<",\"contact_force_n\":";vec(o,total);o<<",\"momentum_balance_residual_n\":";vec(o,model.getTotalMass(state)*(model.calcMassCenterAcceleration(state)-model.getGravity())-total-ext);
   int axis=environment=="supine"?0:1;o<<",\"foot_contact_force_n\":{\"r\":";num(o,std::max(0.,foot_r[axis]));o<<",\"l\":";num(o,std::max(0.,foot_l[axis]));o<<"},\"environment\":";str(o,environment);o<<'}';

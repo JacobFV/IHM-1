@@ -41,7 +41,7 @@ class NativeMechanicalStream:
     its fidelity as an end, and never report what it did as what the body did.
     See docs/ACTUATION_STAGES.md.
     """
-    def __init__(self,root,output,*,environment='supine',target_mass_kg,augmented_registration=None,surface_contact_manifest=None,surface_sensor_indices=(),bed_material=None,instance_mass_variant=None,initial_pose=None,coordinate_limits=None,scene_objects=None,scene_contact_material=None,segment_contact_meshes=None,segment_contact_material=None,segment_contact_replaces_source_feet=False):
+    def __init__(self,root,output,*,environment='supine',target_mass_kg,augmented_registration=None,surface_contact_manifest=None,surface_sensor_indices=(),bed_material=None,instance_mass_variant=None,initial_pose=None,coordinate_limits=None,scene_objects=None,scene_contact_material=None,segment_contact_meshes=None,segment_contact_material=None,segment_contact_replaces_source_feet=False,tissue_ligaments=None,tissue_ligament_classes=None,tissue_ligament_stiffness_scale=1.0):
         self.root=Path(root).resolve();self.output=Path(output).resolve()
         if self.output.exists() or not self.output.is_relative_to(self.root):raise ValueError('Fresh owned native output directory required')
         if environment not in ('free','supine','upright') or finite(target_mass_kg)<=0:raise ValueError('Invalid native environment or mass')
@@ -196,6 +196,47 @@ class NativeMechanicalStream:
                 +''.join(' '.join(map(str,row))+'\n' for row in rows))
         elif segment_contact_material is not None or segment_contact_replaces_source_feet:
             raise ValueError('Segment contact material/foot replacement requires a segment contact mesh bundle')
+        # Tissue force elements: the ligaments and joint capsules the real body
+        # carries as GEOMETRY and the plant carried as nothing at all.  The
+        # bundle is built by scripts/build_tissue_force_elements.py; each row is
+        # a two-ended attachment derived from the structure's own surface, a
+        # slack length at the binding's reference pose and a linear stiffness of
+        # E*A from the body's OWN declared ligament modulus.  These are internal
+        # forces -- they change how the plant moves and cannot change its
+        # momentum balance, which is the gate the measurement reports.
+        ligaments=None
+        if tissue_ligaments is not None:
+            bundle=(self.root/tissue_ligaments).resolve()
+            if not bundle.is_relative_to(self.root):raise ValueError('Owned tissue force element bundle required')
+            record=json.loads((bundle/'ligaments.json').read_text())
+            if record.get('schema')!='ihm.tissue-force-elements.v1':raise ValueError('Unknown tissue force element schema')
+            classes=None if tissue_ligament_classes is None else set(tissue_ligament_classes)
+            if classes is not None and not classes<= {r['tissue_class'] for r in record['elements']}:raise ValueError('Unknown tissue force element class')
+            scale=finite(tissue_ligament_stiffness_scale)
+            if not scale>0:raise ValueError('Tissue ligament stiffness scale must be positive')
+            ligaments=[]
+            for row in record['elements']:
+                if classes is not None and row['tissue_class'] not in classes:continue
+                if re.fullmatch(r'[A-Za-z0-9_]+',row['element']) is None:raise ValueError('Invalid tissue ligament element name')
+                if row['body1']==row['body2']:raise ValueError('A ligament must span two different bodies')
+                ligaments.append(dict(element=row['element'],tissue_class=row['tissue_class'],
+                                      body1=row['body1'],point1_m=[finite(v) for v in row['point1_m']],
+                                      body2=row['body2'],point2_m=[finite(v) for v in row['point2_m']],
+                                      linear_stiffness_n=scale*finite(row['linear_stiffness_n']),
+                                      slack_length_m=finite(row['slack_length_m']),
+                                      transition_strain=finite(row['transition_strain']),
+                                      damping_n_s_per_strain=scale*finite(row['damping_n_s_per_strain'])))
+            if not ligaments:raise ValueError('Tissue force element selection is empty')
+            if len({r['element'] for r in ligaments})!=len(ligaments):raise ValueError('Duplicate tissue ligament element name')
+            for row in ligaments:
+                if row['linear_stiffness_n']<=0 or row['slack_length_m']<=0 or row['transition_strain']<=0 or row['damping_n_s_per_strain']<0:raise ValueError('Invalid tissue ligament values')
+            self.tissue_ligaments=ligaments
+            (source/'tissue_ligaments.txt').write_text('IHM_TISSUE_LIGAMENTS_V1 '+str(len(ligaments))+'\n'+''.join(
+                ' '.join(map(str,[r['element'],r['tissue_class'],r['body1'],*r['point1_m'],r['body2'],*r['point2_m'],
+                                  r['linear_stiffness_n'],r['slack_length_m'],r['transition_strain'],
+                                  r['damping_n_s_per_strain']]))+'\n' for r in ligaments))
+        elif tissue_ligament_classes is not None:
+            raise ValueError('Tissue ligament class selection requires a tissue force element bundle')
         pose=None
         if initial_pose is not None:
             if not isinstance(initial_pose,dict) or not initial_pose or any(not isinstance(name,str) or re.fullmatch(r'[A-Za-z0-9_]+',name) is None for name in initial_pose):raise ValueError('Initial pose requires a nonempty coordinate mapping')
@@ -206,6 +247,7 @@ class NativeMechanicalStream:
         if stops is not None:inputs['coordinate_limits.txt']=sha(source/'coordinate_limits.txt')
         if objects is not None:inputs['scene_objects.txt']=sha(source/'scene_objects.txt')
         if meshes is not None:inputs['segment_contact_meshes.txt']=sha(source/'segment_contact_meshes.txt')
+        if ligaments is not None:inputs['tissue_ligaments.txt']=sha(source/'tissue_ligaments.txt')
         overrides=self.source_overrides
         for name in SOURCE_FILES:
             if augmentation is not None and name=='subject_walk_scaled.osim':origin=self.root/augmentation['model_path']
@@ -242,6 +284,9 @@ class NativeMechanicalStream:
                    'segment_contact_material':None if meshes is None else self.segment_contact_material,
                    'segment_contact_replaces_source_feet':bool(meshes is not None and segment_contact_replaces_source_feet),
                    'segment_contact_basis':'Real segment surfaces as OpenSim ContactMesh over SimTK::ContactGeometry::TriangleMesh, carried by ElasticFoundationForce -- an independent spring at the centroid of every triangle, over the faces SimTK\'s HalfSpaceTriangleMesh collision finds below the plane. No convex hull is taken anywhere on that path. The stiffness is derived from a declared Young modulus, Poisson ratio and layer thickness, which is the elastic foundation\'s own reading of what it represents: a uniform soft layer over a rigid substrate.',
+                   'tissue_ligaments':ligaments,'tissue_ligament_bundle':None if ligaments is None else str(tissue_ligaments),
+                   'tissue_ligament_stiffness_scale':None if ligaments is None else float(tissue_ligament_stiffness_scale),
+                   'tissue_ligament_basis':'Blankevoort1991Ligament force elements over two-ended attachments derived from each structure\'s OWN surface by scripts/build_tissue_force_elements.py: the anatomy binding assigns an entity to one segment, but its per-vertex nearest-bone-group vote partitions the surface between two, and each side\'s tip centroid is an attachment site. Slack length is the separation at the binding\'s reference pose; linear stiffness is E*A with E the body\'s own declared ligament along-fibre modulus and A the structure\'s own tissue volume over its own derived length. A CONSTRUCTION from mesh geometry and a published cadaver modulus, not measured insertion footprints and not a subject-specific ligament property. These forces are internal to the model: they can change how the plant moves and cannot change its momentum balance.',
                    'coordinate_limits':stops,'coordinate_limits_basis':'Joint stops at the coordinate ranges the source model already declares; nothing else in this plant enforces them. The LIMIT is the model\'s own -- the stiffness, damping and transition width are explicit engineering constants stated by the caller, not measured ligament properties.',
                    'initial_pose':pose,'initial_pose_basis':'Explicit source coordinate initialization after contact reference construction, before muscle equilibrium and energy reference; no ongoing pose constraint or equilibrium claim',
                    'instance_mass_variant':self.instance_mass_variant,'mass_reference_id':self.identity if self.instance_mass_variant is not None else None,'bed_material':bed,'surface_contact_manifest':surface_manifest,'augmented_registration':augmentation,'checkpoint_scope':'Complete in-process SimTK State including effective mass/inertia, excitation/load commands, work accumulators and local mass owner inventory/sequence/receipt; native process must remain alive. Call release(checkpoint) after accepted intervals.',
