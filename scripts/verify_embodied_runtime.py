@@ -1,6 +1,6 @@
 """Small causal exchange/failed-native checks; no full model or subprocess."""
 from copy import deepcopy
-import unittest
+import math,unittest
 from ihm.assembly.embodied import EmbodiedRuntime
 
 class Plant:
@@ -12,6 +12,26 @@ class Plant:
         self.commands.append(dict(actuation or {}));self.t+=dt_s
         return {**self.snapshot(),'positive_muscle_work_j':.1}
     def close(self):pass
+
+class SwingPlant(Plant):
+    """A plant whose interval metabolic rate moves, as the real one does.
+
+    The fixed-rate Plant above can only ever present the same increment, so it
+    never reaches the decrement the native muscle budget actually bounds. This
+    one accumulates the three energies independently and keeps chemical = work
+    + heat exactly, so a scheduled rate reproduces a real interval difference.
+    """
+    def __init__(self,work_w=0.,heat_w=100.):
+        super().__init__();self.m=0.;self.w=0.;self.h=0.;self.work_w=work_w;self.heat_w=heat_w
+    def snapshot(self):
+        return {'time_s':self.t,'entities':{},'muscles':{},'foot_contact_force_n':{'r':0,'l':0},
+                'total_muscle_metabolic_w':self.work_w+self.heat_w,'muscle_metabolic_energy_j':self.m,
+                'signed_active_fiber_work_j':self.w,'muscle_heat_energy_j':self.h,
+                'metabolic_reference':{'M0_w':100.,'W0_w':0.,'H0_w':100.}}
+    def advance(self,dt_s,forces=(),actuation=None):
+        self.commands.append(dict(actuation or {}));self.t+=dt_s
+        self.w+=self.work_w*dt_s;self.h+=self.heat_w*dt_s;self.m=self.w+self.h
+        return {**self.snapshot(),'positive_muscle_work_j':.1}
 
 class Neural:
     def __init__(self):self.t=0;self.inputs=[]
@@ -125,7 +145,11 @@ class Tests(unittest.TestCase):
     def test_delayed_actuation_native_load_and_work(self):
         body=self.body();first=body.step({'forces':[{'id':'chest','force_n':[2,0,0],'point_m':[0,0,0]}]})
         self.assertEqual(body.plant.commands,[{}]);self.assertEqual(body.native.loads,[2])
-        self.assertAlmostEqual(body.native.demands[0][0],5.);self.assertEqual(first['time_s'],.02)
+        # The raw increment is +5 W; one interval of the substrate lag carries
+        # its leading edge, and the audit still reports the raw value.
+        self.assertAlmostEqual(first['coupling']['native_extra_metabolic_demand_w'],5.)
+        self.assertAlmostEqual(body.native.demands[0][0],5.*(1-math.exp(-.02/body.metabolic_exchange_tau_s)))
+        self.assertEqual(first['time_s'],.02)
         body.step({});self.assertEqual(body.plant.commands[-1],{'muscle':.5})
         self.assertEqual(body.native.loads[-1],0)
     def test_scheduled_intake_changes_sequence_without_advancing_then_delivers_once(self):
@@ -147,8 +171,15 @@ class Tests(unittest.TestCase):
     def test_signed_negative_increment_is_preserved_without_generic_exercise(self):
         body=self.body();body.plant.rate=95
         frame=body.step({})
-        self.assertEqual(body.native.demands,[(-5.,-6.,1.)])
+        # The raw increment keeps its sign and its channels through the lag, and
+        # is reported unfiltered; only its arrival is spread over the interval.
+        blend=1-math.exp(-.02/body.metabolic_exchange_tau_s)
+        self.assertEqual(body.native.demands,[(-5.*blend,-6.*blend,1.*blend)])
         self.assertEqual(frame['coupling']['native_extra_metabolic_demand_w'],-5)
+        self.assertAlmostEqual(frame['coupling']['exchanged_metabolic_increment_w'],-5.*blend)
+        for _ in range(1200):body.step({})
+        self.assertAlmostEqual(body.native.demands[-1][0],-5.,places=3)
+        self.assertAlmostEqual(body.native.demands[-1][1],-6.,places=3)
         self.assertFalse(body.failed)
     def test_horizon_preflight_has_no_side_effects(self):
         from types import SimpleNamespace
@@ -167,6 +198,46 @@ class Tests(unittest.TestCase):
         with self.assertRaises(RuntimeError):body.step({})
         self.assertTrue(body.failed);self.assertTrue(body.native.closed)
         with self.assertRaises(RuntimeError):body.step({})
+    def test_interval_metabolic_swing_reaches_native_within_its_decrement_budget(self):
+        # The measured native allowance: muscle discretionary energy above the
+        # obligatory amino-acid draw, in watts over one exchange interval.
+        budget=8.686
+        body=EmbodiedRuntime(SwingPlant(),Neural(),Native(),Exchange(),Load())
+        self.assertEqual(body.metabolic_filter,{'m_w':0.,'h_w':0.})
+        # A 44 W drop is an ordinary interval for the real plant and five times
+        # the whole native allowance. Exchanged unfiltered it ends the runtime.
+        body.plant.work_w,body.plant.heat_w=0.,56.
+        body.step({})
+        raw=body.frame['coupling']['interval_muscle_metabolic_w']-body.frame['coupling']['muscle_metabolic_reference_w']
+        self.assertAlmostEqual(raw,-44.)
+        self.assertLess(-raw,budget*10)  # the raw increment alone would be rejected
+        self.assertGreater(-raw,budget)
+        exchanged=[m for m,_h,_w in body.native.demands]
+        self.assertGreater(exchanged[0],-budget)
+        # Every exchanged triple stays on chemical = heat + work; Native asserts
+        # it too, so a filter that drifted the channels apart cannot pass here.
+        for m,h,w in body.native.demands:self.assertAlmostEqual(m,h+w)
+        # A lag is not a mask: a decrement that persists still arrives in full.
+        for _ in range(1200):body.step({})
+        self.assertLess(body.native.demands[-1][0],-budget)
+        self.assertAlmostEqual(body.native.demands[-1][0],-44.,places=1)
+
+    def test_rejected_interval_leaves_the_metabolic_lag_where_it_was(self):
+        body=EmbodiedRuntime(SwingPlant(),Neural(),Native(),Exchange(),Load())
+        body.plant.work_w,body.plant.heat_w=0.,56.
+        body.step({})
+        settled=dict(body.metabolic_filter)
+        self.assertNotEqual(settled,{'m_w':0.,'h_w':0.})
+        project=body.respiratory_load.project_load
+        def fail(*args):raise ValueError('load projection rejected')
+        body.respiratory_load.project_load=fail
+        with self.assertRaisesRegex(ValueError,'load projection'):body.step({})
+        self.assertEqual(body.metabolic_filter,settled)
+        self.assertFalse(body.failed)
+        body.respiratory_load.project_load=project
+        body.step({})
+        self.assertNotEqual(body.metabolic_filter,settled)
+
     def test_invalid_input_does_not_advance_any_owner(self):
         body=self.body()
         for data in [{'seconds':.03},{'bad':2},{'forces':[{'id':'chest','force_n':[float('nan'),0,0],'point_m':[0,0,0]}]}]:

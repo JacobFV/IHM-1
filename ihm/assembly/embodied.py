@@ -17,6 +17,19 @@ def finite(value,label,low=None,high=None):
     return float(value)
 
 
+# The mechanical plant reports muscle metabolic power as a 50 Hz finite
+# difference of a cumulative Umberger/Uchida ledger. That signal fluctuates by
+# tens of watts between adjacent 20 ms intervals on a body holding a posture,
+# while the native muscle compartment's discretionary energy above its
+# obligatory amino-acid draw is roughly 8.7 W. Exchanging the instantaneous
+# difference therefore rejects a physically ordinary interval. This first-order
+# lag carries the same increments with a substrate-delivery time constant.
+# It is an explicit engineering choice, not an identified substrate kinetic:
+# it delays energy, never creates or destroys it, and its mean is the mean of
+# the raw increments.
+METABOLIC_EXCHANGE_TAU_S=2.
+
+
 def native_field_metadata(values):
     suffixes=[('compliance_ml_per_mmhg','mL/mmHg'),('concentration_mg_per_dl','mg/dL'),
         ('molarity_mmol_per_l','mmol/L'),('concentration_g_per_l','g/L'),('ml_per_min','mL/min'),
@@ -356,6 +369,9 @@ class EmbodiedRuntime:
         self.metabolic_reference=deepcopy(self.mechanical_state['metabolic_reference'])
         for key in ('M0_w','H0_w','W0_w'):finite(self.metabolic_reference[key],'native reference '+key)
         self.reference_metabolic_w=self.metabolic_reference['M0_w']
+        # Zero is the exact initial condition: at t=0 the plant is the reference.
+        self.metabolic_exchange_tau_s=METABOLIC_EXCHANGE_TAU_S
+        self.metabolic_filter={'m_w':0.,'h_w':0.}
         self.metabolic_reference_id=hashlib.sha256(json.dumps({'native_execution_sha256':reference_identity,'reference':self.metabolic_reference},sort_keys=True).encode()).hexdigest()
         if abs(self.native_state['elapsed_s'])>1e-9 or abs(self.mechanical_state['time_s'])>1e-9:
             raise ValueError('Fresh common native and mechanical clocks required')
@@ -471,6 +487,16 @@ class EmbodiedRuntime:
             if abs((energy-previous)-signed_work-heat)>1e-10*(1+abs(energy-previous)+abs(signed_work)+abs(heat)):raise ValueError('Mechanical chemical/heat/work ledger mismatch')
             delta_w=signed_work/dt-self.metabolic_reference['W0_w']
             delta_h=heat/dt-self.metabolic_reference['H0_w']
+            # One shared first-order lag on the chemical and heat increments.
+            # The filter is linear and both channels use the same coefficient,
+            # so deriving work as their difference keeps the exchanged triple on
+            # the same chemical = heat + work identity the raw increments hold.
+            # Committed only once the whole interval succeeds, so a rejected
+            # step leaves the lag exactly where the last accepted interval did.
+            blend=1.-math.exp(-dt/self.metabolic_exchange_tau_s)
+            exchanged_m=self.metabolic_filter['m_w']+blend*(incremental_w-self.metabolic_filter['m_w'])
+            exchanged_h=self.metabolic_filter['h_w']+blend*(delta_h-self.metabolic_filter['h_w'])
+            exchanged_w=exchanged_m-exchanged_h
             native_touched=True
             self.native.respiratory_load(pressure)
             if 'skin_compression_pa' in data:self.native.skin_compression(data['skin_compression_pa'])
@@ -481,7 +507,7 @@ class EmbodiedRuntime:
                     except BaseException as error:
                         self.intakes.record_uncertain(event.event_id,str(error)[:1024] or type(error).__name__)
                         raise
-            native=self.native.signed_step(self.metabolic_reference_id,incremental_w,delta_h,delta_w)
+            native=self.native.signed_step(self.metabolic_reference_id,exchanged_m,exchanged_h,exchanged_w)
             unmet=finite(native['values']['coupling.muscle_unmet_kcal'],'unmet native muscle energy')
             if unmet>1e-12:raise RuntimeError('Native muscle energy demand is unmet; mechanical supply feedback is not yet supported')
             native['signal_metadata']=native_field_metadata(native['values'])
@@ -500,6 +526,7 @@ class EmbodiedRuntime:
                 from .native_afferents import endpoint_receipt
                 next_afferent_receipt=endpoint_receipt(native,self.afferents.native_identity,self.afferents.source_sha256)
             self.afferent_receipt=next_afferent_receipt;self.afferent_input=afferent_input
+            self.metabolic_filter={'m_w':exchanged_m,'h_w':exchanged_h}
             self.native_state=native;self.mechanical_state=mechanical;self.time_s=end;self.sequence+=1
             self.frame={'schema':'ihm.embodied-frame.v1','time_s':end,'sequence':self.sequence,'input_capabilities':self._input_capabilities(),
                 'environment_state':None if self.environment_dynamics is None else self.environment_dynamics.frame(),
@@ -509,7 +536,10 @@ class EmbodiedRuntime:
                     'positive_muscle_work_j':work,'native_extra_metabolic_demand_w':incremental_w,
                     'muscle_metabolic_reference_w':self.reference_metabolic_w,'interval_muscle_metabolic_w':metabolic_w,
                     'signed_work_increment_w':delta_w,'muscle_heat_increment_w':delta_h,'metabolic_reference_id':self.metabolic_reference_id,
-                    'metabolic_law':'Native Umberger signed chemical/heat/work increments relative to fixed reference; native muscle-only substrate budget and thermal source. Rejects excessive decrement and unmet supply; no basal/stress overwrite.',
+                    'exchanged_metabolic_increment_w':exchanged_m,'exchanged_heat_increment_w':exchanged_h,'exchanged_work_increment_w':exchanged_w,
+                    'metabolic_exchange_tau_s':self.metabolic_exchange_tau_s,
+                    'metabolic_exchange_basis':'The raw increments above are the plant\'s instantaneous interval differences. A first-order lag of the stated time constant carries them to the native substrate; it delays energy without creating or destroying it, and is an uncalibrated engineering choice, not an identified substrate kinetic.',
+                    'metabolic_law':'Native Umberger signed chemical/heat/work increments relative to fixed reference, exchanged through a declared first-order substrate lag; native muscle-only substrate budget and thermal source. Rejects excessive decrement and unmet supply; no basal/stress overwrite.',
                     'storage_owners':{'articulation_muscle':'native mechanical plant','neural':'pinned IBM plus declared decoder/reflexes',
                         'blood_gas_nutrients_heat':'BioGears','tissue_views':'native-owned compartments, no duplicate storage'},
                     'rollback':'An uncertain native commit terminates this runtime; no serializer-exactness claim'}}
