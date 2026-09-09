@@ -86,11 +86,17 @@ select, input[type="search"], input[type="number"], input[type="text"] {
 }
 select {
   appearance: none; -webkit-appearance: none; padding-right: 24px;
+  background-color: var(--ground-solid);
   background-image: linear-gradient(45deg, transparent 50%, var(--dim) 50%),
     linear-gradient(135deg, var(--dim) 50%, transparent 50%);
   background-position: right 12px top 12px, right 8px top 12px;
   background-size: 4px 4px; background-repeat: no-repeat;
 }
+select option, select optgroup {
+  background-color: var(--ground-solid); color: var(--ink);
+}
+select option:checked { background-color: var(--accent); color: var(--accent-ink); }
+select option:disabled, select optgroup:disabled { color: var(--dim); }
 select:hover, input:hover:not(:disabled) { border-color: var(--line-strong); }
 select:focus, input:focus { border-color: var(--accent); outline: 0; }
 input[type="number"], input[type="search"] { font-family: var(--mono); font-size: 12px; }
@@ -433,10 +439,38 @@ input[type="range"]:disabled::-moz-range-thumb { background: var(--faint); }
 #transport > button {
   min-width: 40px; height: 32px; padding: 0 12px; font-size: 11.5px; color: var(--ink);
 }
-#transport > button:first-child { border-right: 0; border-radius: var(--radius) 0 0 var(--radius); }
-#transport > button:nth-child(2) { border-radius: 0 var(--radius) var(--radius) 0; }
+#transport > button:first-of-type { border-right: 0; border-radius: 0; }
+#transport > button:nth-of-type(2) { border-radius: 0 var(--radius) var(--radius) 0; }
 #transport > button:hover:not(:disabled) { color: var(--accent); }
 #transport > button[aria-expanded="true"] { color: var(--accent); }
+#transport-label {
+  display: flex; align-items: center; height: 32px; padding: 0 10px;
+  background: var(--ground); border: 1px solid var(--line); border-right: 0;
+  border-radius: var(--radius) 0 0 var(--radius); box-shadow: var(--shadow);
+  font-family: var(--mono); font-size: 10px; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--faint); user-select: none; white-space: nowrap;
+}
+/* Nothing to play is a state worth reading, not a control worth reaching for. */
+#transport[data-empty="true"] { opacity: .55; }
+#transport[data-empty="true"] #transport-label { color: var(--faint); }
+
+/* An explicit display would otherwise defeat the hidden attribute outright. */
+#transport[hidden], #live-readout[hidden] { display: none; }
+
+/* Same slot as the transport, never both. */
+#live-readout {
+  position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 6;
+  display: flex; align-items: center; gap: 8px; padding: 0 12px; height: 32px;
+  background: var(--ground); border: 1px solid var(--accent-line); border-radius: var(--radius);
+  box-shadow: var(--shadow); font-family: var(--mono); font-size: 11.5px; color: var(--ink);
+  pointer-events: none; white-space: nowrap;
+}
+#live-readout > i { width: 7px; height: 7px; border-radius: 50%; background: var(--dim); flex: none; }
+#live-readout[data-running="true"] > i { background: var(--accent); animation: live-pulse 1.6s ease-in-out infinite; }
+#live-readout[data-running="false"] { border-color: var(--line-strong); }
+@keyframes live-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+@media (prefers-reduced-motion: reduce) { #live-readout[data-running="true"] > i { animation: none; } }
+
 #speed-menu { bottom: 40px; left: 50%; transform: translateX(-50%); min-width: 76px; }
 #speed-menu button { text-align: center; font-family: var(--mono); font-size: 11.5px; padding: 4px 12px; }
 

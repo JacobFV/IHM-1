@@ -43,10 +43,12 @@ document.querySelector("#app").innerHTML = `
   <canvas id="gimbal" width="108" height="108" aria-label="Body plane views · drag the scene to turn it"></canvas>
   <aside id="pane-column" aria-label="Panes"></aside>
   <div id="transport">
+    <span id="transport-label">Recording</span>
     <button id="play" type="button" aria-label="Play recorded body" disabled>▶</button>
     <button id="speed" type="button" aria-expanded="false" aria-label="Playback speed">1x</button>
     <div id="speed-menu" role="group" aria-label="Playback rate" hidden></div>
   </div>
+  <div id="live-readout" role="status" hidden><i></i><span id="live-readout-text"></span></div>
   <div id="orientation" aria-hidden="true"><span data-edge="top"></span><span data-edge="bottom"></span><span data-edge="left"></span><span data-edge="right"></span></div>
   <div id="scale-bar" aria-hidden="true" hidden><i></i><span></span></div>
   <p id="scene-status" role="status">Loading anatomy…</p>
@@ -138,7 +140,9 @@ for (const id of ["live-body", "live-motor", "intake", "intake-mass",
 }
 const playbackBody = el("div");
 playbackBody.innerHTML =
-  `<input id="time" type="range" min="0" max="0" value="0" aria-label="Recorded body frame" disabled><p id="time-value" class="note">No recorded frames</p>`;
+  `<input id="time" type="range" min="0" max="0" value="0" aria-label="Recorded body frame" disabled>` +
+  `<p id="time-value" class="note">No recorded frames</p>` +
+  `<p class="note">Scrubs a stored trajectory. The simulation is started from Simulation in the left column.</p>`;
 
 const panes = mountPanes(paneHost, [
   { id: "selection", title: "Selection", content: selectionBody, open: true },
@@ -153,7 +157,7 @@ const panes = mountPanes(paneHost, [
   { id: "temporal-spectrum", title: "Live Laplace spectrum", content: liveHosts["temporal-spectrum"] },
   { id: "microvessels", title: "Local microvessels", content: microvascularHost },
   { id: "scene", title: "Body interaction", content: bodyInteraction },
-  { id: "playback", title: "Playback", content: playbackBody, open: true },
+  { id: "playback", title: "Recording playback", content: playbackBody, open: true },
   { id: "domain", title: "Material owners", content: (() => {
       const node = el("div");
       node.innerHTML = `<div id="domain-roles"></div><p id="domain-selected" class="note">Click a surface to identify the owner that carries it.</p>`;
@@ -283,9 +287,10 @@ function applyEnvironment(id, selection = left.environmentSelection, objects = l
   sceneInteraction?.setEnvironment(id, configuration).then(syncRun).catch((e) => left.setRunNote(e.message));
 }
 function syncRun() {
-  if (!sceneInteraction) { left.setRun("Start body", true); return; }
+  if (!sceneInteraction) { left.setRun("Start body", true); syncTransport(); return; }
   left.setRun(!sceneInteraction.started ? "Start body" : sceneInteraction.running ? "Pause body" : "Resume body");
   left.lockDynamics(sceneInteraction.started);
+  syncTransport();
 }
 
 // -------------------------------------------------------------- rendering --
@@ -596,10 +601,10 @@ function applyGarments(ids) {
 }
 
 // The wardrobe declares no outfit, so the workbench opens with one garment in
-// each everyday slot — the first the catalog lists for it — and leaves hats,
-// gloves, outerwear and the rest for the reader to add. Exclusivity is still
+// each everyday slot — the first the catalog lists for it — and leaves bra tops,
+// hats, gloves, outerwear and the rest for the reader to add. Exclusivity is still
 // the catalog's: these are ordinary selections a click can undo.
-const OPENING_SLOTS = ["underwear_bottom", "underwear_top", "torso_base", "legs", "feet_outer"];
+const OPENING_SLOTS = ["underwear_bottom", "torso_base", "legs", "feet_outer"];
 function openingOutfit(catalog) {
   const worn = [];
   for (const slot of OPENING_SLOTS) {
@@ -694,6 +699,32 @@ function renderDomainRoles() {
     box.onchange = () => { domainView.setRoleVisible(box.dataset.role, box.checked); renderDomainRoles(); };
 }
 
+// The bottom centre is one slot with two tenants. A live body owns it while it
+// runs, because a greyed-out transport reads as a broken play button rather
+// than as "this control belongs to the recording, and the recording is not
+// what you are looking at". Nothing here starts or stops the simulation; that
+// is the run button in the Simulation section, and the copy says so.
+function syncTransport() {
+  const live = !!liveFrame;
+  const frames = domainView ? 0 : bodyTrajectory?.frames.length || 0;
+  $("transport").hidden = live;
+  $("live-readout").hidden = !live;
+  if (live) {
+    const running = !!sceneInteraction?.running;
+    $("live-readout").dataset.running = String(running);
+    $("live-readout-text").textContent =
+      `${running ? "Live" : "Paused"} · ${liveFrame.time_s.toFixed(2)} s computed`;
+    return;
+  }
+  const why = domainView ? "A conforming volume is static; there is nothing to play."
+    : bodyError ? `No recording loaded: ${bodyError}`
+    : frames < 2 ? "No recording loaded yet."
+    : "";
+  $("play").title = why || "Play the recorded body trajectory. This does not run the simulation.";
+  $("transport").dataset.empty = String(!!why);
+  $("transport-label").textContent = why ? "No recording" : "Recording";
+}
+
 // ---------------------------------------------------------------- frames ---
 function setupFrames() {
   const frames = domainView ? 0 : bodyTrajectory?.frames.length || 0;
@@ -704,6 +735,7 @@ function setupFrames() {
   if (!live) $("time").value = 0;
   playing = false;
   $("play").textContent = "▶";
+  syncTransport();
   updateFrame();
 }
 function updateFrame() {
@@ -720,7 +752,7 @@ function updateFrame() {
   }
   const frame = bodyTrajectory?.frames[Number($("time").value)];
   applyBodyFrame(frame, bodyTrajectory);
-  $("time-value").textContent = frame ? `${Number(frame.time_s).toFixed(3)} s` : bodyError;
+  $("time-value").textContent = frame ? `Recorded · ${Number(frame.time_s).toFixed(3)} s` : bodyError;
 }
 function applyBodyFrame(frame, trajectory) {
   const skinField = frame?.respiration?.skin_field;
@@ -858,7 +890,7 @@ function mountBody() {
     onSelect: selectStructure,
     mount: sceneControls, monitor: sceneMonitor,
     onStatus: (text) => left.setRunNote(text),
-    onPauseReplay: () => { playing = false; $("play").textContent = "▶"; $("play").disabled = true; $("time").disabled = true; },
+    onPauseReplay: () => { playing = false; $("play").textContent = "▶"; $("play").disabled = true; $("time").disabled = true; syncTransport(); },
     onFrame: (frame) => {
       const first = frame && !liveFrame;
       liveFrame = frame;
@@ -867,7 +899,7 @@ function mountBody() {
       if (frame) {
         if (first) for (const id of ["live", "live-signal-1", "motor", "scene"]) panes.show(id);
         const now = performance.now();
-        if (!document.hidden && (first || now - lastLiveVisual >= 200)) { lastLiveVisual = now; updateFrame(); }
+        if (!document.hidden && (first || now - lastLiveVisual >= 200)) { lastLiveVisual = now; updateFrame(); syncTransport(); }
       } else setupFrames();
       syncRun();
     },

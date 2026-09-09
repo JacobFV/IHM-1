@@ -16,7 +16,12 @@ test("a computed trajectory drives the transport and the playback pane", async (
   await expect(page.locator("#play")).toBeEnabled({ timeout: 240000 });
   await page.locator("#time").fill("1");
   await page.locator("#time").dispatchEvent("input");
-  await expect(page.locator("#time-value")).toHaveText("1.000 s");
+  await expect(page.locator("#time-value")).toHaveText("Recorded \u00b7 1.000 s");
+  // The bottom-centre control names its tenant, so it cannot be read as the
+  // simulation's play button.
+  await expect(page.locator("#transport-label")).toHaveText("Recording");
+  await expect(page.locator("#transport")).toHaveAttribute("data-empty", "false");
+  await expect(page.locator("#live-readout")).toBeHidden();
   expect(errors).toEqual([]);
 });
 
@@ -27,4 +32,8 @@ test("an unavailable trajectory never substitutes animated anatomy", async ({ pa
   await expect(page.locator("#time-value")).toHaveText("Canonical trajectory is stale; rematerialize the native run");
   await expect(page.locator("#play")).toBeDisabled();
   await expect(page.locator("#time")).toBeDisabled();
+  // A dead play button must say why it is dead rather than look broken.
+  await expect(page.locator("#transport-label")).toHaveText("No recording");
+  await expect(page.locator("#transport")).toHaveAttribute("data-empty", "true");
+  await expect(page.locator("#play")).toHaveAttribute("title", /No recording loaded/);
 });
