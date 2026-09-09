@@ -31,8 +31,8 @@ template<class Vector> inline void array(std::ostream& out, const Vector& values
 inline std::string evaluate(OpenSim::Model& model, const SimTK::State& continuing,
                             std::istream& input, const std::string& environment,
                             bool has_external_loads, double support_plane, const ihm_surface::Foundation* foundation=nullptr) {
-    if (environment != "supine" || has_external_loads)
-        throw std::runtime_error("static pose requires supine with no external loads");
+    if ((environment != "supine" && environment != "upright" && environment != "free") || has_external_loads)
+        throw std::runtime_error("static pose requires a known environment with no external loads");
     int count;
     if (!(input >> count) || count < 1 || count > model.getCoordinateSet().getSize())
         throw std::runtime_error("invalid static pose coordinate count");
@@ -48,8 +48,24 @@ inline std::string evaluate(OpenSim::Model& model, const SimTK::State& continuin
             throw std::runtime_error("static pose coordinate outside source bounds");
         requested.emplace(name,value);
     }
-    std::string extra;
-    if (input >> extra) throw std::runtime_error("trailing static pose input");
+    // Optional suffix: activation_count muscle activation ... . The historical
+    // coordinate-only request remains valid. Changes affect the copied State only.
+    std::map<std::string,double> activations;
+    input >> std::ws;
+    if (input.peek() != std::char_traits<char>::eof()) {
+        int muscle_count;
+        if (!(input >> muscle_count) || muscle_count < 0 || muscle_count > model.getMuscles().getSize())
+            throw std::runtime_error("invalid static activation count");
+        for (int i=0;i<muscle_count;++i) {
+            std::string name; double value;
+            if (!(input >> name >> value) || !std::isfinite(value) || value<0 || value>1 || activations.count(name))
+                throw std::runtime_error("invalid or duplicate static activation");
+            model.getMuscles().get(name); // Check identity before evaluating anything.
+            activations.emplace(name,value);
+        }
+        std::string extra;
+        if (input >> extra) throw std::runtime_error("trailing static pose input");
+    }
     SimTK::State candidate = continuing;
     candidate.updU() = 0.;
     for (const auto& value : requested)
@@ -57,6 +73,7 @@ inline std::string evaluate(OpenSim::Model& model, const SimTK::State& continuin
     model.assemble(candidate);
     candidate.updU() = 0.;
     model.markControlsAsInvalid(candidate);
+    for(const auto& value:activations) model.getMuscles().get(value.first).setActivation(candidate,value.second);
     model.equilibrateMuscles(candidate);
     model.realizeAcceleration(candidate);
     // Assembly may alter independent coordinates. Do not let it evade bounds.
@@ -80,7 +97,9 @@ inline std::string evaluate(OpenSim::Model& model, const SimTK::State& continuin
     std::ostringstream out;
     out << "{\"kind\":\"static_pose_evaluated\",\"physical_time_advanced_s\":0,\"continuing_state_unchanged\":true,\"time_s\":";
     number(out,candidate.getTime());
-    out << ",\"q\":"; array(out,candidate.getQ());
+    out << ",\"activation_overrides\":{"; bool activation_first=true;
+    for(const auto& value:activations){if(!activation_first)out<<',';activation_first=false;quoted(out,value.first);out<<":{\"requested\":";number(out,value.second);out<<",\"actual\":";number(out,model.getMuscles().get(value.first).getActivation(candidate));out<<'}';}
+    out << "},\"q\":"; array(out,candidate.getQ());
     out << ",\"u\":"; array(out,candidate.getU());
     out << ",\"udot\":"; array(out,candidate.getUDot());
     std::vector<std::string> mobility_names(candidate.getNU());
@@ -130,11 +149,15 @@ inline std::string evaluate(OpenSim::Model& model, const SimTK::State& continuin
         const auto& sphere=force.getConnectee<OpenSim::ContactSphere>("sphere");
         const auto center=sphere.getFrame().findStationLocationInGround(candidate,sphere.get_location());
         const auto wrench=force.getSphereForce(candidate); support+=wrench[1];
-        const double overlap=std::max(0.,support_plane+sphere.getRadius()-center[0]);
+        const double overlap=std::max(0.,support_plane+sphere.getRadius()-center[environment=="upright"?1:0]);
         penetration=std::max(penetration,overlap);
         if (!first) out << ','; first=false;
         out << "{\"name\":"; quoted(out,force.getName());
         out << ",\"force_n\":"; array(out,wrench[1]);
+        out << ",\"body_frame\":"; quoted(out,sphere.getFrame().getName());
+        out << ",\"center_m\":"; array(out,center);
+        out << ",\"radius_m\":"; number(out,sphere.getRadius());
+        out << ",\"signed_clearance_m\":"; number(out,center[environment=="upright"?1:0]-support_plane-sphere.getRadius());
         out << ",\"penetration_m\":"; number(out,overlap); out << '}';
     }
     if(foundation){const auto result=foundation->sample(candidate);support+=result.force;penetration=std::max(penetration,result.maximum_penetration);

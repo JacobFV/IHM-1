@@ -1,0 +1,2513 @@
+{
+  "passed": true,
+  "registration": "data/derived/supine-selected-defaults-ih90ww49/registration.json",
+  "pose_path": "data/derived/supine-selected-defaults-ih90ww49/initial_pose.json",
+  "pose_sha256": "d4e1901ff22b5a16b11e7502d82ef209601753f8f088d5023794b243e4eacad5",
+  "duration_requested_s": 1.0,
+  "surface_contact_manifest": "data/derived/supine-surface-contact-5jqy1juo/manifest.json",
+  "bed_material": "MM",
+  "scope": "Real finite-mass native body and reciprocal bedroom contact with held native muscle excitation defaults; no brain, standing, or equilibrium claim",
+  "initial_native_coordinates": {
+    "pelvis_tilt": {
+      "value": -0.06032892855253028,
+      "speed": 0,
+      "unit": "rad"
+    },
+    "pelvis_list": {
+      "value": -0.000357449733435382,
+      "speed": 0,
+      "unit": "rad"
+    },
+    "pelvis_rotation": {
+      "value": -0.004990409573001118,
+      "speed": 0,
+      "unit": "rad"
+    },
+    "pelvis_tx": {
+      "value": -0.08878121276964179,
+      "speed": 0,
+      "unit": "m"
+    },
+    "pelvis_ty": {
+      "value": 0.9317339881419812,
+      "speed": 0,
+      "unit": "m"
+    },
+    "pelvis_tz": {
+      "value": 0.002398884026474333,
+      "speed": 0,
+      "unit": "m"
+    },
+    "hip_flexion_r": {
+      "value": -0.06869604444182377,
+      "speed": 0,
+      "unit": "rad"
+    },
+    "hip_adduction_r": {
+      "value": 0.10100369927955874,
+      "speed": 0,
+      "unit": "rad"
+    },
+    "hip_rotation_r": {
+      "value": -0.22158416423400137,
+      "speed": 0,
+      "unit": "rad"
+    },
+    "knee_angle_r": {
+      "value": 0.09154271797482806,
+      "speed": 0,
+      "unit": "rad"
+    },
+    "knee_angle_r_beta": {
+      "value": 0.09154271797482806,
+      "speed": 0,
+      "unit": "m"
+    },
+    "ankle_angle_r": {
+      "value": -0.5341626021203698,
+      "speed": 0,
+      "unit": "rad"
+    },
+    "hip_flexion_l": {
+      "value": -0.07947590960449376,
+      "speed": 0,
+      "unit": "rad"
+    },
+    "hip_adduction_l": {
+      "value": 0.11616885898172322,
+      "speed": 0,
+      "unit": "rad"
+    },
+    "hip_rotation_l": {
+      "value": -0.27311131678684436,
+      "speed": 0,
+      "unit": "rad"
+    },
+    "knee_angle_l": {
+      "value": 0.06567336724183365,
+      "speed": 0,
+      "unit": "rad"
+    },
+    "knee_angle_l_beta": {
+      "value": 0.06567336724183365,
+      "speed": 0,
+      "unit": "m"
+    },
+    "ankle_angle_l": {
+      "value": -0.5322951119291072,
+      "speed": 0,
+      "unit": "rad"
+    },
+    "lumbar_extension": {
+      "value": -0.029443272909368986,
+      "speed": 0,
+      "unit": "rad"
+    },
+    "lumbar_bending": {
+      "value": -0.09994942100299833,
+      "speed": 0,
+      "unit": "rad"
+    },
+    "lumbar_rotation": {
+      "value": -0.018331002773944886,
+      "speed": 0,
+      "unit": "rad"
+    },
+    "arm_flex_r": {
+      "value": -0.23995339411005276,
+      "speed": 0,
+      "unit": "rad"
+    },
+    "arm_add_r": {
+      "value": -0.012421948049961835,
+      "speed": 0,
+      "unit": "rad"
+    },
+    "arm_rot_r": {
+      "value": 0.25421487142223764,
+      "speed": 0,
+      "unit": "rad"
+    },
+    "elbow_flex_r": {
+      "value": 1.2468633091616599,
+      "speed": 0,
+      "unit": "rad"
+    },
+    "pro_sup_r": {
+      "value": 0.14030244524016458,
+      "speed": 0,
+      "unit": "rad"
+    },
+    "arm_flex_l": {
+      "value": -0.2518627415490532,
+      "speed": 0,
+      "unit": "rad"
+    },
+    "arm_add_l": {
+      "value": -0.014845197387646928,
+      "speed": 0,
+      "unit": "rad"
+    },
+    "arm_rot_l": {
+      "value": 0.25370993105937,
+      "speed": 0,
+      "unit": "rad"
+    },
+    "elbow_flex_l": {
+      "value": 1.2400010658546958,
+      "speed": 0,
+      "unit": "rad"
+    },
+    "pro_sup_l": {
+      "value": 0.14095932524296154,
+      "speed": 0,
+      "unit": "rad"
+    },
+    "mtp_angle_r": {
+      "value": -0.003191432600005152,
+      "speed": 0,
+      "unit": "rad"
+    },
+    "mtp_angle_l": {
+      "value": -0.0032887337357768447,
+      "speed": 0,
+      "unit": "rad"
+    }
+  },
+  "initial_excitations": {
+    "addbrev_r": 0.01,
+    "addlong_r": 0.07357172151168478,
+    "addmagDist_r": 0.01,
+    "addmagIsch_r": 0.01,
+    "addmagMid_r": 0.01,
+    "addmagProx_r": 0.01,
+    "bflh_r": 0.01,
+    "bfsh_r": 0.01,
+    "edl_r": 0.01,
+    "ehl_r": 0.01,
+    "fdl_r": 0.01,
+    "fhl_r": 0.01,
+    "gaslat_r": 0.01,
+    "gasmed_r": 0.01,
+    "glmax1_r": 0.01,
+    "glmax2_r": 0.010989685475309964,
+    "glmax3_r": 0.09315698538349458,
+    "glmed1_r": 0.0854536322941009,
+    "glmed2_r": 0.010847895589376622,
+    "glmed3_r": 0.01,
+    "glmin1_r": 0.14497993165249085,
+    "glmin2_r": 0.01,
+    "glmin3_r": 0.01,
+    "grac_r": 0.01,
+    "iliacus_r": 0.15324353606393462,
+    "perbrev_r": 0.01,
+    "perlong_r": 0.01,
+    "piri_r": 0.012632715470702856,
+    "psoas_r": 0.01,
+    "recfem_r": 0.0657873462392892,
+    "sart_r": 0.01,
+    "semimem_r": 0.1583843090668003,
+    "semiten_r": 0.01,
+    "soleus_r": 0.01,
+    "tfl_r": 0.01,
+    "tibant_r": 0.01,
+    "tibpost_r": 0.01,
+    "vasint_r": 0.01,
+    "vaslat_r": 0.01,
+    "vasmed_r": 0.01,
+    "addbrev_l": 0.01,
+    "addlong_l": 0.17380896302485702,
+    "addmagDist_l": 0.01,
+    "addmagIsch_l": 0.01,
+    "addmagMid_l": 0.01,
+    "addmagProx_l": 0.01,
+    "bflh_l": 0.01,
+    "bfsh_l": 0.01,
+    "edl_l": 0.01,
+    "ehl_l": 0.01,
+    "fdl_l": 0.01,
+    "fhl_l": 0.01,
+    "gaslat_l": 0.01,
+    "gasmed_l": 0.01,
+    "glmax1_l": 0.01,
+    "glmax2_l": 0.051490175642900364,
+    "glmax3_l": 0.08191031381291737,
+    "glmed1_l": 0.16956438597211781,
+    "glmed2_l": 0.04505678905031779,
+    "glmed3_l": 0.01,
+    "glmin1_l": 0.1372382217141051,
+    "glmin2_l": 0.01,
+    "glmin3_l": 0.01,
+    "grac_l": 0.01,
+    "iliacus_l": 0.09958955738197699,
+    "perbrev_l": 0.01,
+    "perlong_l": 0.01,
+    "piri_l": 0.016563276695281383,
+    "psoas_l": 0.01,
+    "recfem_l": 0.05663874002331905,
+    "sart_l": 0.01,
+    "semimem_l": 0.14716640545684082,
+    "semiten_l": 0.01,
+    "soleus_l": 0.01,
+    "tfl_l": 0.01,
+    "tibant_l": 0.01,
+    "tibpost_l": 0.01,
+    "vasint_l": 0.01,
+    "vaslat_l": 0.01,
+    "vasmed_l": 0.01,
+    "arm26_TRIlong_r": 0.05,
+    "arm26_TRIlat_r": 0.05,
+    "arm26_TRImed_r": 0.05,
+    "arm26_BIClong_r": 0.05,
+    "arm26_BICshort_r": 0.05,
+    "arm26_BRA_r": 0.05,
+    "arm26_TRIlong_l": 0.05,
+    "arm26_TRIlat_l": 0.05,
+    "arm26_TRImed_l": 0.05,
+    "arm26_BIClong_l": 0.05,
+    "arm26_BICshort_l": 0.05,
+    "arm26_BRA_l": 0.05,
+    "gait2392_ercspn_r": 0.07375930287466642,
+    "gait2392_intobl_r": 0.038621328118723965,
+    "gait2392_extobl_r": 0.020142194744924236,
+    "gait2392_ercspn_l": 0.0835640753353586,
+    "gait2392_intobl_l": 0.01972017523021509,
+    "gait2392_extobl_l": 0.03894921161919505
+  },
+  "initial_native_energy": {
+    "kinetic_energy_j": 0,
+    "potential_energy_j": -125.45111996338247,
+    "metabolic_reference": {
+      "M0_w": 258.9440305407705,
+      "W0_w": -4.490403206589873e-05,
+      "H0_w": 258.94407544480254
+    }
+  },
+  "final_native_coordinates": {
+    "pelvis_tilt": {
+      "value": -0.06015032213387571,
+      "speed": 0.0022730253172706955,
+      "unit": "rad"
+    },
+    "pelvis_list": {
+      "value": 0.002619449216307708,
+      "speed": 0.004003526967036775,
+      "unit": "rad"
+    },
+    "pelvis_rotation": {
+      "value": 0.004581923228751262,
+      "speed": 0.02759467263177365,
+      "unit": "rad"
+    },
+    "pelvis_tx": {
+      "value": -0.08855891328262992,
+      "speed": 0.005523805813985348,
+      "unit": "m"
+    },
+    "pelvis_ty": {
+      "value": 0.9327744406901286,
+      "speed": 0.0011340398531428063,
+      "unit": "m"
+    },
+    "pelvis_tz": {
+      "value": -0.00037490697834723525,
+      "speed": -0.006350086875946028,
+      "unit": "m"
+    },
+    "hip_flexion_r": {
+      "value": -0.07582599186675175,
+      "speed": -0.009805654455499803,
+      "unit": "rad"
+    },
+    "hip_adduction_r": {
+      "value": 0.09687211357711246,
+      "speed": -0.005091271430167718,
+      "unit": "rad"
+    },
+    "hip_rotation_r": {
+      "value": -0.2340656402345204,
+      "speed": 0.0015882170481569089,
+      "unit": "rad"
+    },
+    "knee_angle_r": {
+      "value": 0.07977547890233228,
+      "speed": -0.011380901957221395,
+      "unit": "rad"
+    },
+    "knee_angle_r_beta": {
+      "value": 0.07977547890233226,
+      "speed": -0.011380901957221457,
+      "unit": "m"
+    },
+    "ankle_angle_r": {
+      "value": -0.5354843740648965,
+      "speed": 0.0021402042363782873,
+      "unit": "rad"
+    },
+    "hip_flexion_l": {
+      "value": -0.08789927192368582,
+      "speed": -0.011401034732220981,
+      "unit": "rad"
+    },
+    "hip_adduction_l": {
+      "value": 0.12169578090913229,
+      "speed": 0.00832278077040211,
+      "unit": "rad"
+    },
+    "hip_rotation_l": {
+      "value": -0.30529885101222143,
+      "speed": -0.025335304321565607,
+      "unit": "rad"
+    },
+    "knee_angle_l": {
+      "value": 0.05205120901288335,
+      "speed": -0.01414011324266035,
+      "unit": "rad"
+    },
+    "knee_angle_l_beta": {
+      "value": 0.05205120901288336,
+      "speed": -0.014140113242660329,
+      "unit": "m"
+    },
+    "ankle_angle_l": {
+      "value": -0.5328293032404221,
+      "speed": 0.005794022420585569,
+      "unit": "rad"
+    },
+    "lumbar_extension": {
+      "value": -0.029719774663230246,
+      "speed": -0.006031007826863639,
+      "unit": "rad"
+    },
+    "lumbar_bending": {
+      "value": -0.09255521549581947,
+      "speed": 0.005610662523616624,
+      "unit": "rad"
+    },
+    "lumbar_rotation": {
+      "value": -0.026799689961595687,
+      "speed": -0.015983639248392585,
+      "unit": "rad"
+    },
+    "arm_flex_r": {
+      "value": -0.24083894998753042,
+      "speed": -0.011653780261046003,
+      "unit": "rad"
+    },
+    "arm_add_r": {
+      "value": -0.01309483022475189,
+      "speed": 0.0003624197139439747,
+      "unit": "rad"
+    },
+    "arm_rot_r": {
+      "value": 0.2533040561308874,
+      "speed": 0.006002517888394101,
+      "unit": "rad"
+    },
+    "elbow_flex_r": {
+      "value": 1.2489976098811413,
+      "speed": 0.0057916949748053285,
+      "unit": "rad"
+    },
+    "pro_sup_r": {
+      "value": 0.14110199186703914,
+      "speed": -0.005552604688756421,
+      "unit": "rad"
+    },
+    "arm_flex_l": {
+      "value": -0.25597330395416695,
+      "speed": 0.003351000787342391,
+      "unit": "rad"
+    },
+    "arm_add_l": {
+      "value": -0.012655018048346909,
+      "speed": 0.00207947372826468,
+      "unit": "rad"
+    },
+    "arm_rot_l": {
+      "value": 0.2569695490642009,
+      "speed": -0.019933443872242867,
+      "unit": "rad"
+    },
+    "elbow_flex_l": {
+      "value": 1.2788648990571214,
+      "speed": 0.0295801488461424,
+      "unit": "rad"
+    },
+    "pro_sup_l": {
+      "value": 0.1256567179978048,
+      "speed": -1.241882285072045,
+      "unit": "rad"
+    },
+    "mtp_angle_r": {
+      "value": -0.0033924008266139442,
+      "speed": 0.0006297657927534947,
+      "unit": "rad"
+    },
+    "mtp_angle_l": {
+      "value": -0.003847823598389958,
+      "speed": 0.00018761805960871577,
+      "unit": "rad"
+    }
+  },
+  "final_native_surface_foundation": {
+    "elastic_energy_j": 17.123974963581478,
+    "skin_elastic_energy_j": 0.4023276325296548,
+    "bed_elastic_energy_j": 16.721647331051777,
+    "maximum_bed_indentation_m": 0.08063466071804994,
+    "maximum_total_approach_m": 0.08209023696497669,
+    "normal_rate_law": "conservative_measured_bed_skin_series",
+    "power_to_body_w": 3.781306918477802,
+    "dissipative_power_w": -0.01851641213221222,
+    "bed_force_n": [
+      -768.4766035855814,
+      4.325944423166111,
+      2.1532116463886615
+    ],
+    "bed_moment_about_source_origin_nm": [
+      3.049225961129151,
+      8.187624700148692,
+      713.5053662122791
+    ],
+    "maximum_penetration_m": 0.0014555762469267582,
+    "sensor_points": []
+  },
+  "final_absolute_coordinate_displacement": {
+    "pelvis_tilt": 0.0001786064186545741,
+    "pelvis_list": 0.00297689894974309,
+    "pelvis_rotation": 0.00957233280175238,
+    "pelvis_tx": 0.00022229948701187052,
+    "pelvis_ty": 0.0010404525481474414,
+    "pelvis_tz": 0.0027737910048215683,
+    "hip_flexion_r": 0.007129947424927979,
+    "hip_adduction_r": 0.004131585702446275,
+    "hip_rotation_r": 0.01248147600051902,
+    "knee_angle_r": 0.011767239072495786,
+    "knee_angle_r_beta": 0.0117672390724958,
+    "ankle_angle_r": 0.0013217719445266507,
+    "hip_flexion_l": 0.008423362319192065,
+    "hip_adduction_l": 0.00552692192740907,
+    "hip_rotation_l": 0.03218753422537707,
+    "knee_angle_l": 0.013622158228950298,
+    "knee_angle_l_beta": 0.013622158228950285,
+    "ankle_angle_l": 0.0005341913113149355,
+    "lumbar_extension": 0.00027650175386126005,
+    "lumbar_bending": 0.007394205507178869,
+    "lumbar_rotation": 0.0084686871876508,
+    "arm_flex_r": 0.0008855558774776562,
+    "arm_add_r": 0.0006728821747900553,
+    "arm_rot_r": 0.000910815291350231,
+    "elbow_flex_r": 0.0021343007194813968,
+    "pro_sup_r": 0.0007995466268745643,
+    "arm_flex_l": 0.00411056240511376,
+    "arm_add_l": 0.002190179339300019,
+    "arm_rot_l": 0.0032596180048308776,
+    "elbow_flex_l": 0.03886383320242559,
+    "pro_sup_l": 0.015302607245156724,
+    "mtp_angle_r": 0.00020096822660879221,
+    "mtp_angle_l": 0.0005590898626131133
+  },
+  "rows": [
+    {
+      "time_s": 0.005,
+      "environment_time_s": 0.005,
+      "maximum_skin_step_m": 1.7756874283805956e-05,
+      "maximum_cloth_speed_m_s": 3.3894323839549503,
+      "maximum_cloth_displacement_m": 0.011787131942483828,
+      "kinetic_energy_j": 6.273653604780118e-05,
+      "momentum_residual_n": 2.4592059312906933e-12,
+      "contact_ports": 108
+    },
+    {
+      "time_s": 0.01,
+      "environment_time_s": 0.01,
+      "maximum_skin_step_m": 3.636761424906242e-05,
+      "maximum_cloth_speed_m_s": 2.6690420762918046,
+      "maximum_cloth_displacement_m": 0.027841963468980577,
+      "kinetic_energy_j": 0.00018530752950218768,
+      "momentum_residual_n": 1.9201033456637146e-12,
+      "contact_ports": 113
+    },
+    {
+      "time_s": 0.015,
+      "environment_time_s": 0.015,
+      "maximum_skin_step_m": 4.517284457228001e-05,
+      "maximum_cloth_speed_m_s": 1.9722185139728459,
+      "maximum_cloth_displacement_m": 0.03446823789136547,
+      "kinetic_energy_j": 0.0004445732441808043,
+      "momentum_residual_n": 3.1501300318624685e-12,
+      "contact_ports": 113
+    },
+    {
+      "time_s": 0.02,
+      "environment_time_s": 0.02,
+      "maximum_skin_step_m": 5.069341747188693e-05,
+      "maximum_cloth_speed_m_s": 1.4554883821892755,
+      "maximum_cloth_displacement_m": 0.03213382017251179,
+      "kinetic_energy_j": 0.0009004661266517747,
+      "momentum_residual_n": 1.5984599233113964e-12,
+      "contact_ports": 112
+    },
+    {
+      "time_s": 0.025,
+      "environment_time_s": 0.025,
+      "maximum_skin_step_m": 9.036560137776515e-05,
+      "maximum_cloth_speed_m_s": 1.3327805700371027,
+      "maximum_cloth_displacement_m": 0.06168372305537807,
+      "kinetic_energy_j": 0.0014707033929162092,
+      "momentum_residual_n": 3.735084181749458e-12,
+      "contact_ports": 110
+    },
+    {
+      "time_s": 0.030000000000000002,
+      "environment_time_s": 0.030000000000000002,
+      "maximum_skin_step_m": 0.00019371980021287157,
+      "maximum_cloth_speed_m_s": 3.8244297448793336,
+      "maximum_cloth_displacement_m": 0.06034245550064631,
+      "kinetic_energy_j": 0.0019552454279352046,
+      "momentum_residual_n": 1.2210696973622192e-12,
+      "contact_ports": 104
+    },
+    {
+      "time_s": 0.035,
+      "environment_time_s": 0.035,
+      "maximum_skin_step_m": 0.00018481592554014324,
+      "maximum_cloth_speed_m_s": 2.8300210506769914,
+      "maximum_cloth_displacement_m": 0.053685153153648336,
+      "kinetic_energy_j": 0.002450023470467794,
+      "momentum_residual_n": 1.2268650631265566e-12,
+      "contact_ports": 111
+    },
+    {
+      "time_s": 0.04,
+      "environment_time_s": 0.04,
+      "maximum_skin_step_m": 0.00017334230990675016,
+      "maximum_cloth_speed_m_s": 2.1017590366278744,
+      "maximum_cloth_displacement_m": 0.04644380891297904,
+      "kinetic_energy_j": 0.002873294948803968,
+      "momentum_residual_n": 4.398867985061838e-12,
+      "contact_ports": 111
+    },
+    {
+      "time_s": 0.045,
+      "environment_time_s": 0.045,
+      "maximum_skin_step_m": 0.0001649745262299277,
+      "maximum_cloth_speed_m_s": 1.7231600808198622,
+      "maximum_cloth_displacement_m": 0.040757820373228865,
+      "kinetic_energy_j": 0.0032473839449746905,
+      "momentum_residual_n": 2.5285624184283708e-12,
+      "contact_ports": 107
+    },
+    {
+      "time_s": 0.049999999999999996,
+      "environment_time_s": 0.049999999999999996,
+      "maximum_skin_step_m": 0.0001549662435333595,
+      "maximum_cloth_speed_m_s": 1.5288360001706836,
+      "maximum_cloth_displacement_m": 0.03843052694986108,
+      "kinetic_energy_j": 0.0036951857120370874,
+      "momentum_residual_n": 7.53584787896822e-13,
+      "contact_ports": 109
+    },
+    {
+      "time_s": 0.05499999999999999,
+      "environment_time_s": 0.05499999999999999,
+      "maximum_skin_step_m": 0.00014567776806647181,
+      "maximum_cloth_speed_m_s": 1.6020415484059531,
+      "maximum_cloth_displacement_m": 0.037348306303827856,
+      "kinetic_energy_j": 0.004027387492719651,
+      "momentum_residual_n": 4.76203996576404e-12,
+      "contact_ports": 107
+    },
+    {
+      "time_s": 0.05999999999999999,
+      "environment_time_s": 0.05999999999999999,
+      "maximum_skin_step_m": 0.00014924738726391823,
+      "maximum_cloth_speed_m_s": 1.789869057251689,
+      "maximum_cloth_displacement_m": 0.034569764478333646,
+      "kinetic_energy_j": 0.004246773623401574,
+      "momentum_residual_n": 6.830254699005275e-12,
+      "contact_ports": 112
+    },
+    {
+      "time_s": 0.06499999999999999,
+      "environment_time_s": 0.06499999999999999,
+      "maximum_skin_step_m": 0.00015284294830685048,
+      "maximum_cloth_speed_m_s": 1.8422197242421903,
+      "maximum_cloth_displacement_m": 0.03195100293132568,
+      "kinetic_energy_j": 0.004539429822494631,
+      "momentum_residual_n": 3.484175990148572e-12,
+      "contact_ports": 105
+    },
+    {
+      "time_s": 0.06999999999999999,
+      "environment_time_s": 0.06999999999999999,
+      "maximum_skin_step_m": 0.00020747525602543573,
+      "maximum_cloth_speed_m_s": 1.5303093682555666,
+      "maximum_cloth_displacement_m": 0.03094543345605022,
+      "kinetic_energy_j": 0.004807365524021862,
+      "momentum_residual_n": 2.173606512167589e-12,
+      "contact_ports": 113
+    },
+    {
+      "time_s": 0.075,
+      "environment_time_s": 0.075,
+      "maximum_skin_step_m": 0.0002868275041258909,
+      "maximum_cloth_speed_m_s": 2.0180314821668093,
+      "maximum_cloth_displacement_m": 0.03232212698172079,
+      "kinetic_energy_j": 0.004992917157041273,
+      "momentum_residual_n": 1.3807381297932289e-12,
+      "contact_ports": 107
+    },
+    {
+      "time_s": 0.08,
+      "environment_time_s": 0.08,
+      "maximum_skin_step_m": 0.00027957697921858764,
+      "maximum_cloth_speed_m_s": 2.027330620251969,
+      "maximum_cloth_displacement_m": 0.03499931316338538,
+      "kinetic_energy_j": 0.005173873547880736,
+      "momentum_residual_n": 5.869811183239673e-13,
+      "contact_ports": 109
+    },
+    {
+      "time_s": 0.085,
+      "environment_time_s": 0.085,
+      "maximum_skin_step_m": 0.0002919793525189194,
+      "maximum_cloth_speed_m_s": 1.824220888312402,
+      "maximum_cloth_displacement_m": 0.0379753559524643,
+      "kinetic_energy_j": 0.00513923754671288,
+      "momentum_residual_n": 1.5546119657919917e-12,
+      "contact_ports": 110
+    },
+    {
+      "time_s": 0.09000000000000001,
+      "environment_time_s": 0.09000000000000001,
+      "maximum_skin_step_m": 0.0003672325701895616,
+      "maximum_cloth_speed_m_s": 1.4667997379331534,
+      "maximum_cloth_displacement_m": 0.06896106821437234,
+      "kinetic_energy_j": 0.005264941043065028,
+      "momentum_residual_n": 6.183667575473588e-13,
+      "contact_ports": 107
+    },
+    {
+      "time_s": 0.09500000000000001,
+      "environment_time_s": 0.09500000000000001,
+      "maximum_skin_step_m": 0.000413547348881986,
+      "maximum_cloth_speed_m_s": 2.3716284648130417,
+      "maximum_cloth_displacement_m": 0.06478507121453843,
+      "kinetic_energy_j": 0.005135414483228135,
+      "momentum_residual_n": 1.6089280979213125e-12,
+      "contact_ports": 106
+    },
+    {
+      "time_s": 0.10000000000000002,
+      "environment_time_s": 0.10000000000000002,
+      "maximum_skin_step_m": 0.0003980285552325394,
+      "maximum_cloth_speed_m_s": 2.9648758726596074,
+      "maximum_cloth_displacement_m": 0.06109779300799615,
+      "kinetic_energy_j": 0.00498185499233724,
+      "momentum_residual_n": 3.31121563055086e-12,
+      "contact_ports": 103
+    },
+    {
+      "time_s": 0.10500000000000002,
+      "environment_time_s": 0.10500000000000002,
+      "maximum_skin_step_m": 0.0004064607768195956,
+      "maximum_cloth_speed_m_s": 2.4552107916164987,
+      "maximum_cloth_displacement_m": 0.05237311968415718,
+      "kinetic_energy_j": 0.004774176623152793,
+      "momentum_residual_n": 9.29728204429203e-13,
+      "contact_ports": 107
+    },
+    {
+      "time_s": 0.11000000000000003,
+      "environment_time_s": 0.11000000000000003,
+      "maximum_skin_step_m": 0.00041550025372238833,
+      "maximum_cloth_speed_m_s": 2.555147821172183,
+      "maximum_cloth_displacement_m": 0.04306612141388544,
+      "kinetic_energy_j": 0.004476690256236099,
+      "momentum_residual_n": 5.430862435220386e-13,
+      "contact_ports": 105
+    },
+    {
+      "time_s": 0.11500000000000003,
+      "environment_time_s": 0.11500000000000003,
+      "maximum_skin_step_m": 0.0004276364937210129,
+      "maximum_cloth_speed_m_s": 2.465160874590007,
+      "maximum_cloth_displacement_m": 0.04244241336876552,
+      "kinetic_energy_j": 0.004188528342482187,
+      "momentum_residual_n": 5.056538280439105e-13,
+      "contact_ports": 109
+    },
+    {
+      "time_s": 0.12000000000000004,
+      "environment_time_s": 0.12000000000000004,
+      "maximum_skin_step_m": 0.00043211574269199005,
+      "maximum_cloth_speed_m_s": 2.2124126102117705,
+      "maximum_cloth_displacement_m": 0.0429829130104358,
+      "kinetic_energy_j": 0.0038971521048079814,
+      "momentum_residual_n": 5.964318140010861e-13,
+      "contact_ports": 106
+    },
+    {
+      "time_s": 0.12500000000000003,
+      "environment_time_s": 0.12500000000000003,
+      "maximum_skin_step_m": 0.00043245863554859085,
+      "maximum_cloth_speed_m_s": 1.9975639569545336,
+      "maximum_cloth_displacement_m": 0.04399695346516114,
+      "kinetic_energy_j": 0.0035793006251832052,
+      "momentum_residual_n": 3.486609407012627e-13,
+      "contact_ports": 107
+    },
+    {
+      "time_s": 0.13000000000000003,
+      "environment_time_s": 0.13000000000000003,
+      "maximum_skin_step_m": 0.00042548529026371754,
+      "maximum_cloth_speed_m_s": 1.8444977715457094,
+      "maximum_cloth_displacement_m": 0.04582056717568314,
+      "kinetic_energy_j": 0.003196887333642106,
+      "momentum_residual_n": 5.664909257020405e-13,
+      "contact_ports": 106
+    },
+    {
+      "time_s": 0.13500000000000004,
+      "environment_time_s": 0.13500000000000004,
+      "maximum_skin_step_m": 0.00041359981093476076,
+      "maximum_cloth_speed_m_s": 1.7473073537687875,
+      "maximum_cloth_displacement_m": 0.04633114242456317,
+      "kinetic_energy_j": 0.0028820569751317466,
+      "momentum_residual_n": 6.45377905958908e-13,
+      "contact_ports": 107
+    },
+    {
+      "time_s": 0.14000000000000004,
+      "environment_time_s": 0.14000000000000004,
+      "maximum_skin_step_m": 0.0005005266042500526,
+      "maximum_cloth_speed_m_s": 2.0540780833393644,
+      "maximum_cloth_displacement_m": 0.058486216568623316,
+      "kinetic_energy_j": 0.0028818782639457624,
+      "momentum_residual_n": 9.097019776089987e-13,
+      "contact_ports": 113
+    },
+    {
+      "time_s": 0.14500000000000005,
+      "environment_time_s": 0.14500000000000005,
+      "maximum_skin_step_m": 0.0005415247197760939,
+      "maximum_cloth_speed_m_s": 3.565854423496594,
+      "maximum_cloth_displacement_m": 0.05383067192601887,
+      "kinetic_energy_j": 0.00252786150796477,
+      "momentum_residual_n": 4.435725806944726e-12,
+      "contact_ports": 106
+    },
+    {
+      "time_s": 0.15000000000000005,
+      "environment_time_s": 0.15000000000000005,
+      "maximum_skin_step_m": 0.0004840216512935017,
+      "maximum_cloth_speed_m_s": 4.06308913662633,
+      "maximum_cloth_displacement_m": 0.06858155136314281,
+      "kinetic_energy_j": 0.0022728149602481,
+      "momentum_residual_n": 2.567806951925017e-12,
+      "contact_ports": 113
+    },
+    {
+      "time_s": 0.15500000000000005,
+      "environment_time_s": 0.15500000000000005,
+      "maximum_skin_step_m": 0.00044249681072050414,
+      "maximum_cloth_speed_m_s": 3.216397413612981,
+      "maximum_cloth_displacement_m": 0.06046441100410057,
+      "kinetic_energy_j": 0.0019756700689035505,
+      "momentum_residual_n": 8.961469378270035e-13,
+      "contact_ports": 108
+    },
+    {
+      "time_s": 0.16000000000000006,
+      "environment_time_s": 0.16000000000000006,
+      "maximum_skin_step_m": 0.0003939535223130095,
+      "maximum_cloth_speed_m_s": 2.628481765260597,
+      "maximum_cloth_displacement_m": 0.05518014652239709,
+      "kinetic_energy_j": 0.0017304931918768324,
+      "momentum_residual_n": 1.0726686215847035e-12,
+      "contact_ports": 109
+    },
+    {
+      "time_s": 0.16500000000000006,
+      "environment_time_s": 0.16500000000000006,
+      "maximum_skin_step_m": 0.0003635158084034911,
+      "maximum_cloth_speed_m_s": 2.5886043122290063,
+      "maximum_cloth_displacement_m": 0.053626864682218583,
+      "kinetic_energy_j": 0.001470670304147409,
+      "momentum_residual_n": 2.3447519622358947e-12,
+      "contact_ports": 106
+    },
+    {
+      "time_s": 0.17000000000000007,
+      "environment_time_s": 0.17000000000000007,
+      "maximum_skin_step_m": 0.0003300338524255401,
+      "maximum_cloth_speed_m_s": 2.386218449864844,
+      "maximum_cloth_displacement_m": 0.05268642110914189,
+      "kinetic_energy_j": 0.0013168190557753643,
+      "momentum_residual_n": 1.1619934260088584e-12,
+      "contact_ports": 107
+    },
+    {
+      "time_s": 0.17500000000000007,
+      "environment_time_s": 0.17500000000000007,
+      "maximum_skin_step_m": 0.00029582715904603613,
+      "maximum_cloth_speed_m_s": 2.6031500132493157,
+      "maximum_cloth_displacement_m": 0.051740017852810745,
+      "kinetic_energy_j": 0.0012009805636057523,
+      "momentum_residual_n": 3.923319288228938e-12,
+      "contact_ports": 108
+    },
+    {
+      "time_s": 0.18000000000000008,
+      "environment_time_s": 0.18000000000000008,
+      "maximum_skin_step_m": 0.00025405456088932406,
+      "maximum_cloth_speed_m_s": 2.569786685037373,
+      "maximum_cloth_displacement_m": 0.049761129929544345,
+      "kinetic_energy_j": 0.0011436559135120413,
+      "momentum_residual_n": 1.8509105522307774e-12,
+      "contact_ports": 105
+    },
+    {
+      "time_s": 0.18500000000000008,
+      "environment_time_s": 0.18500000000000008,
+      "maximum_skin_step_m": 0.00031775689339037365,
+      "maximum_cloth_speed_m_s": 2.4190676033488185,
+      "maximum_cloth_displacement_m": 0.04488878462719273,
+      "kinetic_energy_j": 0.0011912551367885852,
+      "momentum_residual_n": 4.213539508817138e-12,
+      "contact_ports": 110
+    },
+    {
+      "time_s": 0.19000000000000009,
+      "environment_time_s": 0.19000000000000009,
+      "maximum_skin_step_m": 0.00034524253293973997,
+      "maximum_cloth_speed_m_s": 2.553008426523896,
+      "maximum_cloth_displacement_m": 0.03921244302275334,
+      "kinetic_energy_j": 0.0012025357243385648,
+      "momentum_residual_n": 1.092243166985558e-12,
+      "contact_ports": 108
+    },
+    {
+      "time_s": 0.1950000000000001,
+      "environment_time_s": 0.1950000000000001,
+      "maximum_skin_step_m": 0.000420819760208504,
+      "maximum_cloth_speed_m_s": 3.219795817681152,
+      "maximum_cloth_displacement_m": 0.052778436920751355,
+      "kinetic_energy_j": 0.00141686719978218,
+      "momentum_residual_n": 1.760198268736837e-12,
+      "contact_ports": 106
+    },
+    {
+      "time_s": 0.2000000000000001,
+      "environment_time_s": 0.2000000000000001,
+      "maximum_skin_step_m": 0.00048023814152529026,
+      "maximum_cloth_speed_m_s": 4.196570792946797,
+      "maximum_cloth_displacement_m": 0.06318115804362079,
+      "kinetic_energy_j": 0.0015105442054438333,
+      "momentum_residual_n": 2.826480845323776e-12,
+      "contact_ports": 108
+    },
+    {
+      "time_s": 0.2050000000000001,
+      "environment_time_s": 0.2050000000000001,
+      "maximum_skin_step_m": 0.0004066343036316206,
+      "maximum_cloth_speed_m_s": 3.835773744513103,
+      "maximum_cloth_displacement_m": 0.05787489111599738,
+      "kinetic_energy_j": 0.0015648976514026287,
+      "momentum_residual_n": 8.253759668217224e-14,
+      "contact_ports": 106
+    },
+    {
+      "time_s": 0.2100000000000001,
+      "environment_time_s": 0.2100000000000001,
+      "maximum_skin_step_m": 0.0003250357772106699,
+      "maximum_cloth_speed_m_s": 2.895867272762908,
+      "maximum_cloth_displacement_m": 0.05237875254572529,
+      "kinetic_energy_j": 0.0016072082326070009,
+      "momentum_residual_n": 1.1854034813914565e-12,
+      "contact_ports": 106
+    },
+    {
+      "time_s": 0.2150000000000001,
+      "environment_time_s": 0.2150000000000001,
+      "maximum_skin_step_m": 0.00026435643149268104,
+      "maximum_cloth_speed_m_s": 2.7853152729252084,
+      "maximum_cloth_displacement_m": 0.06299697120782072,
+      "kinetic_energy_j": 0.0016738507247902178,
+      "momentum_residual_n": 2.4350063798008315e-12,
+      "contact_ports": 108
+    },
+    {
+      "time_s": 0.2200000000000001,
+      "environment_time_s": 0.2200000000000001,
+      "maximum_skin_step_m": 0.00020589148500474165,
+      "maximum_cloth_speed_m_s": 2.993437539901976,
+      "maximum_cloth_displacement_m": 0.060530701035248984,
+      "kinetic_energy_j": 0.0018192763018342738,
+      "momentum_residual_n": 8.985938861019961e-13,
+      "contact_ports": 107
+    },
+    {
+      "time_s": 0.22500000000000012,
+      "environment_time_s": 0.22500000000000012,
+      "maximum_skin_step_m": 0.0001502980215369965,
+      "maximum_cloth_speed_m_s": 2.887132335237712,
+      "maximum_cloth_displacement_m": 0.055432200287698206,
+      "kinetic_energy_j": 0.0019610993238669237,
+      "momentum_residual_n": 6.536142375065507e-12,
+      "contact_ports": 109
+    },
+    {
+      "time_s": 0.23000000000000012,
+      "environment_time_s": 0.23000000000000012,
+      "maximum_skin_step_m": 0.00010180178733267294,
+      "maximum_cloth_speed_m_s": 2.5391708150695567,
+      "maximum_cloth_displacement_m": 0.060293429356769866,
+      "kinetic_energy_j": 0.0020886496587533745,
+      "momentum_residual_n": 2.7303012464778554e-12,
+      "contact_ports": 106
+    },
+    {
+      "time_s": 0.23500000000000013,
+      "environment_time_s": 0.23500000000000013,
+      "maximum_skin_step_m": 0.00011145547911031512,
+      "maximum_cloth_speed_m_s": 2.4652218850608834,
+      "maximum_cloth_displacement_m": 0.05485517661861951,
+      "kinetic_energy_j": 0.0022227288560342662,
+      "momentum_residual_n": 1.3498282930905532e-12,
+      "contact_ports": 106
+    },
+    {
+      "time_s": 0.24000000000000013,
+      "environment_time_s": 0.24000000000000013,
+      "maximum_skin_step_m": 0.00015962867653653384,
+      "maximum_cloth_speed_m_s": 3.010275631210582,
+      "maximum_cloth_displacement_m": 0.05500095335776636,
+      "kinetic_energy_j": 0.002347024605793691,
+      "momentum_residual_n": 2.066709691524424e-12,
+      "contact_ports": 107
+    },
+    {
+      "time_s": 0.24500000000000013,
+      "environment_time_s": 0.24500000000000013,
+      "maximum_skin_step_m": 0.00023971188334662996,
+      "maximum_cloth_speed_m_s": 2.6633652838254975,
+      "maximum_cloth_displacement_m": 0.05530850915183975,
+      "kinetic_energy_j": 0.0024349902210409995,
+      "momentum_residual_n": 2.0908468938817707e-12,
+      "contact_ports": 109
+    },
+    {
+      "time_s": 0.2500000000000001,
+      "environment_time_s": 0.2500000000000001,
+      "maximum_skin_step_m": 0.00031039837872593443,
+      "maximum_cloth_speed_m_s": 3.0355513377047756,
+      "maximum_cloth_displacement_m": 0.05509990814055191,
+      "kinetic_energy_j": 0.0024991505547992407,
+      "momentum_residual_n": 4.311895474493957e-12,
+      "contact_ports": 107
+    },
+    {
+      "time_s": 0.2550000000000001,
+      "environment_time_s": 0.2550000000000001,
+      "maximum_skin_step_m": 0.00031750364681154954,
+      "maximum_cloth_speed_m_s": 3.3922248943797966,
+      "maximum_cloth_displacement_m": 0.05512086805633166,
+      "kinetic_energy_j": 0.0025407279447708184,
+      "momentum_residual_n": 3.294857635908209e-13,
+      "contact_ports": 104
+    },
+    {
+      "time_s": 0.2600000000000001,
+      "environment_time_s": 0.2600000000000001,
+      "maximum_skin_step_m": 0.0003313259709843448,
+      "maximum_cloth_speed_m_s": 3.443123963184919,
+      "maximum_cloth_displacement_m": 0.0576247266409483,
+      "kinetic_energy_j": 0.002611351232773644,
+      "momentum_residual_n": 4.249376803695124e-12,
+      "contact_ports": 107
+    },
+    {
+      "time_s": 0.2650000000000001,
+      "environment_time_s": 0.2650000000000001,
+      "maximum_skin_step_m": 0.0003439102616256879,
+      "maximum_cloth_speed_m_s": 3.2796942972855736,
+      "maximum_cloth_displacement_m": 0.06255768362922697,
+      "kinetic_energy_j": 0.00265543157959759,
+      "momentum_residual_n": 1.0011232591860483e-13,
+      "contact_ports": 106
+    },
+    {
+      "time_s": 0.27000000000000013,
+      "environment_time_s": 0.27000000000000013,
+      "maximum_skin_step_m": 0.0003781633168512616,
+      "maximum_cloth_speed_m_s": 2.5620980094063723,
+      "maximum_cloth_displacement_m": 0.06751101808241478,
+      "kinetic_energy_j": 0.002730086157066921,
+      "momentum_residual_n": 3.350560443377702e-12,
+      "contact_ports": 110
+    },
+    {
+      "time_s": 0.27500000000000013,
+      "environment_time_s": 0.27500000000000013,
+      "maximum_skin_step_m": 0.000394243456902434,
+      "maximum_cloth_speed_m_s": 3.3500053245018186,
+      "maximum_cloth_displacement_m": 0.06693612988946707,
+      "kinetic_energy_j": 0.002701004085464074,
+      "momentum_residual_n": 3.2242008247539543e-13,
+      "contact_ports": 106
+    },
+    {
+      "time_s": 0.28000000000000014,
+      "environment_time_s": 0.28000000000000014,
+      "maximum_skin_step_m": 0.0003249069835242121,
+      "maximum_cloth_speed_m_s": 2.7741730033429057,
+      "maximum_cloth_displacement_m": 0.0732154302062035,
+      "kinetic_energy_j": 0.0028373245795711415,
+      "momentum_residual_n": 1.8101444448213967e-12,
+      "contact_ports": 109
+    },
+    {
+      "time_s": 0.28500000000000014,
+      "environment_time_s": 0.28500000000000014,
+      "maximum_skin_step_m": 0.00035310567541451754,
+      "maximum_cloth_speed_m_s": 3.0510990637058444,
+      "maximum_cloth_displacement_m": 0.06941557085489981,
+      "kinetic_energy_j": 0.0026482847906815336,
+      "momentum_residual_n": 2.5130091389993266e-12,
+      "contact_ports": 108
+    },
+    {
+      "time_s": 0.29000000000000015,
+      "environment_time_s": 0.29000000000000015,
+      "maximum_skin_step_m": 0.00023132553032110997,
+      "maximum_cloth_speed_m_s": 2.8889700463573793,
+      "maximum_cloth_displacement_m": 0.07191188239073606,
+      "kinetic_energy_j": 0.0024627333431067873,
+      "momentum_residual_n": 3.2280146051390614e-12,
+      "contact_ports": 108
+    },
+    {
+      "time_s": 0.29500000000000015,
+      "environment_time_s": 0.29500000000000015,
+      "maximum_skin_step_m": 0.0001659227728235252,
+      "maximum_cloth_speed_m_s": 2.5160759096712715,
+      "maximum_cloth_displacement_m": 0.0751080518610603,
+      "kinetic_energy_j": 0.0023007566707320395,
+      "momentum_residual_n": 7.57589770057658e-13,
+      "contact_ports": 109
+    },
+    {
+      "time_s": 0.30000000000000016,
+      "environment_time_s": 0.30000000000000016,
+      "maximum_skin_step_m": 0.0001254868277654194,
+      "maximum_cloth_speed_m_s": 2.827613203911238,
+      "maximum_cloth_displacement_m": 0.07694811174091995,
+      "kinetic_energy_j": 0.0021053701633861163,
+      "momentum_residual_n": 2.5601492977947847e-12,
+      "contact_ports": 105
+    },
+    {
+      "time_s": 0.30500000000000016,
+      "environment_time_s": 0.30500000000000016,
+      "maximum_skin_step_m": 0.00015526283937213056,
+      "maximum_cloth_speed_m_s": 2.17371111259644,
+      "maximum_cloth_displacement_m": 0.0760799542069943,
+      "kinetic_energy_j": 0.001979563649684444,
+      "momentum_residual_n": 8.082399523735512e-13,
+      "contact_ports": 107
+    },
+    {
+      "time_s": 0.31000000000000016,
+      "environment_time_s": 0.31000000000000016,
+      "maximum_skin_step_m": 0.00015642193409130781,
+      "maximum_cloth_speed_m_s": 2.43914395631843,
+      "maximum_cloth_displacement_m": 0.07478361050498092,
+      "kinetic_energy_j": 0.0017821492698381126,
+      "momentum_residual_n": 1.0125243723375206e-12,
+      "contact_ports": 104
+    },
+    {
+      "time_s": 0.31500000000000017,
+      "environment_time_s": 0.31500000000000017,
+      "maximum_skin_step_m": 0.00011178426288288007,
+      "maximum_cloth_speed_m_s": 2.3815874785914506,
+      "maximum_cloth_displacement_m": 0.07955773356909417,
+      "kinetic_energy_j": 0.001597696967414561,
+      "momentum_residual_n": 4.0091221814009044e-13,
+      "contact_ports": 104
+    },
+    {
+      "time_s": 0.3200000000000002,
+      "environment_time_s": 0.3200000000000002,
+      "maximum_skin_step_m": 9.378343146520305e-05,
+      "maximum_cloth_speed_m_s": 2.446591417421505,
+      "maximum_cloth_displacement_m": 0.09036273404320141,
+      "kinetic_energy_j": 0.0014205740352340702,
+      "momentum_residual_n": 3.544755568825919e-13,
+      "contact_ports": 107
+    },
+    {
+      "time_s": 0.3250000000000002,
+      "environment_time_s": 0.3250000000000002,
+      "maximum_skin_step_m": 0.00030509932685352355,
+      "maximum_cloth_speed_m_s": 2.2821189156096615,
+      "maximum_cloth_displacement_m": 0.07312579469260586,
+      "kinetic_energy_j": 0.0013205243188666792,
+      "momentum_residual_n": 2.8544261553390835e-12,
+      "contact_ports": 108
+    },
+    {
+      "time_s": 0.3300000000000002,
+      "environment_time_s": 0.3300000000000002,
+      "maximum_skin_step_m": 0.00047131534662943467,
+      "maximum_cloth_speed_m_s": 2.8682138832854345,
+      "maximum_cloth_displacement_m": 0.08195565919110205,
+      "kinetic_energy_j": 0.0011406751138832109,
+      "momentum_residual_n": 1.981395470701883e-12,
+      "contact_ports": 102
+    },
+    {
+      "time_s": 0.3350000000000002,
+      "environment_time_s": 0.3350000000000002,
+      "maximum_skin_step_m": 0.000913661629574846,
+      "maximum_cloth_speed_m_s": 2.6719771903158165,
+      "maximum_cloth_displacement_m": 0.06566188440667516,
+      "kinetic_energy_j": 0.0017586139198239837,
+      "momentum_residual_n": 1.9278777536250738e-12,
+      "contact_ports": 108
+    },
+    {
+      "time_s": 0.3400000000000002,
+      "environment_time_s": 0.3400000000000002,
+      "maximum_skin_step_m": 0.001223092649141184,
+      "maximum_cloth_speed_m_s": 3.31332297752021,
+      "maximum_cloth_displacement_m": 0.06625871956828903,
+      "kinetic_energy_j": 0.0014310534476670968,
+      "momentum_residual_n": 6.474371396821469e-13,
+      "contact_ports": 108
+    },
+    {
+      "time_s": 0.3450000000000002,
+      "environment_time_s": 0.3450000000000002,
+      "maximum_skin_step_m": 0.0011745327225519903,
+      "maximum_cloth_speed_m_s": 2.852429328934479,
+      "maximum_cloth_displacement_m": 0.06712370513129617,
+      "kinetic_energy_j": 0.0016238291480293893,
+      "momentum_residual_n": 1.3194640018763185e-12,
+      "contact_ports": 102
+    },
+    {
+      "time_s": 0.3500000000000002,
+      "environment_time_s": 0.3500000000000002,
+      "maximum_skin_step_m": 0.0011247555919080107,
+      "maximum_cloth_speed_m_s": 3.383586387646476,
+      "maximum_cloth_displacement_m": 0.06924469471236358,
+      "kinetic_energy_j": 0.0013629105607409625,
+      "momentum_residual_n": 1.011398624216973e-12,
+      "contact_ports": 110
+    },
+    {
+      "time_s": 0.3550000000000002,
+      "environment_time_s": 0.3550000000000002,
+      "maximum_skin_step_m": 0.0009975067845805143,
+      "maximum_cloth_speed_m_s": 3.2035385284677296,
+      "maximum_cloth_displacement_m": 0.07013571651195694,
+      "kinetic_energy_j": 0.0011384796284994417,
+      "momentum_residual_n": 6.025617897961919e-12,
+      "contact_ports": 104
+    },
+    {
+      "time_s": 0.3600000000000002,
+      "environment_time_s": 0.3600000000000002,
+      "maximum_skin_step_m": 0.0008858711518300734,
+      "maximum_cloth_speed_m_s": 3.160833721803432,
+      "maximum_cloth_displacement_m": 0.0718158317618014,
+      "kinetic_energy_j": 0.0009698560958612387,
+      "momentum_residual_n": 7.390149172479941e-13,
+      "contact_ports": 104
+    },
+    {
+      "time_s": 0.3650000000000002,
+      "environment_time_s": 0.3650000000000002,
+      "maximum_skin_step_m": 0.0007665689092380104,
+      "maximum_cloth_speed_m_s": 3.5653509255238807,
+      "maximum_cloth_displacement_m": 0.07498979731933764,
+      "kinetic_energy_j": 0.0008729528299534474,
+      "momentum_residual_n": 2.8894624766715667e-12,
+      "contact_ports": 104
+    },
+    {
+      "time_s": 0.3700000000000002,
+      "environment_time_s": 0.3700000000000002,
+      "maximum_skin_step_m": 0.0006258499659042924,
+      "maximum_cloth_speed_m_s": 3.1544553016873698,
+      "maximum_cloth_displacement_m": 0.07745369615791088,
+      "kinetic_energy_j": 0.0007748850929412288,
+      "momentum_residual_n": 3.656238981791601e-12,
+      "contact_ports": 105
+    },
+    {
+      "time_s": 0.3750000000000002,
+      "environment_time_s": 0.3750000000000002,
+      "maximum_skin_step_m": 0.0004762860090785317,
+      "maximum_cloth_speed_m_s": 3.014601616119996,
+      "maximum_cloth_displacement_m": 0.07940006970184718,
+      "kinetic_energy_j": 0.0007338587533718126,
+      "momentum_residual_n": 2.7594716538116163e-12,
+      "contact_ports": 107
+    },
+    {
+      "time_s": 0.3800000000000002,
+      "environment_time_s": 0.3800000000000002,
+      "maximum_skin_step_m": 0.0004992418947431273,
+      "maximum_cloth_speed_m_s": 2.87540578150588,
+      "maximum_cloth_displacement_m": 0.07422161832531715,
+      "kinetic_energy_j": 0.0010012586226232224,
+      "momentum_residual_n": 1.7074571190821464e-12,
+      "contact_ports": 111
+    },
+    {
+      "time_s": 0.38500000000000023,
+      "environment_time_s": 0.38500000000000023,
+      "maximum_skin_step_m": 0.0004680504868870514,
+      "maximum_cloth_speed_m_s": 3.8621451737113794,
+      "maximum_cloth_displacement_m": 0.07429368412774273,
+      "kinetic_energy_j": 0.0009627799347743575,
+      "momentum_residual_n": 2.601877712409858e-13,
+      "contact_ports": 101
+    },
+    {
+      "time_s": 0.39000000000000024,
+      "environment_time_s": 0.39000000000000024,
+      "maximum_skin_step_m": 0.0002812654122939166,
+      "maximum_cloth_speed_m_s": 2.8380485785772525,
+      "maximum_cloth_displacement_m": 0.07538028706856707,
+      "kinetic_energy_j": 0.0009768868108751868,
+      "momentum_residual_n": 4.880982869067169e-13,
+      "contact_ports": 107
+    },
+    {
+      "time_s": 0.39500000000000024,
+      "environment_time_s": 0.39500000000000024,
+      "maximum_skin_step_m": 0.00023188220839294023,
+      "maximum_cloth_speed_m_s": 2.688958965626995,
+      "maximum_cloth_displacement_m": 0.0783154227778275,
+      "kinetic_energy_j": 0.0010819756137541883,
+      "momentum_residual_n": 2.3609575475557345e-12,
+      "contact_ports": 106
+    },
+    {
+      "time_s": 0.40000000000000024,
+      "environment_time_s": 0.40000000000000024,
+      "maximum_skin_step_m": 0.0002166919212280356,
+      "maximum_cloth_speed_m_s": 2.969138284298081,
+      "maximum_cloth_displacement_m": 0.08193114925534122,
+      "kinetic_energy_j": 0.001179248358321478,
+      "momentum_residual_n": 3.528552477053807e-12,
+      "contact_ports": 106
+    },
+    {
+      "time_s": 0.40500000000000025,
+      "environment_time_s": 0.40500000000000025,
+      "maximum_skin_step_m": 0.00027790854182321677,
+      "maximum_cloth_speed_m_s": 2.3611517775223922,
+      "maximum_cloth_displacement_m": 0.08662112466683738,
+      "kinetic_energy_j": 0.001247866243021418,
+      "momentum_residual_n": 3.1403077589987823e-12,
+      "contact_ports": 105
+    },
+    {
+      "time_s": 0.41000000000000025,
+      "environment_time_s": 0.41000000000000025,
+      "maximum_skin_step_m": 0.0004122767775540437,
+      "maximum_cloth_speed_m_s": 2.012403914590979,
+      "maximum_cloth_displacement_m": 0.09080373403489722,
+      "kinetic_energy_j": 0.0013989630024595719,
+      "momentum_residual_n": 2.145125432035828e-12,
+      "contact_ports": 106
+    },
+    {
+      "time_s": 0.41500000000000026,
+      "environment_time_s": 0.41500000000000026,
+      "maximum_skin_step_m": 0.0004403540475011489,
+      "maximum_cloth_speed_m_s": 1.9225385004242592,
+      "maximum_cloth_displacement_m": 0.14513113083638113,
+      "kinetic_energy_j": 0.0015021179551117474,
+      "momentum_residual_n": 2.2828012213257435e-12,
+      "contact_ports": 104
+    },
+    {
+      "time_s": 0.42000000000000026,
+      "environment_time_s": 0.42000000000000026,
+      "maximum_skin_step_m": 0.0004903727375107803,
+      "maximum_cloth_speed_m_s": 2.937024711412156,
+      "maximum_cloth_displacement_m": 0.14036868168215214,
+      "kinetic_energy_j": 0.001627750423272702,
+      "momentum_residual_n": 3.042254192289908e-12,
+      "contact_ports": 103
+    },
+    {
+      "time_s": 0.42500000000000027,
+      "environment_time_s": 0.42500000000000027,
+      "maximum_skin_step_m": 0.0006739906520721507,
+      "maximum_cloth_speed_m_s": 3.985118331877479,
+      "maximum_cloth_displacement_m": 0.13368813269901159,
+      "kinetic_energy_j": 0.001854724461177658,
+      "momentum_residual_n": 1.1514278585558732e-12,
+      "contact_ports": 109
+    },
+    {
+      "time_s": 0.43000000000000027,
+      "environment_time_s": 0.43000000000000027,
+      "maximum_skin_step_m": 0.00086990805692849,
+      "maximum_cloth_speed_m_s": 3.740042143658414,
+      "maximum_cloth_displacement_m": 0.12197549372077086,
+      "kinetic_energy_j": 0.002173164636227039,
+      "momentum_residual_n": 9.16016430712148e-13,
+      "contact_ports": 107
+    },
+    {
+      "time_s": 0.4350000000000003,
+      "environment_time_s": 0.4350000000000003,
+      "maximum_skin_step_m": 0.0009966557562615845,
+      "maximum_cloth_speed_m_s": 3.714247738454152,
+      "maximum_cloth_displacement_m": 0.1111455064136306,
+      "kinetic_energy_j": 0.0021982787224466443,
+      "momentum_residual_n": 2.4212860027393372e-12,
+      "contact_ports": 104
+    },
+    {
+      "time_s": 0.4400000000000003,
+      "environment_time_s": 0.4400000000000003,
+      "maximum_skin_step_m": 0.0006924209643528953,
+      "maximum_cloth_speed_m_s": 2.6907741164737193,
+      "maximum_cloth_displacement_m": 0.10099861003939999,
+      "kinetic_energy_j": 0.002207930730227107,
+      "momentum_residual_n": 1.626432518590124e-12,
+      "contact_ports": 107
+    },
+    {
+      "time_s": 0.4450000000000003,
+      "environment_time_s": 0.4450000000000003,
+      "maximum_skin_step_m": 0.0004523249134153689,
+      "maximum_cloth_speed_m_s": 3.264705004026767,
+      "maximum_cloth_displacement_m": 0.09034466822125982,
+      "kinetic_energy_j": 0.002159590493636794,
+      "momentum_residual_n": 5.532720669728539e-13,
+      "contact_ports": 106
+    },
+    {
+      "time_s": 0.4500000000000003,
+      "environment_time_s": 0.4500000000000003,
+      "maximum_skin_step_m": 0.0004857326649191898,
+      "maximum_cloth_speed_m_s": 3.5381505718466877,
+      "maximum_cloth_displacement_m": 0.08926685044101502,
+      "kinetic_energy_j": 0.0021502733918866423,
+      "momentum_residual_n": 6.212257274584975e-13,
+      "contact_ports": 105
+    },
+    {
+      "time_s": 0.4550000000000003,
+      "environment_time_s": 0.4550000000000003,
+      "maximum_skin_step_m": 0.000525051752512961,
+      "maximum_cloth_speed_m_s": 3.5705650321186315,
+      "maximum_cloth_displacement_m": 0.08973182161799038,
+      "kinetic_energy_j": 0.002090109154940308,
+      "momentum_residual_n": 6.304718731211067e-13,
+      "contact_ports": 104
+    },
+    {
+      "time_s": 0.4600000000000003,
+      "environment_time_s": 0.4600000000000003,
+      "maximum_skin_step_m": 0.0005643887362919049,
+      "maximum_cloth_speed_m_s": 3.3570809687266214,
+      "maximum_cloth_displacement_m": 0.08749939908010797,
+      "kinetic_energy_j": 0.002032321388386648,
+      "momentum_residual_n": 2.44954230074094e-12,
+      "contact_ports": 107
+    },
+    {
+      "time_s": 0.4650000000000003,
+      "environment_time_s": 0.4650000000000003,
+      "maximum_skin_step_m": 0.0006042290483526557,
+      "maximum_cloth_speed_m_s": 3.1705292143613404,
+      "maximum_cloth_displacement_m": 0.0841541435270644,
+      "kinetic_energy_j": 0.001980086044001567,
+      "momentum_residual_n": 1.6894667043931237e-12,
+      "contact_ports": 107
+    },
+    {
+      "time_s": 0.4700000000000003,
+      "environment_time_s": 0.4700000000000003,
+      "maximum_skin_step_m": 0.0006475291699262312,
+      "maximum_cloth_speed_m_s": 3.5322812057830513,
+      "maximum_cloth_displacement_m": 0.08206743619335281,
+      "kinetic_energy_j": 0.001880558662089495,
+      "momentum_residual_n": 2.8011925522161158e-12,
+      "contact_ports": 106
+    },
+    {
+      "time_s": 0.4750000000000003,
+      "environment_time_s": 0.4750000000000003,
+      "maximum_skin_step_m": 0.0006164016774989389,
+      "maximum_cloth_speed_m_s": 3.1277711675272832,
+      "maximum_cloth_displacement_m": 0.07558700154365577,
+      "kinetic_energy_j": 0.001741343095977123,
+      "momentum_residual_n": 2.1222330105921552e-12,
+      "contact_ports": 106
+    },
+    {
+      "time_s": 0.4800000000000003,
+      "environment_time_s": 0.4800000000000003,
+      "maximum_skin_step_m": 0.0005975415488986502,
+      "maximum_cloth_speed_m_s": 2.8404005519588043,
+      "maximum_cloth_displacement_m": 0.07682770308503958,
+      "kinetic_energy_j": 0.0016092131370522558,
+      "momentum_residual_n": 3.4810313078662244e-13,
+      "contact_ports": 102
+    },
+    {
+      "time_s": 0.4850000000000003,
+      "environment_time_s": 0.4850000000000003,
+      "maximum_skin_step_m": 0.0006313108409755899,
+      "maximum_cloth_speed_m_s": 3.5886473423126195,
+      "maximum_cloth_displacement_m": 0.07903613063693948,
+      "kinetic_energy_j": 0.0015218791901668717,
+      "momentum_residual_n": 1.2367335948270196e-12,
+      "contact_ports": 105
+    },
+    {
+      "time_s": 0.4900000000000003,
+      "environment_time_s": 0.4900000000000003,
+      "maximum_skin_step_m": 0.000658715361505304,
+      "maximum_cloth_speed_m_s": 2.7602675061716573,
+      "maximum_cloth_displacement_m": 0.08244687970221459,
+      "kinetic_energy_j": 0.001466624514108759,
+      "momentum_residual_n": 4.625386328876373e-12,
+      "contact_ports": 110
+    },
+    {
+      "time_s": 0.49500000000000033,
+      "environment_time_s": 0.49500000000000033,
+      "maximum_skin_step_m": 0.0004762327742993583,
+      "maximum_cloth_speed_m_s": 2.6592963277013206,
+      "maximum_cloth_displacement_m": 0.07736564277099661,
+      "kinetic_energy_j": 0.0012513809823865363,
+      "momentum_residual_n": 2.7422463759903935e-13,
+      "contact_ports": 110
+    },
+    {
+      "time_s": 0.5000000000000003,
+      "environment_time_s": 0.5000000000000003,
+      "maximum_skin_step_m": 0.0003420603665270428,
+      "maximum_cloth_speed_m_s": 3.5417851190080794,
+      "maximum_cloth_displacement_m": 0.078253088043023,
+      "kinetic_energy_j": 0.0011038990463777816,
+      "momentum_residual_n": 2.6139727385485807e-12,
+      "contact_ports": 106
+    },
+    {
+      "time_s": 0.5050000000000003,
+      "environment_time_s": 0.5050000000000003,
+      "maximum_skin_step_m": 0.00036655339158572385,
+      "maximum_cloth_speed_m_s": 2.4595084867123687,
+      "maximum_cloth_displacement_m": 0.0828741169285998,
+      "kinetic_energy_j": 0.0010563317059890064,
+      "momentum_residual_n": 3.400473754691064e-13,
+      "contact_ports": 106
+    },
+    {
+      "time_s": 0.5100000000000003,
+      "environment_time_s": 0.5100000000000003,
+      "maximum_skin_step_m": 0.0003824683381705414,
+      "maximum_cloth_speed_m_s": 2.9779164041812622,
+      "maximum_cloth_displacement_m": 0.08713960073976516,
+      "kinetic_energy_j": 0.0009292055067706549,
+      "momentum_residual_n": 1.186997292298988e-12,
+      "contact_ports": 109
+    },
+    {
+      "time_s": 0.5150000000000003,
+      "environment_time_s": 0.5150000000000003,
+      "maximum_skin_step_m": 0.00034108176667132806,
+      "maximum_cloth_speed_m_s": 2.6300596602496453,
+      "maximum_cloth_displacement_m": 0.08886869245097763,
+      "kinetic_energy_j": 0.0008362087610751164,
+      "momentum_residual_n": 4.669301867122887e-13,
+      "contact_ports": 102
+    },
+    {
+      "time_s": 0.5200000000000004,
+      "environment_time_s": 0.5200000000000004,
+      "maximum_skin_step_m": 0.00030106752359560624,
+      "maximum_cloth_speed_m_s": 2.537468919309545,
+      "maximum_cloth_displacement_m": 0.08944501084949846,
+      "kinetic_energy_j": 0.0007411296794833719,
+      "momentum_residual_n": 1.7516666553061799e-12,
+      "contact_ports": 111
+    },
+    {
+      "time_s": 0.5250000000000004,
+      "environment_time_s": 0.5250000000000004,
+      "maximum_skin_step_m": 0.00015917687736753718,
+      "maximum_cloth_speed_m_s": 2.303522259416533,
+      "maximum_cloth_displacement_m": 0.08163195447458389,
+      "kinetic_energy_j": 0.0006332177965008562,
+      "momentum_residual_n": 5.86824697753226e-13,
+      "contact_ports": 107
+    },
+    {
+      "time_s": 0.5300000000000004,
+      "environment_time_s": 0.5300000000000004,
+      "maximum_skin_step_m": 0.00016671475328706284,
+      "maximum_cloth_speed_m_s": 2.5631559901218615,
+      "maximum_cloth_displacement_m": 0.08230475462243912,
+      "kinetic_energy_j": 0.0005927353351550364,
+      "momentum_residual_n": 5.316332137700666e-13,
+      "contact_ports": 107
+    },
+    {
+      "time_s": 0.5350000000000004,
+      "environment_time_s": 0.5350000000000004,
+      "maximum_skin_step_m": 0.000166750978420519,
+      "maximum_cloth_speed_m_s": 2.73069085842745,
+      "maximum_cloth_displacement_m": 0.09080865340525297,
+      "kinetic_energy_j": 0.0005206741131299456,
+      "momentum_residual_n": 2.5211109988494517e-12,
+      "contact_ports": 105
+    },
+    {
+      "time_s": 0.5400000000000004,
+      "environment_time_s": 0.5400000000000004,
+      "maximum_skin_step_m": 0.00016572605913948188,
+      "maximum_cloth_speed_m_s": 2.558703230515066,
+      "maximum_cloth_displacement_m": 0.09947147630085595,
+      "kinetic_energy_j": 0.0005045150074194443,
+      "momentum_residual_n": 1.902235382444151e-12,
+      "contact_ports": 106
+    },
+    {
+      "time_s": 0.5450000000000004,
+      "environment_time_s": 0.5450000000000004,
+      "maximum_skin_step_m": 0.0001669145467369047,
+      "maximum_cloth_speed_m_s": 2.0064909328749114,
+      "maximum_cloth_displacement_m": 0.10480905331666943,
+      "kinetic_energy_j": 0.0005243155820983575,
+      "momentum_residual_n": 1.898779654565905e-12,
+      "contact_ports": 106
+    },
+    {
+      "time_s": 0.5500000000000004,
+      "environment_time_s": 0.5500000000000004,
+      "maximum_skin_step_m": 0.00019826395270701786,
+      "maximum_cloth_speed_m_s": 2.7538407968242486,
+      "maximum_cloth_displacement_m": 0.08876629688960148,
+      "kinetic_energy_j": 0.0005713325330672546,
+      "momentum_residual_n": 3.838673042195329e-12,
+      "contact_ports": 111
+    },
+    {
+      "time_s": 0.5550000000000004,
+      "environment_time_s": 0.5550000000000004,
+      "maximum_skin_step_m": 0.0003555468794818982,
+      "maximum_cloth_speed_m_s": 2.7205320277825824,
+      "maximum_cloth_displacement_m": 0.08324522875721076,
+      "kinetic_energy_j": 0.0006520933141864996,
+      "momentum_residual_n": 1.7461475953342456e-12,
+      "contact_ports": 105
+    },
+    {
+      "time_s": 0.5600000000000004,
+      "environment_time_s": 0.5600000000000004,
+      "maximum_skin_step_m": 0.0003787194525715633,
+      "maximum_cloth_speed_m_s": 3.571590748813284,
+      "maximum_cloth_displacement_m": 0.08552038869160966,
+      "kinetic_energy_j": 0.0006936027948953291,
+      "momentum_residual_n": 1.2798772951512949e-12,
+      "contact_ports": 107
+    },
+    {
+      "time_s": 0.5650000000000004,
+      "environment_time_s": 0.5650000000000004,
+      "maximum_skin_step_m": 0.00044077514701205674,
+      "maximum_cloth_speed_m_s": 2.8287004350602336,
+      "maximum_cloth_displacement_m": 0.09192063418178459,
+      "kinetic_energy_j": 0.0008601778249380758,
+      "momentum_residual_n": 1.838036903058269e-12,
+      "contact_ports": 107
+    },
+    {
+      "time_s": 0.5700000000000004,
+      "environment_time_s": 0.5700000000000004,
+      "maximum_skin_step_m": 0.0004735937754576322,
+      "maximum_cloth_speed_m_s": 3.288882811122105,
+      "maximum_cloth_displacement_m": 0.0977365758787935,
+      "kinetic_energy_j": 0.0009368505547384493,
+      "momentum_residual_n": 1.9831216374631524e-12,
+      "contact_ports": 104
+    },
+    {
+      "time_s": 0.5750000000000004,
+      "environment_time_s": 0.5750000000000004,
+      "maximum_skin_step_m": 0.0005698148654758382,
+      "maximum_cloth_speed_m_s": 2.9638216865367237,
+      "maximum_cloth_displacement_m": 0.0970403713121584,
+      "kinetic_energy_j": 0.0011492171645315294,
+      "momentum_residual_n": 3.878212489581237e-12,
+      "contact_ports": 109
+    },
+    {
+      "time_s": 0.5800000000000004,
+      "environment_time_s": 0.5800000000000004,
+      "maximum_skin_step_m": 0.0006262085999307364,
+      "maximum_cloth_speed_m_s": 3.104591475942375,
+      "maximum_cloth_displacement_m": 0.09801127074603701,
+      "kinetic_energy_j": 0.0011926219896120434,
+      "momentum_residual_n": 2.0776079005730915e-13,
+      "contact_ports": 106
+    },
+    {
+      "time_s": 0.5850000000000004,
+      "environment_time_s": 0.5850000000000004,
+      "maximum_skin_step_m": 0.000538325622255556,
+      "maximum_cloth_speed_m_s": 3.140377057007351,
+      "maximum_cloth_displacement_m": 0.09761824954292568,
+      "kinetic_energy_j": 0.0013030540349114068,
+      "momentum_residual_n": 1.4837742909380856e-12,
+      "contact_ports": 110
+    },
+    {
+      "time_s": 0.5900000000000004,
+      "environment_time_s": 0.5900000000000004,
+      "maximum_skin_step_m": 0.0004552085515186706,
+      "maximum_cloth_speed_m_s": 3.0915005715109727,
+      "maximum_cloth_displacement_m": 0.09623388115434427,
+      "kinetic_energy_j": 0.0013980523956580115,
+      "momentum_residual_n": 1.6317743180302574e-12,
+      "contact_ports": 104
+    },
+    {
+      "time_s": 0.5950000000000004,
+      "environment_time_s": 0.5950000000000004,
+      "maximum_skin_step_m": 0.00036508878598368337,
+      "maximum_cloth_speed_m_s": 2.8792983992576873,
+      "maximum_cloth_displacement_m": 0.09294521082709506,
+      "kinetic_energy_j": 0.0015191145312225091,
+      "momentum_residual_n": 3.350750203835941e-13,
+      "contact_ports": 110
+    },
+    {
+      "time_s": 0.6000000000000004,
+      "environment_time_s": 0.6000000000000004,
+      "maximum_skin_step_m": 0.00026670409845269986,
+      "maximum_cloth_speed_m_s": 2.416709417551871,
+      "maximum_cloth_displacement_m": 0.09078489213569133,
+      "kinetic_energy_j": 0.001675713526643614,
+      "momentum_residual_n": 4.717400210274499e-13,
+      "contact_ports": 109
+    },
+    {
+      "time_s": 0.6050000000000004,
+      "environment_time_s": 0.6050000000000004,
+      "maximum_skin_step_m": 0.00020540621902068266,
+      "maximum_cloth_speed_m_s": 2.5114958413414015,
+      "maximum_cloth_displacement_m": 0.0888347668544472,
+      "kinetic_energy_j": 0.001773013473016446,
+      "momentum_residual_n": 1.6937618935340466e-12,
+      "contact_ports": 104
+    },
+    {
+      "time_s": 0.6100000000000004,
+      "environment_time_s": 0.6100000000000004,
+      "maximum_skin_step_m": 0.00020405682539877633,
+      "maximum_cloth_speed_m_s": 2.0996497078816354,
+      "maximum_cloth_displacement_m": 0.08023465189468934,
+      "kinetic_energy_j": 0.001857930046212978,
+      "momentum_residual_n": 1.6445366970549928e-12,
+      "contact_ports": 109
+    },
+    {
+      "time_s": 0.6150000000000004,
+      "environment_time_s": 0.6150000000000004,
+      "maximum_skin_step_m": 0.0001937171557629912,
+      "maximum_cloth_speed_m_s": 2.2854500771076003,
+      "maximum_cloth_displacement_m": 0.07904801255506036,
+      "kinetic_energy_j": 0.0019909492485217055,
+      "momentum_residual_n": 2.6069580765971393e-12,
+      "contact_ports": 106
+    },
+    {
+      "time_s": 0.6200000000000004,
+      "environment_time_s": 0.6200000000000004,
+      "maximum_skin_step_m": 0.0002442323362324038,
+      "maximum_cloth_speed_m_s": 3.00840131772942,
+      "maximum_cloth_displacement_m": 0.0793617761999226,
+      "kinetic_energy_j": 0.002148592003501928,
+      "momentum_residual_n": 2.6759624194579533e-12,
+      "contact_ports": 104
+    },
+    {
+      "time_s": 0.6250000000000004,
+      "environment_time_s": 0.6250000000000004,
+      "maximum_skin_step_m": 0.00044368630775900523,
+      "maximum_cloth_speed_m_s": 3.215082567657207,
+      "maximum_cloth_displacement_m": 0.07621807347086736,
+      "kinetic_energy_j": 0.0023737880729930516,
+      "momentum_residual_n": 2.7013950650452153e-13,
+      "contact_ports": 105
+    },
+    {
+      "time_s": 0.6300000000000004,
+      "environment_time_s": 0.6300000000000004,
+      "maximum_skin_step_m": 0.0005071487521222667,
+      "maximum_cloth_speed_m_s": 2.6954536587405116,
+      "maximum_cloth_displacement_m": 0.08003027891385962,
+      "kinetic_energy_j": 0.0023436619629802896,
+      "momentum_residual_n": 2.5317676972740963e-12,
+      "contact_ports": 106
+    },
+    {
+      "time_s": 0.6350000000000005,
+      "environment_time_s": 0.6350000000000005,
+      "maximum_skin_step_m": 0.0005282244991192683,
+      "maximum_cloth_speed_m_s": 2.5227746048051003,
+      "maximum_cloth_displacement_m": 0.0990040948724842,
+      "kinetic_energy_j": 0.0023994416121193955,
+      "momentum_residual_n": 2.328319366697902e-12,
+      "contact_ports": 108
+    },
+    {
+      "time_s": 0.6400000000000005,
+      "environment_time_s": 0.6400000000000005,
+      "maximum_skin_step_m": 0.0005587801596900351,
+      "maximum_cloth_speed_m_s": 3.713126179369984,
+      "maximum_cloth_displacement_m": 0.1015503005508127,
+      "kinetic_energy_j": 0.0023844185658981106,
+      "momentum_residual_n": 3.631349945911058e-13,
+      "contact_ports": 103
+    },
+    {
+      "time_s": 0.6450000000000005,
+      "environment_time_s": 0.6450000000000005,
+      "maximum_skin_step_m": 0.0007164203671637646,
+      "maximum_cloth_speed_m_s": 3.1400187060196,
+      "maximum_cloth_displacement_m": 0.1096056148667427,
+      "kinetic_energy_j": 0.0025898245074364133,
+      "momentum_residual_n": 1.1925048096038605e-12,
+      "contact_ports": 106
+    },
+    {
+      "time_s": 0.6500000000000005,
+      "environment_time_s": 0.6500000000000005,
+      "maximum_skin_step_m": 0.0008498167844325366,
+      "maximum_cloth_speed_m_s": 3.3923334691618257,
+      "maximum_cloth_displacement_m": 0.19762675094863397,
+      "kinetic_energy_j": 0.0026988322604237004,
+      "momentum_residual_n": 3.007198213180328e-12,
+      "contact_ports": 108
+    },
+    {
+      "time_s": 0.6550000000000005,
+      "environment_time_s": 0.6550000000000005,
+      "maximum_skin_step_m": 0.0008178855161106385,
+      "maximum_cloth_speed_m_s": 3.261034684795094,
+      "maximum_cloth_displacement_m": 0.19365898803905893,
+      "kinetic_energy_j": 0.0025197843892199065,
+      "momentum_residual_n": 3.944642873540594e-13,
+      "contact_ports": 104
+    },
+    {
+      "time_s": 0.6600000000000005,
+      "environment_time_s": 0.6600000000000005,
+      "maximum_skin_step_m": 0.0005756714866634085,
+      "maximum_cloth_speed_m_s": 3.982950531994484,
+      "maximum_cloth_displacement_m": 0.1891523133750117,
+      "kinetic_energy_j": 0.0025009191932539227,
+      "momentum_residual_n": 8.923753608074186e-13,
+      "contact_ports": 107
+    },
+    {
+      "time_s": 0.6650000000000005,
+      "environment_time_s": 0.6650000000000005,
+      "maximum_skin_step_m": 0.0006170792322045991,
+      "maximum_cloth_speed_m_s": 3.6725502037343647,
+      "maximum_cloth_displacement_m": 0.18707645631946376,
+      "kinetic_energy_j": 0.0027795171608486664,
+      "momentum_residual_n": 3.0097883690740996e-12,
+      "contact_ports": 105
+    },
+    {
+      "time_s": 0.6700000000000005,
+      "environment_time_s": 0.6700000000000005,
+      "maximum_skin_step_m": 0.0006580875097409503,
+      "maximum_cloth_speed_m_s": 3.619667687295044,
+      "maximum_cloth_displacement_m": 0.1802148726327032,
+      "kinetic_energy_j": 0.002407673398754924,
+      "momentum_residual_n": 6.799197706968314e-12,
+      "contact_ports": 104
+    },
+    {
+      "time_s": 0.6750000000000005,
+      "environment_time_s": 0.6750000000000005,
+      "maximum_skin_step_m": 0.0006466204086432874,
+      "maximum_cloth_speed_m_s": 3.6727530255676544,
+      "maximum_cloth_displacement_m": 0.17018906281562768,
+      "kinetic_energy_j": 0.002468864941541462,
+      "momentum_residual_n": 3.258802421180174e-12,
+      "contact_ports": 106
+    },
+    {
+      "time_s": 0.6800000000000005,
+      "environment_time_s": 0.6800000000000005,
+      "maximum_skin_step_m": 0.0006280472734157349,
+      "maximum_cloth_speed_m_s": 3.1798514290633992,
+      "maximum_cloth_displacement_m": 0.16056922315763947,
+      "kinetic_energy_j": 0.0021422317007806827,
+      "momentum_residual_n": 3.792775608892903e-12,
+      "contact_ports": 107
+    },
+    {
+      "time_s": 0.6850000000000005,
+      "environment_time_s": 0.6850000000000005,
+      "maximum_skin_step_m": 0.0004832429119951887,
+      "maximum_cloth_speed_m_s": 3.597407914179561,
+      "maximum_cloth_displacement_m": 0.1518538902501941,
+      "kinetic_energy_j": 0.0018464610508313296,
+      "momentum_residual_n": 3.2778033248886945e-12,
+      "contact_ports": 104
+    },
+    {
+      "time_s": 0.6900000000000005,
+      "environment_time_s": 0.6900000000000005,
+      "maximum_skin_step_m": 0.00036848567146018866,
+      "maximum_cloth_speed_m_s": 3.2437490345925784,
+      "maximum_cloth_displacement_m": 0.1432548879172284,
+      "kinetic_energy_j": 0.0016269178138768165,
+      "momentum_residual_n": 8.514106602160315e-13,
+      "contact_ports": 107
+    },
+    {
+      "time_s": 0.6950000000000005,
+      "environment_time_s": 0.6950000000000005,
+      "maximum_skin_step_m": 0.00027286960774649274,
+      "maximum_cloth_speed_m_s": 2.9894690327077083,
+      "maximum_cloth_displacement_m": 0.13300293105829444,
+      "kinetic_energy_j": 0.001456313862698453,
+      "momentum_residual_n": 1.937207180999322e-12,
+      "contact_ports": 109
+    },
+    {
+      "time_s": 0.7000000000000005,
+      "environment_time_s": 0.7000000000000005,
+      "maximum_skin_step_m": 0.00020374014155031547,
+      "maximum_cloth_speed_m_s": 2.8758185839644193,
+      "maximum_cloth_displacement_m": 0.12171394183490525,
+      "kinetic_energy_j": 0.0012196952246394058,
+      "momentum_residual_n": 1.1781626528597767e-12,
+      "contact_ports": 105
+    },
+    {
+      "time_s": 0.7050000000000005,
+      "environment_time_s": 0.7050000000000005,
+      "maximum_skin_step_m": 0.00019155204617114674,
+      "maximum_cloth_speed_m_s": 2.8794954663571835,
+      "maximum_cloth_displacement_m": 0.1098579161046918,
+      "kinetic_energy_j": 0.0010674708212541318,
+      "momentum_residual_n": 3.261072617629731e-12,
+      "contact_ports": 108
+    },
+    {
+      "time_s": 0.7100000000000005,
+      "environment_time_s": 0.7100000000000005,
+      "maximum_skin_step_m": 0.0002529289484190106,
+      "maximum_cloth_speed_m_s": 2.8892228414040995,
+      "maximum_cloth_displacement_m": 0.09797485055484553,
+      "kinetic_energy_j": 0.0009015103685770413,
+      "momentum_residual_n": 3.4760578173154763e-12,
+      "contact_ports": 109
+    },
+    {
+      "time_s": 0.7150000000000005,
+      "environment_time_s": 0.7150000000000005,
+      "maximum_skin_step_m": 0.0003524874408875646,
+      "maximum_cloth_speed_m_s": 2.902398986020742,
+      "maximum_cloth_displacement_m": 0.08665884677251183,
+      "kinetic_energy_j": 0.0007736315348470296,
+      "momentum_residual_n": 2.59946157587861e-12,
+      "contact_ports": 110
+    },
+    {
+      "time_s": 0.7200000000000005,
+      "environment_time_s": 0.7200000000000005,
+      "maximum_skin_step_m": 0.0004609581638252622,
+      "maximum_cloth_speed_m_s": 2.8880226418923782,
+      "maximum_cloth_displacement_m": 0.07691994030479334,
+      "kinetic_energy_j": 0.0006928222192071926,
+      "momentum_residual_n": 1.1354722819090563e-12,
+      "contact_ports": 104
+    },
+    {
+      "time_s": 0.7250000000000005,
+      "environment_time_s": 0.7250000000000005,
+      "maximum_skin_step_m": 0.0005689495816283927,
+      "maximum_cloth_speed_m_s": 2.8829808061663535,
+      "maximum_cloth_displacement_m": 0.0696813395548755,
+      "kinetic_energy_j": 0.0006613640559118364,
+      "momentum_residual_n": 4.93852160772524e-13,
+      "contact_ports": 106
+    },
+    {
+      "time_s": 0.7300000000000005,
+      "environment_time_s": 0.7300000000000005,
+      "maximum_skin_step_m": 0.000675182129589878,
+      "maximum_cloth_speed_m_s": 3.2199844284486683,
+      "maximum_cloth_displacement_m": 0.07106551374236246,
+      "kinetic_energy_j": 0.0006670146914715363,
+      "momentum_residual_n": 9.26419480985141e-13,
+      "contact_ports": 110
+    },
+    {
+      "time_s": 0.7350000000000005,
+      "environment_time_s": 0.7350000000000005,
+      "maximum_skin_step_m": 0.0007706160763933982,
+      "maximum_cloth_speed_m_s": 3.337373217331143,
+      "maximum_cloth_displacement_m": 0.07524728325635863,
+      "kinetic_energy_j": 0.000701821892875466,
+      "momentum_residual_n": 1.3041708543133601e-12,
+      "contact_ports": 103
+    },
+    {
+      "time_s": 0.7400000000000005,
+      "environment_time_s": 0.7400000000000005,
+      "maximum_skin_step_m": 0.0009496476340609313,
+      "maximum_cloth_speed_m_s": 3.4003507639669244,
+      "maximum_cloth_displacement_m": 0.07776182128115207,
+      "kinetic_energy_j": 0.0008886434100095032,
+      "momentum_residual_n": 4.611880449010801e-12,
+      "contact_ports": 110
+    },
+    {
+      "time_s": 0.7450000000000006,
+      "environment_time_s": 0.7450000000000006,
+      "maximum_skin_step_m": 0.0011038173221145067,
+      "maximum_cloth_speed_m_s": 4.920705376139948,
+      "maximum_cloth_displacement_m": 0.07877229022243862,
+      "kinetic_energy_j": 0.0009951469499606578,
+      "momentum_residual_n": 4.535329951407485e-13,
+      "contact_ports": 106
+    },
+    {
+      "time_s": 0.7500000000000006,
+      "environment_time_s": 0.7500000000000006,
+      "maximum_skin_step_m": 0.0011542406803175243,
+      "maximum_cloth_speed_m_s": 3.6406209276326003,
+      "maximum_cloth_displacement_m": 0.07697213487327512,
+      "kinetic_energy_j": 0.0011240617471921803,
+      "momentum_residual_n": 2.355017264412079e-13,
+      "contact_ports": 107
+    },
+    {
+      "time_s": 0.7550000000000006,
+      "environment_time_s": 0.7550000000000006,
+      "maximum_skin_step_m": 0.0011940911780914396,
+      "maximum_cloth_speed_m_s": 2.975226743196742,
+      "maximum_cloth_displacement_m": 0.08399561143335134,
+      "kinetic_energy_j": 0.0012531996076553076,
+      "momentum_residual_n": 3.393182767113714e-12,
+      "contact_ports": 105
+    },
+    {
+      "time_s": 0.7600000000000006,
+      "environment_time_s": 0.7600000000000006,
+      "maximum_skin_step_m": 0.0012241265471812513,
+      "maximum_cloth_speed_m_s": 3.0707977274859397,
+      "maximum_cloth_displacement_m": 0.09030572996944346,
+      "kinetic_energy_j": 0.0014128095884386998,
+      "momentum_residual_n": 3.1904963736843613e-12,
+      "contact_ports": 107
+    },
+    {
+      "time_s": 0.7650000000000006,
+      "environment_time_s": 0.7650000000000006,
+      "maximum_skin_step_m": 0.0012374992205479126,
+      "maximum_cloth_speed_m_s": 2.7176696399956235,
+      "maximum_cloth_displacement_m": 0.09515736780668037,
+      "kinetic_energy_j": 0.001531737378235206,
+      "momentum_residual_n": 6.882586300646699e-13,
+      "contact_ports": 106
+    },
+    {
+      "time_s": 0.7700000000000006,
+      "environment_time_s": 0.7700000000000006,
+      "maximum_skin_step_m": 0.001240978820975157,
+      "maximum_cloth_speed_m_s": 2.761396379731182,
+      "maximum_cloth_displacement_m": 0.09966573525511664,
+      "kinetic_energy_j": 0.0016805075256921815,
+      "momentum_residual_n": 2.0194784454918884e-12,
+      "contact_ports": 104
+    },
+    {
+      "time_s": 0.7750000000000006,
+      "environment_time_s": 0.7750000000000006,
+      "maximum_skin_step_m": 0.00133194179277419,
+      "maximum_cloth_speed_m_s": 2.2207176951153516,
+      "maximum_cloth_displacement_m": 0.07929828080288026,
+      "kinetic_energy_j": 0.001930139731942117,
+      "momentum_residual_n": 3.0399110524169986e-12,
+      "contact_ports": 110
+    },
+    {
+      "time_s": 0.7800000000000006,
+      "environment_time_s": 0.7800000000000006,
+      "maximum_skin_step_m": 0.0014214423822861964,
+      "maximum_cloth_speed_m_s": 3.8318371705851257,
+      "maximum_cloth_displacement_m": 0.08400191431530388,
+      "kinetic_energy_j": 0.0020168626988267746,
+      "momentum_residual_n": 7.069933530912146e-12,
+      "contact_ports": 105
+    },
+    {
+      "time_s": 0.7850000000000006,
+      "environment_time_s": 0.7850000000000006,
+      "maximum_skin_step_m": 0.0013562185373874776,
+      "maximum_cloth_speed_m_s": 2.9277665488688434,
+      "maximum_cloth_displacement_m": 0.08840713998371053,
+      "kinetic_energy_j": 0.002084744802623595,
+      "momentum_residual_n": 3.8133411903979075e-13,
+      "contact_ports": 109
+    },
+    {
+      "time_s": 0.7900000000000006,
+      "environment_time_s": 0.7900000000000006,
+      "maximum_skin_step_m": 0.0012712362513252677,
+      "maximum_cloth_speed_m_s": 2.6632315995554587,
+      "maximum_cloth_displacement_m": 0.0916406806723371,
+      "kinetic_energy_j": 0.0021348545861286003,
+      "momentum_residual_n": 3.721726345576003e-12,
+      "contact_ports": 107
+    },
+    {
+      "time_s": 0.7950000000000006,
+      "environment_time_s": 0.7950000000000006,
+      "maximum_skin_step_m": 0.0011629825229481508,
+      "maximum_cloth_speed_m_s": 2.619373818001441,
+      "maximum_cloth_displacement_m": 0.08677156443854761,
+      "kinetic_energy_j": 0.002132120237952334,
+      "momentum_residual_n": 5.229934157567808e-12,
+      "contact_ports": 110
+    },
+    {
+      "time_s": 0.8000000000000006,
+      "environment_time_s": 0.8000000000000006,
+      "maximum_skin_step_m": 0.0010616104423335682,
+      "maximum_cloth_speed_m_s": 3.278890349743033,
+      "maximum_cloth_displacement_m": 0.09264315956058261,
+      "kinetic_energy_j": 0.0021631401041597984,
+      "momentum_residual_n": 1.5757909737293234e-13,
+      "contact_ports": 105
+    },
+    {
+      "time_s": 0.8050000000000006,
+      "environment_time_s": 0.8050000000000006,
+      "maximum_skin_step_m": 0.0009514785551178314,
+      "maximum_cloth_speed_m_s": 3.34317021504869,
+      "maximum_cloth_displacement_m": 0.0986105800032987,
+      "kinetic_energy_j": 0.0021668837864190667,
+      "momentum_residual_n": 1.1185915213566017e-12,
+      "contact_ports": 104
+    },
+    {
+      "time_s": 0.8100000000000006,
+      "environment_time_s": 0.8100000000000006,
+      "maximum_skin_step_m": 0.000829354376498425,
+      "maximum_cloth_speed_m_s": 2.915231777179935,
+      "maximum_cloth_displacement_m": 0.10029607533141124,
+      "kinetic_energy_j": 0.0021443071420823656,
+      "momentum_residual_n": 5.124375777015876e-13,
+      "contact_ports": 109
+    },
+    {
+      "time_s": 0.8150000000000006,
+      "environment_time_s": 0.8150000000000006,
+      "maximum_skin_step_m": 0.0007550110757355407,
+      "maximum_cloth_speed_m_s": 2.586077145359144,
+      "maximum_cloth_displacement_m": 0.1022002561080576,
+      "kinetic_energy_j": 0.0021465621663117693,
+      "momentum_residual_n": 7.302372924724358e-13,
+      "contact_ports": 105
+    },
+    {
+      "time_s": 0.8200000000000006,
+      "environment_time_s": 0.8200000000000006,
+      "maximum_skin_step_m": 0.0006830244710803893,
+      "maximum_cloth_speed_m_s": 3.3277688004197796,
+      "maximum_cloth_displacement_m": 0.10459806076512276,
+      "kinetic_energy_j": 0.00209528867175891,
+      "momentum_residual_n": 7.687213725775023e-13,
+      "contact_ports": 109
+    },
+    {
+      "time_s": 0.8250000000000006,
+      "environment_time_s": 0.8250000000000006,
+      "maximum_skin_step_m": 0.0005747198234627795,
+      "maximum_cloth_speed_m_s": 3.4092782291089074,
+      "maximum_cloth_displacement_m": 0.10408180155855172,
+      "kinetic_energy_j": 0.002056846243932258,
+      "momentum_residual_n": 1.6742872325519301e-12,
+      "contact_ports": 106
+    },
+    {
+      "time_s": 0.8300000000000006,
+      "environment_time_s": 0.8300000000000006,
+      "maximum_skin_step_m": 0.00048256512501381854,
+      "maximum_cloth_speed_m_s": 4.394478949836591,
+      "maximum_cloth_displacement_m": 0.10641203975935533,
+      "kinetic_energy_j": 0.0019547018375428342,
+      "momentum_residual_n": 5.806054122937707e-12,
+      "contact_ports": 106
+    },
+    {
+      "time_s": 0.8350000000000006,
+      "environment_time_s": 0.8350000000000006,
+      "maximum_skin_step_m": 0.0003610116103366954,
+      "maximum_cloth_speed_m_s": 3.3473941115215817,
+      "maximum_cloth_displacement_m": 0.10968417648875298,
+      "kinetic_energy_j": 0.001887323648131041,
+      "momentum_residual_n": 6.084840605485187e-13,
+      "contact_ports": 105
+    },
+    {
+      "time_s": 0.8400000000000006,
+      "environment_time_s": 0.8400000000000006,
+      "maximum_skin_step_m": 0.000321583136222772,
+      "maximum_cloth_speed_m_s": 3.2177820529747394,
+      "maximum_cloth_displacement_m": 0.1808523594964975,
+      "kinetic_energy_j": 0.0018452559296854218,
+      "momentum_residual_n": 6.43051027201783e-13,
+      "contact_ports": 106
+    },
+    {
+      "time_s": 0.8450000000000006,
+      "environment_time_s": 0.8450000000000006,
+      "maximum_skin_step_m": 0.0002830241457903442,
+      "maximum_cloth_speed_m_s": 3.040735164550491,
+      "maximum_cloth_displacement_m": 0.17508932353358794,
+      "kinetic_energy_j": 0.0017113876677927605,
+      "momentum_residual_n": 1.540652311029357e-12,
+      "contact_ports": 106
+    },
+    {
+      "time_s": 0.8500000000000006,
+      "environment_time_s": 0.8500000000000006,
+      "maximum_skin_step_m": 0.00032187683204522923,
+      "maximum_cloth_speed_m_s": 2.7593253159325326,
+      "maximum_cloth_displacement_m": 0.18309128748740788,
+      "kinetic_energy_j": 0.001801748562999703,
+      "momentum_residual_n": 3.3406931294551404e-12,
+      "contact_ports": 104
+    },
+    {
+      "time_s": 0.8550000000000006,
+      "environment_time_s": 0.8550000000000006,
+      "maximum_skin_step_m": 0.0006403906343784534,
+      "maximum_cloth_speed_m_s": 4.142526084331925,
+      "maximum_cloth_displacement_m": 0.18064154424920137,
+      "kinetic_energy_j": 0.0016615886310041475,
+      "momentum_residual_n": 2.4298892747360073e-12,
+      "contact_ports": 105
+    },
+    {
+      "time_s": 0.8600000000000007,
+      "environment_time_s": 0.8600000000000007,
+      "maximum_skin_step_m": 0.001465881541533031,
+      "maximum_cloth_speed_m_s": 2.459349258119875,
+      "maximum_cloth_displacement_m": 0.24400155360975065,
+      "kinetic_energy_j": 0.0030615145249679398,
+      "momentum_residual_n": 2.759577246460687e-12,
+      "contact_ports": 106
+    },
+    {
+      "time_s": 0.8650000000000007,
+      "environment_time_s": 0.8650000000000007,
+      "maximum_skin_step_m": 0.0021461701545673396,
+      "maximum_cloth_speed_m_s": 2.28508219805674,
+      "maximum_cloth_displacement_m": 0.23639624552823096,
+      "kinetic_energy_j": 0.002869766254701356,
+      "momentum_residual_n": 7.846213415478562e-13,
+      "contact_ports": 104
+    },
+    {
+      "time_s": 0.8700000000000007,
+      "environment_time_s": 0.8700000000000007,
+      "maximum_skin_step_m": 0.0020831342042164774,
+      "maximum_cloth_speed_m_s": 2.0367769627495296,
+      "maximum_cloth_displacement_m": 0.22738736285700803,
+      "kinetic_energy_j": 0.002769783305111727,
+      "momentum_residual_n": 7.558823071775632e-13,
+      "contact_ports": 103
+    },
+    {
+      "time_s": 0.8750000000000007,
+      "environment_time_s": 0.8750000000000007,
+      "maximum_skin_step_m": 0.0020655878222076464,
+      "maximum_cloth_speed_m_s": 2.1990563561739913,
+      "maximum_cloth_displacement_m": 0.21819038150112785,
+      "kinetic_energy_j": 0.002627045025934993,
+      "momentum_residual_n": 1.775491407494047e-12,
+      "contact_ports": 104
+    },
+    {
+      "time_s": 0.8800000000000007,
+      "environment_time_s": 0.8800000000000007,
+      "maximum_skin_step_m": 0.002023415563181466,
+      "maximum_cloth_speed_m_s": 1.7152214235471173,
+      "maximum_cloth_displacement_m": 0.21048119731911744,
+      "kinetic_energy_j": 0.0024572483669493567,
+      "momentum_residual_n": 5.438975794430631e-12,
+      "contact_ports": 107
+    },
+    {
+      "time_s": 0.8850000000000007,
+      "environment_time_s": 0.8850000000000007,
+      "maximum_skin_step_m": 0.0019434818198644846,
+      "maximum_cloth_speed_m_s": 1.9250987982679446,
+      "maximum_cloth_displacement_m": 0.20501126250605914,
+      "kinetic_energy_j": 0.0022529600534889854,
+      "momentum_residual_n": 3.4583634546653505e-12,
+      "contact_ports": 107
+    },
+    {
+      "time_s": 0.8900000000000007,
+      "environment_time_s": 0.8900000000000007,
+      "maximum_skin_step_m": 0.0018224421147098613,
+      "maximum_cloth_speed_m_s": 2.2819042419760303,
+      "maximum_cloth_displacement_m": 0.20167594978452175,
+      "kinetic_energy_j": 0.0020353007423002754,
+      "momentum_residual_n": 1.433520055379815e-12,
+      "contact_ports": 105
+    },
+    {
+      "time_s": 0.8950000000000007,
+      "environment_time_s": 0.8950000000000007,
+      "maximum_skin_step_m": 0.0016676114575094908,
+      "maximum_cloth_speed_m_s": 1.9109620787625048,
+      "maximum_cloth_displacement_m": 0.1996974882963036,
+      "kinetic_energy_j": 0.0018322270314877888,
+      "momentum_residual_n": 1.8426138583378862e-12,
+      "contact_ports": 107
+    },
+    {
+      "time_s": 0.9000000000000007,
+      "environment_time_s": 0.9000000000000007,
+      "maximum_skin_step_m": 0.0014747898954363841,
+      "maximum_cloth_speed_m_s": 2.079025896765812,
+      "maximum_cloth_displacement_m": 0.19757990366276015,
+      "kinetic_energy_j": 0.0016362488499195953,
+      "momentum_residual_n": 7.032566286425261e-13,
+      "contact_ports": 106
+    },
+    {
+      "time_s": 0.9050000000000007,
+      "environment_time_s": 0.9050000000000007,
+      "maximum_skin_step_m": 0.0012607886122266213,
+      "maximum_cloth_speed_m_s": 2.3359810241236634,
+      "maximum_cloth_displacement_m": 0.1932480351699205,
+      "kinetic_energy_j": 0.0014229396982335229,
+      "momentum_residual_n": 3.6013552009713733e-12,
+      "contact_ports": 107
+    },
+    {
+      "time_s": 0.9100000000000007,
+      "environment_time_s": 0.9100000000000007,
+      "maximum_skin_step_m": 0.0010220861736277445,
+      "maximum_cloth_speed_m_s": 2.3750424022965215,
+      "maximum_cloth_displacement_m": 0.18653162862870704,
+      "kinetic_energy_j": 0.0012700115901341123,
+      "momentum_residual_n": 3.110431894125941e-12,
+      "contact_ports": 110
+    },
+    {
+      "time_s": 0.9150000000000007,
+      "environment_time_s": 0.9150000000000007,
+      "maximum_skin_step_m": 0.0007769005135694547,
+      "maximum_cloth_speed_m_s": 2.473780503871762,
+      "maximum_cloth_displacement_m": 0.17835494644529715,
+      "kinetic_energy_j": 0.0011277814212324122,
+      "momentum_residual_n": 3.594010573173465e-13,
+      "contact_ports": 107
+    },
+    {
+      "time_s": 0.9200000000000007,
+      "environment_time_s": 0.9200000000000007,
+      "maximum_skin_step_m": 0.0005305502441570976,
+      "maximum_cloth_speed_m_s": 2.509909391089461,
+      "maximum_cloth_displacement_m": 0.16973209350998952,
+      "kinetic_energy_j": 0.0010465156447041451,
+      "momentum_residual_n": 2.1586839835493936e-12,
+      "contact_ports": 108
+    },
+    {
+      "time_s": 0.9250000000000007,
+      "environment_time_s": 0.9250000000000007,
+      "maximum_skin_step_m": 0.0003118754935777817,
+      "maximum_cloth_speed_m_s": 2.500112753583506,
+      "maximum_cloth_displacement_m": 0.161362616145037,
+      "kinetic_energy_j": 0.0010256282341529334,
+      "momentum_residual_n": 5.864836538207964e-14,
+      "contact_ports": 109
+    },
+    {
+      "time_s": 0.9300000000000007,
+      "environment_time_s": 0.9300000000000007,
+      "maximum_skin_step_m": 0.00026569206190710823,
+      "maximum_cloth_speed_m_s": 2.477473038696424,
+      "maximum_cloth_displacement_m": 0.15359123448553436,
+      "kinetic_energy_j": 0.001048966495080961,
+      "momentum_residual_n": 1.4598176268111018e-12,
+      "contact_ports": 109
+    },
+    {
+      "time_s": 0.9350000000000007,
+      "environment_time_s": 0.9350000000000007,
+      "maximum_skin_step_m": 0.000441875067336347,
+      "maximum_cloth_speed_m_s": 2.4681371733800646,
+      "maximum_cloth_displacement_m": 0.14653061829950698,
+      "kinetic_energy_j": 0.001134810670276782,
+      "momentum_residual_n": 8.010375068199915e-13,
+      "contact_ports": 107
+    },
+    {
+      "time_s": 0.9400000000000007,
+      "environment_time_s": 0.9400000000000007,
+      "maximum_skin_step_m": 0.0006803715905916475,
+      "maximum_cloth_speed_m_s": 2.4700709738778577,
+      "maximum_cloth_displacement_m": 0.1400896062894195,
+      "kinetic_energy_j": 0.0012943768623169868,
+      "momentum_residual_n": 4.620227498681284e-13,
+      "contact_ports": 109
+    },
+    {
+      "time_s": 0.9450000000000007,
+      "environment_time_s": 0.9450000000000007,
+      "maximum_skin_step_m": 0.0009215212952946221,
+      "maximum_cloth_speed_m_s": 2.4596671720698966,
+      "maximum_cloth_displacement_m": 0.13395910370085207,
+      "kinetic_energy_j": 0.0014704775782988359,
+      "momentum_residual_n": 2.818968468960892e-12,
+      "contact_ports": 111
+    },
+    {
+      "time_s": 0.9500000000000007,
+      "environment_time_s": 0.9500000000000007,
+      "maximum_skin_step_m": 0.0011554994713662912,
+      "maximum_cloth_speed_m_s": 2.422121026379221,
+      "maximum_cloth_displacement_m": 0.12780686654806722,
+      "kinetic_energy_j": 0.001701205701773895,
+      "momentum_residual_n": 1.0872523764148668e-12,
+      "contact_ports": 106
+    },
+    {
+      "time_s": 0.9550000000000007,
+      "environment_time_s": 0.9550000000000007,
+      "maximum_skin_step_m": 0.0013715424068411284,
+      "maximum_cloth_speed_m_s": 2.3644929750028747,
+      "maximum_cloth_displacement_m": 0.12160074875186692,
+      "kinetic_energy_j": 0.001947992882991516,
+      "momentum_residual_n": 3.415176824354953e-12,
+      "contact_ports": 109
+    },
+    {
+      "time_s": 0.9600000000000007,
+      "environment_time_s": 0.9600000000000007,
+      "maximum_skin_step_m": 0.0015678792831611181,
+      "maximum_cloth_speed_m_s": 2.298371024843527,
+      "maximum_cloth_displacement_m": 0.11574678681971302,
+      "kinetic_energy_j": 0.0021847817503467654,
+      "momentum_residual_n": 2.302865308706731e-12,
+      "contact_ports": 107
+    },
+    {
+      "time_s": 0.9650000000000007,
+      "environment_time_s": 0.9650000000000007,
+      "maximum_skin_step_m": 0.0017412208978701091,
+      "maximum_cloth_speed_m_s": 2.23685657854763,
+      "maximum_cloth_displacement_m": 0.11357181129688486,
+      "kinetic_energy_j": 0.00241196275547359,
+      "momentum_residual_n": 2.524974247374752e-13,
+      "contact_ports": 110
+    },
+    {
+      "time_s": 0.9700000000000008,
+      "environment_time_s": 0.9700000000000008,
+      "maximum_skin_step_m": 0.0018865985559171107,
+      "maximum_cloth_speed_m_s": 2.1889159431677916,
+      "maximum_cloth_displacement_m": 0.11492582551330824,
+      "kinetic_energy_j": 0.002627834922131356,
+      "momentum_residual_n": 4.3913670068625446e-13,
+      "contact_ports": 109
+    },
+    {
+      "time_s": 0.9750000000000008,
+      "environment_time_s": 0.9750000000000008,
+      "maximum_skin_step_m": 0.001979265974992415,
+      "maximum_cloth_speed_m_s": 1.9633360242800186,
+      "maximum_cloth_displacement_m": 0.12471490576427408,
+      "kinetic_energy_j": 0.00276062150195622,
+      "momentum_residual_n": 7.563969018273663e-12,
+      "contact_ports": 108
+    },
+    {
+      "time_s": 0.9800000000000008,
+      "environment_time_s": 0.9800000000000008,
+      "maximum_skin_step_m": 0.0020527491396397737,
+      "maximum_cloth_speed_m_s": 2.0950981336987495,
+      "maximum_cloth_displacement_m": 0.12183119910224303,
+      "kinetic_energy_j": 0.002866273763761312,
+      "momentum_residual_n": 4.336867087279938e-13,
+      "contact_ports": 109
+    },
+    {
+      "time_s": 0.9850000000000008,
+      "environment_time_s": 0.9850000000000008,
+      "maximum_skin_step_m": 0.0021040925750016475,
+      "maximum_cloth_speed_m_s": 2.468792217160556,
+      "maximum_cloth_displacement_m": 0.11958680200085975,
+      "kinetic_energy_j": 0.0029385172044395663,
+      "momentum_residual_n": 1.9852824226569077e-13,
+      "contact_ports": 104
+    },
+    {
+      "time_s": 0.9900000000000008,
+      "environment_time_s": 0.9900000000000008,
+      "maximum_skin_step_m": 0.002120408767577861,
+      "maximum_cloth_speed_m_s": 2.1776988300483002,
+      "maximum_cloth_displacement_m": 0.12051454089345728,
+      "kinetic_energy_j": 0.00294378442107774,
+      "momentum_residual_n": 1.9850738005827386e-12,
+      "contact_ports": 110
+    },
+    {
+      "time_s": 0.9950000000000008,
+      "environment_time_s": 0.9950000000000008,
+      "maximum_skin_step_m": 0.0021014191818381047,
+      "maximum_cloth_speed_m_s": 2.147534258584325,
+      "maximum_cloth_displacement_m": 0.1241993963488037,
+      "kinetic_energy_j": 0.0029167346031175366,
+      "momentum_residual_n": 6.3514953627250896e-12,
+      "contact_ports": 105
+    },
+    {
+      "time_s": 1.0000000000000007,
+      "environment_time_s": 1.0000000000000007,
+      "maximum_skin_step_m": 0.0020503065076507756,
+      "maximum_cloth_speed_m_s": 1.59694349422567,
+      "maximum_cloth_displacement_m": 0.12768476867074247,
+      "kinetic_energy_j": 0.002838932934773253,
+      "momentum_residual_n": 2.448239486748e-12,
+      "contact_ports": 106
+    }
+  ],
+  "wall_s": 339.741304641997
+}

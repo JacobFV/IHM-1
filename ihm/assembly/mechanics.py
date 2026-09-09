@@ -296,6 +296,7 @@ class BodyMechanics:
         kinetic=float(.5*np.sum(self.mass[:,None]*self.v*self.v)+.5*np.sum(self.inertia*self.omega*self.omega))
         return {'schema_version':1,'model_id':self.payload['model_id'],'time_s':self.time,
                 'entities':{id:{'translation_m':(self.x[i]-self.x0[i]).tolist(),'centroid_m':self.x[i].tolist(),'rotation_matrix':self.r[i].tolist(),'deformation_gradient':self.deformation[i].tolist()} for i,id in enumerate(self.ids)},
+                'muscle_path_lengths_m':{m['id']:float(length[j]) for j,(m,_) in enumerate(self.muscles)},
                 'muscle_forces_n':forces_by_muscle,'pressure_reactions_pa':pressures,
                 'prescribed_reactions_n':{self.ids[i]:self.prescribed_reactions[i].tolist() for i in prescribed},
                 'orientation_reaction_torques_nm':{id:self.orientation_reactions[i].tolist() for i,id in enumerate(self.ids)},

@@ -42,14 +42,26 @@ from ihm.native.postural_control import PosturalController, PosturalConfig
 IBM = Path.home() / "Documents/IBM-1"
 
 
-def collect(root, out, seconds, dt):
-    """Real body, real servo, recorded state->command pairs."""
+def collect(root, out, seconds, dt, pushes=True, seed=0):
+    """Real body, real servo, recorded state->command pairs.
+
+    UNDER PERTURBATION by default.  the first version of this recorded a servo
+    holding a body that was already balanced, and a stabilising controller at
+    equilibrium barely moves: 119 steps of near-identical states with almost no
+    variance in the command.  cloning that is cloning a constant, and every
+    ablation arm lost to predicting the training mean.
+
+    random pelvis pushes give the servo something to correct, which is the only
+    way the recorded commands carry information about the state.
+    """
     stream = NativeMechanicalStream(root, out, environment="upright", target_mass_kg=70)
+    rng = np.random.default_rng(seed)
     try:
         initial = stream.snapshot()
         policy = PosturalController(initial, PosturalConfig())
         names = sorted(initial["muscles"])
         X, Y = [], []
+        force = None
         while stream.state["time_s"] < seconds - 1e-9:
             st = stream.state
             cmd = policy.commands(st)
@@ -60,7 +72,16 @@ def collect(root, out, seconds, dt):
                 feat += [(m["fiber_length_m"] - policy.reference[n]) / o,
                          m["fiber_velocity_m_s"] / o]
             X.append(feat); Y.append([cmd[n] for n in names])
-            stream.advance(min(dt, seconds - st["time_s"]), actuation=cmd)
+            # a fresh push every ~0.3 s, alternating direction, small enough that
+            # the servo recovers rather than falling
+            if pushes and len(X) % 30 == 1:
+                mag = float(rng.uniform(-6.0, 6.0))
+                force = [{"body": "pelvis", "point_m": [0.0, 0.0, 0.0],
+                          "force_n": [mag, 0.0, float(rng.uniform(-3.5, 3.5))]}]
+            elif pushes and len(X) % 30 == 8:
+                force = None
+            stream.advance(min(dt, seconds - st["time_s"]), actuation=cmd,
+                           forces=force or ())
             if st["coordinates"]["pelvis_ty"]["value"] < .6:
                 break
         return names, np.array(X, np.float32), np.array(Y, np.float32)
@@ -81,6 +102,10 @@ def main():
                     help="integration steps before the motor readout.  must be "
                          "large enough that the drive crosses from postcentral "
                          "to precentral; at 2 it does not arrive at all")
+    ap.add_argument("--no-pushes", action="store_true",
+                    help="record the undisturbed servo.  the target variance then "
+                         "collapses and every arm loses to the mean -- kept only to "
+                         "reproduce that")
     ap.add_argument("--out", default="data/derived/ibm-body-finetune")
     a = ap.parse_args()
 
@@ -91,8 +116,11 @@ def main():
     work.mkdir(parents=True)
 
     print("collecting real body states under the postural servo...", flush=True)
-    names, X, Y = collect(root, work / "stream", a.seconds, a.dt)
+    names, X, Y = collect(root, work / "stream", a.seconds, a.dt,
+                          pushes=not a.no_pushes)
     print(f"  {len(X)} steps, {len(names)} muscles, {X.shape[1]} features", flush=True)
+    print(f"  command variance across steps: {Y.var(0).mean():.8f} "
+          f"(the thing cloning has to have)", flush=True)
     if len(X) < 32:
         raise SystemExit("too few steps collected; the body fell immediately")
 

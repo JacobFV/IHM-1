@@ -1,0 +1,148 @@
+{
+  "schema": "ihm.bed-material-evidence.v1",
+  "acquired_date": "2026-09-05",
+  "title": "The Influence of Mattress Stiffness on Spinal Curvature and Intervertebral Disc Stress\u2014An Experimental and Computational Study",
+  "authors": [
+    "Tommy Tung-Ho Hong",
+    "Yan Wang",
+    "Duo Wai-Chi Wong",
+    "Guoxin Zhang",
+    "Qitao Tan",
+    "Tony Lin-Wei Chen",
+    "Ming Zhang"
+  ],
+  "publication": "Biology 2022;11(7):1030",
+  "doi": "10.3390/biology11071030",
+  "pmcid": "PMC9311775",
+  "license": {
+    "id": "CC-BY-4.0",
+    "url": "https://creativecommons.org/licenses/by/4.0/",
+    "copyright": "2022 by the authors",
+    "evidence": "Retained article Copyright and License information"
+  },
+  "sources": [
+    {
+      "path": "hong2022.html",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC9311775/",
+      "kind": "primary_article",
+      "bytes": 204967,
+      "sha256": "59f9a1e316708e8abf78a2144d9c66df01bb0418f14401a0b6cbf712a807b253"
+    },
+    {
+      "path": "hong2022-figure1.jpg",
+      "url": "https://cdn.ncbi.nlm.nih.gov/pmc/blobs/951c/9311775/59ba439930b6/biology-11-01030-g001.jpg",
+      "kind": "primary_figure1b_compression_curves",
+      "bytes": 102398,
+      "sha256": "71c3630b2cd251667a4bf29832827ea318a8e7e5f6a7090a95c062e2ddef999e"
+    }
+  ],
+  "specimen_conditions": {
+    "manufacturer": "Sinomax, Shenzhen, China",
+    "product_codes_as_listed": [
+      "C122A",
+      "C123B",
+      "C105H"
+    ],
+    "code_to_curve_mapping": "Listed in same sequence as SM/MM/HM, but not separately assigned; keep curve IDs as authoritative",
+    "mattress_dimensions_m": [
+      1.9,
+      1.2,
+      0.2
+    ],
+    "indentation_load_deflection_at_25percent_lbf": {
+      "SM": 20,
+      "MM": 42,
+      "HM": 120
+    },
+    "compression_test_machine": "Instron 5569",
+    "poisson_ratio_used_in_model": 0.01,
+    "coupon_dimensions_m": null,
+    "density_kg_m3": null,
+    "compression_rate_s_inv": null,
+    "temperature_c": null,
+    "relative_humidity_percent": null,
+    "preconditioning": null,
+    "cycle_number": null,
+    "stress_measure_definition": null,
+    "unknown_field_basis": "Not specified in inspected article methods; do not invent"
+  },
+  "digitization": {
+    "path": "hong2022-compression.csv",
+    "script": "digitize_hong2022.py",
+    "method": "Manual line-center pixel picks on retained Figure1b, linear axes; origin is an explicit zero-load boundary anchor",
+    "image_size_px": [
+      698,
+      661
+    ],
+    "x_axis_pixels": [
+      395,
+      671
+    ],
+    "x_axis_strain": [
+      0,
+      0.7
+    ],
+    "y_axis_pixels": [
+      221,
+      27
+    ],
+    "y_axis_stress_pa": [
+      0,
+      25000
+    ],
+    "manual_line_pick_uncertainty_px": 3,
+    "stress_pick_uncertainty_pa": 386.6,
+    "strain_pick_uncertainty": 0.00761,
+    "uncertainty_scope": "Screening estimates, not statistical confidence bounds; axis placement, JPEG blur and medium/pillow overlap add uncertainty",
+    "domain_strain": [
+      0,
+      0.6644927536231883
+    ],
+    "curve_ids": [
+      "SM",
+      "MM",
+      "HM"
+    ],
+    "raw_instrument_data": false
+  },
+  "engineering_law_candidate": {
+    "type": "Nonnegative monotone piecewise-linear compression stress versus positive compression strain",
+    "thickness_m": 0.2,
+    "thickness_basis": "Specific study mattress geometry, not optimized to simulation",
+    "nominal_stress_interpretation": "Assume displayed stress is nominal engineering stress; original measure definition unreported; verify before 3D calibration",
+    "bed_deflection_domain_m": [
+      0,
+      0.13289855072463766
+    ],
+    "energy_per_reference_area": "h_bed * integral_0^(delta_bed/h_bed) p(epsilon) d epsilon",
+    "tension": "zero in separation",
+    "extrapolation": "forbidden beyond digitized domain; reject candidate, do not silently clip force",
+    "skin_coupling": "Equal pressure in series, delta_total=delta_skin+delta_bed; preserve skin-specific strain bound",
+    "inertia": "External supported bed; no added human inertial mass"
+  },
+  "unresolved": {
+    "unloading_curve": "not supplied",
+    "hysteresis": "not calibrated",
+    "relaxation_and_creep": "not calibrated",
+    "damping": "not calibrated",
+    "skin_bed_friction": "not calibrated; article0.6 is pillow-to-mattress interface and cannot be transferred",
+    "lateral_shear_and_column_coupling": "Local-column reduction unvalidated against full mattress indentation",
+    "bottoming_out": "200mm finite thickness known; densification/bottom contact beyond retained curve domain unavailable"
+  },
+  "calibration_scope": "Specific paper foam curves only, digitized approximation; not a patient-specific or universal mattress calibration",
+  "alternate_source_screen": {
+    "doi": "10.3390/psf2022004020",
+    "title": "Full-Field Experimental Study and Numerical Modeling of Soft Polyurethane Foam Subjected to Cyclic Loading",
+    "status": "Primary publisher search exposes cyclic20/40/60/80percent plots and summary moduli, but publisher HTML/PDF/XML acquisition returned403/429; no bytes or transferable cyclic law retained"
+  },
+  "derived_files": {
+    "hong2022-compression.csv": {
+      "sha256": "5660998a2a8a59bf0b9ddbde3d89283bbde8fd818d7ec39dead4cb4d95d7f06c",
+      "bytes": 2266
+    },
+    "digitize_hong2022.py": {
+      "sha256": "4fcdaf8707646946e831f012ebc80a49cb192410fd414c8d4fe90b1c67eeebff",
+      "bytes": 1879
+    }
+  }
+}

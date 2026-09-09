@@ -28,6 +28,7 @@ class BodyPeripheral:
         self.bindings={m['muscle_id']:m for m in data['muscle_bindings']}
         self.receptors={};self.proprioceptors={};self.arrived={};self.motor_targets={}
         self.activations={};self.sent={};self.events=[];self.serial=0
+        self.spindles={};self.tendons={}
 
     def _send(self,kind,key,value,arrival,meta):
         identity=(kind,key)
@@ -65,8 +66,9 @@ class BodyPeripheral:
         if not isinstance(regional,dict) or set(regional)-known_regions:raise ValueError('Unknown motor brain region')
         regional={k:scalar(v,0.,1000.,'regional motor drive') for k,v in regional.items()}
         # Compute and validate feedback before committing any runtime mutation.
-        feedback={};entities=mechanical_state.get('entities',{});forces=mechanical_state.get('muscle_forces_n',{})
-        if not isinstance(entities,dict) or not isinstance(forces,dict):raise ValueError('Malformed mechanics feedback')
+        feedback={};spindle_targets={};tendon_targets={};entities=mechanical_state.get('entities',{});forces=mechanical_state.get('muscle_forces_n',{})
+        lengths=mechanical_state.get('muscle_path_lengths_m',{})
+        if not all(isinstance(v,dict) for v in (entities,forces,lengths)):raise ValueError('Malformed mechanics feedback')
         for key,b in self.bindings.items():
             e=entities.get(b['canonical_entity_id'],{});f=np.asarray(e.get('deformation_gradient',np.eye(3)),float)
             if f.shape!=(3,3) or not np.isfinite(f).all():raise ValueError('Invalid mechanical deformation')
@@ -79,8 +81,12 @@ class BodyPeripheral:
                 if shift.shape!=(3,) or not np.isfinite(shift).all():raise ValueError('Invalid mechanical translation')
                 points.append(np.asarray(a['point_m'])+shift)
             length=sum(float(np.linalg.norm(y-x)) for x,y in zip(points,points[1:]))
+            length=scalar(lengths.get(key,length),0.,1e6,'muscle path length')
             stretch=max(stretch,max(0.,length/b['rest_path_length_m']-1.))
+            if stretch<1e-12:stretch=0.  # suppress reference-geometry roundoff
             force=scalar(forces.get(key,0.),0.,1e9,'muscle force')
+            spindle_targets[key]=min(200.,200.*stretch)
+            tendon_targets[key]=min(200.,40.*force/max(1.,b['max_isometric_force_n']))
             feedback[key]=min(200.,200.*stretch+40.*force/max(1.,b['max_isometric_force_n']))
         p=self.parameters;end=self.time_s+dt;decay=math.exp(-dt/p['receptor_tau_s'])
         # Four channels distinguish warm C and cold slow afferent delay.
@@ -99,11 +105,13 @@ class BodyPeripheral:
         for key,b in self.bindings.items():
             rate=feedback[key]+(self.proprioceptors.get(key,0.)-feedback[key])*decay
             self.proprioceptors[key]=rate
-            self._send('afferent','proprio:'+key,rate,end+b['afferent_delay_s'],b)
+            for state,targets in [(self.spindles,spindle_targets),(self.tendons,tendon_targets)]:
+                state[key]=targets[key]+(state.get(key,0.)-targets[key])*decay
+            self._send('afferent','proprio:'+key,rate,end+b['delays_s']['ia']+b['central_delay_s'],b)
             # A regional cortical rate has no identified muscle recruitment law.
             # Only explicit descending commands may recruit this effector.
             command=commands.get(key,0.) if b['nerve_id'] not in blocked else 0.
-            self._send('motor',key,command,self.time_s+b['motor_delay_s'],b)
+            self._send('motor',key,command,self.time_s+b['delays_s']['alpha']+b['central_delay_s'],b)
         # Block both in-flight and arrived signals; existing muscle activation
         # relaxes with its own time constant. Unblocking resends current signals.
         self.events=[event for event in self.events if event[5]['nerve_id'] not in blocked]
@@ -133,6 +141,7 @@ class BodyPeripheral:
         return {'schema_version':1,'model_id':self.data['id'],'time_s':end,
                 'brain_inputs_hz':{k:min(1000.,v) for k,v in brain.items()},
                 'motor_activations':dict(self.activations),'receptor_rates_hz':dict(self.receptors),
+                'spindle_rates_hz':dict(self.spindles),'tendon_rates_hz':dict(self.tendons),
                 'proprioceptor_rates_hz':dict(self.proprioceptors),'relay_activity_hz':relay,'nerve_activity_hz':nerve,
                 'pending_events':len(self.events),'stimuli':validated,'blocked_nerves':sorted(blocked),
                 'scope':'Excess evoked-rate reduction; delayed somatic motor and sensory priors; no autonomic controller',

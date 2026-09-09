@@ -1,0 +1,12 @@
+{
+  "full_mse": 0.0007544578402303159,
+  "sever_mse": 0.044748179614543915,
+  "full_signed_corr": 0.992318332195282,
+  "sever_command_sd": 0.0,
+  "wall_s": 73.24586903100135,
+  "epochs": 150,
+  "teacher": "clip(3*position_error-.22*angular_velocity,-.45,.45)",
+  "evidence": "Heldout synthetic observations only; native tracking not yet measured",
+  "ports": "fixed signed sensory stimulation; trained bias-free precentral readout",
+  "dynamic_model": "actual IBM CorticalDynamics128sites;100ms initial-value trials,1ms integration"
+}

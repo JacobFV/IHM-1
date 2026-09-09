@@ -1,0 +1,78 @@
+{
+  "schema": "ihm.lumbar-muscle-variant.v1",
+  "model_path": "data/derived/mechanics/whole_body_lumbar_current/subject_with_lumbar.osim",
+  "model_sha256": "7f6c40224fbc43359d6b2997efeb499c5ffe4d19c786d37b849312efd20d2114",
+  "catalog_path": "data/derived/mechanics/whole_body_lumbar_current/catalog.json",
+  "catalog_sha256": "106e4f0d33f8f6624f1ee9eb0660ff988a161c228c0e6a524a662417e489d1ee",
+  "insert_path": "data/derived/mechanics/whole_body_lumbar_current/insert.xml",
+  "insert_sha256": "014d733419c6a6b589cbb3b2e528eaed8c7a8eb302fec10abed0840ccd405b6f",
+  "base_model_path": "data/derived/mechanics/whole_body_arm26_v2/subject_with_arms.osim",
+  "sources": {
+    "data/derived/mechanics/whole_body_arm26_v2/registration.json": "9bae06c73db2c98589f8baf76ef82c5f79d3ccc7ec4b4aba0382bebd967912af",
+    "data/derived/mechanics/whole_body_arm26_v2/subject_with_arms.osim": "e697dc40b2939f5edbc2879bcbd7e5954ffbabbb234032c403d57f5c39ea3810",
+    "data/derived/mechanics/whole_body_arm26_v2/catalog.json": "002a939642e534f08f22fc651e98b536eee23d199f989fe613b9701354cc864d",
+    "data/raw/anatomy/opensim-models/source/Models/Arm26/arm26.osim": "e2224d0044eb393b05d64926c3fa1682c451a9adc7f510e5517ef9958d3d41b9",
+    "data/raw/mechanics/opensim-core/OpenSim/Examples/Moco/example3DWalking/subject_walk_scaled.osim": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "data/raw/mechanics/opensim-core/OpenSim/Simulation/Model/Force.cpp": "9ee76a13e7a224cfbb4b4103b79229b683cef2e516381c6e2d98d4baac06b8be",
+    "data/raw/anatomy/opensim-models/source/Models/Gait2392_Simbody/gait2392_thelen2003muscle.osim": "3af1ca20aa87bc88b0b8cd54f2504331afa2aa03537cc868f1175fa1f50f3c0f",
+    "data/derived/locomotion/moco3d-torque-v1/subject_walk_scaled_FunctionBasedPathSet.xml": "932ac403e4d6d0d10d9a9da551e43d0ded94dd2b99c370f9b25053ee9232f8a5",
+    "data/derived/canonical/anatomy.json": "874479e434e2637c08a1f5153de88fdaf138d33f55ae91a3bb7b1578ed891d5f",
+    "data/derived/canonical/mechanics.json": "662b53da23a216abbf50dfa7de6d4a89ca5888e9613780f2c0ba008cd6247d05",
+    "data/derived/mechanics/whole_body_lumbar_current/audit.json": "ca6259319b860e9abbfaad30152f8e802c2c3b638dca4c7f69f3df243819c3a4",
+    "data/derived/mechanics/whole_body_lumbar_current/lumbar_candidate_forces.xml": "6301217b73029490aa03d431641374f1f07e65f02792781a5e235d184bd7ed4b",
+    "data/derived/lumbar-muscle-native-lb45uirs/variant/registration.json": "6d94486340828c9a06147e119d7fd8fdfa2393fd8d68fa4cb2f5e030e4a83492",
+    "scripts/audit_lumbar_shoulder_coverage.py": "f6d50647dfc963409d24e8ef8283605adb6b5dfaa2817df1795e8c4541382ac8",
+    "scripts/rematerialize_current_lumbar.py": "67c197ce900e5a57762823603c0845f44aa20660b4469dceea11d17285096d9a",
+    "data/derived/mechanics/whole_body_lumbar_current/rematerialization.json": "9d3c7b578bfcfe34858e70dea4476c121554e1d7fdffdc2ce4f6a125ecf14c24"
+  },
+  "muscle_count": 98,
+  "body_count": 22,
+  "default_enabled": false,
+  "native_acceptance_complete": false,
+  "registration": {
+    "method": "joint-frame rigid station transfer, unit scale, matched rotation axes",
+    "donor_joint": "back",
+    "target_joint": "back",
+    "donor_frames_m": {
+      "pelvis": [
+        -0.1007,
+        0.0815,
+        0.0
+      ],
+      "torso": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "target_frames_m": {
+      "pelvis": [
+        -0.1158377177321,
+        0.09213030388475,
+        0.0
+      ],
+      "torso": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "coordinate_order": [
+      "lumbar_extension",
+      "lumbar_bending",
+      "lumbar_rotation"
+    ],
+    "neutral_moment_arm_rank": 3,
+    "world_transform_change": false,
+    "mass_added_kg": 0.0
+  },
+  "limits": [
+    "Donor strengths and dynamics are transferred model priors, not subject calibration.",
+    "XML is a ForceSet insertion fragment; no native loading or runtime activation certified.",
+    "No excitation assignment, reserve removal, body creation, or inertia change.",
+    "Canonical inferred insertion paths are retained evidence, not certified muscle routing.",
+    "Shoulder crossing is topological; wrapping-dependent moment arms and feasible torque cone require native validation."
+  ],
+  "materializer_sha256": "1c1eb794ff30dae4feed0a1a5fafbe1bbec9af31e96f2663a7f2f848297b12e3",
+  "rematerialization_receipt": "data/derived/mechanics/whole_body_lumbar_current/rematerialization.json"
+}

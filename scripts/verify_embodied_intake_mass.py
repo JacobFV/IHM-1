@@ -2,7 +2,7 @@
 from copy import deepcopy
 from pathlib import Path
 from types import SimpleNamespace
-import hashlib,json,tempfile,unittest
+import hashlib,json,math,tempfile,unittest
 from unittest.mock import patch
 import numpy as np
 from ihm.assembly.embodied import EmbodiedRuntime
@@ -38,10 +38,44 @@ class RuntimeTests(unittest.TestCase):
         plant=MassPlant();native=IntakeNative();bridge=IntakeMassBridge(plant,native.intake,body='torso',station_m=[.1,.2,.3],registration_identity='fixture-registration',incoming_velocity_basis='co_moving_at_ingestion_assumption')
         body=EmbodiedRuntime(plant,Neural(),native,Exchange(),Load(),intake_mass_bridge=bridge,intake_mass_binding={'registration_sha256':'fixture-registration'})
         return body,plant,native,bridge
+    def test_world_substep_work_survives_intake_refresh_with_and_without_transfer(self):
+        class World:
+            def __init__(self):self.t=0.
+            def checkpoint(self):return self.t
+            def restore(self,state):self.t=state
+            def advance(self,dt,entities,**kwargs):self.t+=dt;return []
+            def frame(self):return {'time_s':self.t}
+        body,plant,native,bridge=self.make();body.environment_dynamics=World()
+        for index in range(2):
+            frame=body.step({})
+            self.assertEqual(len(plant.commands),4*(index+1))
+            self.assertAlmostEqual(plant.snapshot()['positive_muscle_work_j'],.1)
+            self.assertAlmostEqual(frame['mechanics']['positive_muscle_work_j'],.4)
+            self.assertAlmostEqual(frame['coupling']['positive_muscle_work_j'],.4)
+            self.assertEqual(frame['mechanics']['world_exchange']['substeps'],4)
+            self.assertAlmostEqual(frame['mechanics']['muscle_metabolic_energy_j'],2.1*(index+1))
+            self.assertAlmostEqual(frame['environment_state']['time_s'],frame['time_s'])
+            self.assertEqual(len(plant.transfers),1)
+            self.assertFalse(body.failed)
+
+    def test_intake_refresh_still_rejects_changed_native_substep_work(self):
+        body,plant,native,bridge=self.make()
+        transfer=plant.transfer_mass
+        snapshot=plant.snapshot
+        def corrupt(**payload):
+            result=transfer(**payload)
+            plant.snapshot=lambda:{**snapshot(),'positive_muscle_work_j':.2}
+            return result
+        plant.transfer_mass=corrupt
+        with self.assertRaisesRegex(RuntimeError,'positive_muscle_work_j'):
+            body.step({})
+        self.assertTrue(body.failed)
     def test_endpoint_latched_mass_refresh_preserves_signed_interval(self):
         body,plant,native,bridge=self.make();self.assertEqual(body.snapshot()['intake_mass']['bridge']['applied_mass_kg'],0)
         body.schedule_intakes({'events':[{'event_id':'later','time_s':1.,'meal':{'water_ml':10}}]});self.assertEqual(plant.transfers,[])
-        frame=body.step({});self.assertEqual(len(plant.transfers),1);self.assertEqual(native.demands,[(5.,4.,1.)])
+        frame=body.step({});self.assertEqual(len(plant.transfers),1)
+        blend=1-math.exp(-.02/body.metabolic_exchange_tau_s)
+        for observed,raw in zip(native.demands[0],(5.,4.,1.)):self.assertAlmostEqual(observed,raw*blend)
         self.assertEqual(frame['mechanics']['effective_native_body_mass_kg'],70.013);self.assertEqual(frame['intake_mass']['bridge']['applied_mass_kg'],.013)
         self.assertEqual(frame['mechanics']['muscle_metabolic_energy_j'],2.1);self.assertEqual(body.time_s,.02)
         body.snapshot();body.snapshot();body.step({});self.assertEqual(len(plant.transfers),1);self.assertFalse(body.failed)
@@ -107,7 +141,7 @@ class FactoryTests(unittest.TestCase):
                     def __init__(self,config,output):
                         super().__init__();self.config=config;calls.append(config.engine_variant);output.mkdir(parents=True)
                         (output/'manifest.json').write_text(json.dumps({'library_sha256':manifests[config.engine_variant]['library_sha256'],'executable_sha256':'fixture','state_sha256':'fixture','patient_identity':{'Weight':{'unit':'kg','value':70}}}))
-                with fixtures.patches(root,manifests,[]),patch('ihm.assembly.articulated.ArticulatedBodyPlant',FactoryPlant),patch('ihm.native.coupled_session.SignedCoupledNativeSession',FactoryNative),patch('ihm.native.regional_session.RegionalSignedNativeSession',FactoryNative):
+                with fixtures.patches(root,manifests,[]),patch('ihm.assembly.selective_projection.SelectiveProjectionPlant',FactoryPlant),patch('ihm.native.coupled_session.SignedCoupledNativeSession',FactoryNative),patch('ihm.native.regional_session.RegionalSignedNativeSession',FactoryNative):
                     body=EmbodiedRuntime.from_workspace(root,root/'out',source_pin=None,intake_mass=True,regional_skin=regional)
                 receipt=json.loads((root/'out/manifest.json').read_text());binding_raw=(root/'out/intake_mass_binding.json').read_bytes()
                 self.assertTrue(receipt['intake_mass']);self.assertEqual(receipt['regional_skin'],regional)

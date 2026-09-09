@@ -2,9 +2,23 @@
 from pathlib import Path
 from contextlib import ExitStack
 from hashlib import sha256
+import importlib
 import json,tempfile,unittest
+import unittest.mock
 from unittest.mock import patch
 from ihm.assembly.embodied import EmbodiedRuntime
+from ihm.native.coupled_session import SignedCoupledNativeSession
+from ihm.native.regional_session import RegionalSignedNativeSession
+
+# Modules whose class bodies subclass a patch target. They must be imported for
+# real before any patch is entered: patch() imports its own target module lazily,
+# so a subclass module first imported while its base is a MagicMock defines its
+# class AS a MagicMock, and that corruption survives every patch.stop().
+PATCH_TARGET_MODULES = ('ihm.native.session', 'ihm.native.coupled_session',
+                        'ihm.native.regional_session', 'ihm.assembly.articulated',
+                        'ihm.assembly.selective_projection', 'ihm.assembly.sensorimotor',
+                        'ihm.assembly.body_exchange', 'ihm.assembly.embodied_respiration',
+                        'ihm.assembly.interactive_scene')
 
 class FactoryTests(unittest.TestCase):
     def fixture(self,base):
@@ -23,6 +37,7 @@ class FactoryTests(unittest.TestCase):
             'state_sha256':sha256(state.read_bytes()).hexdigest(),'library_sha256':manifests['whole_body_integrity_evaporation_humidity']['library_sha256']}))
         for name in ('respiration','brain','anatomy','mechanics','microvascular','profile'):
             path=root/f'data/derived/canonical/{name}.json';path.parent.mkdir(parents=True,exist_ok=True);path.write_text('{}')
+        (root/'data/derived/canonical/continuous_surface_binding.json.gz').write_bytes(b'explicit fake retained surface asset')
         return root,manifests
 
     def patches(self,root,manifests,calls):
@@ -46,14 +61,21 @@ class FactoryTests(unittest.TestCase):
             path=root/(module.__name__.replace('.','/')+'.py');path.parent.mkdir(parents=True,exist_ok=True)
             raw=('# fake receipt for '+module.__name__).encode();path.write_bytes(raw)
             return {'path':path,'bytes':raw,'loaded_code_sha256':sha256(raw).hexdigest()}
+        for name in PATCH_TARGET_MODULES:importlib.import_module(name)
         stack=ExitStack()
-        stack.enter_context(patch('ihm.native.coupled_session.SignedCoupledNativeSession',side_effect=lambda c,o:Native(c,o,'default')))
-        stack.enter_context(patch('ihm.native.regional_session.RegionalSignedNativeSession',side_effect=lambda c,o:Native(c,o,'regional')))
-        stack.enter_context(patch('ihm.assembly.articulated.ArticulatedBodyPlant',Plant))
-        stack.enter_context(patch('ihm.assembly.sensorimotor.SensorimotorController.from_root',return_value=object()))
-        stack.enter_context(patch('ihm.assembly.body_exchange.NativeTissueExchange.from_workspace',return_value=object()))
-        stack.enter_context(patch('ihm.assembly.embodied_respiration.EmbodiedRespiration',return_value=object()))
-        stack.enter_context(patch('ihm.assembly.interactive_scene._loaded_source',side_effect=source_receipt))
+        try:
+            stack.enter_context(patch('ihm.native.coupled_session.SignedCoupledNativeSession',side_effect=lambda c,o:Native(c,o,'default')))
+            stack.enter_context(patch('ihm.native.regional_session.RegionalSignedNativeSession',side_effect=lambda c,o:Native(c,o,'regional')))
+            stack.enter_context(patch('ihm.assembly.selective_projection.SelectiveProjectionPlant',Plant))
+            stack.enter_context(patch('ihm.assembly.embodied.measure_resting_metabolic_reference',side_effect=lambda plant:plant.snapshot()['metabolic_reference']))
+            stack.enter_context(patch('ihm.assembly.sensorimotor.SensorimotorController.from_root',return_value=object()))
+            stack.enter_context(patch('ihm.assembly.body_exchange.NativeTissueExchange.from_workspace',return_value=object()))
+            stack.enter_context(patch('ihm.assembly.embodied_respiration.EmbodiedRespiration',return_value=object()))
+            stack.enter_context(patch('ihm.assembly.interactive_scene._loaded_source',side_effect=source_receipt))
+        except BaseException:
+            # A partially built stack is already active; unwind it or every patch
+            # entered so far leaks into the rest of the process.
+            stack.close();raise
         return stack
 
     def test_default_and_opt_in_select_distinct_native_owners_and_capture_source(self):
@@ -72,6 +94,33 @@ class FactoryTests(unittest.TestCase):
                     self.assertIn('ihm/native/regional_session.py',receipt['loaded_code'])
                 self.assertIn('ihm/assembly/regional_exchange.py',receipt['sources'])
                 body.close()
+
+    def test_patches_unwind_completely_and_leave_no_mock_behind(self):
+        """A leaked patch here breaks unrelated modules later in the same process.
+
+        RegionalSignedNativeSession subclasses SignedCoupledNativeSession, so if the
+        base is patched before regional_session is first imported, the class body runs
+        with a MagicMock base and the module keeps a MagicMock forever -- surfacing far
+        away as "TypeError: issubclass() arg 1 must be a class".
+        """
+        owners=[(importlib.import_module(m),a) for m,a in
+                [('ihm.native.coupled_session','SignedCoupledNativeSession'),
+                 ('ihm.native.regional_session','RegionalSignedNativeSession'),
+                 ('ihm.assembly.selective_projection','SelectiveProjectionPlant'),
+                 ('ihm.assembly.embodied','measure_resting_metabolic_reference'),
+                 ('ihm.assembly.embodied_respiration','EmbodiedRespiration'),
+                 ('ihm.assembly.interactive_scene','_loaded_source')]]
+        before=[getattr(module,attribute) for module,attribute in owners]
+        with tempfile.TemporaryDirectory() as temporary:
+            root,manifests=self.fixture(temporary)
+            with self.patches(root,manifests,[]):pass
+        for (module,attribute),original in zip(owners,before):
+            current=getattr(module,attribute)
+            self.assertIs(current,original,module.__name__+'.'+attribute+' was not restored')
+            self.assertNotIsInstance(current,unittest.mock.NonCallableMock,
+                                     module.__name__+'.'+attribute+' is a mock outside any patch')
+        self.assertIsInstance(RegionalSignedNativeSession,type)
+        self.assertTrue(issubclass(RegionalSignedNativeSession,SignedCoupledNativeSession))
 
     def test_regional_flag_requires_bool_before_files_or_native_owners(self):
         for value in (None,0,1,'true',[],{}):

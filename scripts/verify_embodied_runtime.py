@@ -1,7 +1,7 @@
 """Small causal exchange/failed-native checks; no full model or subprocess."""
 from copy import deepcopy
 import math,unittest
-from ihm.assembly.embodied import EmbodiedRuntime
+from ihm.assembly.embodied import EmbodiedRuntime,measure_resting_metabolic_reference
 
 class Plant:
     def __init__(self):self.t=0.;self.force=0.;self.commands=[];self.rate=105.
@@ -62,7 +62,7 @@ class Native:
 
 class Load:
     bindings={'chest':None}
-    def project_load(self,forces,entities,volume):return {'external_pressure_pa':sum(f['force_n'][0] for f in forces)}
+    def project_load(self,forces,entities,volume):return {'external_pressure_pa':sum(f['force_n'][0] for f in forces),'force_ports':[],'ignored_nonrespiratory_ids':[]}
 
     def geometry(self,volume,entities,time):return {'entities':deepcopy(entities),'skin_field':{},'time_s':time}
 
@@ -71,6 +71,46 @@ class Exchange:
 
 class Tests(unittest.TestCase):
     def body(self):return EmbodiedRuntime(Plant(),Neural(),Native(),Exchange(),Load())
+    def test_reference_integrates_quiescent_window_then_restores_exactly(self):
+        plant=SwingPlant(work_w=-2.,heat_w=74.)
+        initial=plant.checkpoint()
+        reference=measure_resting_metabolic_reference(plant)
+        self.assertEqual(plant.checkpoint(),initial)
+        self.assertAlmostEqual(reference['M0_w'],72.)
+        self.assertAlmostEqual(reference['W0_w'],-2.)
+        self.assertAlmostEqual(reference['H0_w'],74.)
+        self.assertEqual(reference['initial_instantaneous_reference']['M0_w'],100.)
+        body=EmbodiedRuntime(plant,Neural(),Native(),Exchange(),Load(),metabolic_reference=reference)
+        plant.heat_w=79.
+        frame=body.step({})
+        self.assertAlmostEqual(frame['coupling']['native_extra_metabolic_demand_w'],5.)
+        self.assertEqual(body.metabolic_reference,reference)
+
+    def test_reference_probe_failure_restores_initial_plant(self):
+        class FailedProbe(SwingPlant):
+            def advance(self,*args,**kwargs):
+                super().advance(*args,**kwargs)
+                if self.t>.3:raise RuntimeError('reference probe failed')
+                return self.snapshot()
+        plant=FailedProbe();initial=plant.checkpoint()
+        with self.assertRaisesRegex(RuntimeError,'reference probe failed'):
+            measure_resting_metabolic_reference(plant)
+        self.assertEqual(plant.checkpoint(),initial)
+
+    def test_lag_reports_exact_signed_energy_awaiting_exchange(self):
+        plant=SwingPlant();body=EmbodiedRuntime(plant,Neural(),Native(),Exchange(),Load())
+        raw_m=raw_h=raw_w=sent_m=sent_h=sent_w=0.
+        for w,h in ((-20.,76.),(4.,130.),(0.,90.)):
+            plant.work_w,plant.heat_w=w,h
+            frame=body.step({});c=frame['coupling'];dt=c['exchange_interval_s']
+            raw_m+=c['native_extra_metabolic_demand_w']*dt
+            raw_h+=c['muscle_heat_increment_w']*dt;raw_w+=c['signed_work_increment_w']*dt
+            sent_m+=c['exchanged_metabolic_increment_w']*dt
+            sent_h+=c['exchanged_heat_increment_w']*dt;sent_w+=c['exchanged_work_increment_w']*dt
+        pending=c['metabolic_pending_energy_j']
+        for key,raw,sent in (('m_j',raw_m,sent_m),('h_j',raw_h,sent_h),('w_j',raw_w,sent_w)):
+            self.assertAlmostEqual(raw,sent+pending[key])
+        self.assertAlmostEqual(pending['m_j'],pending['h_j']+pending['w_j'])
     def test_cutaneous_receptor_endpoint_feeds_next_brain_exchange_and_blocks(self):
         from pathlib import Path
         from ihm.assembly.cutaneous_feedback import CutaneousFeedback
@@ -227,12 +267,14 @@ class Tests(unittest.TestCase):
         body.plant.work_w,body.plant.heat_w=0.,56.
         body.step({})
         settled=dict(body.metabolic_filter)
+        pending=dict(body.metabolic_pending_energy_j)
         self.assertNotEqual(settled,{'m_w':0.,'h_w':0.})
         project=body.respiratory_load.project_load
         def fail(*args):raise ValueError('load projection rejected')
         body.respiratory_load.project_load=fail
         with self.assertRaisesRegex(ValueError,'load projection'):body.step({})
         self.assertEqual(body.metabolic_filter,settled)
+        self.assertEqual(body.metabolic_pending_energy_j,pending)
         self.assertFalse(body.failed)
         body.respiratory_load.project_load=project
         body.step({})

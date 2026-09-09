@@ -1,0 +1,56 @@
+{
+  "schema": "ihm.native-cortical-stance-eval.v1",
+  "artifact_sha256": "307cb652f1014f7f39d5ad4c2454634da22f477ee93eca39f24f13315b0f6696",
+  "model_sha256": "be3baf542b44425c2802095439cabf976eccaad42406564338d20c2deb421d68",
+  "target_mass_kg": 77.6122029,
+  "perturbation_force_n": [
+    5.0,
+    0.0,
+    5.0
+  ],
+  "seconds_requested": 10.0,
+  "full_improves_peak_com": true,
+  "arms": {
+    "full": {
+      "elapsed_s": 9.999999999999831,
+      "pelvis_height_m": 1.0186919913461314,
+      "forward_displacement_m": 0.0001473075873046677,
+      "lateral_displacement_m": 0.00013721424714827567,
+      "pelvis_tilt_rad": -0.10469341328240289,
+      "pelvis_list_rad": -7.360410149687766e-05,
+      "arm": "full",
+      "error": null,
+      "completed_horizon": true,
+      "peak_com_displacement_m": 0.0017451588652668698,
+      "final_com_displacement_m": 0.0002025120942765834,
+      "final_com_speed_m_s": 3.9009843206957845e-06
+    },
+    "sever": {
+      "elapsed_s": 2.899999999999982,
+      "pelvis_height_m": 0.5897768105601077,
+      "forward_displacement_m": 0.38538584341946736,
+      "lateral_displacement_m": 0.22193357331817576,
+      "pelvis_tilt_rad": 0.42837865419665044,
+      "pelvis_list_rad": 1.0512055729382164,
+      "arm": "sever",
+      "error": null,
+      "completed_horizon": false,
+      "peak_com_displacement_m": 0.769708614772774,
+      "final_com_displacement_m": 0.769708614772774,
+      "final_com_speed_m_s": 2.0200953670059714
+    }
+  },
+  "source_sha256": {
+    "/home/brandonin/Documents/IHM-1/scripts/evaluate_native_cortical_stance.py": "c8066939a6238f75ed423f138584c0b3665aab364fa89562d865a749e9d2dbe1",
+    "/home/brandonin/Documents/IHM-1/ihm/native/cortical_stance.py": "5dbbf6e13e8b408fede035dc72e2e5ecb41d519ef5d2bd935f6f1366b24fbcb2",
+    "/home/brandonin/Documents/IHM-1/data/models/ibm_curriculum16_shuffled_stance_v1/cortical_stance.pt": "307cb652f1014f7f39d5ad4c2454634da22f477ee93eca39f24f13315b0f6696",
+    "/home/brandonin/Documents/IHM-1/data/models/engineering_stance_v1/registration.json": "2cc082af1d2326c5c2eb83123182facdfdbc26fe0d3b083cef7a4eeccd4286c4"
+  },
+  "wall_seconds": 382.091857817024,
+  "scope": [
+    "Exact matched native checkpoint; same muscle excitation baseline in both arms",
+    "Full uses persistent1024site trained IBM E/I; sever zeroes association but retains baseline",
+    "PelvisCOM pulse5.0,0,5.0N at1..1.1s; no extra stabilizer, PD bypass, pose prescription or artificial support",
+    "77.6122029kg native mechanics only; no full physiological exchange; no walking claim"
+  ]
+}

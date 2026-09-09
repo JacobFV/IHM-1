@@ -131,13 +131,14 @@ def create_server(root=None,port=8765,host='127.0.0.1'):
                 parsed=urlparse(origin)
                 if parsed.scheme!='http' or parsed.hostname not in ('127.0.0.1','localhost','::1'):return False
             return True
-        def _send(self,data,status=200,content_type='application/json',encoding=None):
+        def _send(self,data,status=200,content_type='application/json',encoding=None,cache_control='no-cache',etag=None):
             if not isinstance(data,bytes):data=json.dumps(data,allow_nan=False,separators=(',',':')).encode()
             if not encoding and len(data)>2000 and 'gzip' in self.headers.get('Accept-Encoding',''):
                 data=gzip.compress(data,compresslevel=1,mtime=0);encoding='gzip'
             self.send_response(status);self.send_header('Content-Type',content_type)
             self.send_header('Content-Length',str(len(data)));self.send_header('X-Content-Type-Options','nosniff')
-            self.send_header('Cache-Control','no-cache')
+            self.send_header('Cache-Control',cache_control)
+            if etag:self.send_header('ETag',etag)
             if encoding:self.send_header('Content-Encoding',encoding)
             self.end_headers()
             try:self.wfile.write(data)
@@ -149,6 +150,12 @@ def create_server(root=None,port=8765,host='127.0.0.1'):
             if '..' in path.split('/') or '\\' in path or '\x00' in path:return self._error('Invalid path',400)
             try:
                 derived=root/'data/derived'
+                if path.startswith('/api/surface-binding/'):
+                    digest=path.removeprefix('/api/surface-binding/')
+                    compressed='gzip' in self.headers.get('Accept-Encoding','')
+                    try:raw=self.server.embodied.surface_assets.get(digest,compressed=compressed)
+                    except KeyError:return self._error('Surface asset is not retained by this server',404)
+                    return self._send(raw,encoding='gzip' if compressed else None,cache_control='public, max-age=31536000, immutable',etag='"'+digest+'"')
                 if path=='/api/scene/catalog':
                     from ihm.app.scenes import scene_catalog
                     return self._send(scene_catalog(root,self.server.scenes.catalog()))

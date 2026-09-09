@@ -9,9 +9,12 @@ Build with `.venv/bin/python scripts/build_body_peripheral.py`; verify with
 `.venv/bin/python scripts/verify_body_peripheral.py` and
 `.venv/bin/python scripts/verify_body_brain.py`.
 
-The generated `data/derived/canonical/peripheral.json` contains 52 named regional
-nerve instances, 10 paired spinal/cranial relay groups, 16 cutaneous patches, 215
-actuator innervation bindings, and 252 explicitly unsupported actuator routes.
+The generated `data/derived/canonical/peripheral.json` now declares 144 sided
+nerve records and 20 relay groups, including all 71 IBM trunk names bilaterally
+and the preserved bilateral `sciatic_fibular` route. New route declarations are
+topology-only. See the [v2 IBM join contract](IBM_IHM_NERVE_JOIN.md) for endpoint
+semantics, the companion bridge patch and fibre timing. The current build has
+16 cutaneous patches, 249 actuator bindings and 715 unsupported actuator routes.
 Multiple OpenSim compartments may bind the same canonical muscle. The builder
 uses explicit anatomical name rules; it never equates the nearest nerve surface
 with measured innervation. The unsupported set includes muscles with mixed supply,
@@ -59,8 +62,8 @@ Each patch has pressure, stretch, warm and cold channels, with exponential
 20 ms rate relaxation. Gains (0.005 Hz/Pa, 200 Hz/strain, and 8 Hz/C), saturation,
 and 32 C reference are explicitly uncalibrated. Warm and cold travel separately
 at 0.5 and 2.1 m/s; touch uses an assumed 50 m/s. A 12 ms central relay allowance
-is added. Distances are inferred polyline-length proxies from the patch/muscle to
-the regional relay, multiplied by 1.15; central allowance is temporal and not a
+is added. Existing binding distances are 1.15 times the straight-line endpoint-to-relay
+distance, with a 30 mm floor; central allowance is temporal and not a
 measurement of cortical fiber length. These delays are not patient latencies.
 Pressure channels are sustained low-pass responses; receptor subtypes, vibration,
 rapid adaptation, nociception, axon spikes and injury are not represented.
@@ -82,20 +85,16 @@ rates, not an action-potential recording. The coarse pathway does not resolve
 DCML versus spinothalamic tracts, thalamic nuclei, or decussation locations.
 
 Brain sensory input adds 0.02 nS per excess afferent Hz to the IBM-derived neural
-conductance drive outside the preserved functions. The brain returns
-`regional_motor_drive_hz`: received postcentral excess rate /100 times the actual
-same-hemisphere precentral population firing rate, capped at 100 Hz. This is a
-new stimulus-gated sensorimotor gain prior, not IBM's learned motor policy or a
-calibrated protective reflex. The peripheral adapter permits this readout only
-for a matching side and cutaneous body region: arm patches drive biceps brachii;
-leg patches drive tibialis anterior, at gain 0.025 activation/Hz. The coarse
-cortical nodes have no fine somatotopy; the patch-region gate is a declared body
-bridge assumption. Face and trunk have sensory access but no automatic somatic
-readout. Without an arrived cutaneous signal there is no automatic movement.
+conductance drive outside the preserved functions. Regional cortical activity
+has no identified muscle recruitment law. The peripheral runtime recruits
+muscles only through explicit motor commands; sensory input alone does not
+invent a motor policy.
 
 Explicit `brain_state.motor_commands={actuator_id: fraction}` can command any
-supported binding at 0–1. Motor conduction uses 50 m/s plus 12 ms central delay.
-Manual commands override the stimulus-gated readout for that actuator. Commands
+supported binding at 0–1. Motor conduction reads the binding alpha-class delay plus a separate 12 ms
+central prior. Proprioceptive transport reads the Ia-class delay. Velocities
+come from a preserved IBM table snapshot; scalar delays are compatibility aliases
+for these specific classes. Gamma timing is separate, without a gamma controller. Commands
 omitted in a later interval return toward zero after conduction and activation
 relaxation. A normal resting brain state cannot spontaneously command muscles.
 

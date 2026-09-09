@@ -1,0 +1,52 @@
+{
+  "schema": "ihm.native-stance-discrete-lqr.v1",
+  "registration": "data/derived/mechanics/patient_stance98/registration.json",
+  "state_count": 258,
+  "muscle_count": 98,
+  "tangent_condition": 2.0000000000575104,
+  "base_derivative_norm": 7.858859834653199e-05,
+  "open_loop_max_real_eigenvalue": 9.55328454041285,
+  "source_sha256": "555410a988f0a9b01619f63c285716daae9598f91868ff27f94b26ad7781b678",
+  "limitations": [
+    "Local linearization at initialized native state; no nonlinear balance or walking acceptance.",
+    "Excitations require clipping, which invalidates unconstrained LQR guarantees."
+  ],
+  "lqr_solved": true,
+  "care_residual_relative": 0.32387611037116826,
+  "minimum_activation_basis": "Native Millard2012EquilibriumMuscle/Thelen2003Muscle.getMinimumActivation()",
+  "minimum_activation_range": [
+    0.01,
+    0.01
+  ],
+  "target_mass_kg": 77.6122029,
+  "initial_pose": {
+    "pelvis_tilt": -0.10481541751781173,
+    "pelvis_ty": 1.018683451533123,
+    "pelvis_list": -8.562025345228742e-05,
+    "ankle_angle_r": 0.10481541751781173,
+    "hip_adduction_r": 8.562025345228742e-05,
+    "arm_flex_r": -0.055887424430998825,
+    "arm_add_r": -0.052112761806804644,
+    "arm_rot_r": 0.08729719048411479,
+    "elbow_flex_r": 0.6304508762756623,
+    "pro_sup_r": 0.1643772061915942,
+    "mtp_angle_r": 0.11278549873743411,
+    "ankle_angle_l": 0.10481541751781173,
+    "hip_adduction_l": -8.562025345228742e-05,
+    "arm_flex_l": -0.055890002198688574,
+    "arm_add_l": -0.05218255027025287,
+    "arm_rot_l": 0.08721675660023062,
+    "elbow_flex_l": 0.6304452867462063,
+    "pro_sup_l": 0.1643634340450228,
+    "mtp_angle_l": 0.1129429884278591
+  },
+  "continuous_design_max_real_eigenvalue": 2.039922668317831e-09,
+  "dt_s": 0.01,
+  "margin_aware": true,
+  "model_sha256": "be3baf542b44425c2802095439cabf976eccaad42406564338d20c2deb421d68",
+  "source_artifact_sha256": "d357ffac44301d572fd57d0c0782c77c3e658304dbbd5e12f3de828b76178b8b",
+  "continuous_gain_sampled_spectral_radius": 14.318240564748528,
+  "discrete_gain_spectral_radius": 1.0000000000013864,
+  "discrete_gain_max": 155.89314479150914,
+  "dare_residual_relative": 0.4154582510393726
+}

@@ -3,6 +3,7 @@
 No passive recoil, mass, gas store or independently integrated respiratory DOF.
 """
 from copy import deepcopy
+from .snapshot_data import clone_snapshot_data
 import math
 import numpy as np
 from .respiratory_feedback import RespiratoryLoadPort
@@ -79,12 +80,12 @@ class EmbodiedRespiration:
  def geometry(self,current_lung_volume_ml,mechanical_entities,time_s=0.):
   time=scalar(time_s,'time')
   if time<0:raise ValueError('Negative respiratory clock')
-  volume,q=self._coordinates(current_lung_volume_ml);result=deepcopy(mechanical_entities)
+  volume,q=self._coordinates(current_lung_volume_ml);result=clone_snapshot_data(mechanical_entities)
   for ident in self.bindings:
    reference,current,r,f=self._pose(ident,mechanical_entities);translation,_,d,_=self._shape(ident,volume,q,f);new_center=current+r@f@translation
    result[ident].update(centroid_m=new_center.tolist(),translation_m=(new_center-reference).tolist(),deformation_gradient=(f@d).tolist())
   for ident in self.skin_ids:self._pose(ident,mechanical_entities)
-  skin=deepcopy(self.skin);skin.update(displacement_m=q.tolist(),lateral_expansion_m=float(q[0]),anterior_expansion_m=float(q[1]),diaphragm_descent_m=float(q[2]),coordinate_frame='canonical_reference_before_entity_transform')
+  skin=clone_snapshot_data(self.skin);skin.update(displacement_m=q.tolist(),lateral_expansion_m=float(q[0]),anterior_expansion_m=float(q[1]),diaphragm_descent_m=float(q[2]),coordinate_frame='canonical_reference_before_entity_transform')
   skin['entity_transforms']={ident:deepcopy(mechanical_entities[ident]) for ident in self.skin_ids if ident in mechanical_entities}
   return {'schema':'ihm.embodied-respiration.v1','time_s':time,'entities':result,'skin_field':skin,'displacement_m':q.tolist(),'native_volume_change_m3':volume-self.reference_m3,'lung_volume_ratio':volume/self.reference_m3,'independent_mass_or_recoil':False,'owner':'BioGears lung gas volume and passive chest/lung recoil','geometry_scope':'Articulated native-volume constraint; generic static modal shape, not a pleural/FEM solve'}
 

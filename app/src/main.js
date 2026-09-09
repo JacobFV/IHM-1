@@ -1,3 +1,5 @@
+import {configureSurfaceAssets} from './surface-assets.js';
+import {updateSegmentSurface} from "./surface-binding.js";
 import * as THREE from "three";
 import {
   filterStructures,
@@ -578,8 +580,8 @@ new ResizeObserver(syncInsets).observe(document.documentElement);
 // ------------------------------------------------------------- clothing ----
 // The wardrobe is 33 registered, cloth-simulated garments served whole by the
 // API. They are already in this body's own frame, so there is no fitting step
-// here: the view binds them to the skin entity and the body's transform carries
-// them. What is worn is the catalog's exclusivity model, resolved by the tiles.
+// here: the view binds them to the same native segment supports as the skin
+// when supplied by the live owner. What is worn is the catalog's exclusivity model, resolved by the tiles.
 function loadClothing() {
   const request = ++clothingRequest;
   clothingView?.dispose(); clothingView = null;
@@ -758,6 +760,7 @@ function applyBodyFrame(frame, trajectory) {
   const skinField = frame?.respiration?.skin_field;
   const skinIds = new Set(skinField?.entity_ids || []);
   objects.forEach((object, id) => {
+    if (updateSegmentSurface(object,frame,id)) return;
     if (updateElasticHair(object, {
       frame, referenceCentroids: trajectory?.centroids_m,
       recordKey: liveFrame ? "live" : "recorded", enabled: hairDynamics,
@@ -883,10 +886,11 @@ document.addEventListener("visibilitychange", () => { lastRender = 0; lastTick =
 
 // ------------------------------------------------------------------ boot ---
 function mountBody() {
+  configureSurfaceAssets({onReady:()=>updateFrame(),onError:error=>left.setRunNote(error.message)});
   if (!renderer) return;
   sceneInteraction = mountSceneInteraction({
     scene, camera, renderer, controls, group,
-    getObjects: () => objects,
+    getObjects: () => objects, getEnvironmentObjects: () => surround?.interactiveObjects||[],
     onSelect: selectStructure,
     mount: sceneControls, monitor: sceneMonitor,
     onStatus: (text) => left.setRunNote(text),

@@ -1,0 +1,27 @@
+{
+  "schema": "ihm.engineering-weight-transfer-program.v1",
+  "sampling_interval_s": 0.01,
+  "start_s": 1.0,
+  "transition_s": 5.0,
+  "fraction": 1.0,
+  "blend": "10*p^3-15*p^4+6*p^5 withp=clip((t-start)/transition,0,1)",
+  "reference": "Use baseline policy x0/u0, interpolate toward target.npz x_target/u_target; add derivative-of-blend times position delta to joint speed references",
+  "target_alias_warning": "target.npz x0/u0 are aliases for ENDPOINT target state/excitation; never use them as baseline x0/u0",
+  "gain": "Linear blend of baseline and endpoint K; muscle excitation clipped[0,1]",
+  "target_path": "data/models/engineering_weight_transfer_v1/target.npz",
+  "target_policy_path": "data/models/engineering_weight_transfer_v1/target_policy.npz",
+  "baseline_binding": {
+    "bundle_path": "data/models/engineering_stance_v1",
+    "manifest_sha256": "4efd05d587190304b36a7c15ef9ce848ac4eb92499a3b8eb1eb90abd46d03924",
+    "registration_sha256": "2cc082af1d2326c5c2eb83123182facdfdbc26fe0d3b083cef7a4eeccd4286c4",
+    "policy_sha256": "74305e40de65c91c75a85b1de1f6852834d44f91d16c2519979a9a3f88ac1d55",
+    "native_model_sha256": "be3baf542b44425c2802095439cabf976eccaad42406564338d20c2deb421d68",
+    "target_mass_kg": 77.6122029
+  },
+  "runtime_model_substitution": false,
+  "external_root_forces": false,
+  "prescribed_motion": false,
+  "walking_demonstrated": false,
+  "brain_trained": false,
+  "scope": "Single demonstrated left-weight-transfer trajectory; bothfeet supported, no footstep or gait. Endpoint gain interpolation has no general nonlinear guarantee."
+}

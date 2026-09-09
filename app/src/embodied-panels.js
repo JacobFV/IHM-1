@@ -1,4 +1,4 @@
-import {LiveBodyHistory,signalInfo,skinPressureCapability} from './embodied-live.js';
+import {LiveBodyHistory,signalInfo,skinPressureCapability,controllerReadouts} from './embodied-live.js';
 const $=id=>document.getElementById(id);
 const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text)n.textContent=text;if(cls)n.className=cls;return n;};
 const format=v=>Number.isFinite(v)?Number(v).toPrecision(5):'Unavailable';
@@ -12,8 +12,9 @@ export class MotorInputs {
 export function mountEmbodiedPanels() {
  const history=new LiveBodyHistory(600),inputs=new MotorInputs();let frame=null,lastDraw=-Infinity,signature='',muscleSignature='';
  const live=$('live-body-monitor'),motor=$('live-motor-monitor');
- live.replaceChildren(el('p','Start Body to initialize a unified live state.','live-body-status'),el('dl',null,'live-vitals'),el('p','Source calibration and integrated homeostasis remain under verification.','muted'));
- const readouts=live.querySelector('dl');
+ live.replaceChildren(el('p','Start Body to initialize a unified live state.','live-body-status'),el('dl',null,'live-vitals'),el('dl',null,'live-controller'),el('p','Source calibration and integrated homeostasis remain under verification.','muted'));
+ const readouts=live.querySelector('dl'),controller=live.querySelector('.live-controller');
+ const drawController=()=>{controller.replaceChildren();for(const [label,value] of controllerReadouts(frame))controller.append(el('dt',label),el('dd',typeof value==='string'?value:format(value)));};
  const select=el('select');select.setAttribute('aria-label','Live muscle effector');
  const search=el('input');search.type='search';search.placeholder='Find muscle…';search.setAttribute('aria-label','Search live muscles');
  const drive=el('input');drive.type='number';drive.min='0';drive.max='1';drive.step='.05';drive.value='0';drive.setAttribute('aria-label','Requested descending muscle drive');
@@ -66,7 +67,7 @@ export function mountEmbodiedPanels() {
   update(owner,next){
    if(next?.schema!=='ihm.embodied-frame.v1'){this.clear();return;}
    if(history.owner&&history.owner!==owner)this.clear();
-   history.push(owner,next);frame=next;disabled(false);syncPressure();
+   history.push(owner,next);frame=next;drawController();disabled(false);syncPressure();
    const keys=Object.keys(next.physiology.values).sort(),sig=keys.join('|');
    if(signature!==sig){signature=sig;for(const g of graphs){const old=g.chooser.value;g.chooser.replaceChildren();for(const key of keys){const o=el('option',signalInfo(next,key).label);o.value=key;g.chooser.append(o);}g.chooser.value=keys.includes(old)?old:keys.includes(g.preferred)?g.preferred:keys[0]||'';}}
    const muscles=Object.keys(next.mechanics?.muscles||{}).sort(),ms=muscles.join('|');if(ms!==muscleSignature){muscleSignature=ms;inputs.bind(muscles);options();}
@@ -78,6 +79,6 @@ export function mountEmbodiedPanels() {
    drawMuscle();for(const g of graphs)drawGraph(g);
   },
   status(text){live.querySelector('.live-body-status').textContent=text;},
-  clear(){frame=null;history.clear();inputs.clear();signature='';muscleSignature='';lastDraw=-Infinity;select.replaceChildren();search.value='';drive.value='0';sensory.checked=false;block.checked=false;pressure.value='0';syncPressure();disabled(true);readouts.replaceChildren();live.querySelector('.live-body-status').textContent='No live body owner. Recorded experiments are separate.';for(const g of graphs){g.chooser.replaceChildren();g.value.textContent='Unavailable';g.plot.replaceChildren();g.axis.textContent='No live samples.';}},
+  clear(){frame=null;history.clear();inputs.clear();signature='';muscleSignature='';lastDraw=-Infinity;select.replaceChildren();search.value='';drive.value='0';sensory.checked=false;block.checked=false;pressure.value='0';syncPressure();disabled(true);readouts.replaceChildren();controller.replaceChildren();live.querySelector('.live-body-status').textContent='No live body owner. Recorded experiments are separate.';for(const g of graphs){g.chooser.replaceChildren();g.value.textContent='Unavailable';g.plot.replaceChildren();g.axis.textContent='No live samples.';}},
  };
 }

@@ -1,0 +1,227 @@
+{
+  "actuators": [
+    "addlong_l",
+    "addlong_r",
+    "gait2392_ercspn_l",
+    "gait2392_ercspn_r",
+    "gait2392_extobl_l",
+    "gait2392_extobl_r",
+    "gait2392_intobl_l",
+    "gait2392_intobl_r",
+    "glmax2_l",
+    "glmax2_r",
+    "glmax3_l",
+    "glmax3_r",
+    "glmed1_l",
+    "glmed1_r",
+    "glmed2_l",
+    "glmed2_r",
+    "glmin1_l",
+    "glmin1_r",
+    "iliacus_l",
+    "iliacus_r",
+    "piri_l",
+    "piri_r",
+    "recfem_l",
+    "recfem_r",
+    "semimem_l",
+    "semimem_r"
+  ],
+  "groups": [
+    {
+      "coordinate": "hip_adduction_l",
+      "sign": -1,
+      "selected": [
+        {
+          "muscle": "glmed1_l",
+          "moment_arm_m": -0.04990299866373742,
+          "capacity_nm": 54.56727070226768
+        },
+        {
+          "muscle": "glmed2_l",
+          "moment_arm_m": -0.043508217056041125,
+          "capacity_nm": 33.287774080659965
+        }
+      ]
+    },
+    {
+      "coordinate": "hip_adduction_l",
+      "sign": 1,
+      "selected": [
+        {
+          "muscle": "addlong_l",
+          "moment_arm_m": 0.06226971412164032,
+          "capacity_nm": 57.08887390671984
+        },
+        {
+          "muscle": "glmax3_l",
+          "moment_arm_m": 0.04564304519926303,
+          "capacity_nm": 43.2583831492622
+        }
+      ]
+    },
+    {
+      "coordinate": "hip_adduction_r",
+      "sign": -1,
+      "selected": [
+        {
+          "muscle": "glmed1_r",
+          "moment_arm_m": -0.051815805914221955,
+          "capacity_nm": 56.65886186579221
+        },
+        {
+          "muscle": "glmed2_r",
+          "moment_arm_m": -0.04513190401445159,
+          "capacity_nm": 34.530043433588474
+        }
+      ]
+    },
+    {
+      "coordinate": "hip_adduction_r",
+      "sign": 1,
+      "selected": [
+        {
+          "muscle": "addlong_r",
+          "moment_arm_m": 0.06216313355853525,
+          "capacity_nm": 56.991160846465114
+        },
+        {
+          "muscle": "glmax3_r",
+          "moment_arm_m": 0.04734646425803943,
+          "capacity_nm": 44.872805543443185
+        }
+      ]
+    },
+    {
+      "coordinate": "hip_flexion_l",
+      "sign": -1,
+      "selected": [
+        {
+          "muscle": "glmax2_l",
+          "moment_arm_m": -0.07409601038653485,
+          "capacity_nm": 104.18239173181404
+        },
+        {
+          "muscle": "semimem_l",
+          "moment_arm_m": -0.04570882228966907,
+          "capacity_nm": 100.60451839959708
+        }
+      ]
+    },
+    {
+      "coordinate": "hip_flexion_l",
+      "sign": 1,
+      "selected": [
+        {
+          "muscle": "recfem_l",
+          "moment_arm_m": 0.03539642701705526,
+          "capacity_nm": 77.5797997665185
+        },
+        {
+          "muscle": "addlong_l",
+          "moment_arm_m": 0.055743522833773304,
+          "capacity_nm": 51.10566173400336
+        }
+      ]
+    },
+    {
+      "coordinate": "hip_flexion_r",
+      "sign": -1,
+      "selected": [
+        {
+          "muscle": "semimem_r",
+          "moment_arm_m": -0.04676388804155043,
+          "capacity_nm": 102.92670428256007
+        },
+        {
+          "muscle": "glmax2_r",
+          "moment_arm_m": -0.07305535920309365,
+          "capacity_nm": 102.7191884003004
+        }
+      ]
+    },
+    {
+      "coordinate": "hip_flexion_r",
+      "sign": 1,
+      "selected": [
+        {
+          "muscle": "recfem_r",
+          "moment_arm_m": 0.03597673512614802,
+          "capacity_nm": 78.85168483233633
+        },
+        {
+          "muscle": "addlong_r",
+          "moment_arm_m": 0.05542160874111542,
+          "capacity_nm": 50.81053089385462
+        }
+      ]
+    },
+    {
+      "coordinate": "hip_rotation_l",
+      "sign": -1,
+      "selected": [
+        {
+          "muscle": "piri_l",
+          "moment_arm_m": -0.03289694980738324,
+          "capacity_nm": 33.876847476235895
+        },
+        {
+          "muscle": "glmed3_l",
+          "moment_arm_m": -0.03087747948688233,
+          "capacity_nm": 26.90043740932248
+        }
+      ]
+    },
+    {
+      "coordinate": "hip_rotation_l",
+      "sign": 1,
+      "selected": [
+        {
+          "muscle": "iliacus_l",
+          "moment_arm_m": 0.010648959519648409,
+          "capacity_nm": 10.874088998280216
+        },
+        {
+          "muscle": "glmin1_l",
+          "moment_arm_m": 0.014295115979226445,
+          "capacity_nm": 5.347029545488749
+        }
+      ]
+    },
+    {
+      "coordinate": "hip_rotation_r",
+      "sign": -1,
+      "selected": [
+        {
+          "muscle": "piri_r",
+          "moment_arm_m": -0.03294196184727991,
+          "capacity_nm": 33.92320028459966
+        },
+        {
+          "muscle": "glmed3_r",
+          "moment_arm_m": -0.029399805226071517,
+          "capacity_nm": 25.61308868057682
+        }
+      ]
+    },
+    {
+      "coordinate": "hip_rotation_r",
+      "sign": 1,
+      "selected": [
+        {
+          "muscle": "iliacus_r",
+          "moment_arm_m": 0.010775454700926548,
+          "capacity_nm": 11.003258412112066
+        },
+        {
+          "muscle": "glmin1_r",
+          "moment_arm_m": 0.014481044201769424,
+          "capacity_nm": 5.416575235130039
+        }
+      ]
+    }
+  ],
+  "held_fixed": false,
+  "retained_selection_source": null,
+  "criteria": "In distal-only mode retain seed tones exactly; otherwise Top2 native Fmax*abs(moment arm) per hip axis/sign at this actually initialized balanced pose, abs arm>0.01m; plus six lumbar."
+}

@@ -1,0 +1,255 @@
+{
+  "schema": "ihm.engineering-stance-bundle.v1",
+  "target_mass_kg": 77.6122029,
+  "native_model_sha256": "be3baf542b44425c2802095439cabf976eccaad42406564338d20c2deb421d68",
+  "sampling_interval_s": 0.01,
+  "files": {
+    "data/models/engineering_stance_v1/provenance/sources/9bae06c73db2c985-registration.json": "9bae06c73db2c98589f8baf76ef82c5f79d3ccc7ec4b4aba0382bebd967912af",
+    "data/models/engineering_stance_v1/provenance/sources/e697dc40b2939f5e-subject_with_arms.osim": "e697dc40b2939f5edbc2879bcbd7e5954ffbabbb234032c403d57f5c39ea3810",
+    "data/models/engineering_stance_v1/provenance/sources/002a939642e534f0-catalog.json": "002a939642e534f08f22fc651e98b536eee23d199f989fe613b9701354cc864d",
+    "data/models/engineering_stance_v1/provenance/sources/e2224d0044eb393b-arm26.osim": "e2224d0044eb393b05d64926c3fa1682c451a9adc7f510e5517ef9958d3d41b9",
+    "data/models/engineering_stance_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "data/models/engineering_stance_v1/provenance/sources/9ee76a13e7a224cf-Force.cpp": "9ee76a13e7a224cfbb4b4103b79229b683cef2e516381c6e2d98d4baac06b8be",
+    "data/models/engineering_stance_v1/provenance/sources/3af1ca20aa87bc88-gait2392_thelen2003muscle.osim": "3af1ca20aa87bc88b0b8cd54f2504331afa2aa03537cc868f1175fa1f50f3c0f",
+    "data/models/engineering_stance_v1/provenance/sources/932ac403e4d6d0d1-subject_walk_scaled_FunctionBasedPathSet.xml": "932ac403e4d6d0d10d9a9da551e43d0ded94dd2b99c370f9b25053ee9232f8a5",
+    "data/models/engineering_stance_v1/provenance/sources/874479e434e2637c-anatomy.json": "874479e434e2637c08a1f5153de88fdaf138d33f55ae91a3bb7b1578ed891d5f",
+    "data/models/engineering_stance_v1/provenance/sources/662b53da23a216ab-mechanics.json": "662b53da23a216abbf50dfa7de6d4a89ca5888e9613780f2c0ba008cd6247d05",
+    "data/models/engineering_stance_v1/provenance/sources/ca6259319b860e9a-audit.json": "ca6259319b860e9abbfaad30152f8e802c2c3b638dca4c7f69f3df243819c3a4",
+    "data/models/engineering_stance_v1/provenance/sources/6301217b73029490-lumbar_candidate_forces.xml": "6301217b73029490aa03d431641374f1f07e65f02792781a5e235d184bd7ed4b",
+    "data/models/engineering_stance_v1/provenance/sources/6d94486340828c9a-registration.json": "6d94486340828c9a06147e119d7fd8fdfa2393fd8d68fa4cb2f5e030e4a83492",
+    "data/models/engineering_stance_v1/provenance/sources/f6d50647dfc96340-audit_lumbar_shoulder_coverage.py": "f6d50647dfc963409d24e8ef8283605adb6b5dfaa2817df1795e8c4541382ac8",
+    "data/models/engineering_stance_v1/provenance/sources/67c197ce900e5a57-rematerialize_current_lumbar.py": "67c197ce900e5a57762823603c0845f44aa20660b4469dceea11d17285096d9a",
+    "data/models/engineering_stance_v1/provenance/sources/9d3c7b578bfcfe34-rematerialization.json": "9d3c7b578bfcfe34858e70dea4476c121554e1d7fdffdc2ce4f6a125ecf14c24",
+    "data/models/engineering_stance_v1/provenance/sources/7a3209427856f08d-registration.json": "7a3209427856f08de0a6ed6d42a0aca8b16779dc2f2a9fe0833bbb0aef8d2b84",
+    "data/models/engineering_stance_v1/provenance/sources/7f6c40224fbc4335-subject_with_lumbar.osim": "7f6c40224fbc43359d6b2997efeb499c5ffe4d19c786d37b849312efd20d2114",
+    "data/models/engineering_stance_v1/provenance/sources/8cff883ea83213c1-report.json": "8cff883ea83213c1cbca23dd07530fe80866507aaeb2a583496b9d49dcf2b7ad",
+    "data/models/engineering_stance_v1/provenance/sources/bc40d6211bf27312-registration.json": "bc40d6211bf27312425ca580ebcd83376456923c34dc4950c4912956398a82ae",
+    "data/models/engineering_stance_v1/provenance/sources/450b742291c97f2a-report.json": "450b742291c97f2a580306cda909f0d4bffe8069c9551cad09fbab37fa7d273e",
+    "data/models/engineering_stance_v1/provenance/sources/edac24b3cf9c52b4-solve_native_patient_stance98.py": "edac24b3cf9c52b49b6bcd884087141a685a240c112acb01b00f82a972231a3e",
+    "data/models/engineering_stance_v1/provenance/sources/6cc8146b1ab42fae-native_initial_acceptance.json": "6cc8146b1ab42fae6eb6484b6a34e7ef39179265a20dc416634aa381c34069c2",
+    "data/models/engineering_stance_v1/provenance/sources/637ad5ef3c5fcf56-canonical_source_audit.json": "637ad5ef3c5fcf56c4df47c36d8779ddb8f1a8b6590f7ee2979ead54e4c8c7b7",
+    "data/models/engineering_stance_v1/model.osim": "be3baf542b44425c2802095439cabf976eccaad42406564338d20c2deb421d68",
+    "data/models/engineering_stance_v1/catalog.json": "29e7fd83a6f6e265abc67c1fd5aaa912cc58341393666aff5fa0afd268d10ce5",
+    "data/models/engineering_stance_v1/insert.xml": "014d733419c6a6b589cbb3b2e528eaed8c7a8eb302fec10abed0840ccd405b6f",
+    "data/models/engineering_stance_v1/linearization.npz": "74305e40de65c91c75a85b1de1f6852834d44f91d16c2519979a9a3f88ac1d55",
+    "data/models/engineering_stance_v1/initial_pose.json": "d7acc82dc52b2a7dfa0a783d29415972cdb67cabd7cc5a78c468d203f3ef2aa7",
+    "data/models/engineering_stance_v1/equilibrium_excitations.json": "c78dfeabb6ff654e2d5e8e17342d3fa475827fc22d1ccd91acd3c01e90512b1c",
+    "data/models/engineering_stance_v1/provenance/original_registration.json": "b7794c7a4c8ed7b11f19681302fe11c9490a85e952a99d03598a7586c343a919",
+    "data/models/engineering_stance_v1/provenance/sources/22e3fa30d58e2b39-evaluate_native_lqr.py": "22e3fa30d58e2b3910aa142a7e7f3699ee19edc4ad200bfddfdcfcf118edbc6d",
+    "data/models/engineering_stance_v1/provenance/sources/5d4c64587abd5315-stance_lqr.py": "5d4c64587abd5315560b4771fa34f205cc6da06cef772615e13b056813d9bb51",
+    "data/models/engineering_stance_v1/acceptance/feedback/report.json": "07273099717a5c3868dea97fd050c2d7da77e474397c908d39c2629d92dc908c",
+    "data/models/engineering_stance_v1/acceptance/feedback/trajectory.json.gz": "22f82f1e718404c5c93d7eaaf04763a2786828604d4506053a9341c3ad7f8c54",
+    "data/models/engineering_stance_v1/acceptance/held/report.json": "62e1221c12f64c498b6d54d9c1edcf3c6879ee94a7a387c2a6f8a2ebd5c2b614",
+    "data/models/engineering_stance_v1/acceptance/held/trajectory.json.gz": "af266f643522365e3daa733ff70a42f8193f550ed6c7208b70ecbcfb131657c3",
+    "data/models/engineering_stance_v1/provenance/sources/814a46132795977c-report.json": "814a46132795977c75707e12ddae6a2779ca3a11ad30b8363bef1f7b85efffc5",
+    "data/models/engineering_stance_v1/provenance/sources/56869c5c0ab3d595-paired_acceptance.json": "56869c5c0ab3d595fa03d580dfe9dafd8a0c3f5a58675a4b208e9000bfa0040a",
+    "data/models/engineering_stance_v1/provenance/sources/22c465d2af6040ac-promote_engineering_stance.py": "22c465d2af6040ac5001d381b8f7622d29b9baae8dad884b9d63ce6a4a0e17c8",
+    "data/models/engineering_stance_v1/provenance/sources/bfaa00f478898f38-stance_lqr_controller.py": "bfaa00f478898f38a2b2729083867469b9314d00e3a798f311159e1d2808b892",
+    "data/models/engineering_stance_v1/registration.json": "2cc082af1d2326c5c2eb83123182facdfdbc26fe0d3b083cef7a4eeccd4286c4",
+    "data/models/engineering_stance_v1/provenance/sources/106e4f0d33f8f662-original_catalog.json": "106e4f0d33f8f6624f1ee9eb0660ff988a161c228c0e6a524a662417e489d1ee",
+    "data/models/engineering_stance_v1/provenance/sources/bc2269f61b7193fb-promote_engineering_stance.py": "bc2269f61b7193fb457c38d230b77273252f9dfa0c06eb0bc62e67e8e548987d"
+  },
+  "origins": {
+    "data/derived/mechanics/whole_body_arm26_v2/registration.json": {
+      "bundle_path": "data/models/engineering_stance_v1/provenance/sources/9bae06c73db2c985-registration.json",
+      "sha256": "9bae06c73db2c98589f8baf76ef82c5f79d3ccc7ec4b4aba0382bebd967912af"
+    },
+    "data/derived/mechanics/whole_body_arm26_v2/subject_with_arms.osim": {
+      "bundle_path": "data/models/engineering_stance_v1/provenance/sources/e697dc40b2939f5e-subject_with_arms.osim",
+      "sha256": "e697dc40b2939f5edbc2879bcbd7e5954ffbabbb234032c403d57f5c39ea3810"
+    },
+    "data/derived/mechanics/whole_body_arm26_v2/catalog.json": {
+      "bundle_path": "data/models/engineering_stance_v1/provenance/sources/002a939642e534f0-catalog.json",
+      "sha256": "002a939642e534f08f22fc651e98b536eee23d199f989fe613b9701354cc864d"
+    },
+    "data/raw/anatomy/opensim-models/source/Models/Arm26/arm26.osim": {
+      "bundle_path": "data/models/engineering_stance_v1/provenance/sources/e2224d0044eb393b-arm26.osim",
+      "sha256": "e2224d0044eb393b05d64926c3fa1682c451a9adc7f510e5517ef9958d3d41b9"
+    },
+    "data/raw/mechanics/opensim-core/OpenSim/Examples/Moco/example3DWalking/subject_walk_scaled.osim": {
+      "bundle_path": "data/models/engineering_stance_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+      "sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5"
+    },
+    "data/raw/mechanics/opensim-core/OpenSim/Simulation/Model/Force.cpp": {
+      "bundle_path": "data/models/engineering_stance_v1/provenance/sources/9ee76a13e7a224cf-Force.cpp",
+      "sha256": "9ee76a13e7a224cfbb4b4103b79229b683cef2e516381c6e2d98d4baac06b8be"
+    },
+    "data/raw/anatomy/opensim-models/source/Models/Gait2392_Simbody/gait2392_thelen2003muscle.osim": {
+      "bundle_path": "data/models/engineering_stance_v1/provenance/sources/3af1ca20aa87bc88-gait2392_thelen2003muscle.osim",
+      "sha256": "3af1ca20aa87bc88b0b8cd54f2504331afa2aa03537cc868f1175fa1f50f3c0f"
+    },
+    "data/derived/locomotion/moco3d-torque-v1/subject_walk_scaled_FunctionBasedPathSet.xml": {
+      "bundle_path": "data/models/engineering_stance_v1/provenance/sources/932ac403e4d6d0d1-subject_walk_scaled_FunctionBasedPathSet.xml",
+      "sha256": "932ac403e4d6d0d10d9a9da551e43d0ded94dd2b99c370f9b25053ee9232f8a5"
+    },
+    "data/derived/canonical/anatomy.json": {
+      "bundle_path": "data/models/engineering_stance_v1/provenance/sources/874479e434e2637c-anatomy.json",
+      "sha256": "874479e434e2637c08a1f5153de88fdaf138d33f55ae91a3bb7b1578ed891d5f"
+    },
+    "data/derived/canonical/mechanics.json": {
+      "bundle_path": "data/models/engineering_stance_v1/provenance/sources/662b53da23a216ab-mechanics.json",
+      "sha256": "662b53da23a216abbf50dfa7de6d4a89ca5888e9613780f2c0ba008cd6247d05"
+    },
+    "data/derived/mechanics/whole_body_lumbar_current/audit.json": {
+      "bundle_path": "data/models/engineering_stance_v1/provenance/sources/ca6259319b860e9a-audit.json",
+      "sha256": "ca6259319b860e9abbfaad30152f8e802c2c3b638dca4c7f69f3df243819c3a4"
+    },
+    "data/derived/mechanics/whole_body_lumbar_current/lumbar_candidate_forces.xml": {
+      "bundle_path": "data/models/engineering_stance_v1/provenance/sources/6301217b73029490-lumbar_candidate_forces.xml",
+      "sha256": "6301217b73029490aa03d431641374f1f07e65f02792781a5e235d184bd7ed4b"
+    },
+    "data/derived/lumbar-muscle-native-lb45uirs/variant/registration.json": {
+      "bundle_path": "data/models/engineering_stance_v1/provenance/sources/6d94486340828c9a-registration.json",
+      "sha256": "6d94486340828c9a06147e119d7fd8fdfa2393fd8d68fa4cb2f5e030e4a83492"
+    },
+    "scripts/audit_lumbar_shoulder_coverage.py": {
+      "bundle_path": "data/models/engineering_stance_v1/provenance/sources/f6d50647dfc96340-audit_lumbar_shoulder_coverage.py",
+      "sha256": "f6d50647dfc963409d24e8ef8283605adb6b5dfaa2817df1795e8c4541382ac8"
+    },
+    "scripts/rematerialize_current_lumbar.py": {
+      "bundle_path": "data/models/engineering_stance_v1/provenance/sources/67c197ce900e5a57-rematerialize_current_lumbar.py",
+      "sha256": "67c197ce900e5a57762823603c0845f44aa20660b4469dceea11d17285096d9a"
+    },
+    "data/derived/mechanics/whole_body_lumbar_current/rematerialization.json": {
+      "bundle_path": "data/models/engineering_stance_v1/provenance/sources/9d3c7b578bfcfe34-rematerialization.json",
+      "sha256": "9d3c7b578bfcfe34858e70dea4476c121554e1d7fdffdc2ce4f6a125ecf14c24"
+    },
+    "data/derived/mechanics/whole_body_lumbar_current/registration.json": {
+      "bundle_path": "data/models/engineering_stance_v1/provenance/sources/7a3209427856f08d-registration.json",
+      "sha256": "7a3209427856f08de0a6ed6d42a0aca8b16779dc2f2a9fe0833bbb0aef8d2b84"
+    },
+    "data/derived/mechanics/whole_body_lumbar_current/subject_with_lumbar.osim": {
+      "bundle_path": "data/models/engineering_stance_v1/provenance/sources/7f6c40224fbc4335-subject_with_lumbar.osim",
+      "sha256": "7f6c40224fbc43359d6b2997efeb499c5ffe4d19c786d37b849312efd20d2114"
+    },
+    "data/research/locomotion_control/resting_stance98_ansa4164/report.json": {
+      "bundle_path": "data/models/engineering_stance_v1/provenance/sources/8cff883ea83213c1-report.json",
+      "sha256": "8cff883ea83213c1cbca23dd07530fe80866507aaeb2a583496b9d49dcf2b7ad"
+    },
+    "data/derived/mechanics/resting_stance98/registration.json": {
+      "bundle_path": "data/models/engineering_stance_v1/provenance/sources/bc40d6211bf27312-registration.json",
+      "sha256": "bc40d6211bf27312425ca580ebcd83376456923c34dc4950c4912956398a82ae"
+    },
+    "data/research/locomotion_control/resting_stance98_718ww4lr/report.json": {
+      "bundle_path": "data/models/engineering_stance_v1/provenance/sources/450b742291c97f2a-report.json",
+      "sha256": "450b742291c97f2a580306cda909f0d4bffe8069c9551cad09fbab37fa7d273e"
+    },
+    "scripts/solve_native_patient_stance98.py": {
+      "bundle_path": "data/models/engineering_stance_v1/provenance/sources/edac24b3cf9c52b4-solve_native_patient_stance98.py",
+      "sha256": "edac24b3cf9c52b49b6bcd884087141a685a240c112acb01b00f82a972231a3e"
+    },
+    "data/derived/mechanics/patient_stance98/native_initial_acceptance.json": {
+      "bundle_path": "data/models/engineering_stance_v1/provenance/sources/6cc8146b1ab42fae-native_initial_acceptance.json",
+      "sha256": "6cc8146b1ab42fae6eb6484b6a34e7ef39179265a20dc416634aa381c34069c2"
+    },
+    "data/derived/mechanics/patient_stance98/canonical_source_audit.json": {
+      "bundle_path": "data/models/engineering_stance_v1/provenance/sources/637ad5ef3c5fcf56-canonical_source_audit.json",
+      "sha256": "637ad5ef3c5fcf56c4df47c36d8779ddb8f1a8b6590f7ee2979ead54e4c8c7b7"
+    },
+    "data/derived/mechanics/patient_stance98/model.osim": {
+      "bundle_path": "data/models/engineering_stance_v1/model.osim",
+      "sha256": "be3baf542b44425c2802095439cabf976eccaad42406564338d20c2deb421d68"
+    },
+    "data/derived/mechanics/whole_body_lumbar_current/catalog.json": {
+      "bundle_path": "data/models/engineering_stance_v1/provenance/sources/106e4f0d33f8f662-original_catalog.json",
+      "sha256": "106e4f0d33f8f6624f1ee9eb0660ff988a161c228c0e6a524a662417e489d1ee"
+    },
+    "data/derived/mechanics/whole_body_lumbar_current/insert.xml": {
+      "bundle_path": "data/models/engineering_stance_v1/insert.xml",
+      "sha256": "014d733419c6a6b589cbb3b2e528eaed8c7a8eb302fec10abed0840ccd405b6f"
+    },
+    "data/research/locomotion_control/linearization_73pkqle2/discrete_margin/linearization.npz": {
+      "bundle_path": "data/models/engineering_stance_v1/linearization.npz",
+      "sha256": "74305e40de65c91c75a85b1de1f6852834d44f91d16c2519979a9a3f88ac1d55"
+    },
+    "data/derived/mechanics/patient_stance98/registration.json": {
+      "bundle_path": "data/models/engineering_stance_v1/provenance/original_registration.json",
+      "sha256": "b7794c7a4c8ed7b11f19681302fe11c9490a85e952a99d03598a7586c343a919"
+    },
+    "scripts/evaluate_native_lqr.py": {
+      "bundle_path": "data/models/engineering_stance_v1/provenance/sources/22e3fa30d58e2b39-evaluate_native_lqr.py",
+      "sha256": "22e3fa30d58e2b3910aa142a7e7f3699ee19edc4ad200bfddfdcfcf118edbc6d"
+    },
+    "ihm/native/stance_lqr.py": {
+      "bundle_path": "data/models/engineering_stance_v1/provenance/sources/5d4c64587abd5315-stance_lqr.py",
+      "sha256": "5d4c64587abd5315560b4771fa34f205cc6da06cef772615e13b056813d9bb51"
+    },
+    "data/research/locomotion_control/patient98_margin_com_push/report.json": {
+      "bundle_path": "data/models/engineering_stance_v1/acceptance/feedback/report.json",
+      "sha256": "07273099717a5c3868dea97fd050c2d7da77e474397c908d39c2629d92dc908c"
+    },
+    "data/research/locomotion_control/patient98_margin_com_push/trajectory.json": {
+      "bundle_path": "data/models/engineering_stance_v1/acceptance/feedback/trajectory.json.gz",
+      "sha256": "22f82f1e718404c5c93d7eaaf04763a2786828604d4506053a9341c3ad7f8c54"
+    },
+    "data/research/locomotion_control/patient98_held_com_push/report.json": {
+      "bundle_path": "data/models/engineering_stance_v1/acceptance/held/report.json",
+      "sha256": "62e1221c12f64c498b6d54d9c1edcf3c6879ee94a7a387c2a6f8a2ebd5c2b614"
+    },
+    "data/research/locomotion_control/patient98_held_com_push/trajectory.json": {
+      "bundle_path": "data/models/engineering_stance_v1/acceptance/held/trajectory.json.gz",
+      "sha256": "af266f643522365e3daa733ff70a42f8193f550ed6c7208b70ecbcfb131657c3"
+    },
+    "data/research/locomotion_control/linearization_73pkqle2/discrete_margin/report.json": {
+      "bundle_path": "data/models/engineering_stance_v1/provenance/sources/814a46132795977c-report.json",
+      "sha256": "814a46132795977c75707e12ddae6a2779ca3a11ad30b8363bef1f7b85efffc5"
+    },
+    "data/research/locomotion_control/patient98_margin_com_push/paired_acceptance.json": {
+      "bundle_path": "data/models/engineering_stance_v1/provenance/sources/56869c5c0ab3d595-paired_acceptance.json",
+      "sha256": "56869c5c0ab3d595fa03d580dfe9dafd8a0c3f5a58675a4b208e9000bfa0040a"
+    },
+    "scripts/promote_engineering_stance.py": {
+      "bundle_path": "data/models/engineering_stance_v1/provenance/sources/22c465d2af6040ac-promote_engineering_stance.py",
+      "sha256": "22c465d2af6040ac5001d381b8f7622d29b9baae8dad884b9d63ce6a4a0e17c8"
+    },
+    "ihm/native/stance_lqr_controller.py": {
+      "bundle_path": "data/models/engineering_stance_v1/provenance/sources/bfaa00f478898f38-stance_lqr_controller.py",
+      "sha256": "bfaa00f478898f38a2b2729083867469b9314d00e3a798f311159e1d2808b892"
+    }
+  },
+  "acceptance": {
+    "feedback": {
+      "report": "data/models/engineering_stance_v1/acceptance/feedback/report.json",
+      "trajectory_gzip": "data/models/engineering_stance_v1/acceptance/feedback/trajectory.json.gz",
+      "uncompressed_trajectory_sha256": "0ad095417686a5365fdbd36608af4d66d68de460c6c0b99f24dc981c4ec3c22f",
+      "retained_source_sha256": {
+        "data/models/engineering_stance_v1/linearization.npz": "74305e40de65c91c75a85b1de1f6852834d44f91d16c2519979a9a3f88ac1d55",
+        "data/models/engineering_stance_v1/provenance/sources/22e3fa30d58e2b39-evaluate_native_lqr.py": "22e3fa30d58e2b3910aa142a7e7f3699ee19edc4ad200bfddfdcfcf118edbc6d",
+        "data/models/engineering_stance_v1/provenance/sources/5d4c64587abd5315-stance_lqr.py": "5d4c64587abd5315560b4771fa34f205cc6da06cef772615e13b056813d9bb51"
+      }
+    },
+    "held": {
+      "report": "data/models/engineering_stance_v1/acceptance/held/report.json",
+      "trajectory_gzip": "data/models/engineering_stance_v1/acceptance/held/trajectory.json.gz",
+      "uncompressed_trajectory_sha256": "0dab9c9bd506ba09c92f3c1fa9edd4609dbacdcaedbba17c647962e923db26a1",
+      "retained_source_sha256": {
+        "data/models/engineering_stance_v1/linearization.npz": "74305e40de65c91c75a85b1de1f6852834d44f91d16c2519979a9a3f88ac1d55",
+        "data/models/engineering_stance_v1/provenance/sources/22e3fa30d58e2b39-evaluate_native_lqr.py": "22e3fa30d58e2b3910aa142a7e7f3699ee19edc4ad200bfddfdcfcf118edbc6d",
+        "data/models/engineering_stance_v1/provenance/sources/5d4c64587abd5315-stance_lqr.py": "5d4c64587abd5315560b4771fa34f205cc6da06cef772615e13b056813d9bb51"
+      }
+    }
+  },
+  "canonical_source_bindings": {
+    "data/derived/canonical/anatomy.json": "874479e434e2637c08a1f5153de88fdaf138d33f55ae91a3bb7b1578ed891d5f",
+    "data/derived/canonical/mechanics.json": "662b53da23a216abbf50dfa7de6d4a89ca5888e9613780f2c0ba008cd6247d05"
+  },
+  "acceptance_limits": {
+    "minimum_feedback_horizon_s": 10.0,
+    "maximum_final_com_speed_m_s": 0.05,
+    "maximum_final_com_displacement_m": 0.05
+  },
+  "controller": "engineering discrete native LQR; ill-conditioned DARE residual about0.415, not an optimality certificate",
+  "walking_demonstrated": false,
+  "brain_trained": false,
+  "archival_paths": "Paths inside byte-preserved original evidence receipts identify historical origins. Use origins mapping for retained copies; promoted registration runtime paths resolve within bundle except explicit live canonical bindings.",
+  "runtime_dependency_scope": "Registration sources retain original authoritative checks, with canonical data loaded only from explicitlive bindings. Acceptance archives and duplicate canonical snapshots remain hash-verified archivalmanifest evidence, not runtime inputs.",
+  "promotion_revision": {
+    "reason": "Deduplicate runtime canonicalbindings; retain archivalproof outside executabledependencygraph; remap catalogownerpaths without changing sourceSHA or numericmuscleparameters",
+    "implementation_path": "data/models/engineering_stance_v1/provenance/sources/bc2269f61b7193fb-promote_engineering_stance.py",
+    "implementation_sha256": "bc2269f61b7193fb457c38d230b77273252f9dfa0c06eb0bc62e67e8e548987d",
+    "native_model_unchanged": true,
+    "policy_unchanged": true,
+    "initial_pose_unchanged": true,
+    "preflight_bytes": 37237740
+  }
+}

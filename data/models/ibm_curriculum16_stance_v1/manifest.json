@@ -1,0 +1,124 @@
+{
+  "schema": "ihm.ibm-cortical-stance-bundle.v1",
+  "native_model_sha256": "be3baf542b44425c2802095439cabf976eccaad42406564338d20c2deb421d68",
+  "target_mass_kg": 77.6122029,
+  "dt_s": 0.01,
+  "sites": 1024,
+  "state_width": 258,
+  "muscles": 98,
+  "sensory_sites": 516,
+  "motor_sites": 508,
+  "computation_dtype": "float64",
+  "artifact_sha256": "fc848477a52282e406f7bd037b3061045b45275dad9bf9355ccde9e2af7cb461",
+  "brain_checkpoint_sha256": "d21289cdbd76b7836ff1439a1a6af026d5a11b33ad5f4ef9aa0a944427d81acb",
+  "kernel_bundle": "data/models/ibm_curriculum16_kernel_v1",
+  "kernel_donor": {
+    "donor_repository": "IBM-1",
+    "donor_commit": "267ad2630e61d833e93ce553848e46b0214e90f1",
+    "donor_path": "ckpt/ibm1_curriculum16.pt",
+    "donor_sha256": "0604a5f423db807795de2e4fc4ce1f7cf7945c6a9268165941de2cfb40ef2a4d",
+    "consolidation_step": 11500,
+    "objectives": [
+      "curriculum:visual_eeg",
+      "curriculum:audio_meg",
+      "curriculum:video",
+      "curriculum:audio_visual",
+      "curriculum:optic_nerve",
+      "curriculum:cochlear_nerve",
+      "curriculum:visual_eeg_s00",
+      "curriculum:visual_eeg_s01",
+      "curriculum:visual_eeg_s02",
+      "curriculum:visual_eeg_s03",
+      "curriculum:visual_eeg_s04",
+      "curriculum:visual_eeg_s05",
+      "curriculum:visual_eeg_s06",
+      "curriculum:visual_eeg_s07",
+      "curriculum:visual_eeg_s08",
+      "curriculum:visual_eeg_s09"
+    ],
+    "is_ablation_control": null,
+    "ablation_basis": null,
+    "site_permutation_seed": null
+  },
+  "source_sha256": {
+    "cortical_stance.pt": "fc848477a52282e406f7bd037b3061045b45275dad9bf9355ccde9e2af7cb461",
+    "cortical_stance.py": "5dbbf6e13e8b408fede035dc72e2e5ecb41d519ef5d2bd935f6f1366b24fbcb2",
+    "negative-native10s.json": "73ec316a969b861c550a08a7509369b8b414530f521273a097e85eaf0daf09b4",
+    "positive-native10s.json": "fa8743a435fb764d1f4052902fb12b2f8b9b736efa06b3bebc00267f5f89bd37",
+    "pretrain_video_loop.py": "9329ce624bd0ec6676fc76dc307210e8a0724ef3f79dece01c3668d6e4beb9e4",
+    "provenance.json": "5b3399599b5e08c2d7295ff937b66d152a483095783f2d175050443dd5487aff",
+    "report.json": "3ce5cd8fbd9936c03e03121d140acaa707b8b465bb160460b7d60dff73808653",
+    "scale_cortical_stance_regime.py": "57f5544f8b20194c069a633677a59c8f877a3febe2535d1b91f3b421a7046b29",
+    "teacher.npz": "f8740ca0c27112b6889e2d2ce108018969114cd72026abb0759cab28ebe22ecd"
+  },
+  "validation": {
+    "positive-native10s": {
+      "source": "data/runtime/motor-learning/cortical-stance-native-curriculum16-positive-20260908/report.json",
+      "sha256": "fa8743a435fb764d1f4052902fb12b2f8b9b736efa06b3bebc00267f5f89bd37",
+      "perturbation_force_n": [
+        5.0,
+        0.0,
+        5.0
+      ],
+      "arms": {
+        "full": {
+          "elapsed_s": 9.999999999999831,
+          "completed_horizon": true,
+          "peak_com_displacement_m": 0.0017469161050744691,
+          "final_com_displacement_m": 0.00019225361936754413,
+          "final_com_speed_m_s": 3.4981280411000405e-06,
+          "pelvis_height_m": 1.0186799709335619,
+          "error": null
+        },
+        "sever": {
+          "elapsed_s": 2.899999999999982,
+          "completed_horizon": false,
+          "peak_com_displacement_m": 0.769708614772774,
+          "final_com_displacement_m": 0.769708614772774,
+          "final_com_speed_m_s": 2.0200953670059714,
+          "pelvis_height_m": 0.5897768105601077,
+          "error": null
+        }
+      }
+    },
+    "negative-native10s": {
+      "source": "data/runtime/motor-learning/cortical-stance-native-curriculum16-negative-20260908/report.json",
+      "sha256": "73ec316a969b861c550a08a7509369b8b414530f521273a097e85eaf0daf09b4",
+      "perturbation_force_n": [
+        -5.0,
+        0.0,
+        -5.0
+      ],
+      "arms": {
+        "full": {
+          "elapsed_s": 9.999999999999831,
+          "completed_horizon": true,
+          "peak_com_displacement_m": 0.002128673244158671,
+          "final_com_displacement_m": 0.00018274939065339023,
+          "final_com_speed_m_s": 6.3213609430992355e-06,
+          "pelvis_height_m": 1.018680276110115,
+          "error": null
+        },
+        "sever": {
+          "elapsed_s": 1.9400000000000015,
+          "completed_horizon": false,
+          "peak_com_displacement_m": 0.37667744895172667,
+          "final_com_displacement_m": 0.37667744895172667,
+          "final_com_speed_m_s": 2.1903574450026952,
+          "pelvis_height_m": 0.5882163948893105,
+          "error": null
+        }
+      }
+    }
+  },
+  "scope": [
+    "Persistent trained IBM E/I owns all 98 corrective commands; native small-push stance only",
+    "Trained from the IBM-1 16-objective consolidated kernel; the fused-kernel bundle is retained unchanged alongside it",
+    "Matched severed arm retains the same tonic baseline and is identical to the fused bundle's severed arm; severing removes the cortical dynamics, not the kernel's learned content",
+    "A matched site-permuted control kernel goes through the identical pipeline; see docs/IBM_CURRICULUM16_KERNEL.md before reading recovery as evidence about the kernel",
+    "Privileged full native state and paired zero-input cortical reference are engineering extensions",
+    "Offline LQR supplies decoder training targets only; no live teacher or cord motor bypass",
+    "Original IBM donor checkpoint unchanged",
+    "Ten-second native mechanics receipts at baseline physiology; no walking or human brain claim"
+  ]
+}

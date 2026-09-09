@@ -7,6 +7,7 @@
 #include "native_surface_foundation.h"
 #include "native_local_mass_port.h"
 #include <filesystem>
+#include <fstream>
 #include <sstream>
 #include <iomanip>
 #include <iostream>
@@ -69,6 +70,23 @@ int main(int argc,char** argv){try{
   ContactGeometrySet geo((source/"subject_walk_scaled_ContactGeometrySet.xml").string());
   for(int i=0;i<geo.getSize();i++)model.addContactGeometry(geo.get(i).clone());
   for(int i=0;i<contact_templates.getSize();i++)model.addComponent(contact_templates.get(i).clone());
+  // The walking source only supplies foot contact. A falling trunk previously
+  // passed through the floor until pelvis_ty hit its -1 m coordinate clamp.
+  // Give the other segments unilateral contact, without anchoring their pose.
+  // These inscribed COM spheres are engineering proxies inferred from inertia;
+  // they are not an anatomical skin reconstruction or a balance controller.
+  auto& floor=dynamic_cast<ContactHalfSpace&>(model.updContactGeometrySet().get("floor"));
+  for(const auto& b:model.getComponentList<Body>()){
+   // Talus has a tiny placeholder mass/inertia, not a geometric ellipsoid;
+   // source foot contacts already represent the articulated foot assembly.
+   if(b.getName().find("talus_")==0||b.getName().find("calcn_")==0||b.getName().find("toes_")==0)continue;
+   const auto moments=b.getInertia().getMoments();double radius2=1e10;
+   for(int k=0;k<3;k++)radius2=std::min(radius2,5*(moments[(k+1)%3]+moments[(k+2)%3]-moments[k])/(2*b.getMass()));
+   if(!(radius2>0))throw std::runtime_error("source inertia cannot support whole-body contact radius");
+   auto* sphere=new ContactSphere(std::sqrt(radius2),b.getMassCenter(),b);sphere->setName("fall_proxy_"+b.getName());model.addContactGeometry(sphere);
+   auto* force=dynamic_cast<SmoothSphereHalfSpaceForce*>(contact_templates.get(0).clone());
+   force->setName("fall_support_"+b.getName());force->connectSocket_sphere(*sphere);force->connectSocket_half_space(floor);model.addComponent(force);
+  }
  }else if(environment=="supine" && fs::exists(source/"supine_surface_foundation.txt")){
   surface_foundation=new ihm_surface::Foundation;surface_foundation->setName("retained_skin_surface_foundation");
   surface_foundation->read((source/"supine_surface_foundation.txt").string(),model);
@@ -96,6 +114,29 @@ int main(int argc,char** argv){try{
   }
  }
  model.finalizeConnections();SimTK::State state=model.initSystem();state.setTime(0);
+ // Material registration belongs to the retained source pose. An optional
+ // initialization must move that same body, not silently redefine its geometry.
+ model.realizePosition(state);std::ostringstream registration_reference;registration_reference<<'{';bool first_reference=true;
+ for(const auto& b:model.getComponentList<Body>()){
+  if(!first_reference)registration_reference<<',';first_reference=false;str(registration_reference,b.getName());registration_reference<<":{\"transform_ground\":";
+  matrix(registration_reference,b.getTransformInGround(state));registration_reference<<",\"mass_center_local_m\":";vec(registration_reference,b.getMassCenter());registration_reference<<'}';
+ }registration_reference<<'}';
+ const bool initial_pose_applied=fs::exists(source/"initial_pose.txt");
+ if(initial_pose_applied){
+  std::ifstream pose(source/"initial_pose.txt");std::string schema;int count;pose>>schema>>count;
+  if(!pose||schema!="IHM_INITIAL_POSE_V1"||count<1||count>model.getCoordinateSet().getSize())throw std::runtime_error("invalid initial pose schema/count");
+  std::map<std::string,double> coordinates;
+  for(int i=0;i<count;i++){
+   std::string name;double value;pose>>name>>value;
+   if(!pose||!std::isfinite(value)||coordinates.count(name))throw std::runtime_error("invalid initial pose coordinate");
+   const auto& c=model.getCoordinateSet().get(name);
+   if(c.isDependent(state)||c.getLocked(state)||c.isPrescribed(state)||value<c.getRangeMin()||value>c.getRangeMax())throw std::runtime_error("initial pose requires independent free coordinates within source bounds");
+   coordinates[name]=value;c.setValue(state,value,false);
+  }
+  std::string extra;if(pose>>extra)throw std::runtime_error("trailing initial pose data");
+  model.assemble(state);state.updU()=0.;
+  for(const auto& item:coordinates)if(std::abs(model.getCoordinateSet().get(item.first).getValue(state)-item.second)>1e-8)throw std::runtime_error("assembly changed requested initial pose");
+ }
  for(const auto& m:model.getComponentList<Muscle>())m.setActivation(state,excitation->values.at(m.getName()));
  model.equilibrateMuscles(state);model.realizeDynamics(state);model.print((out/"assembled_model.osim").string());
  const char* mass_mode=std::getenv("IHM_INSTANCE_MASS_MODE");
@@ -108,6 +149,8 @@ int main(int argc,char** argv){try{
  auto emit=[&](const std::string& kind){
   model.realizeAcceleration(state);auto metabolic=metabolism.sample(state);std::ostringstream o;o<<"{\"kind\":";str(o,kind);o<<",\"time_s\":";num(o,state.getTime());
   o<<",\"mass_transfer\":"<<mass_port.json();
+  o<<",\"initial_pose_applied\":"<<(initial_pose_applied?"true":"false");
+  o<<",\"registration_reference_bodies\":"<<registration_reference.str();
   o<<",\"mass_kg\":";num(o,model.getTotalMass(state));o<<",\"gravity_m_s2\":";vec(o,model.getGravity());
   o<<",\"kinetic_energy_j\":";num(o,model.calcKineticEnergy(state));o<<",\"potential_energy_j\":";num(o,model.calcPotentialEnergy(state));o<<",\"external_work_j\":";num(o,work);o<<",\"positive_active_fiber_work_j\":";num(o,positive_work);o<<",\"external_power_w\":";num(o,external->power(state));
   o<<",\"muscle_metabolic_energy_j\":";num(o,metabolic_energy);o<<",\"total_muscle_metabolic_w\":";num(o,metabolic.total_muscle_metabolic_w);o<<",\"signed_active_fiber_power_w\":";num(o,metabolic.active_fiber_work_w);o<<",\"muscle_heat_w\":";num(o,metabolic.muscle_heat_w);o<<",\"metabolic_analysis_mass_kg\":";num(o,metabolic.analysis_mass_kg);
@@ -115,7 +158,7 @@ int main(int argc,char** argv){try{
   o<<",\"metabolic_reference\":{\"M0_w\":";num(o,reference.total_muscle_metabolic_w);o<<",\"W0_w\":";num(o,reference.active_fiber_work_w);o<<",\"H0_w\":";num(o,reference.total_muscle_metabolic_w-reference.active_fiber_work_w);o<<'}';
   o<<",\"constraint_position_error\":";num(o,state.getQErr().norm());o<<",\"constraint_velocity_error\":";num(o,state.getUErr().norm());
   o<<",\"original_source_mass_kg\":";num(o,original_mass);o<<",\"mass_scale\":";num(o,mass_scale);
-  o<<",\"contact_model\":";str(o,surface_foundation?"retained_skin_foundation":"source_sphere_proxies");
+  o<<",\"contact_model\":";str(o,surface_foundation?"retained_skin_foundation":environment=="upright"?"source_feet_and_inertia_inscribed_body_spheres":"source_sphere_proxies");
   o<<",\"support_plane_source_x_m\":";num(o,support_plane);bool first=true;
   std::ostringstream bodies;bodies<<'{';first=true;
   SimTK::Vector_<SimTK::SpatialVec> reactions;model.getMatterSubsystem().calcMobilizerReactionForces(state,reactions);
@@ -183,6 +226,17 @@ int main(int argc,char** argv){try{
    std::istringstream in(line);std::string command;in>>command;
    if(command=="close")break;
    if(command=="mass_transfer"){mass_port.apply(model,state,in);emit("mass_transferred");continue;}
+   if(command=="moment_arms"){
+    int n,m;in>>n;if(!in||n<1||n>1000)throw std::runtime_error("invalid moment arm muscle count");
+    std::vector<std::string> muscles(n);for(auto& name:muscles){in>>name;if(!excitation->values.count(name))throw std::runtime_error("unknown moment arm muscle");}
+    in>>m;if(!in||m<1||m>1000)throw std::runtime_error("invalid moment arm coordinate count");
+    std::vector<std::string> coordinates(m);for(auto& name:coordinates){in>>name;model.getCoordinateSet().get(name);}
+    std::string extra;if(!in||in>>extra)throw std::runtime_error("invalid moment arm query");
+    model.realizePosition(state);std::ostringstream o;o<<"{\"kind\":\"moment_arms\",\"time_s\":";num(o,state.getTime());o<<",\"moment_arms_m\":{";
+    bool first_muscle=true;for(const auto& name:muscles){if(!first_muscle)o<<',';first_muscle=false;str(o,name);o<<":{";bool first_coordinate=true;
+     for(const auto& coordinate:coordinates){if(!first_coordinate)o<<',';first_coordinate=false;str(o,coordinate);o<<':';num(o,model.getMuscles().get(name).computeMomentArm(state,model.updCoordinateSet().get(coordinate)));}o<<'}';}
+    o<<"}}";std::cout<<"@IHM "<<o.str()<<std::endl;continue;
+   }
    if(command=="body_point"){
     std::string name,extra;SimTK::Vec3 station;in>>name;for(int k=0;k<3;++k)in>>station[k];
     if(!in||in>>extra||!station.isFinite())throw std::runtime_error("invalid body point query");

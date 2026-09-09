@@ -1,0 +1,25 @@
+{
+  "schema": "ihm.lumbar-source-rematerialization.v1",
+  "previous_registration": "data/derived/lumbar-muscle-native-lb45uirs/variant/registration.json",
+  "changed_coverage_sources": {
+    "data/derived/canonical/anatomy.json": {
+      "previous_sha256": "ee4494e43893d81d9798071d9228e201be62f009ee3e1374e522d1670250f64c",
+      "current_sha256": "874479e434e2637c08a1f5153de88fdaf138d33f55ae91a3bb7b1578ed891d5f"
+    },
+    "data/derived/canonical/mechanics.json": {
+      "previous_sha256": "50c2d7752631ead840fa45f0e854379de9761fcf913e1b4e39188747a1b3bc0d",
+      "current_sha256": "662b53da23a216abbf50dfa7de6d4a89ca5888e9613780f2c0ba008cd6247d05"
+    }
+  },
+  "current_audit_recomputed": true,
+  "donor_fragment_byte_identical": true,
+  "mechanical_audit_fields_equal": [
+    "lumbar_candidate",
+    "registration",
+    "arm_paths",
+    "fitted_paths"
+  ],
+  "model_catalog_and_insertion_byte_identical": true,
+  "new_dynamic_acceptance_claimed": false,
+  "explanation": "Canonical files affect coverage metadata only; current audit rebuild reproduces exactly the prior donor path fragment and mechanical registration."
+}

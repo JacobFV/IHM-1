@@ -1,0 +1,305 @@
+{
+  "schema": "ihm.engineering-supported-rest-bundle.v1",
+  "target_mass_kg": 77.6122029,
+  "native_model_sha256": "16af7ffdc6d346b553d5ba9ba24a85f69248a493f844197ca15af2de4409769d",
+  "selected_tonic_muscles": [
+    "addlong_l",
+    "addlong_r",
+    "gait2392_ercspn_l",
+    "gait2392_ercspn_r",
+    "gait2392_extobl_l",
+    "gait2392_extobl_r",
+    "gait2392_intobl_l",
+    "gait2392_intobl_r",
+    "glmax2_l",
+    "glmax2_r",
+    "glmax3_l",
+    "glmax3_r",
+    "glmed1_l",
+    "glmed1_r",
+    "glmed2_l",
+    "glmed2_r",
+    "glmin1_l",
+    "glmin1_r",
+    "iliacus_l",
+    "iliacus_r",
+    "piri_l",
+    "piri_r",
+    "recfem_l",
+    "recfem_r",
+    "semimem_l",
+    "semimem_r"
+  ],
+  "surface_contact_manifest_path": "data/models/engineering_supported_rest_v1/surface/manifest.json",
+  "bed_material": "MM",
+  "bed_material_manifest_path": "data/models/engineering_supported_rest_v1/bed/manifest.json",
+  "bed_material_manifest_sha256": "013d8b840ce9c4614d1752396dd3736da36d80cc3e608b5f68a34933c0d67068",
+  "registration_path": "data/models/engineering_supported_rest_v1/registration.json",
+  "initial_pose_path": "data/models/engineering_supported_rest_v1/initial_pose.json",
+  "files": {
+    "data/models/engineering_supported_rest_v1/model.osim": "16af7ffdc6d346b553d5ba9ba24a85f69248a493f844197ca15af2de4409769d",
+    "data/models/engineering_supported_rest_v1/provenance/sources/9bae06c73db2c985-registration.json": "9bae06c73db2c98589f8baf76ef82c5f79d3ccc7ec4b4aba0382bebd967912af",
+    "data/models/engineering_supported_rest_v1/provenance/sources/e697dc40b2939f5e-subject_with_arms.osim": "e697dc40b2939f5edbc2879bcbd7e5954ffbabbb234032c403d57f5c39ea3810",
+    "data/models/engineering_supported_rest_v1/provenance/sources/002a939642e534f0-catalog.json": "002a939642e534f08f22fc651e98b536eee23d199f989fe613b9701354cc864d",
+    "data/models/engineering_supported_rest_v1/provenance/sources/e2224d0044eb393b-arm26.osim": "e2224d0044eb393b05d64926c3fa1682c451a9adc7f510e5517ef9958d3d41b9",
+    "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "data/models/engineering_supported_rest_v1/provenance/sources/9ee76a13e7a224cf-Force.cpp": "9ee76a13e7a224cfbb4b4103b79229b683cef2e516381c6e2d98d4baac06b8be",
+    "data/models/engineering_supported_rest_v1/provenance/sources/3af1ca20aa87bc88-gait2392_thelen2003muscle.osim": "3af1ca20aa87bc88b0b8cd54f2504331afa2aa03537cc868f1175fa1f50f3c0f",
+    "data/models/engineering_supported_rest_v1/provenance/sources/932ac403e4d6d0d1-subject_walk_scaled_FunctionBasedPathSet.xml": "932ac403e4d6d0d10d9a9da551e43d0ded94dd2b99c370f9b25053ee9232f8a5",
+    "data/models/engineering_supported_rest_v1/provenance/sources/ca6259319b860e9a-audit.json": "ca6259319b860e9abbfaad30152f8e802c2c3b638dca4c7f69f3df243819c3a4",
+    "data/models/engineering_supported_rest_v1/provenance/sources/6301217b73029490-lumbar_candidate_forces.xml": "6301217b73029490aa03d431641374f1f07e65f02792781a5e235d184bd7ed4b",
+    "data/models/engineering_supported_rest_v1/provenance/sources/6d94486340828c9a-registration.json": "6d94486340828c9a06147e119d7fd8fdfa2393fd8d68fa4cb2f5e030e4a83492",
+    "data/models/engineering_supported_rest_v1/provenance/sources/f6d50647dfc96340-audit_lumbar_shoulder_coverage.py": "f6d50647dfc963409d24e8ef8283605adb6b5dfaa2817df1795e8c4541382ac8",
+    "data/models/engineering_supported_rest_v1/provenance/sources/67c197ce900e5a57-rematerialize_current_lumbar.py": "67c197ce900e5a57762823603c0845f44aa20660b4469dceea11d17285096d9a",
+    "data/models/engineering_supported_rest_v1/provenance/sources/9d3c7b578bfcfe34-rematerialization.json": "9d3c7b578bfcfe34858e70dea4476c121554e1d7fdffdc2ce4f6a125ecf14c24",
+    "data/models/engineering_supported_rest_v1/provenance/sources/7a3209427856f08d-registration.json": "7a3209427856f08de0a6ed6d42a0aca8b16779dc2f2a9fe0833bbb0aef8d2b84",
+    "data/models/engineering_supported_rest_v1/provenance/sources/7f6c40224fbc4335-subject_with_lumbar.osim": "7f6c40224fbc43359d6b2997efeb499c5ffe4d19c786d37b849312efd20d2114",
+    "data/models/engineering_supported_rest_v1/provenance/sources/5dc41711b3acebb7-initial_pose.json": "5dc41711b3acebb7310a3af2b1de48c9b3cd6cc484f511e9c74e7182d744c5c0",
+    "data/models/engineering_supported_rest_v1/provenance/sources/ff19d062241635a6-materialize_supine_selected_activation_variant.py": "ff19d062241635a61c86ca22b7734b20711859796d2f7676fcca59277f87240d",
+    "data/models/engineering_supported_rest_v1/provenance/sources/110a16a3e22c59d5-selection.json": "110a16a3e22c59d5e36f1975b59e9179cf6251f031c1524821a4068358ea186d",
+    "data/models/engineering_supported_rest_v1/provenance/sources/9a7524c7ecb8c09a-native_moment_arms.json": "9a7524c7ecb8c09adb731c3dbab2b34d910a7728c3d12f1598188c559c0beece",
+    "data/models/engineering_supported_rest_v1/provenance/sources/106e4f0d33f8f662-catalog.json": "106e4f0d33f8f6624f1ee9eb0660ff988a161c228c0e6a524a662417e489d1ee",
+    "data/models/engineering_supported_rest_v1/catalog.json": "b26ebe1680d9eec6c8ec4ca3bc40d42138471913cbcd8a4d6855871021a2836e",
+    "data/models/engineering_supported_rest_v1/provenance/sources/014d733419c6a6b5-insert.xml": "014d733419c6a6b589cbb3b2e528eaed8c7a8eb302fec10abed0840ccd405b6f",
+    "data/models/engineering_supported_rest_v1/provenance/original_registration.json": "8409f41a2ff78e94e1ab0911983ef4cfbbb18171dcb49d1fecc86d794996d96e",
+    "data/models/engineering_supported_rest_v1/provenance/sources/dd5b8843880dc85e-initial_native.json": "dd5b8843880dc85ef53f865e504548942afcf5b4bcab58f883df4a713dc451f4",
+    "data/models/engineering_supported_rest_v1/provenance/sources/659d571d9f731c9e-subject_walk_scaled_ContactForceSet.xml": "659d571d9f731c9e119d93371edcd46c7fc265796ef0681670d46bd875b1b54d",
+    "data/models/engineering_supported_rest_v1/provenance/sources/110032169f52b0c9-build_supine_surface_contact.py": "110032169f52b0c9b5d29950e2448662dca03cca8067294647f8e10dbe7ad0ae",
+    "data/models/engineering_supported_rest_v1/provenance/sources/c7da5d122b10e1cd-supine_contact.py": "c7da5d122b10e1cd2b8a2191014de53ea35b5bae1b767c0f8a8ee125054d8fbc",
+    "data/models/engineering_supported_rest_v1/provenance/sources/17a7518a7c5457b1-execution.json": "17a7518a7c5457b151339acc52e25971672195c7d16adcba6fa9ba322d49c34e",
+    "data/models/engineering_supported_rest_v1/provenance/sources/de669f96f6db5b15-materialization.json": "de669f96f6db5b150dd467f149464677e19f22ec2e7be5a77d895d873b3fef1a",
+    "data/models/engineering_supported_rest_v1/surface/supine_surface_foundation.txt": "56924ceeac69f317c2e3dde4a8d45b06bacbb24a24b6758217bf2cf0c14c35c8",
+    "data/models/engineering_supported_rest_v1/surface/quadrature.npz": "afced6d803f17e2d0ac74db6981338c87a436bfe5d649d12cd3988d054392d30",
+    "data/models/engineering_supported_rest_v1/surface/manifest.json": "51c28339d9e70681b5a02e039504708b6ea07a912cb4489afd85678d920cd723",
+    "data/models/engineering_supported_rest_v1/provenance/original_surface_manifest.json": "ce0225d485ad961b8e472b7f17df1e7f041a8103f1a9cd5bf1ac9d8f83354a03",
+    "data/models/engineering_supported_rest_v1/bed/hong2022.html": "59f9a1e316708e8abf78a2144d9c66df01bb0418f14401a0b6cbf712a807b253",
+    "data/models/engineering_supported_rest_v1/bed/hong2022-figure1.jpg": "71c3630b2cd251667a4bf29832827ea318a8e7e5f6a7090a95c062e2ddef999e",
+    "data/models/engineering_supported_rest_v1/bed/hong2022-compression.csv": "5660998a2a8a59bf0b9ddbde3d89283bbde8fd818d7ec39dead4cb4d95d7f06c",
+    "data/models/engineering_supported_rest_v1/bed/manifest.json": "013d8b840ce9c4614d1752396dd3736da36d80cc3e608b5f68a34933c0d67068",
+    "data/models/engineering_supported_rest_v1/initial_pose.json": "8dee99220d33b42a055db36d422ea31e4422f6f084f262ea54fd36ff1eb3b1e2",
+    "data/models/engineering_supported_rest_v1/equilibrium_excitations.json": "5513ec1767f4fc2104c519232a3669c530d6207ccec7d4a00ed67ca8f774ea42",
+    "data/models/engineering_supported_rest_v1/registration.json": "6ef6f0384ddce729171f215fd159a49a522ecfc505d85d42b99c9a830e80ba0c",
+    "data/models/engineering_supported_rest_v1/provenance/sources/31596dc1f6c3030f-report.json": "31596dc1f6c3030f1f7daeddecdfeb5041db4a35f07e14377ecb70a6995266db",
+    "data/models/engineering_supported_rest_v1/provenance/sources/eab088685b8efd45-static_actual_initialized_coordinates.json": "eab088685b8efd4558f7136d71580e2c85f170f48372e7c9075de23f5b861af1",
+    "data/models/engineering_supported_rest_v1/provenance/sources/03a85feb0b19f87d-initialized.json": "03a85feb0b19f87d67526df41cc9c3c394233d0ad5dcc6fe58f85b73e34b4b55",
+    "data/models/engineering_supported_rest_v1/provenance/sources/e0f423ca5c574117-advanced_1us.json": "e0f423ca5c5741171cf9d6e5dae004f65ead60154d70de57426b99b8372cc9be",
+    "data/models/engineering_supported_rest_v1/provenance/sources/5bd7af105510fca7-report.json": "5bd7af105510fca70669dac06d9c6dc5c438925d85450b57e99de63a4e803500",
+    "data/models/engineering_supported_rest_v1/provenance/sources/c6fab64f775cea07-report.json": "c6fab64f775cea07c071a610f4c3c4814765aa15bf84b2987c0053b2c1ad38c1",
+    "data/models/engineering_supported_rest_v1/provenance/sources/94db3f1340569518-solver.py": "94db3f1340569518ef7383bf024eddfc6bddc49d3091c9f573efa8c9d48a92fe",
+    "data/models/engineering_supported_rest_v1/provenance/sources/cb12c7e27b47b238-promote_engineering_supported_rest.py": "cb12c7e27b47b238d21e5e08d3cd11a5b8b7d2dc6ffbc1e0d660002142cd5c86"
+  },
+  "origins": {
+    "data/derived/supine-selected-defaults-ih90ww49/subject_with_lumbar.osim": {
+      "bundle_path": "data/models/engineering_supported_rest_v1/model.osim",
+      "sha256": "16af7ffdc6d346b553d5ba9ba24a85f69248a493f844197ca15af2de4409769d"
+    },
+    "data/derived/mechanics/whole_body_arm26_v2/registration.json": {
+      "bundle_path": "data/models/engineering_supported_rest_v1/provenance/sources/9bae06c73db2c985-registration.json",
+      "sha256": "9bae06c73db2c98589f8baf76ef82c5f79d3ccc7ec4b4aba0382bebd967912af"
+    },
+    "data/derived/mechanics/whole_body_arm26_v2/subject_with_arms.osim": {
+      "bundle_path": "data/models/engineering_supported_rest_v1/provenance/sources/e697dc40b2939f5e-subject_with_arms.osim",
+      "sha256": "e697dc40b2939f5edbc2879bcbd7e5954ffbabbb234032c403d57f5c39ea3810"
+    },
+    "data/derived/mechanics/whole_body_arm26_v2/catalog.json": {
+      "bundle_path": "data/models/engineering_supported_rest_v1/provenance/sources/002a939642e534f0-catalog.json",
+      "sha256": "002a939642e534f08f22fc651e98b536eee23d199f989fe613b9701354cc864d"
+    },
+    "data/raw/anatomy/opensim-models/source/Models/Arm26/arm26.osim": {
+      "bundle_path": "data/models/engineering_supported_rest_v1/provenance/sources/e2224d0044eb393b-arm26.osim",
+      "sha256": "e2224d0044eb393b05d64926c3fa1682c451a9adc7f510e5517ef9958d3d41b9"
+    },
+    "data/raw/mechanics/opensim-core/OpenSim/Examples/Moco/example3DWalking/subject_walk_scaled.osim": {
+      "bundle_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+      "sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5"
+    },
+    "data/raw/mechanics/opensim-core/OpenSim/Simulation/Model/Force.cpp": {
+      "bundle_path": "data/models/engineering_supported_rest_v1/provenance/sources/9ee76a13e7a224cf-Force.cpp",
+      "sha256": "9ee76a13e7a224cfbb4b4103b79229b683cef2e516381c6e2d98d4baac06b8be"
+    },
+    "data/raw/anatomy/opensim-models/source/Models/Gait2392_Simbody/gait2392_thelen2003muscle.osim": {
+      "bundle_path": "data/models/engineering_supported_rest_v1/provenance/sources/3af1ca20aa87bc88-gait2392_thelen2003muscle.osim",
+      "sha256": "3af1ca20aa87bc88b0b8cd54f2504331afa2aa03537cc868f1175fa1f50f3c0f"
+    },
+    "data/derived/locomotion/moco3d-torque-v1/subject_walk_scaled_FunctionBasedPathSet.xml": {
+      "bundle_path": "data/models/engineering_supported_rest_v1/provenance/sources/932ac403e4d6d0d1-subject_walk_scaled_FunctionBasedPathSet.xml",
+      "sha256": "932ac403e4d6d0d10d9a9da551e43d0ded94dd2b99c370f9b25053ee9232f8a5"
+    },
+    "data/derived/mechanics/whole_body_lumbar_current/audit.json": {
+      "bundle_path": "data/models/engineering_supported_rest_v1/provenance/sources/ca6259319b860e9a-audit.json",
+      "sha256": "ca6259319b860e9abbfaad30152f8e802c2c3b638dca4c7f69f3df243819c3a4"
+    },
+    "data/derived/mechanics/whole_body_lumbar_current/lumbar_candidate_forces.xml": {
+      "bundle_path": "data/models/engineering_supported_rest_v1/provenance/sources/6301217b73029490-lumbar_candidate_forces.xml",
+      "sha256": "6301217b73029490aa03d431641374f1f07e65f02792781a5e235d184bd7ed4b"
+    },
+    "data/derived/lumbar-muscle-native-lb45uirs/variant/registration.json": {
+      "bundle_path": "data/models/engineering_supported_rest_v1/provenance/sources/6d94486340828c9a-registration.json",
+      "sha256": "6d94486340828c9a06147e119d7fd8fdfa2393fd8d68fa4cb2f5e030e4a83492"
+    },
+    "scripts/audit_lumbar_shoulder_coverage.py": {
+      "bundle_path": "data/models/engineering_supported_rest_v1/provenance/sources/f6d50647dfc96340-audit_lumbar_shoulder_coverage.py",
+      "sha256": "f6d50647dfc963409d24e8ef8283605adb6b5dfaa2817df1795e8c4541382ac8"
+    },
+    "scripts/rematerialize_current_lumbar.py": {
+      "bundle_path": "data/models/engineering_supported_rest_v1/provenance/sources/67c197ce900e5a57-rematerialize_current_lumbar.py",
+      "sha256": "67c197ce900e5a57762823603c0845f44aa20660b4469dceea11d17285096d9a"
+    },
+    "data/derived/mechanics/whole_body_lumbar_current/rematerialization.json": {
+      "bundle_path": "data/models/engineering_supported_rest_v1/provenance/sources/9d3c7b578bfcfe34-rematerialization.json",
+      "sha256": "9d3c7b578bfcfe34858e70dea4476c121554e1d7fdffdc2ce4f6a125ecf14c24"
+    },
+    "data/derived/mechanics/whole_body_lumbar_current/registration.json": {
+      "bundle_path": "data/models/engineering_supported_rest_v1/provenance/sources/7a3209427856f08d-registration.json",
+      "sha256": "7a3209427856f08de0a6ed6d42a0aca8b16779dc2f2a9fe0833bbb0aef8d2b84"
+    },
+    "data/derived/mechanics/whole_body_lumbar_current/subject_with_lumbar.osim": {
+      "bundle_path": "data/models/engineering_supported_rest_v1/provenance/sources/7f6c40224fbc4335-subject_with_lumbar.osim",
+      "sha256": "7f6c40224fbc43359d6b2997efeb499c5ffe4d19c786d37b849312efd20d2114"
+    },
+    "data/derived/supine-supported-tones-_wh_r3gi/initial_pose.json": {
+      "bundle_path": "data/models/engineering_supported_rest_v1/provenance/sources/5dc41711b3acebb7-initial_pose.json",
+      "sha256": "5dc41711b3acebb7310a3af2b1de48c9b3cd6cc484f511e9c74e7182d744c5c0"
+    },
+    "scripts/materialize_supine_selected_activation_variant.py": {
+      "bundle_path": "data/models/engineering_supported_rest_v1/provenance/sources/ff19d062241635a6-materialize_supine_selected_activation_variant.py",
+      "sha256": "ff19d062241635a61c86ca22b7734b20711859796d2f7676fcca59277f87240d"
+    },
+    "data/derived/supine-supported-tones-_wh_r3gi/selection.json": {
+      "bundle_path": "data/models/engineering_supported_rest_v1/provenance/sources/110a16a3e22c59d5-selection.json",
+      "sha256": "110a16a3e22c59d5e36f1975b59e9179cf6251f031c1524821a4068358ea186d"
+    },
+    "data/derived/supine-supported-tones-_wh_r3gi/native_moment_arms.json": {
+      "bundle_path": "data/models/engineering_supported_rest_v1/provenance/sources/9a7524c7ecb8c09a-native_moment_arms.json",
+      "sha256": "9a7524c7ecb8c09adb731c3dbab2b34d910a7728c3d12f1598188c559c0beece"
+    },
+    "data/derived/mechanics/whole_body_lumbar_current/catalog.json": {
+      "bundle_path": "data/models/engineering_supported_rest_v1/provenance/sources/106e4f0d33f8f662-catalog.json",
+      "sha256": "106e4f0d33f8f6624f1ee9eb0660ff988a161c228c0e6a524a662417e489d1ee"
+    },
+    "data/derived/mechanics/whole_body_lumbar_current/insert.xml": {
+      "bundle_path": "data/models/engineering_supported_rest_v1/provenance/sources/014d733419c6a6b5-insert.xml",
+      "sha256": "014d733419c6a6b589cbb3b2e528eaed8c7a8eb302fec10abed0840ccd405b6f"
+    },
+    "data/derived/supine-selected-defaults-ih90ww49/registration.json": {
+      "bundle_path": "data/models/engineering_supported_rest_v1/provenance/original_registration.json",
+      "sha256": "8409f41a2ff78e94e1ab0911983ef4cfbbb18171dcb49d1fecc86d794996d96e"
+    },
+    "data/derived/surface-reference-current-3xvkopcl/initial_native.json": {
+      "bundle_path": "data/models/engineering_supported_rest_v1/provenance/sources/dd5b8843880dc85e-initial_native.json",
+      "sha256": "dd5b8843880dc85ef53f865e504548942afcf5b4bcab58f883df4a713dc451f4"
+    },
+    "data/derived/surface-reference-current-3xvkopcl/native/inputs/subject_walk_scaled_ContactForceSet.xml": {
+      "bundle_path": "data/models/engineering_supported_rest_v1/provenance/sources/659d571d9f731c9e-subject_walk_scaled_ContactForceSet.xml",
+      "sha256": "659d571d9f731c9e119d93371edcd46c7fc265796ef0681670d46bd875b1b54d"
+    },
+    "scripts/build_supine_surface_contact.py": {
+      "bundle_path": "data/models/engineering_supported_rest_v1/provenance/sources/110032169f52b0c9-build_supine_surface_contact.py",
+      "sha256": "110032169f52b0c9b5d29950e2448662dca03cca8067294647f8e10dbe7ad0ae"
+    },
+    "ihm/assembly/supine_contact.py": {
+      "bundle_path": "data/models/engineering_supported_rest_v1/provenance/sources/c7da5d122b10e1cd-supine_contact.py",
+      "sha256": "c7da5d122b10e1cd2b8a2191014de53ea35b5bae1b767c0f8a8ee125054d8fbc"
+    },
+    "data/derived/surface-reference-current-3xvkopcl/native/execution.json": {
+      "bundle_path": "data/models/engineering_supported_rest_v1/provenance/sources/17a7518a7c5457b1-execution.json",
+      "sha256": "17a7518a7c5457b151339acc52e25971672195c7d16adcba6fa9ba322d49c34e"
+    },
+    "data/research/engineered_skin_territories/materialization.json": {
+      "bundle_path": "data/models/engineering_supported_rest_v1/provenance/sources/de669f96f6db5b15-materialization.json",
+      "sha256": "de669f96f6db5b150dd467f149464677e19f22ec2e7be5a77d895d873b3fef1a"
+    },
+    "data/derived/supine-surface-contact-5jqy1juo/supine_surface_foundation.txt": {
+      "bundle_path": "data/models/engineering_supported_rest_v1/surface/supine_surface_foundation.txt",
+      "sha256": "56924ceeac69f317c2e3dde4a8d45b06bacbb24a24b6758217bf2cf0c14c35c8"
+    },
+    "data/derived/supine-surface-contact-5jqy1juo/quadrature.npz": {
+      "bundle_path": "data/models/engineering_supported_rest_v1/surface/quadrature.npz",
+      "sha256": "afced6d803f17e2d0ac74db6981338c87a436bfe5d649d12cd3988d054392d30"
+    },
+    "data/derived/supine-surface-contact-5jqy1juo/manifest.json": {
+      "bundle_path": "data/models/engineering_supported_rest_v1/provenance/original_surface_manifest.json",
+      "sha256": "ce0225d485ad961b8e472b7f17df1e7f041a8103f1a9cd5bf1ac9d8f83354a03"
+    },
+    "data/research/bed_material/hong2022.html": {
+      "bundle_path": "data/models/engineering_supported_rest_v1/bed/hong2022.html",
+      "sha256": "59f9a1e316708e8abf78a2144d9c66df01bb0418f14401a0b6cbf712a807b253"
+    },
+    "data/research/bed_material/hong2022-figure1.jpg": {
+      "bundle_path": "data/models/engineering_supported_rest_v1/bed/hong2022-figure1.jpg",
+      "sha256": "71c3630b2cd251667a4bf29832827ea318a8e7e5f6a7090a95c062e2ddef999e"
+    },
+    "data/research/bed_material/hong2022-compression.csv": {
+      "bundle_path": "data/models/engineering_supported_rest_v1/bed/hong2022-compression.csv",
+      "sha256": "5660998a2a8a59bf0b9ddbde3d89283bbde8fd818d7ec39dead4cb4d95d7f06c"
+    },
+    "data/research/bed_material/manifest.json": {
+      "bundle_path": "data/models/engineering_supported_rest_v1/bed/manifest.json",
+      "sha256": "013d8b840ce9c4614d1752396dd3736da36d80cc3e608b5f68a34933c0d67068"
+    },
+    "data/derived/supine-equilibrium-initial-xfhqpo4e/report.json": {
+      "bundle_path": "data/models/engineering_supported_rest_v1/provenance/sources/31596dc1f6c3030f-report.json",
+      "sha256": "31596dc1f6c3030f1f7daeddecdfeb5041db4a35f07e14377ecb70a6995266db"
+    },
+    "data/derived/supine-equilibrium-initial-xfhqpo4e/static_actual_initialized_coordinates.json": {
+      "bundle_path": "data/models/engineering_supported_rest_v1/provenance/sources/eab088685b8efd45-static_actual_initialized_coordinates.json",
+      "sha256": "eab088685b8efd4558f7136d71580e2c85f170f48372e7c9075de23f5b861af1"
+    },
+    "data/derived/supine-equilibrium-initial-xfhqpo4e/initialized.json": {
+      "bundle_path": "data/models/engineering_supported_rest_v1/provenance/sources/03a85feb0b19f87d-initialized.json",
+      "sha256": "03a85feb0b19f87d67526df41cc9c3c394233d0ad5dcc6fe58f85b73e34b4b55"
+    },
+    "data/derived/supine-equilibrium-initial-xfhqpo4e/advanced_1us.json": {
+      "bundle_path": "data/models/engineering_supported_rest_v1/provenance/sources/e0f423ca5c574117-advanced_1us.json",
+      "sha256": "e0f423ca5c5741171cf9d6e5dae004f65ead60154d70de57426b99b8372cc9be"
+    },
+    "data/derived/supine-lumbar-default-receipt-5zunf4qh/report.json": {
+      "bundle_path": "data/models/engineering_supported_rest_v1/provenance/sources/5bd7af105510fca7-report.json",
+      "sha256": "5bd7af105510fca70669dac06d9c6dc5c438925d85450b57e99de63a4e803500"
+    },
+    "data/derived/supine-tonic-world-6u1wzfk9/report.json": {
+      "bundle_path": "data/models/engineering_supported_rest_v1/provenance/sources/c6fab64f775cea07-report.json",
+      "sha256": "c6fab64f775cea07c071a610f4c3c4814765aa15bf84b2987c0053b2c1ad38c1"
+    },
+    "data/derived/supine-supported-tones-_wh_r3gi/solver.py": {
+      "bundle_path": "data/models/engineering_supported_rest_v1/provenance/sources/94db3f1340569518-solver.py",
+      "sha256": "94db3f1340569518ef7383bf024eddfc6bddc49d3091c9f573efa8c9d48a92fe"
+    },
+    "scripts/promote_engineering_supported_rest.py": {
+      "bundle_path": "data/models/engineering_supported_rest_v1/provenance/sources/cb12c7e27b47b238-promote_engineering_supported_rest.py",
+      "sha256": "cb12c7e27b47b238d21e5e08d3cd11a5b8b7d2dc6ffbc1e0d660002142cd5c86"
+    }
+  },
+  "acceptance": {
+    "static_initializer": "data/models/engineering_supported_rest_v1/provenance/sources/31596dc1f6c3030f-report.json",
+    "static_state": "data/models/engineering_supported_rest_v1/provenance/sources/eab088685b8efd45-static_actual_initialized_coordinates.json",
+    "initialized_state": "data/models/engineering_supported_rest_v1/provenance/sources/03a85feb0b19f87d-initialized.json",
+    "short_forward": "data/models/engineering_supported_rest_v1/provenance/sources/e0f423ca5c574117-advanced_1us.json",
+    "initializer_equivalence": "data/models/engineering_supported_rest_v1/provenance/sources/5bd7af105510fca7-report.json",
+    "coupled_world_1s": "data/models/engineering_supported_rest_v1/provenance/sources/c6fab64f775cea07-report.json",
+    "solver": "data/models/engineering_supported_rest_v1/provenance/sources/94db3f1340569518-solver.py"
+  },
+  "canonical_source_bindings": {
+    "data/derived/canonical/anatomy.json": "874479e434e2637c08a1f5153de88fdaf138d33f55ae91a3bb7b1578ed891d5f",
+    "data/derived/canonical/mechanics.json": "662b53da23a216abbf50dfa7de6d4a89ca5888e9613780f2c0ba008cd6247d05",
+    "data/derived/canonical/geometry/body-bp3d-FJ2810.json.gz": "e724b62e6fc21764a0cf79c1874e96b9852755dc420711360a02d0b7afd93d05"
+  },
+  "explicit_native_source_inputs": {
+    "data/raw/mechanics/opensim-core/OpenSim/Examples/Moco/example3DWalking/subject_walk_scaled_ExpressionBasedCoordinateForceSet.xml": "ff09a63fa9c2036a3692214889c87bee28bea6f51a503233692b288c5b28aba0",
+    "data/raw/mechanics/opensim-core/OpenSim/Examples/Moco/example3DWalking/subject_walk_scaled_FunctionBasedPathSet.xml": "932ac403e4d6d0d10d9a9da551e43d0ded94dd2b99c370f9b25053ee9232f8a5",
+    "data/raw/mechanics/opensim-core/OpenSim/Examples/Moco/example3DWalking/subject_walk_scaled_ContactForceSet.xml": "659d571d9f731c9e119d93371edcd46c7fc265796ef0681670d46bd875b1b54d",
+    "data/raw/mechanics/opensim-core/OpenSim/Examples/Moco/example3DWalking/subject_walk_scaled_ContactGeometrySet.xml": "b64f1f1c7ebc9da5008c14896dc877f16b958505d8c4adbb29f86bdd3f1be47f"
+  },
+  "initial_metabolic_reference": {
+    "M0_w": 258.9440305407705,
+    "W0_w": -4.490403206589873e-05,
+    "H0_w": 258.94407544480254
+  },
+  "mass_ownership": "Single77.6122029kg patient-matched native body; no instance mass override validated",
+  "default_enabled": false,
+  "brain_trained": false,
+  "walking_demonstrated": false,
+  "scope": "Numerical unloaded static equilibrium plus retained1s coupled-cloth measurement; engineering baseline is explicit, not cortical output",
+  "archival_paths": "Historical origin strings inside immutable receipts are archival identifiers; origins maps retained files. Runtime registration/surface sources resolve only within bundle or explicit canonical bindings.",
+  "closure_bytes_excluding_manifest": 8247840
+}

@@ -5,6 +5,7 @@ import gzip,hashlib,json,os,queue,threading,time,uuid
 
 
 from ihm.brain.active_source import resolve_ibm_candidate,resolve_source,ACTIVE_COMMIT
+from ihm.app.surface_assets import SurfaceAssetRegistry,register_body_surface_assets
 
 
 class BodyActor:
@@ -126,18 +127,26 @@ class EmbodiedSessions:
     def __init__(self,root):
         self.root=Path(root);self.lock=threading.Lock();self.actors={};self.creating=False;self.shutting_down=False
         self.creation_done=threading.Condition(self.lock)
+        self.surface_assets=SurfaceAssetRegistry()
     def create(self,data):
-        if not isinstance(data,dict) or set(data)-{'environment','regional_skin','intake_mass','ibm_candidate','environment_selection'}:raise ValueError('Unknown embodied configuration')
+        if not isinstance(data,dict) or set(data)-{'environment','regional_skin','intake_mass','ibm_candidate','environment_selection','controller'}:raise ValueError('Unknown embodied configuration')
+        from ihm.assembly.controller_selection import resolve_controller
+        controller=resolve_controller(data.get('controller'))
+        if controller['kind']!='regional' and 'ibm_candidate' in data:
+            raise ValueError('Implicit checkpoint controller cannot select a regional IBM candidate')
         intake_mass=data.get('intake_mass',False)
         if type(intake_mass) is not bool:raise ValueError('intake_mass must be boolean')
         regional_skin=data.get('regional_skin',False)
         if type(regional_skin) is not bool:raise ValueError('regional_skin must be boolean')
         environment=data.get('environment','supine')
         if environment not in ('free','supine','upright'):raise ValueError('Unknown articulated environment')
+        from ihm.assembly.controller_selection import STANCE_KINDS
+        if controller['kind'] in STANCE_KINDS and (environment!='upright' or intake_mass):
+            raise ValueError('Stance controllers require upright fixed-mass mechanics')
         from ihm.assembly.environment_dynamics import resolve_selection
         environment_selection,environment_options=resolve_selection(self.root,environment,data.get('environment_selection'))
         explicit='ibm_candidate' in data
-        source_pin=resolve_ibm_candidate(self.root,data['ibm_candidate']) if explicit else resolve_source(self.root)
+        source_pin=None if controller['kind'] not in ('regional','engineering_stance') else (resolve_ibm_candidate(self.root,data['ibm_candidate']) if explicit else resolve_source(self.root))
         with self.lock:
             if self.shutting_down:raise RuntimeError('Embodied service is shutting down')
             if self.creating or any(not a.closed for a in self.actors.values()):raise ValueError('One native body at a time while sharing machine resources')
@@ -145,18 +154,26 @@ class EmbodiedSessions:
         try:
             from ihm.assembly.embodied import EmbodiedRuntime
             ident=uuid.uuid4().hex;output=self.root/'data/derived/embodied-sessions'/ident
-            options={'environment':environment,'regional_skin':regional_skin,'intake_mass':intake_mass,'source_pin':source_pin,**({'environment_selection':environment_selection,**environment_options} if environment_selection is not None else {})}
+            options={'controller':controller,'environment':environment,'regional_skin':regional_skin,'intake_mass':intake_mass,'source_pin':source_pin,**({'environment_selection':environment_selection,**environment_options} if environment_selection is not None else {})}
             # The active default is a candidate like any other: re-resolved on the
             # owner thread and disclosed, never an unreported implicit selection.
-            selected=dict(data['ibm_candidate']) if explicit else {'commit':ACTIVE_COMMIT,'manifest_sha256':source_pin.manifest_sha256}
+            selected=None if source_pin is None else (dict(data['ibm_candidate']) if explicit else {'commit':ACTIVE_COMMIT,'manifest_sha256':source_pin.manifest_sha256})
             def factory():
-                if resolve_ibm_candidate(self.root,selected)!=source_pin:
+                if selected is not None and resolve_ibm_candidate(self.root,selected)!=source_pin:
                     raise ValueError('Candidate source pin changed before initialization')
-                return EmbodiedRuntime.from_workspace(self.root,output/'runtime',**options)
+                body=EmbodiedRuntime.from_workspace(self.root,output/'runtime',**options)
+                try:register_body_surface_assets(body,self.surface_assets)
+                except BaseException as error:
+                    error.cleanup_owner=body
+                    raise
+                return body
             actor=BodyActor(factory,output)
-            actor.brain_source_selection={'mode':'immutable_candidate' if explicit else 'active_default',
+            actor.controller_selection=dict(controller)
+            actor.brain_source_selection=({'mode':'implicit_checkpoint','kind':controller['kind']} if source_pin is None else {'mode':'immutable_candidate' if explicit else 'active_default',
                 'commit':selected['commit'],'manifest_sha256':source_pin.manifest_sha256,
-                'package_sha256':source_pin.package_sha256,'neural_source_sha256':source_pin.neural_source_sha256}
+                'package_sha256':source_pin.package_sha256,'neural_source_sha256':source_pin.neural_source_sha256})
+            if controller['kind']=='engineering_stance':
+                actor.brain_source_selection.update(mode='engineered_control',kind='engineering_stance',cortical_motor_output_active=False)
 
             # Timeout must not orphan initialization or free its resource slot.
             with self.lock:
@@ -169,7 +186,10 @@ class EmbodiedSessions:
     @staticmethod
     def _identity(actor):
         value=getattr(actor,'brain_source_selection',None)
-        return {'brain_source_selection':dict(value)} if value is not None else {}
+        result={'brain_source_selection':dict(value)} if value is not None else {}
+        controller=getattr(actor,'controller_selection',None)
+        if controller is not None:result['controller_selection']=dict(controller)
+        return result
     def command(self,ident,action,data=None):
         with self.lock:actor=self.actors.get(ident)
         if action=='close' and data not in ({},None):raise ValueError('Close requires an empty object')

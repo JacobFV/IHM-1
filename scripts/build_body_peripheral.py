@@ -6,6 +6,7 @@ import hashlib
 import json
 import shutil
 import numpy as np
+from enrich_peripheral_routes import enrich
 ROOT=Path(__file__).resolve().parents[1]
 OUT=ROOT/'data/derived/canonical'
 SOURCES={
@@ -91,6 +92,8 @@ def build():
   src=ROOT.parent/'IBM-1'/rel;dst=preserved/('ibm-'+Path(rel).parent.name+'-'+Path(rel).name);shutil.copyfile(src,dst)
   receipts.append({'source_path':str(src),'preserved_path':str(dst.relative_to(ROOT)),'sha256':hashlib.sha256(dst.read_bytes()).hexdigest(),'role':'inspected_reference_not_executed'})
  data={'schema_version':1,'id':'ihm-body-peripheral','frame':anatomy['frame'],'units':{'position':'m','time':'s','activity':'Hz','pressure':'Pa','temperature':'C','activation':'1'},'relays':relays,'nerves':list(nerves.values()),'receptor_patches':patches,'muscle_bindings':bindings,'unsupported_muscles':unsupported,'sources':SOURCES,'source_receipts':receipts,'parameters':{'pressure_gain_hz_pa':.005,'stretch_gain_hz':200.,'temperature_gain_hz_C':8.,'baseline_skin_temperature_C':32.,'max_receptor_rate_hz':200.,'receptor_tau_s':.02,'activation_tau_s':.03,'tactile_velocity_m_s':50.,'warm_velocity_m_s':.5,'cold_velocity_m_s':2.1,'central_afferent_delay_s':.012},'parameter_scope':'Uncalibrated illustrative transfer priors; velocity anchors differ by fiber class. Rate is excess evoked activity above omitted spontaneous baseline.','biological_validation':False,'ibm_reuse_scope':'Existing BodyBrain executes preserved IBM Wilson-Cowan/shunting functions. Peripheral runtime is a new causal time-domain reduction informed by IBM receptor/effector declarations; IBM spectral runtime, full multimodal materialization, uncertainty, inference and learned motor policies are not integrated.','counts':{'nerves':len(nerves),'relays':len(relays),'receptor_patches':len(patches),'muscle_bindings':len(bindings),'unsupported_muscles':len(unsupported)},'limitations':['Schematic centerlines are inferred visualization; do not represent dissected or measured nerves.','Coarse contralateral postcentral routing; modality-specific thalamic nuclei and decussation sites unresolved.','Named muscle bindings are generic anatomical priors; mixed innervation and absent name rules remain unsupported.','No autonomic controller or respiration override; somatic commands only.']}
+ enrich(data,lines,ROOT)
+ relays=data['relays']
  for fn,payload in [('peripheral.json',data),('peripheral_display.json',{'schema_version':1,'frame':anatomy['frame'],'lines':lines,'nodes':relays+patches,'evidence_kind':'schematic_anatomical_prior'})]:
   (OUT/fn).write_text(json.dumps(payload,indent=2,allow_nan=False)+'\n')
  print(json.dumps(data['counts']))

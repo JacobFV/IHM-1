@@ -1,0 +1,14 @@
+{
+  "schema": "ihm.patient-stance98-canonical-source-audit.v1",
+  "base_registration": "data/derived/mechanics/whole_body_lumbar_current/registration.json",
+  "base_model_sha256": "7f6c40224fbc43359d6b2997efeb499c5ffe4d19c786d37b849312efd20d2114",
+  "candidate_model_sha256": "be3baf542b44425c2802095439cabf976eccaad42406564338d20c2deb421d68",
+  "entire_model_semantically_identical_excluding_default_activation": true,
+  "joint_set_exact_xml_identical": true,
+  "body_set_exact_xml_identical": true,
+  "coordinate_defaults_unchanged": true,
+  "anatomical_material_reference_unchanged": true,
+  "runtime_mass_kg": 77.6122029,
+  "model_body_mass_properties_unchanged": true,
+  "pose_applied_separately_via_initial_pose": true
+}

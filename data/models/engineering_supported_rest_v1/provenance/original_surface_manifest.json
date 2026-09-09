@@ -1,0 +1,557 @@
+{
+  "schema": "ihm.supine-skin-foundation.v1",
+  "accepted_support": false,
+  "native_integration": false,
+  "physical_surface_support": {
+    "schema": "ihm.physical-skin-support.v1",
+    "area_m2": 1.7804602548390722,
+    "raw_source_area_m2": 3.502598974493317,
+    "selected_triangle_count": 109183,
+    "source_triangle_count": 203382,
+    "selected_component_id": 0,
+    "source_geometry_sha256": "e724b62e6fc21764a0cf79c1874e96b9852755dc420711360a02d0b7afd93d05",
+    "component_evidence_sha256": "de669f96f6db5b150dd467f149464677e19f22ec2e7be5a77d895d873b3fef1a",
+    "area_basis": "Explicit inferred exterior component; uniform inward layer depth is a separate prior",
+    "clinical_body_surface_area": false,
+    "physical_surface_exclusivity_validated": false,
+    "self_intersections_tested": false,
+    "signed_integral_is_closed_volume": false,
+    "component_evidence_path": "data/research/engineered_skin_territories/materialization.json"
+  },
+  "omitted_unresolved_contact": {
+    "original_quadrature_indices": [
+      15942
+    ],
+    "source_face_indices": [
+      165251
+    ],
+    "projected_area_m2": 2.5e-05,
+    "basis": "Current provenance-bound physical support domain excludes these first ray hits; cells omitted without rerasterizing onto deeper surfaces"
+  },
+  "native_input_path": "data/derived/supine-surface-contact-5jqy1juo/supine_surface_foundation.txt",
+  "native_input_sha256": "56924ceeac69f317c2e3dde4a8d45b06bacbb24a24b6758217bf2cf0c14c35c8",
+  "bodies": [
+    "pelvis",
+    "femur_r",
+    "tibia_r",
+    "patella_r",
+    "talus_r",
+    "calcn_r",
+    "toes_r",
+    "femur_l",
+    "tibia_l",
+    "patella_l",
+    "talus_l",
+    "calcn_l",
+    "toes_l",
+    "torso",
+    "humerus_r",
+    "ulna_r",
+    "radius_r",
+    "hand_r",
+    "humerus_l",
+    "ulna_l",
+    "radius_l",
+    "hand_l"
+  ],
+  "arrays_path": "data/derived/supine-surface-contact-5jqy1juo/quadrature.npz",
+  "arrays_sha256": "afced6d803f17e2d0ac74db6981338c87a436bfe5d649d12cd3988d054392d30",
+  "plane_source_x_m": -0.2692709247321752,
+  "source_files": {
+    "data/derived/canonical/mechanics.json": "662b53da23a216abbf50dfa7de6d4a89ca5888e9613780f2c0ba008cd6247d05",
+    "data/derived/canonical/geometry/body-bp3d-FJ2810.json.gz": "e724b62e6fc21764a0cf79c1874e96b9852755dc420711360a02d0b7afd93d05",
+    "data/derived/surface-reference-current-3xvkopcl/initial_native.json": "dd5b8843880dc85ef53f865e504548942afcf5b4bcab58f883df4a713dc451f4",
+    "data/derived/surface-reference-current-3xvkopcl/native/inputs/subject_walk_scaled_ContactForceSet.xml": "659d571d9f731c9e119d93371edcd46c7fc265796ef0681670d46bd875b1b54d",
+    "scripts/build_supine_surface_contact.py": "110032169f52b0c9b5d29950e2448662dca03cca8067294647f8e10dbe7ad0ae",
+    "ihm/assembly/supine_contact.py": "c7da5d122b10e1cd2b8a2191014de53ea35b5bae1b767c0f8a8ee125054d8fbc",
+    "data/derived/surface-reference-current-3xvkopcl/native/execution.json": "17a7518a7c5457b151339acc52e25971672195c7d16adcba6fa9ba322d49c34e",
+    "data/research/engineered_skin_territories/materialization.json": "de669f96f6db5b150dd467f149464677e19f22ec2e7be5a77d895d873b3fef1a"
+  },
+  "registration": {
+    "basis": "Unweighted proper-rigid least-squares fit of 22 approximate source COM/canonical bone-envelope center correspondences; no scale fit",
+    "rms_landmark_residual_m": 0.12335779324006105,
+    "maximum_landmark_residual_m": 0.35275899581096726,
+    "source_to_canonical_ground": [
+      [
+        -0.004913465456778344,
+        0.0033594181254037363,
+        -0.9999822859266382,
+        -0.0032260215464941463
+      ],
+      [
+        -0.07816250792137291,
+        0.9969336413901052,
+        0.003733231858140519,
+        -0.8672701240421665
+      ],
+      [
+        0.9969285231212157,
+        0.07817946645075058,
+        -0.004635818463832799,
+        0.016573669227020256
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "landmark_residuals_m": {
+      "pelvis": [
+        -0.00034238068510585636,
+        -0.00285684913891765,
+        0.053644801371002554
+      ],
+      "femur_r": [
+        0.006156717462539027,
+        -0.00712593781444959,
+        0.0240357647316947
+      ],
+      "tibia_r": [
+        -0.01382497429275803,
+        -0.0004134185439426119,
+        -0.00605588713584557
+      ],
+      "patella_r": [
+        -0.004350039220032506,
+        -0.001532308310617958,
+        0.024604006422117346
+      ],
+      "talus_r": [
+        -0.01711736916797514,
+        -0.07916034147618034,
+        -0.033133754336668736
+      ],
+      "calcn_r": [
+        -0.024637572693044008,
+        -0.07866670641924978,
+        0.022827680273392915
+      ],
+      "toes_r": [
+        0.04037954916960455,
+        -0.11297610898840027,
+        0.030286579630233824
+      ],
+      "femur_l": [
+        -0.008843888801664715,
+        -0.0076963284446661395,
+        0.024792493924220935
+      ],
+      "tibia_l": [
+        0.008454738196682701,
+        -0.000978080548332927,
+        -0.005077178064523381
+      ],
+      "patella_l": [
+        -9.754548423628051e-05,
+        -0.0021451989408345917,
+        0.025412235614643577
+      ],
+      "talus_l": [
+        0.009914097315640469,
+        -0.07970192849548208,
+        -0.032444445246829934
+      ],
+      "calcn_l": [
+        0.016839423400642373,
+        -0.07944405888193584,
+        0.023597994883661724
+      ],
+      "toes_l": [
+        -0.01443393216050215,
+        -0.11364812483057629,
+        0.03127175608992948
+      ],
+      "torso": [
+        0.0020058239083705558,
+        0.09277981197659774,
+        -0.030028105382463213
+      ],
+      "humerus_r": [
+        -0.007447917780476404,
+        -0.014934105332674474,
+        0.02654302081152018
+      ],
+      "ulna_r": [
+        0.03305428509007191,
+        -0.03722145957631645,
+        0.010815178032980176
+      ],
+      "radius_r": [
+        0.032225711081322966,
+        -0.041165063404137836,
+        -0.00736488753593181
+      ],
+      "hand_r": [
+        -0.03316089144415696,
+        0.33330490792645184,
+        -0.11066662891915668
+      ],
+      "humerus_l": [
+        0.00919908382088358,
+        -0.016413199555341373,
+        0.028372525742405928
+      ],
+      "ulna_l": [
+        -0.03332392547414054,
+        -0.038562868642545545,
+        0.012796911999772509
+      ],
+      "radius_l": [
+        -0.032341648284779645,
+        -0.04293157763543182,
+        -0.005705446674532946
+      ],
+      "hand_l": [
+        0.031692656043114,
+        0.3314889450769811,
+        -0.10852461623162357
+      ]
+    }
+  },
+  "attachment_basis": "Nearest named bone envelope per ray/triangle-linked point; uncertain anatomical ownership, no added inertia",
+  "posterior_selection": "Minimum source-X intersection per 5 mm YZ raster; excluded physical-domain first hits omitted without deeper-hit substitution; full source face indices retained",
+  "points": 21382,
+  "source_faces": 203382,
+  "source_skin_surface_area_m2": 3.502598974493317,
+  "projected_area_m2": 0.5345500000000001,
+  "sampled_minimum_gap_m": 1.76472077519918e-05,
+  "spacing_m": 0.005,
+  "per_body": [
+    {
+      "body": "pelvis",
+      "points": 3007,
+      "projected_area_m2": 0.07517500000000002,
+      "minimum_gap_m": 0.038999989904094756
+    },
+    {
+      "body": "femur_r",
+      "points": 2027,
+      "projected_area_m2": 0.05067500000000001,
+      "minimum_gap_m": 0.08895743439847462
+    },
+    {
+      "body": "tibia_r",
+      "points": 1264,
+      "projected_area_m2": 0.0316,
+      "minimum_gap_m": 0.11290205070555462
+    },
+    {
+      "body": "talus_r",
+      "points": 27,
+      "projected_area_m2": 0.0006749999999999999,
+      "minimum_gap_m": 0.16297889001402374
+    },
+    {
+      "body": "calcn_r",
+      "points": 232,
+      "projected_area_m2": 0.005800000000000001,
+      "minimum_gap_m": 0.15449126359746412
+    },
+    {
+      "body": "toes_r",
+      "points": 69,
+      "projected_area_m2": 0.0017250000000000006,
+      "minimum_gap_m": 0.2193080061604983
+    },
+    {
+      "body": "femur_l",
+      "points": 2047,
+      "projected_area_m2": 0.05117500000000001,
+      "minimum_gap_m": 0.0880983563294245
+    },
+    {
+      "body": "tibia_l",
+      "points": 1268,
+      "projected_area_m2": 0.031700000000000006,
+      "minimum_gap_m": 0.11201917461349845
+    },
+    {
+      "body": "talus_l",
+      "points": 25,
+      "projected_area_m2": 0.000625,
+      "minimum_gap_m": 0.16291134679513808
+    },
+    {
+      "body": "calcn_l",
+      "points": 235,
+      "projected_area_m2": 0.005875000000000002,
+      "minimum_gap_m": 0.1538320801756524
+    },
+    {
+      "body": "toes_l",
+      "points": 74,
+      "projected_area_m2": 0.0018500000000000005,
+      "minimum_gap_m": 0.21878736583083122
+    },
+    {
+      "body": "torso",
+      "points": 6946,
+      "projected_area_m2": 0.17365000000000008,
+      "minimum_gap_m": 1.76472077519918e-05
+    },
+    {
+      "body": "humerus_r",
+      "points": 728,
+      "projected_area_m2": 0.018200000000000008,
+      "minimum_gap_m": 0.0433980541158836
+    },
+    {
+      "body": "ulna_r",
+      "points": 629,
+      "projected_area_m2": 0.015725000000000003,
+      "minimum_gap_m": 0.07621416601727349
+    },
+    {
+      "body": "radius_r",
+      "points": 233,
+      "projected_area_m2": 0.005825000000000002,
+      "minimum_gap_m": 0.12004087549841985
+    },
+    {
+      "body": "hand_r",
+      "points": 479,
+      "projected_area_m2": 0.011975000000000003,
+      "minimum_gap_m": 0.18321892846129506
+    },
+    {
+      "body": "humerus_l",
+      "points": 750,
+      "projected_area_m2": 0.018750000000000006,
+      "minimum_gap_m": 0.04237344903280493
+    },
+    {
+      "body": "ulna_l",
+      "points": 644,
+      "projected_area_m2": 0.016100000000000003,
+      "minimum_gap_m": 0.07458607526418262
+    },
+    {
+      "body": "radius_l",
+      "points": 220,
+      "projected_area_m2": 0.005500000000000001,
+      "minimum_gap_m": 0.11804226889742142
+    },
+    {
+      "body": "hand_l",
+      "points": 478,
+      "projected_area_m2": 0.011950000000000002,
+      "minimum_gap_m": 0.1812564706890587
+    }
+  ],
+  "material": {
+    "total_layer_thickness_m": 0.0066,
+    "shear_modulus_pa": 1034.4827586206898,
+    "lame_lambda_pa": 9310.34482758621,
+    "minimum_thickness_ratio": 0.5,
+    "dissipation_s_m": 2.0,
+    "dynamic_friction": 0.8,
+    "viscous_friction": 0.5,
+    "transition_velocity_m_s": 0.2
+  },
+  "layers": [
+    {
+      "id": "body-skin-epidermis",
+      "thickness_m": 0.0001,
+      "thickness_basis": {
+        "method": "explicit_shell_thickness",
+        "prior_source": "explicit engineering modeling assumption; not a measured or fitted thickness",
+        "shell": {
+          "thickness_m": 0.0001,
+          "prior_range_m": [
+            5e-05,
+            0.0002
+          ],
+          "depth_interval_m": [
+            0.0,
+            0.0001
+          ],
+          "depth_direction": "inward along surface normal; integration coordinate only",
+          "geometry_materialized": false,
+          "prior_source": "explicit engineering modeling assumption; not a measured or fitted thickness"
+        },
+        "physical_surface_support": {
+          "schema": "ihm.physical-skin-support.v1",
+          "area_m2": 1.7804602548390722,
+          "raw_source_area_m2": 3.502598974493317,
+          "selected_triangle_count": 109183,
+          "source_triangle_count": 203382,
+          "selected_component_id": 0,
+          "source_geometry_sha256": "e724b62e6fc21764a0cf79c1874e96b9852755dc420711360a02d0b7afd93d05",
+          "component_evidence_sha256": "de669f96f6db5b150dd467f149464677e19f22ec2e7be5a77d895d873b3fef1a",
+          "area_basis": "Explicit inferred exterior component; uniform inward layer depth is a separate prior",
+          "clinical_body_surface_area": false,
+          "physical_surface_exclusivity_validated": false,
+          "self_intersections_tested": false,
+          "signed_integral_is_closed_volume": false,
+          "component_evidence_path": "data/research/engineered_skin_territories/materialization.json"
+        }
+      },
+      "young_modulus": {
+        "value": 3000.0,
+        "unit": "Pa",
+        "prior_range": [
+          500.0,
+          30000.0
+        ],
+        "basis": "source_informed_prior",
+        "dependency_group": "material-skin_layer",
+        "sources": [
+          "organs"
+        ],
+        "confidence_percent": null
+      },
+      "poisson_ratio": {
+        "value": 0.45,
+        "unit": "1",
+        "prior_range": [
+          0.3,
+          0.49
+        ],
+        "basis": "assumed_prior",
+        "dependency_group": "material-skin_layer",
+        "sources": [],
+        "confidence_percent": null
+      }
+    },
+    {
+      "id": "body-skin-dermis",
+      "thickness_m": 0.0015,
+      "thickness_basis": {
+        "method": "explicit_shell_thickness",
+        "prior_source": "explicit engineering modeling assumption; not a measured or fitted thickness",
+        "shell": {
+          "thickness_m": 0.0015,
+          "prior_range_m": [
+            0.0005,
+            0.003
+          ],
+          "depth_interval_m": [
+            0.0001,
+            0.0016
+          ],
+          "depth_direction": "inward along surface normal; integration coordinate only",
+          "geometry_materialized": false,
+          "prior_source": "explicit engineering modeling assumption; not a measured or fitted thickness"
+        },
+        "physical_surface_support": {
+          "schema": "ihm.physical-skin-support.v1",
+          "area_m2": 1.7804602548390722,
+          "raw_source_area_m2": 3.502598974493317,
+          "selected_triangle_count": 109183,
+          "source_triangle_count": 203382,
+          "selected_component_id": 0,
+          "source_geometry_sha256": "e724b62e6fc21764a0cf79c1874e96b9852755dc420711360a02d0b7afd93d05",
+          "component_evidence_sha256": "de669f96f6db5b150dd467f149464677e19f22ec2e7be5a77d895d873b3fef1a",
+          "area_basis": "Explicit inferred exterior component; uniform inward layer depth is a separate prior",
+          "clinical_body_surface_area": false,
+          "physical_surface_exclusivity_validated": false,
+          "self_intersections_tested": false,
+          "signed_integral_is_closed_volume": false,
+          "component_evidence_path": "data/research/engineered_skin_territories/materialization.json"
+        }
+      },
+      "young_modulus": {
+        "value": 3000.0,
+        "unit": "Pa",
+        "prior_range": [
+          500.0,
+          30000.0
+        ],
+        "basis": "source_informed_prior",
+        "dependency_group": "material-skin_layer",
+        "sources": [
+          "organs"
+        ],
+        "confidence_percent": null
+      },
+      "poisson_ratio": {
+        "value": 0.45,
+        "unit": "1",
+        "prior_range": [
+          0.3,
+          0.49
+        ],
+        "basis": "assumed_prior",
+        "dependency_group": "material-skin_layer",
+        "sources": [],
+        "confidence_percent": null
+      }
+    },
+    {
+      "id": "body-skin-hypodermis",
+      "thickness_m": 0.005,
+      "thickness_basis": {
+        "method": "explicit_shell_thickness",
+        "prior_source": "explicit engineering modeling assumption; not a measured or fitted thickness",
+        "shell": {
+          "thickness_m": 0.005,
+          "prior_range_m": [
+            0.001,
+            0.02
+          ],
+          "depth_interval_m": [
+            0.0016,
+            0.0066
+          ],
+          "depth_direction": "inward along surface normal; integration coordinate only",
+          "geometry_materialized": false,
+          "prior_source": "explicit engineering modeling assumption; not a measured or fitted thickness"
+        },
+        "physical_surface_support": {
+          "schema": "ihm.physical-skin-support.v1",
+          "area_m2": 1.7804602548390722,
+          "raw_source_area_m2": 3.502598974493317,
+          "selected_triangle_count": 109183,
+          "source_triangle_count": 203382,
+          "selected_component_id": 0,
+          "source_geometry_sha256": "e724b62e6fc21764a0cf79c1874e96b9852755dc420711360a02d0b7afd93d05",
+          "component_evidence_sha256": "de669f96f6db5b150dd467f149464677e19f22ec2e7be5a77d895d873b3fef1a",
+          "area_basis": "Explicit inferred exterior component; uniform inward layer depth is a separate prior",
+          "clinical_body_surface_area": false,
+          "physical_surface_exclusivity_validated": false,
+          "self_intersections_tested": false,
+          "signed_integral_is_closed_volume": false,
+          "component_evidence_path": "data/research/engineered_skin_territories/materialization.json"
+        }
+      },
+      "young_modulus": {
+        "value": 3000.0,
+        "unit": "Pa",
+        "prior_range": [
+          500.0,
+          30000.0
+        ],
+        "basis": "source_informed_prior",
+        "dependency_group": "material-skin_layer",
+        "sources": [
+          "organs"
+        ],
+        "confidence_percent": null
+      },
+      "poisson_ratio": {
+        "value": 0.45,
+        "unit": "1",
+        "prior_range": [
+          0.3,
+          0.49
+        ],
+        "basis": "assumed_prior",
+        "dependency_group": "material-skin_layer",
+        "sources": [],
+        "confidence_percent": null
+      }
+    }
+  ],
+  "material_scope": "Retained generic skin priors; no patient or mattress calibration; confined neo-Hookean columns in series",
+  "compression_domain": "Thickness ratio >=0.5 is an explicit engineering validity ceiling, not empirically validated tissue strain",
+  "limits": [
+    "Reference posterior envelope only; large rotations exposing unsampled surfaces require rebuilt quadrature",
+    "5 mm reference projected-area quadrature; boundary-cell area and between-ray extrema error unresolved",
+    "Global COM-to-bone-envelope registration is approximate; contact geometry is not registration validation",
+    "Stationary rigid plane; local skin-column compression, not a calibrated deforming mattress",
+    "Alternative contact owner must replace old spheres, never add them"
+  ],
+  "wall_s": 3.913770728977397
+}

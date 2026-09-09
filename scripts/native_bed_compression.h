@@ -30,8 +30,31 @@ public:
         const auto skin_pressure=[&](double d){const double stretch=1-d/h;return -mu*(stretch-1/stretch)-lambda*std::log(stretch)/stretch;};
         const auto residual=[&](double d){return skin_pressure(d)-stress((approach-d)/thickness);};
         if(residual(low)>1e-7||residual(high)<-1e-7)throw std::runtime_error("equal-pressure skin/bed solution exceeds retained domains");
-        for(int i=0;i<50;i++){const double middle=.5*(low+high);if(residual(middle)>0)high=middle;else low=middle;}
-        result.skin_indentation=.5*(low+high);result.bed_indentation=approach-result.skin_indentation;
+        // Safeguarded Newton solves the unchanged monotone pressure equation.
+        // Retain the original bracket/bisection for nonconvergence and endpoints.
+        const double original_low=low,original_high=high;
+        double indentation=.5*(low+high);bool converged=false;
+        for(int iteration=0;iteration<50;iteration++){
+            const double value=residual(indentation);
+            if(std::abs(value)<=1e-10){converged=true;break;}
+            if(value>0)high=indentation;else low=indentation;
+            const double stretch=1-indentation/h;
+            const int i=interval((approach-indentation)/thickness);
+            const double derivative=(mu*(1+1/(stretch*stretch))+
+                lambda*(1-std::log(stretch))/(stretch*stretch))/h+
+                (pressure[i+1]-pressure[i])/(thickness*(strain[i+1]-strain[i]));
+            const double proposed=indentation-value/derivative;
+            const double next=std::isfinite(proposed)&&proposed>low&&proposed<high?
+                proposed:.5*(low+high);
+            if(next==indentation)break;
+            indentation=next;
+        }
+        if(!converged){
+            low=original_low;high=original_high;
+            for(int i=0;i<50;i++){const double middle=.5*(low+high);if(residual(middle)>0)high=middle;else low=middle;}
+            indentation=.5*(low+high);
+        }
+        result.skin_indentation=indentation;result.bed_indentation=approach-result.skin_indentation;
         result.pressure=skin_pressure(result.skin_indentation);const double stretch=1-result.skin_indentation/h,log=std::log(stretch);
         result.skin_energy=h*(.5*mu*(stretch*stretch-1)-mu*log+.5*lambda*log*log);
         result.bed_energy=energy(result.bed_indentation/thickness);return result;

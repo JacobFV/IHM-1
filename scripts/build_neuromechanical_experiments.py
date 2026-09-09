@@ -23,7 +23,9 @@ def subdomain(root):
         if sha(Path(root)/source_path)!=digest:raise ValueError('Canonical mechanics source changed: '+source_path)
     peripheral=json.loads((Path(root)/'data/derived/canonical/peripheral.json').read_text())
     muscle=deepcopy(next(m for m in source['muscles'] if m.get('source_name')=='tibant_r'))
-    nerve=next(m for m in peripheral['muscle_bindings'] if m['muscle_id']==muscle['id'])['nerve_id']
+    binding=next(m for m in peripheral['muscle_bindings'] if m['muscle_id']==muscle['id'])
+    nerve=binding['nerve_id']
+    muscle['neural_conduction']={'delays_s':binding['delays_s']}
     endpoint=muscle['anchors'][-1]['entity_id']
     support=deepcopy(next(link for link in source['links'] if link['kind']=='inferred_skeletal_support' and endpoint in (link['a'],link['b'])))
     ids={a['entity_id'] for a in muscle['anchors']}|{support['a'],support['b'],muscle['canonical_entity_id']}
@@ -41,18 +43,10 @@ def observe(mechanics,muscle):
         muscle_forces_n={muscle['id']:0.})
 
 
-# The canonical mass allocation is a uniform partition of one declared body mass over the
-# proxy volumes, so admitting new structures to that partition lowers every existing mass.
-# The display promotion took this subdomain's masses to 0.567 of what they were and its
-# natural frequency to about 1.33 times, and the two-times-refined path error below went
-# from 0.95 mm to 2.06 mm, past its 1 mm bound. Halving both steps here recovers only 9% of
-# that (2.06 mm to 1.88 mm), so it is not a mechanics-substep convergence artifact: the
-# error grows monotonically over the 0.4 s trial, to about 4.7% of the 40 mm path
-# excursion, which is accumulated phase drift in the delayed reflex loop rather than
-# integration error. The steps are therefore left where they were and the bound is left
-# where it is; the check is failing for a real reason and is meant to say so.
+# Keep the 1 mm time-refinement bound fixed while route-derived neural timing
+# changes. Delay causality is checked against the actual Ia/alpha loop below.
 def run_trial(payload,muscle,nerve,fixed,endpoint,direction,*,dt=.00005,duration=.4,mode='intact',resume_test=False):
-    params=ReflexParameters(loop_delay_s=.06 if mode=='delayed' else .02)
+    params=ReflexParameters.from_binding(muscle['neural_conduction'],extra_delay_s=.04 if mode=='delayed' else 0.)
     mechanics=BodyMechanics.from_dict(deepcopy(payload))
     controller=BodyReflex(muscle,{e['id']:e['centroid_m'] for e in payload['entities']},params,nerve)
     mechanics.max_substep=dt
@@ -127,7 +121,7 @@ def run_suite(root,output_dir):
         checks[mode+'_matched_before_intervention']=all(a==b for a,b in zip(trials['intact']['frames'],trials[mode]['frames']) if a['time_s']<=.1)
     changes=[a['time_s'] for a,b in zip(trials['intact']['frames'],trials['no_load']['frames']) if abs(a['activation']-b['activation'])>1e-10]
     activation_onset=changes[0] if changes else None
-    checks['load_to_motor_delay_respected']=activation_onset is not None and activation_onset>=.12-1e-10
+    checks['load_to_motor_delay_respected']=activation_onset is not None and activation_onset>=.1+trials['intact']['parameters']['loop_delay_s']-1e-10
     checks['external_load_changes_motor_activation']=difference('intact','no_load','activation')>1e-4
     checks['nerve_release_restores_motor']=any(f['activation']>.05 for f in trials['nerve_release']['frames'] if f['time_s']>.3)
     checks['external_load_changes_sensory']=difference('intact','no_load','normalized_fiber_length')>1e-4
@@ -145,7 +139,7 @@ def run_suite(root,output_dir):
         limitations=['TA fiber length is a reference-calibrated stiff-tendon path proxy, not native CE.',
             'Published feedback coefficients transferred to canonical muscle and inferred support; not human stretch-reflex calibration.',
             'Three rigid bone entities and the retained TA tissue carrier, with fixed proximal supports; free calcaneus translation is not articulated ankle dorsiflexion.',
-            'Spinal reflex primitive with lumped delay; no identified cortical recruitment law or IBM motor circuit.',
+            'Spinal Ia/alpha route delays plus a 1 ms synaptic prior; no gamma controller, identified cortical recruitment law or IBM motor circuit.',
             'Mechanical active/external work is recorded; metabolic cost or BioGears exercise intensity is not inferred from mechanical work.'])
     (out/'report.json').write_text(json.dumps(report,indent=2,allow_nan=False)+'\n')
     return report

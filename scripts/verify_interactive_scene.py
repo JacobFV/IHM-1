@@ -103,6 +103,15 @@ def light_verification():
 
 def main():
     ball=Sphere('test',[0.,1.,0.],radius=.05,mass=.4)
+    # A 0.95 m free drop rebounds to e^2 times its initial clearance.
+    bounce=Sphere('bounce',[0.,1.,0.],radius=.05,mass=.4)
+    peak=0.;hit=False
+    for _ in range(500):
+        previous=bounce.velocity[1]
+        bounce.step(.002,np.zeros(3),bounce.position.copy(),np.array([0.,-9.81,0.]),axis=1,plane=0.)
+        if previous<0 and bounce.velocity[1]>0:hit=True
+        if hit and bounce.velocity[1]>0:peak=max(peak,bounce.position[1]-.05)
+    assert hit and abs(peak/.95-.75**2)<1e-4
     initial=ball.kinetic()+ball.mass*9.81*ball.position[1]
     for _ in range(400):ball.step(.002,np.zeros(3),ball.position.copy(),np.array([0.,-9.81,0.]),axis=1,plane=0.)
     residual=ball.kinetic()+ball.mass*9.81*ball.position[1]-initial+ball.contact_loss-ball.projection_work

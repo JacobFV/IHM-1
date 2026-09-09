@@ -1,0 +1,3047 @@
+{
+  "schema": "ihm.native-resting-stance98-static.v1",
+  "coordinates": {
+    "pelvis_tilt": -0.10565542479758394,
+    "pelvis_ty": 1.019200239720971,
+    "pelvis_list": -7.917503418252678e-05,
+    "ankle_angle_r": 0.10565542479758394,
+    "hip_adduction_r": 7.917503418252678e-05,
+    "arm_flex_r": -0.0623553274914904,
+    "arm_add_r": -0.05280847646008724,
+    "arm_rot_r": 0.08177076975766742,
+    "elbow_flex_r": 0.6499626487349837,
+    "pro_sup_r": 0.16427480511465678,
+    "mtp_angle_r": 0.10564527051996746,
+    "ankle_angle_l": 0.10565542479758394,
+    "hip_adduction_l": -7.917503418252678e-05,
+    "arm_flex_l": -0.06235842509743812,
+    "arm_add_l": -0.052868490823617054,
+    "arm_rot_l": 0.08169364927292504,
+    "elbow_flex_l": 0.6499524729186156,
+    "pro_sup_l": 0.1642646730194964,
+    "mtp_angle_l": 0.10578916028638667
+  },
+  "activations": {
+    "addbrev_r": 0.05773338906556982,
+    "addlong_r": 0.09874296849129345,
+    "addmagDist_r": 0.013842333468929472,
+    "addmagIsch_r": 0.01270873288760396,
+    "addmagMid_r": 0.01930269922220738,
+    "addmagProx_r": 0.013987756015384833,
+    "bflh_r": 0.010278662581839602,
+    "bfsh_r": 0.03546827311881922,
+    "edl_r": 0.013499035796759741,
+    "ehl_r": 0.011841668628724189,
+    "fdl_r": 0.010194258273178016,
+    "fhl_r": 0.01024640498355,
+    "gaslat_r": 0.07555839889776647,
+    "gasmed_r": 0.06051113391689499,
+    "glmax1_r": 0.010285828708099068,
+    "glmax2_r": 0.010293082600472481,
+    "glmax3_r": 0.012443156324516425,
+    "glmed1_r": 0.029099870466752692,
+    "glmed2_r": 0.010282187720130004,
+    "glmed3_r": 0.010277188623980964,
+    "glmin1_r": 0.0397161825878307,
+    "glmin2_r": 0.010187903350636832,
+    "glmin3_r": 0.010245820026752216,
+    "grac_r": 0.024210486792221143,
+    "iliacus_r": 0.10712676514187223,
+    "perbrev_r": 0.010203906025616865,
+    "perlong_r": 0.010236499052745896,
+    "piri_r": 0.01025082001490786,
+    "psoas_r": 0.06352172228959403,
+    "recfem_r": 0.015401234125169761,
+    "sart_r": 0.01981033327013259,
+    "semimem_r": 0.07749670228087939,
+    "semiten_r": 0.034483538578243746,
+    "soleus_r": 0.010361182041904836,
+    "tfl_r": 0.015928213446199293,
+    "tibant_r": 0.018515772385320983,
+    "tibpost_r": 0.01025143768531973,
+    "vasint_r": 0.014949614896043437,
+    "vaslat_r": 0.022992751712265697,
+    "vasmed_r": 0.016829557286297283,
+    "addbrev_l": 0.053116838672613284,
+    "addlong_l": 0.09483403394976843,
+    "addmagDist_l": 0.01378045161493498,
+    "addmagIsch_l": 0.01265516793504806,
+    "addmagMid_l": 0.01590980382578287,
+    "addmagProx_l": 0.017225906884913624,
+    "bflh_l": 0.010213348481600385,
+    "bfsh_l": 0.0368957068864096,
+    "edl_l": 0.014125463597173012,
+    "ehl_l": 0.012170782923101597,
+    "fdl_l": 0.010195511931325268,
+    "fhl_l": 0.010245195355571555,
+    "gaslat_l": 0.07700590814396398,
+    "gasmed_l": 0.060198668255667366,
+    "glmax1_l": 0.010278376687173633,
+    "glmax2_l": 0.010294057391129182,
+    "glmax3_l": 0.011997636444859752,
+    "glmed1_l": 0.023547758263096494,
+    "glmed2_l": 0.010271527640877697,
+    "glmed3_l": 0.01025484376451256,
+    "glmin1_l": 0.034417022680845025,
+    "glmin2_l": 0.010187261612852133,
+    "glmin3_l": 0.010227496580690264,
+    "grac_l": 0.025577430641140573,
+    "iliacus_l": 0.09883520470842588,
+    "perbrev_l": 0.010204946509406967,
+    "perlong_l": 0.010235940866731425,
+    "piri_l": 0.010219528199201992,
+    "psoas_l": 0.06577978118946297,
+    "recfem_l": 0.015166308657197595,
+    "sart_l": 0.02373670499098199,
+    "semimem_l": 0.07541859703944764,
+    "semiten_l": 0.030904304638693193,
+    "soleus_l": 0.010356078792733784,
+    "tfl_l": 0.017042839912560528,
+    "tibant_l": 0.020046679975759065,
+    "tibpost_l": 0.010249844146743237,
+    "vasint_l": 0.014678138723613161,
+    "vaslat_l": 0.02238408626413983,
+    "vasmed_l": 0.01644131816300451,
+    "arm26_TRIlong_r": 0.010145192646428543,
+    "arm26_TRIlat_r": 0.010152052289783617,
+    "arm26_TRImed_r": 0.010151549648973086,
+    "arm26_BIClong_r": 0.01013390368116299,
+    "arm26_BICshort_r": 0.010135583584595773,
+    "arm26_BRA_r": 0.010129825825570732,
+    "arm26_TRIlong_l": 0.010144727841696687,
+    "arm26_TRIlat_l": 0.010151879671198745,
+    "arm26_TRImed_l": 0.010151384383669223,
+    "arm26_BIClong_l": 0.010134255593482877,
+    "arm26_BICshort_l": 0.010135448672215268,
+    "arm26_BRA_l": 0.01013006835049187,
+    "gait2392_ercspn_r": 0.0684759589372682,
+    "gait2392_intobl_r": 0.041802038965877863,
+    "gait2392_extobl_r": 0.04061741365574449,
+    "gait2392_ercspn_l": 0.0684376632820555,
+    "gait2392_intobl_l": 0.04177236082597746,
+    "gait2392_extobl_l": 0.04059513480740019
+  },
+  "all_independent_residual": {
+    "pelvis_tilt": -0.0006395798989160539,
+    "pelvis_list": -4.884612993817153e-07,
+    "pelvis_rotation": -1.162723954018861e-09,
+    "pelvis_tx": 2.842170943040401e-14,
+    "pelvis_ty": -0.020560949283094487,
+    "pelvis_tz": -3.552713678800501e-15,
+    "hip_flexion_r": -0.00019913332389887017,
+    "hip_adduction_r": 0.00021608575910825323,
+    "hip_rotation_r": 6.67698814289519e-05,
+    "hip_flexion_l": -0.00022600312850773463,
+    "hip_adduction_l": 0.00022141892609361946,
+    "hip_rotation_l": 6.05397398416585e-05,
+    "lumbar_extension": -0.0014211673623771893,
+    "lumbar_bending": 1.3613669309028189e-06,
+    "lumbar_rotation": 2.3323137717256906e-07,
+    "knee_angle_r": 0.0008049853251748118,
+    "knee_angle_l": 0.0007832729709420505,
+    "arm_flex_r": -5.987190621753458e-10,
+    "arm_add_r": -2.2172808034071068e-10,
+    "arm_rot_r": 4.3300280028191196e-11,
+    "arm_flex_l": -5.987598316464782e-10,
+    "arm_add_l": -2.2124979626170216e-10,
+    "arm_rot_l": 4.329550606918531e-11,
+    "ankle_angle_r": -0.002421486845232579,
+    "ankle_angle_l": -0.0024158864018275494,
+    "elbow_flex_r": -2.2031920732246135e-10,
+    "elbow_flex_l": -2.2031754198792441e-10,
+    "pro_sup_r": -2.0693282991504232e-11,
+    "pro_sup_l": -2.0711561204587064e-11,
+    "mtp_angle_r": -0.00047120616965301565,
+    "mtp_angle_l": -0.0004714889347630091
+  },
+  "all_independent_residual_norm_mixed_units": 0.02094712274977638,
+  "all_coordinate_acceleration": {
+    "pelvis_tilt": -0.002055910230330598,
+    "pelvis_list": 6.741783029939493e-05,
+    "pelvis_rotation": 0.00014529696128267756,
+    "pelvis_tx": -5.614619868495998e-05,
+    "pelvis_ty": -0.00030094447908971856,
+    "pelvis_tz": -2.27333529316443e-05,
+    "hip_flexion_r": 0.00570224254754465,
+    "hip_adduction_r": 0.0004649968661365348,
+    "hip_rotation_r": 0.0042970711635748286,
+    "knee_angle_r": 0.01525288053223556,
+    "knee_angle_r_beta": 0.015252880532136567,
+    "ankle_angle_r": 0.18790632889056574,
+    "hip_flexion_l": 0.005809381886519744,
+    "hip_adduction_l": 0.0007285636190647873,
+    "hip_rotation_l": 0.004543394464589376,
+    "knee_angle_l": 0.015147593006647463,
+    "knee_angle_l_beta": 0.015147593006646533,
+    "ankle_angle_l": 0.18480432947373218,
+    "lumbar_extension": 0.00273275645212906,
+    "lumbar_bending": -6.829901666047778e-05,
+    "lumbar_rotation": -0.00014580545020914608,
+    "arm_flex_r": -0.0003899321531609635,
+    "arm_add_r": -1.6722899660603112e-05,
+    "arm_rot_r": 0.00013280372189505458,
+    "elbow_flex_r": -0.00012455590941295406,
+    "pro_sup_r": -0.00016715307751743877,
+    "arm_flex_l": -0.00039095418039459005,
+    "arm_add_l": -1.8388136127133814e-05,
+    "arm_rot_l": 0.0001313435925206491,
+    "elbow_flex_l": -0.00012226773726259132,
+    "pro_sup_l": -0.00016704852658555602,
+    "mtp_angle_r": 0.11833302830681944,
+    "mtp_angle_l": 0.11837838770302776
+  },
+  "selected_residual_norm_nm": 0.003895627846265359,
+  "history": [
+    {
+      "outer": 0,
+      "iteration": 0,
+      "before_nm": 0.007409436330426082,
+      "after_nm": 0.0008714403129166782
+    },
+    {
+      "outer": 1,
+      "iteration": 0,
+      "before_nm": 0.002380081047063808,
+      "after_nm": 0.004983868454414326
+    },
+    {
+      "outer": 1,
+      "iteration": 1,
+      "before_nm": 0.002380081047063808,
+      "after_nm": 0.004983868456556995
+    },
+    {
+      "outer": 1,
+      "iteration": 2,
+      "before_nm": 0.002380081047063808,
+      "after_nm": 0.004983868456653067
+    }
+  ],
+  "evaluations": [
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0000.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0001.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0002.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0003.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0004.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0005.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0006.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0007.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0008.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0009.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0010.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0011.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0012.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0013.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0014.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0015.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0016.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0017.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0018.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0019.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0020.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0021.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0022.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0023.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0024.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0025.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0026.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0027.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0028.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0029.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0030.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0031.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0032.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0033.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0034.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0035.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0036.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0037.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0038.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0039.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0040.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0041.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0042.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0043.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0044.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0045.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0046.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0047.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0048.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0049.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0050.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0051.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0052.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0053.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0054.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0055.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0056.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0057.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0058.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0059.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0060.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0061.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0062.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0063.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0064.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0065.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0066.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0067.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0068.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0069.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0070.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0071.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0072.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0073.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0074.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0075.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0076.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0077.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0078.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0079.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0080.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0081.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0082.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0083.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0084.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0085.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0086.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0087.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0088.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0089.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0090.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0091.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0092.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0093.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0094.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0095.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0096.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0097.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0098.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0099.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0100.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0101.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0102.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0103.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0104.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0105.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0106.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0107.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0108.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0109.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0110.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0111.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0112.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0113.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0114.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0115.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0116.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0117.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0118.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0119.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0120.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0121.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0122.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0123.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0124.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0125.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0126.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0127.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0128.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0129.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0130.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0131.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0132.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0133.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0134.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0135.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0136.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0137.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0138.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0139.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0140.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0141.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0142.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0143.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0144.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0145.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0146.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0147.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0148.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0149.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0150.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0151.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0152.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0153.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0154.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0155.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0156.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0157.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0158.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0159.json"
+    },
+    {
+      "label": "post_pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0160.json"
+    },
+    {
+      "label": "activation_jacobian_addbrev_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0161.json"
+    },
+    {
+      "label": "activation_jacobian_addlong_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0162.json"
+    },
+    {
+      "label": "activation_jacobian_addmagDist_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0163.json"
+    },
+    {
+      "label": "activation_jacobian_addmagIsch_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0164.json"
+    },
+    {
+      "label": "activation_jacobian_addmagMid_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0165.json"
+    },
+    {
+      "label": "activation_jacobian_addmagProx_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0166.json"
+    },
+    {
+      "label": "activation_jacobian_bflh_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0167.json"
+    },
+    {
+      "label": "activation_jacobian_bfsh_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0168.json"
+    },
+    {
+      "label": "activation_jacobian_edl_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0169.json"
+    },
+    {
+      "label": "activation_jacobian_ehl_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0170.json"
+    },
+    {
+      "label": "activation_jacobian_fdl_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0171.json"
+    },
+    {
+      "label": "activation_jacobian_fhl_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0172.json"
+    },
+    {
+      "label": "activation_jacobian_gaslat_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0173.json"
+    },
+    {
+      "label": "activation_jacobian_gasmed_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0174.json"
+    },
+    {
+      "label": "activation_jacobian_glmax1_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0175.json"
+    },
+    {
+      "label": "activation_jacobian_glmax2_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0176.json"
+    },
+    {
+      "label": "activation_jacobian_glmax3_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0177.json"
+    },
+    {
+      "label": "activation_jacobian_glmed1_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0178.json"
+    },
+    {
+      "label": "activation_jacobian_glmed2_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0179.json"
+    },
+    {
+      "label": "activation_jacobian_glmed3_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0180.json"
+    },
+    {
+      "label": "activation_jacobian_glmin1_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0181.json"
+    },
+    {
+      "label": "activation_jacobian_glmin2_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0182.json"
+    },
+    {
+      "label": "activation_jacobian_glmin3_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0183.json"
+    },
+    {
+      "label": "activation_jacobian_grac_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0184.json"
+    },
+    {
+      "label": "activation_jacobian_iliacus_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0185.json"
+    },
+    {
+      "label": "activation_jacobian_perbrev_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0186.json"
+    },
+    {
+      "label": "activation_jacobian_perlong_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0187.json"
+    },
+    {
+      "label": "activation_jacobian_piri_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0188.json"
+    },
+    {
+      "label": "activation_jacobian_psoas_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0189.json"
+    },
+    {
+      "label": "activation_jacobian_recfem_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0190.json"
+    },
+    {
+      "label": "activation_jacobian_sart_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0191.json"
+    },
+    {
+      "label": "activation_jacobian_semimem_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0192.json"
+    },
+    {
+      "label": "activation_jacobian_semiten_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0193.json"
+    },
+    {
+      "label": "activation_jacobian_soleus_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0194.json"
+    },
+    {
+      "label": "activation_jacobian_tfl_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0195.json"
+    },
+    {
+      "label": "activation_jacobian_tibant_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0196.json"
+    },
+    {
+      "label": "activation_jacobian_tibpost_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0197.json"
+    },
+    {
+      "label": "activation_jacobian_vasint_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0198.json"
+    },
+    {
+      "label": "activation_jacobian_vaslat_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0199.json"
+    },
+    {
+      "label": "activation_jacobian_vasmed_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0200.json"
+    },
+    {
+      "label": "activation_jacobian_addbrev_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0201.json"
+    },
+    {
+      "label": "activation_jacobian_addlong_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0202.json"
+    },
+    {
+      "label": "activation_jacobian_addmagDist_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0203.json"
+    },
+    {
+      "label": "activation_jacobian_addmagIsch_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0204.json"
+    },
+    {
+      "label": "activation_jacobian_addmagMid_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0205.json"
+    },
+    {
+      "label": "activation_jacobian_addmagProx_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0206.json"
+    },
+    {
+      "label": "activation_jacobian_bflh_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0207.json"
+    },
+    {
+      "label": "activation_jacobian_bfsh_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0208.json"
+    },
+    {
+      "label": "activation_jacobian_edl_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0209.json"
+    },
+    {
+      "label": "activation_jacobian_ehl_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0210.json"
+    },
+    {
+      "label": "activation_jacobian_fdl_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0211.json"
+    },
+    {
+      "label": "activation_jacobian_fhl_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0212.json"
+    },
+    {
+      "label": "activation_jacobian_gaslat_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0213.json"
+    },
+    {
+      "label": "activation_jacobian_gasmed_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0214.json"
+    },
+    {
+      "label": "activation_jacobian_glmax1_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0215.json"
+    },
+    {
+      "label": "activation_jacobian_glmax2_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0216.json"
+    },
+    {
+      "label": "activation_jacobian_glmax3_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0217.json"
+    },
+    {
+      "label": "activation_jacobian_glmed1_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0218.json"
+    },
+    {
+      "label": "activation_jacobian_glmed2_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0219.json"
+    },
+    {
+      "label": "activation_jacobian_glmed3_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0220.json"
+    },
+    {
+      "label": "activation_jacobian_glmin1_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0221.json"
+    },
+    {
+      "label": "activation_jacobian_glmin2_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0222.json"
+    },
+    {
+      "label": "activation_jacobian_glmin3_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0223.json"
+    },
+    {
+      "label": "activation_jacobian_grac_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0224.json"
+    },
+    {
+      "label": "activation_jacobian_iliacus_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0225.json"
+    },
+    {
+      "label": "activation_jacobian_perbrev_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0226.json"
+    },
+    {
+      "label": "activation_jacobian_perlong_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0227.json"
+    },
+    {
+      "label": "activation_jacobian_piri_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0228.json"
+    },
+    {
+      "label": "activation_jacobian_psoas_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0229.json"
+    },
+    {
+      "label": "activation_jacobian_recfem_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0230.json"
+    },
+    {
+      "label": "activation_jacobian_sart_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0231.json"
+    },
+    {
+      "label": "activation_jacobian_semimem_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0232.json"
+    },
+    {
+      "label": "activation_jacobian_semiten_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0233.json"
+    },
+    {
+      "label": "activation_jacobian_soleus_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0234.json"
+    },
+    {
+      "label": "activation_jacobian_tfl_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0235.json"
+    },
+    {
+      "label": "activation_jacobian_tibant_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0236.json"
+    },
+    {
+      "label": "activation_jacobian_tibpost_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0237.json"
+    },
+    {
+      "label": "activation_jacobian_vasint_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0238.json"
+    },
+    {
+      "label": "activation_jacobian_vaslat_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0239.json"
+    },
+    {
+      "label": "activation_jacobian_vasmed_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0240.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_TRIlong_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0241.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_TRIlat_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0242.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_TRImed_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0243.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_BIClong_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0244.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_BICshort_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0245.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_BRA_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0246.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_TRIlong_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0247.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_TRIlat_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0248.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_TRImed_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0249.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_BIClong_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0250.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_BICshort_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0251.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_BRA_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0252.json"
+    },
+    {
+      "label": "activation_jacobian_gait2392_ercspn_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0253.json"
+    },
+    {
+      "label": "activation_jacobian_gait2392_intobl_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0254.json"
+    },
+    {
+      "label": "activation_jacobian_gait2392_extobl_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0255.json"
+    },
+    {
+      "label": "activation_jacobian_gait2392_ercspn_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0256.json"
+    },
+    {
+      "label": "activation_jacobian_gait2392_intobl_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0257.json"
+    },
+    {
+      "label": "activation_jacobian_gait2392_extobl_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0258.json"
+    },
+    {
+      "label": "activation_candidate",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0259.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0260.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0261.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0262.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0263.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0264.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0265.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0266.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0267.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0268.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0269.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0270.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0271.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0272.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0273.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0274.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0275.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0276.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0277.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0278.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0279.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0280.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0281.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0282.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0283.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0284.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0285.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0286.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0287.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0288.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0289.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0290.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0291.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0292.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0293.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0294.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0295.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0296.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0297.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0298.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0299.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0300.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0301.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0302.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0303.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0304.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0305.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0306.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0307.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0308.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0309.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0310.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0311.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0312.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0313.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0314.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0315.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0316.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0317.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0318.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0319.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0320.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0321.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0322.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0323.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0324.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0325.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0326.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0327.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0328.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0329.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0330.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0331.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0332.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0333.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0334.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0335.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0336.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0337.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0338.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0339.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0340.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0341.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0342.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0343.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0344.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0345.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0346.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0347.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0348.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0349.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0350.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0351.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0352.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0353.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0354.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0355.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0356.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0357.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0358.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0359.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0360.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0361.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0362.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0363.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0364.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0365.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0366.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0367.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0368.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0369.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0370.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0371.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0372.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0373.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0374.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0375.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0376.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0377.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0378.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0379.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0380.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0381.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0382.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0383.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0384.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0385.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0386.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0387.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0388.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0389.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0390.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0391.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0392.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0393.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0394.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0395.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0396.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0397.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0398.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0399.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0400.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0401.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0402.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0403.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0404.json"
+    },
+    {
+      "label": "pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0405.json"
+    },
+    {
+      "label": "post_pose",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0406.json"
+    },
+    {
+      "label": "activation_jacobian_addbrev_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0407.json"
+    },
+    {
+      "label": "activation_jacobian_addlong_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0408.json"
+    },
+    {
+      "label": "activation_jacobian_addmagDist_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0409.json"
+    },
+    {
+      "label": "activation_jacobian_addmagIsch_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0410.json"
+    },
+    {
+      "label": "activation_jacobian_addmagMid_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0411.json"
+    },
+    {
+      "label": "activation_jacobian_addmagProx_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0412.json"
+    },
+    {
+      "label": "activation_jacobian_bflh_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0413.json"
+    },
+    {
+      "label": "activation_jacobian_bfsh_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0414.json"
+    },
+    {
+      "label": "activation_jacobian_edl_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0415.json"
+    },
+    {
+      "label": "activation_jacobian_ehl_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0416.json"
+    },
+    {
+      "label": "activation_jacobian_fdl_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0417.json"
+    },
+    {
+      "label": "activation_jacobian_fhl_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0418.json"
+    },
+    {
+      "label": "activation_jacobian_gaslat_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0419.json"
+    },
+    {
+      "label": "activation_jacobian_gasmed_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0420.json"
+    },
+    {
+      "label": "activation_jacobian_glmax1_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0421.json"
+    },
+    {
+      "label": "activation_jacobian_glmax2_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0422.json"
+    },
+    {
+      "label": "activation_jacobian_glmax3_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0423.json"
+    },
+    {
+      "label": "activation_jacobian_glmed1_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0424.json"
+    },
+    {
+      "label": "activation_jacobian_glmed2_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0425.json"
+    },
+    {
+      "label": "activation_jacobian_glmed3_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0426.json"
+    },
+    {
+      "label": "activation_jacobian_glmin1_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0427.json"
+    },
+    {
+      "label": "activation_jacobian_glmin2_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0428.json"
+    },
+    {
+      "label": "activation_jacobian_glmin3_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0429.json"
+    },
+    {
+      "label": "activation_jacobian_grac_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0430.json"
+    },
+    {
+      "label": "activation_jacobian_iliacus_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0431.json"
+    },
+    {
+      "label": "activation_jacobian_perbrev_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0432.json"
+    },
+    {
+      "label": "activation_jacobian_perlong_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0433.json"
+    },
+    {
+      "label": "activation_jacobian_piri_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0434.json"
+    },
+    {
+      "label": "activation_jacobian_psoas_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0435.json"
+    },
+    {
+      "label": "activation_jacobian_recfem_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0436.json"
+    },
+    {
+      "label": "activation_jacobian_sart_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0437.json"
+    },
+    {
+      "label": "activation_jacobian_semimem_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0438.json"
+    },
+    {
+      "label": "activation_jacobian_semiten_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0439.json"
+    },
+    {
+      "label": "activation_jacobian_soleus_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0440.json"
+    },
+    {
+      "label": "activation_jacobian_tfl_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0441.json"
+    },
+    {
+      "label": "activation_jacobian_tibant_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0442.json"
+    },
+    {
+      "label": "activation_jacobian_tibpost_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0443.json"
+    },
+    {
+      "label": "activation_jacobian_vasint_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0444.json"
+    },
+    {
+      "label": "activation_jacobian_vaslat_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0445.json"
+    },
+    {
+      "label": "activation_jacobian_vasmed_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0446.json"
+    },
+    {
+      "label": "activation_jacobian_addbrev_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0447.json"
+    },
+    {
+      "label": "activation_jacobian_addlong_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0448.json"
+    },
+    {
+      "label": "activation_jacobian_addmagDist_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0449.json"
+    },
+    {
+      "label": "activation_jacobian_addmagIsch_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0450.json"
+    },
+    {
+      "label": "activation_jacobian_addmagMid_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0451.json"
+    },
+    {
+      "label": "activation_jacobian_addmagProx_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0452.json"
+    },
+    {
+      "label": "activation_jacobian_bflh_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0453.json"
+    },
+    {
+      "label": "activation_jacobian_bfsh_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0454.json"
+    },
+    {
+      "label": "activation_jacobian_edl_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0455.json"
+    },
+    {
+      "label": "activation_jacobian_ehl_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0456.json"
+    },
+    {
+      "label": "activation_jacobian_fdl_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0457.json"
+    },
+    {
+      "label": "activation_jacobian_fhl_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0458.json"
+    },
+    {
+      "label": "activation_jacobian_gaslat_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0459.json"
+    },
+    {
+      "label": "activation_jacobian_gasmed_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0460.json"
+    },
+    {
+      "label": "activation_jacobian_glmax1_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0461.json"
+    },
+    {
+      "label": "activation_jacobian_glmax2_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0462.json"
+    },
+    {
+      "label": "activation_jacobian_glmax3_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0463.json"
+    },
+    {
+      "label": "activation_jacobian_glmed1_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0464.json"
+    },
+    {
+      "label": "activation_jacobian_glmed2_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0465.json"
+    },
+    {
+      "label": "activation_jacobian_glmed3_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0466.json"
+    },
+    {
+      "label": "activation_jacobian_glmin1_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0467.json"
+    },
+    {
+      "label": "activation_jacobian_glmin2_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0468.json"
+    },
+    {
+      "label": "activation_jacobian_glmin3_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0469.json"
+    },
+    {
+      "label": "activation_jacobian_grac_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0470.json"
+    },
+    {
+      "label": "activation_jacobian_iliacus_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0471.json"
+    },
+    {
+      "label": "activation_jacobian_perbrev_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0472.json"
+    },
+    {
+      "label": "activation_jacobian_perlong_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0473.json"
+    },
+    {
+      "label": "activation_jacobian_piri_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0474.json"
+    },
+    {
+      "label": "activation_jacobian_psoas_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0475.json"
+    },
+    {
+      "label": "activation_jacobian_recfem_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0476.json"
+    },
+    {
+      "label": "activation_jacobian_sart_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0477.json"
+    },
+    {
+      "label": "activation_jacobian_semimem_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0478.json"
+    },
+    {
+      "label": "activation_jacobian_semiten_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0479.json"
+    },
+    {
+      "label": "activation_jacobian_soleus_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0480.json"
+    },
+    {
+      "label": "activation_jacobian_tfl_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0481.json"
+    },
+    {
+      "label": "activation_jacobian_tibant_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0482.json"
+    },
+    {
+      "label": "activation_jacobian_tibpost_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0483.json"
+    },
+    {
+      "label": "activation_jacobian_vasint_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0484.json"
+    },
+    {
+      "label": "activation_jacobian_vaslat_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0485.json"
+    },
+    {
+      "label": "activation_jacobian_vasmed_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0486.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_TRIlong_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0487.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_TRIlat_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0488.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_TRImed_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0489.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_BIClong_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0490.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_BICshort_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0491.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_BRA_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0492.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_TRIlong_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0493.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_TRIlat_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0494.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_TRImed_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0495.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_BIClong_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0496.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_BICshort_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0497.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_BRA_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0498.json"
+    },
+    {
+      "label": "activation_jacobian_gait2392_ercspn_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0499.json"
+    },
+    {
+      "label": "activation_jacobian_gait2392_intobl_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0500.json"
+    },
+    {
+      "label": "activation_jacobian_gait2392_extobl_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0501.json"
+    },
+    {
+      "label": "activation_jacobian_gait2392_ercspn_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0502.json"
+    },
+    {
+      "label": "activation_jacobian_gait2392_intobl_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0503.json"
+    },
+    {
+      "label": "activation_jacobian_gait2392_extobl_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0504.json"
+    },
+    {
+      "label": "activation_candidate",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0505.json"
+    },
+    {
+      "label": "activation_jacobian_addbrev_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0506.json"
+    },
+    {
+      "label": "activation_jacobian_addlong_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0507.json"
+    },
+    {
+      "label": "activation_jacobian_addmagDist_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0508.json"
+    },
+    {
+      "label": "activation_jacobian_addmagIsch_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0509.json"
+    },
+    {
+      "label": "activation_jacobian_addmagMid_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0510.json"
+    },
+    {
+      "label": "activation_jacobian_addmagProx_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0511.json"
+    },
+    {
+      "label": "activation_jacobian_bflh_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0512.json"
+    },
+    {
+      "label": "activation_jacobian_bfsh_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0513.json"
+    },
+    {
+      "label": "activation_jacobian_edl_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0514.json"
+    },
+    {
+      "label": "activation_jacobian_ehl_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0515.json"
+    },
+    {
+      "label": "activation_jacobian_fdl_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0516.json"
+    },
+    {
+      "label": "activation_jacobian_fhl_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0517.json"
+    },
+    {
+      "label": "activation_jacobian_gaslat_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0518.json"
+    },
+    {
+      "label": "activation_jacobian_gasmed_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0519.json"
+    },
+    {
+      "label": "activation_jacobian_glmax1_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0520.json"
+    },
+    {
+      "label": "activation_jacobian_glmax2_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0521.json"
+    },
+    {
+      "label": "activation_jacobian_glmax3_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0522.json"
+    },
+    {
+      "label": "activation_jacobian_glmed1_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0523.json"
+    },
+    {
+      "label": "activation_jacobian_glmed2_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0524.json"
+    },
+    {
+      "label": "activation_jacobian_glmed3_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0525.json"
+    },
+    {
+      "label": "activation_jacobian_glmin1_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0526.json"
+    },
+    {
+      "label": "activation_jacobian_glmin2_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0527.json"
+    },
+    {
+      "label": "activation_jacobian_glmin3_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0528.json"
+    },
+    {
+      "label": "activation_jacobian_grac_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0529.json"
+    },
+    {
+      "label": "activation_jacobian_iliacus_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0530.json"
+    },
+    {
+      "label": "activation_jacobian_perbrev_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0531.json"
+    },
+    {
+      "label": "activation_jacobian_perlong_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0532.json"
+    },
+    {
+      "label": "activation_jacobian_piri_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0533.json"
+    },
+    {
+      "label": "activation_jacobian_psoas_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0534.json"
+    },
+    {
+      "label": "activation_jacobian_recfem_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0535.json"
+    },
+    {
+      "label": "activation_jacobian_sart_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0536.json"
+    },
+    {
+      "label": "activation_jacobian_semimem_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0537.json"
+    },
+    {
+      "label": "activation_jacobian_semiten_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0538.json"
+    },
+    {
+      "label": "activation_jacobian_soleus_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0539.json"
+    },
+    {
+      "label": "activation_jacobian_tfl_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0540.json"
+    },
+    {
+      "label": "activation_jacobian_tibant_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0541.json"
+    },
+    {
+      "label": "activation_jacobian_tibpost_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0542.json"
+    },
+    {
+      "label": "activation_jacobian_vasint_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0543.json"
+    },
+    {
+      "label": "activation_jacobian_vaslat_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0544.json"
+    },
+    {
+      "label": "activation_jacobian_vasmed_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0545.json"
+    },
+    {
+      "label": "activation_jacobian_addbrev_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0546.json"
+    },
+    {
+      "label": "activation_jacobian_addlong_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0547.json"
+    },
+    {
+      "label": "activation_jacobian_addmagDist_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0548.json"
+    },
+    {
+      "label": "activation_jacobian_addmagIsch_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0549.json"
+    },
+    {
+      "label": "activation_jacobian_addmagMid_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0550.json"
+    },
+    {
+      "label": "activation_jacobian_addmagProx_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0551.json"
+    },
+    {
+      "label": "activation_jacobian_bflh_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0552.json"
+    },
+    {
+      "label": "activation_jacobian_bfsh_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0553.json"
+    },
+    {
+      "label": "activation_jacobian_edl_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0554.json"
+    },
+    {
+      "label": "activation_jacobian_ehl_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0555.json"
+    },
+    {
+      "label": "activation_jacobian_fdl_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0556.json"
+    },
+    {
+      "label": "activation_jacobian_fhl_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0557.json"
+    },
+    {
+      "label": "activation_jacobian_gaslat_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0558.json"
+    },
+    {
+      "label": "activation_jacobian_gasmed_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0559.json"
+    },
+    {
+      "label": "activation_jacobian_glmax1_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0560.json"
+    },
+    {
+      "label": "activation_jacobian_glmax2_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0561.json"
+    },
+    {
+      "label": "activation_jacobian_glmax3_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0562.json"
+    },
+    {
+      "label": "activation_jacobian_glmed1_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0563.json"
+    },
+    {
+      "label": "activation_jacobian_glmed2_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0564.json"
+    },
+    {
+      "label": "activation_jacobian_glmed3_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0565.json"
+    },
+    {
+      "label": "activation_jacobian_glmin1_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0566.json"
+    },
+    {
+      "label": "activation_jacobian_glmin2_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0567.json"
+    },
+    {
+      "label": "activation_jacobian_glmin3_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0568.json"
+    },
+    {
+      "label": "activation_jacobian_grac_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0569.json"
+    },
+    {
+      "label": "activation_jacobian_iliacus_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0570.json"
+    },
+    {
+      "label": "activation_jacobian_perbrev_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0571.json"
+    },
+    {
+      "label": "activation_jacobian_perlong_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0572.json"
+    },
+    {
+      "label": "activation_jacobian_piri_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0573.json"
+    },
+    {
+      "label": "activation_jacobian_psoas_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0574.json"
+    },
+    {
+      "label": "activation_jacobian_recfem_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0575.json"
+    },
+    {
+      "label": "activation_jacobian_sart_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0576.json"
+    },
+    {
+      "label": "activation_jacobian_semimem_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0577.json"
+    },
+    {
+      "label": "activation_jacobian_semiten_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0578.json"
+    },
+    {
+      "label": "activation_jacobian_soleus_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0579.json"
+    },
+    {
+      "label": "activation_jacobian_tfl_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0580.json"
+    },
+    {
+      "label": "activation_jacobian_tibant_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0581.json"
+    },
+    {
+      "label": "activation_jacobian_tibpost_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0582.json"
+    },
+    {
+      "label": "activation_jacobian_vasint_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0583.json"
+    },
+    {
+      "label": "activation_jacobian_vaslat_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0584.json"
+    },
+    {
+      "label": "activation_jacobian_vasmed_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0585.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_TRIlong_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0586.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_TRIlat_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0587.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_TRImed_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0588.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_BIClong_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0589.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_BICshort_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0590.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_BRA_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0591.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_TRIlong_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0592.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_TRIlat_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0593.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_TRImed_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0594.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_BIClong_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0595.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_BICshort_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0596.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_BRA_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0597.json"
+    },
+    {
+      "label": "activation_jacobian_gait2392_ercspn_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0598.json"
+    },
+    {
+      "label": "activation_jacobian_gait2392_intobl_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0599.json"
+    },
+    {
+      "label": "activation_jacobian_gait2392_extobl_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0600.json"
+    },
+    {
+      "label": "activation_jacobian_gait2392_ercspn_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0601.json"
+    },
+    {
+      "label": "activation_jacobian_gait2392_intobl_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0602.json"
+    },
+    {
+      "label": "activation_jacobian_gait2392_extobl_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0603.json"
+    },
+    {
+      "label": "activation_candidate",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0604.json"
+    },
+    {
+      "label": "activation_jacobian_addbrev_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0605.json"
+    },
+    {
+      "label": "activation_jacobian_addlong_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0606.json"
+    },
+    {
+      "label": "activation_jacobian_addmagDist_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0607.json"
+    },
+    {
+      "label": "activation_jacobian_addmagIsch_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0608.json"
+    },
+    {
+      "label": "activation_jacobian_addmagMid_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0609.json"
+    },
+    {
+      "label": "activation_jacobian_addmagProx_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0610.json"
+    },
+    {
+      "label": "activation_jacobian_bflh_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0611.json"
+    },
+    {
+      "label": "activation_jacobian_bfsh_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0612.json"
+    },
+    {
+      "label": "activation_jacobian_edl_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0613.json"
+    },
+    {
+      "label": "activation_jacobian_ehl_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0614.json"
+    },
+    {
+      "label": "activation_jacobian_fdl_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0615.json"
+    },
+    {
+      "label": "activation_jacobian_fhl_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0616.json"
+    },
+    {
+      "label": "activation_jacobian_gaslat_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0617.json"
+    },
+    {
+      "label": "activation_jacobian_gasmed_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0618.json"
+    },
+    {
+      "label": "activation_jacobian_glmax1_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0619.json"
+    },
+    {
+      "label": "activation_jacobian_glmax2_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0620.json"
+    },
+    {
+      "label": "activation_jacobian_glmax3_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0621.json"
+    },
+    {
+      "label": "activation_jacobian_glmed1_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0622.json"
+    },
+    {
+      "label": "activation_jacobian_glmed2_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0623.json"
+    },
+    {
+      "label": "activation_jacobian_glmed3_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0624.json"
+    },
+    {
+      "label": "activation_jacobian_glmin1_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0625.json"
+    },
+    {
+      "label": "activation_jacobian_glmin2_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0626.json"
+    },
+    {
+      "label": "activation_jacobian_glmin3_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0627.json"
+    },
+    {
+      "label": "activation_jacobian_grac_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0628.json"
+    },
+    {
+      "label": "activation_jacobian_iliacus_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0629.json"
+    },
+    {
+      "label": "activation_jacobian_perbrev_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0630.json"
+    },
+    {
+      "label": "activation_jacobian_perlong_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0631.json"
+    },
+    {
+      "label": "activation_jacobian_piri_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0632.json"
+    },
+    {
+      "label": "activation_jacobian_psoas_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0633.json"
+    },
+    {
+      "label": "activation_jacobian_recfem_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0634.json"
+    },
+    {
+      "label": "activation_jacobian_sart_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0635.json"
+    },
+    {
+      "label": "activation_jacobian_semimem_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0636.json"
+    },
+    {
+      "label": "activation_jacobian_semiten_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0637.json"
+    },
+    {
+      "label": "activation_jacobian_soleus_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0638.json"
+    },
+    {
+      "label": "activation_jacobian_tfl_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0639.json"
+    },
+    {
+      "label": "activation_jacobian_tibant_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0640.json"
+    },
+    {
+      "label": "activation_jacobian_tibpost_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0641.json"
+    },
+    {
+      "label": "activation_jacobian_vasint_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0642.json"
+    },
+    {
+      "label": "activation_jacobian_vaslat_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0643.json"
+    },
+    {
+      "label": "activation_jacobian_vasmed_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0644.json"
+    },
+    {
+      "label": "activation_jacobian_addbrev_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0645.json"
+    },
+    {
+      "label": "activation_jacobian_addlong_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0646.json"
+    },
+    {
+      "label": "activation_jacobian_addmagDist_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0647.json"
+    },
+    {
+      "label": "activation_jacobian_addmagIsch_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0648.json"
+    },
+    {
+      "label": "activation_jacobian_addmagMid_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0649.json"
+    },
+    {
+      "label": "activation_jacobian_addmagProx_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0650.json"
+    },
+    {
+      "label": "activation_jacobian_bflh_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0651.json"
+    },
+    {
+      "label": "activation_jacobian_bfsh_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0652.json"
+    },
+    {
+      "label": "activation_jacobian_edl_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0653.json"
+    },
+    {
+      "label": "activation_jacobian_ehl_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0654.json"
+    },
+    {
+      "label": "activation_jacobian_fdl_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0655.json"
+    },
+    {
+      "label": "activation_jacobian_fhl_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0656.json"
+    },
+    {
+      "label": "activation_jacobian_gaslat_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0657.json"
+    },
+    {
+      "label": "activation_jacobian_gasmed_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0658.json"
+    },
+    {
+      "label": "activation_jacobian_glmax1_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0659.json"
+    },
+    {
+      "label": "activation_jacobian_glmax2_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0660.json"
+    },
+    {
+      "label": "activation_jacobian_glmax3_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0661.json"
+    },
+    {
+      "label": "activation_jacobian_glmed1_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0662.json"
+    },
+    {
+      "label": "activation_jacobian_glmed2_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0663.json"
+    },
+    {
+      "label": "activation_jacobian_glmed3_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0664.json"
+    },
+    {
+      "label": "activation_jacobian_glmin1_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0665.json"
+    },
+    {
+      "label": "activation_jacobian_glmin2_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0666.json"
+    },
+    {
+      "label": "activation_jacobian_glmin3_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0667.json"
+    },
+    {
+      "label": "activation_jacobian_grac_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0668.json"
+    },
+    {
+      "label": "activation_jacobian_iliacus_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0669.json"
+    },
+    {
+      "label": "activation_jacobian_perbrev_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0670.json"
+    },
+    {
+      "label": "activation_jacobian_perlong_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0671.json"
+    },
+    {
+      "label": "activation_jacobian_piri_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0672.json"
+    },
+    {
+      "label": "activation_jacobian_psoas_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0673.json"
+    },
+    {
+      "label": "activation_jacobian_recfem_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0674.json"
+    },
+    {
+      "label": "activation_jacobian_sart_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0675.json"
+    },
+    {
+      "label": "activation_jacobian_semimem_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0676.json"
+    },
+    {
+      "label": "activation_jacobian_semiten_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0677.json"
+    },
+    {
+      "label": "activation_jacobian_soleus_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0678.json"
+    },
+    {
+      "label": "activation_jacobian_tfl_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0679.json"
+    },
+    {
+      "label": "activation_jacobian_tibant_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0680.json"
+    },
+    {
+      "label": "activation_jacobian_tibpost_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0681.json"
+    },
+    {
+      "label": "activation_jacobian_vasint_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0682.json"
+    },
+    {
+      "label": "activation_jacobian_vaslat_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0683.json"
+    },
+    {
+      "label": "activation_jacobian_vasmed_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0684.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_TRIlong_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0685.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_TRIlat_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0686.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_TRImed_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0687.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_BIClong_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0688.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_BICshort_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0689.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_BRA_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0690.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_TRIlong_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0691.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_TRIlat_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0692.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_TRImed_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0693.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_BIClong_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0694.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_BICshort_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0695.json"
+    },
+    {
+      "label": "activation_jacobian_arm26_BRA_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0696.json"
+    },
+    {
+      "label": "activation_jacobian_gait2392_ercspn_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0697.json"
+    },
+    {
+      "label": "activation_jacobian_gait2392_intobl_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0698.json"
+    },
+    {
+      "label": "activation_jacobian_gait2392_extobl_r",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0699.json"
+    },
+    {
+      "label": "activation_jacobian_gait2392_ercspn_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0700.json"
+    },
+    {
+      "label": "activation_jacobian_gait2392_intobl_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0701.json"
+    },
+    {
+      "label": "activation_jacobian_gait2392_extobl_l",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0702.json"
+    },
+    {
+      "label": "activation_candidate",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0703.json"
+    },
+    {
+      "label": "final",
+      "path": "data/research/locomotion_control/resting_stance98_ansa4164/query_0704.json"
+    }
+  ],
+  "physical_time_advanced_s": 0,
+  "external_support": false,
+  "prescribed_motion": false,
+  "sustained_stance_demonstrated": false,
+  "full_static_equilibrium_claimed": false
+}

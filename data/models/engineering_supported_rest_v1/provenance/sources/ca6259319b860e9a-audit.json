@@ -1,0 +1,4462 @@
+{
+  "schema": "ihm.lumbar-shoulder-coverage.v1",
+  "sources": {
+    "data/derived/mechanics/whole_body_arm26_v2/subject_with_arms.osim": "e697dc40b2939f5edbc2879bcbd7e5954ffbabbb234032c403d57f5c39ea3810",
+    "data/raw/anatomy/opensim-models/source/Models/Gait2392_Simbody/gait2392_thelen2003muscle.osim": "3af1ca20aa87bc88b0b8cd54f2504331afa2aa03537cc868f1175fa1f50f3c0f",
+    "data/derived/locomotion/moco3d-torque-v1/subject_walk_scaled_FunctionBasedPathSet.xml": "932ac403e4d6d0d10d9a9da551e43d0ded94dd2b99c370f9b25053ee9232f8a5",
+    "data/derived/canonical/anatomy.json": "874479e434e2637c08a1f5153de88fdaf138d33f55ae91a3bb7b1578ed891d5f",
+    "data/derived/canonical/mechanics.json": "662b53da23a216abbf50dfa7de6d4a89ca5888e9613780f2c0ba008cd6247d05"
+  },
+  "native_enabled": false,
+  "source_registration_validated_anatomically": false,
+  "native_muscle_count": 92,
+  "fitted_paths": [
+    {
+      "name": "/forceset/addbrev_r",
+      "coordinates": [
+        "/jointset/hip_r/hip_flexion_r",
+        "/jointset/hip_r/hip_adduction_r",
+        "/jointset/hip_r/hip_rotation_r"
+      ]
+    },
+    {
+      "name": "/forceset/addlong_r",
+      "coordinates": [
+        "/jointset/hip_r/hip_flexion_r",
+        "/jointset/hip_r/hip_adduction_r",
+        "/jointset/hip_r/hip_rotation_r"
+      ]
+    },
+    {
+      "name": "/forceset/addmagDist_r",
+      "coordinates": [
+        "/jointset/hip_r/hip_flexion_r",
+        "/jointset/hip_r/hip_adduction_r",
+        "/jointset/hip_r/hip_rotation_r"
+      ]
+    },
+    {
+      "name": "/forceset/addmagIsch_r",
+      "coordinates": [
+        "/jointset/hip_r/hip_flexion_r",
+        "/jointset/hip_r/hip_adduction_r",
+        "/jointset/hip_r/hip_rotation_r"
+      ]
+    },
+    {
+      "name": "/forceset/addmagMid_r",
+      "coordinates": [
+        "/jointset/hip_r/hip_flexion_r",
+        "/jointset/hip_r/hip_adduction_r",
+        "/jointset/hip_r/hip_rotation_r"
+      ]
+    },
+    {
+      "name": "/forceset/addmagProx_r",
+      "coordinates": [
+        "/jointset/hip_r/hip_flexion_r",
+        "/jointset/hip_r/hip_adduction_r",
+        "/jointset/hip_r/hip_rotation_r"
+      ]
+    },
+    {
+      "name": "/forceset/bflh_r",
+      "coordinates": [
+        "/jointset/hip_r/hip_flexion_r",
+        "/jointset/hip_r/hip_adduction_r",
+        "/jointset/hip_r/hip_rotation_r",
+        "/jointset/walker_knee_r/knee_angle_r"
+      ]
+    },
+    {
+      "name": "/forceset/bfsh_r",
+      "coordinates": [
+        "/jointset/walker_knee_r/knee_angle_r"
+      ]
+    },
+    {
+      "name": "/forceset/edl_r",
+      "coordinates": [
+        "/jointset/ankle_r/ankle_angle_r"
+      ]
+    },
+    {
+      "name": "/forceset/ehl_r",
+      "coordinates": [
+        "/jointset/ankle_r/ankle_angle_r"
+      ]
+    },
+    {
+      "name": "/forceset/fdl_r",
+      "coordinates": [
+        "/jointset/ankle_r/ankle_angle_r"
+      ]
+    },
+    {
+      "name": "/forceset/fhl_r",
+      "coordinates": [
+        "/jointset/ankle_r/ankle_angle_r"
+      ]
+    },
+    {
+      "name": "/forceset/gaslat_r",
+      "coordinates": [
+        "/jointset/walker_knee_r/knee_angle_r",
+        "/jointset/ankle_r/ankle_angle_r"
+      ]
+    },
+    {
+      "name": "/forceset/gasmed_r",
+      "coordinates": [
+        "/jointset/walker_knee_r/knee_angle_r",
+        "/jointset/ankle_r/ankle_angle_r"
+      ]
+    },
+    {
+      "name": "/forceset/glmax1_r",
+      "coordinates": [
+        "/jointset/hip_r/hip_flexion_r",
+        "/jointset/hip_r/hip_adduction_r",
+        "/jointset/hip_r/hip_rotation_r"
+      ]
+    },
+    {
+      "name": "/forceset/glmax2_r",
+      "coordinates": [
+        "/jointset/hip_r/hip_flexion_r",
+        "/jointset/hip_r/hip_adduction_r",
+        "/jointset/hip_r/hip_rotation_r"
+      ]
+    },
+    {
+      "name": "/forceset/glmax3_r",
+      "coordinates": [
+        "/jointset/hip_r/hip_flexion_r",
+        "/jointset/hip_r/hip_adduction_r",
+        "/jointset/hip_r/hip_rotation_r"
+      ]
+    },
+    {
+      "name": "/forceset/glmed1_r",
+      "coordinates": [
+        "/jointset/hip_r/hip_flexion_r",
+        "/jointset/hip_r/hip_adduction_r",
+        "/jointset/hip_r/hip_rotation_r"
+      ]
+    },
+    {
+      "name": "/forceset/glmed2_r",
+      "coordinates": [
+        "/jointset/hip_r/hip_flexion_r",
+        "/jointset/hip_r/hip_adduction_r",
+        "/jointset/hip_r/hip_rotation_r"
+      ]
+    },
+    {
+      "name": "/forceset/glmed3_r",
+      "coordinates": [
+        "/jointset/hip_r/hip_flexion_r",
+        "/jointset/hip_r/hip_adduction_r",
+        "/jointset/hip_r/hip_rotation_r"
+      ]
+    },
+    {
+      "name": "/forceset/glmin1_r",
+      "coordinates": [
+        "/jointset/hip_r/hip_flexion_r",
+        "/jointset/hip_r/hip_adduction_r",
+        "/jointset/hip_r/hip_rotation_r"
+      ]
+    },
+    {
+      "name": "/forceset/glmin2_r",
+      "coordinates": [
+        "/jointset/hip_r/hip_flexion_r",
+        "/jointset/hip_r/hip_adduction_r",
+        "/jointset/hip_r/hip_rotation_r"
+      ]
+    },
+    {
+      "name": "/forceset/glmin3_r",
+      "coordinates": [
+        "/jointset/hip_r/hip_flexion_r",
+        "/jointset/hip_r/hip_adduction_r",
+        "/jointset/hip_r/hip_rotation_r"
+      ]
+    },
+    {
+      "name": "/forceset/grac_r",
+      "coordinates": [
+        "/jointset/hip_r/hip_flexion_r",
+        "/jointset/hip_r/hip_adduction_r",
+        "/jointset/hip_r/hip_rotation_r",
+        "/jointset/walker_knee_r/knee_angle_r"
+      ]
+    },
+    {
+      "name": "/forceset/iliacus_r",
+      "coordinates": [
+        "/jointset/hip_r/hip_flexion_r",
+        "/jointset/hip_r/hip_adduction_r",
+        "/jointset/hip_r/hip_rotation_r"
+      ]
+    },
+    {
+      "name": "/forceset/perbrev_r",
+      "coordinates": [
+        "/jointset/ankle_r/ankle_angle_r"
+      ]
+    },
+    {
+      "name": "/forceset/perlong_r",
+      "coordinates": [
+        "/jointset/ankle_r/ankle_angle_r"
+      ]
+    },
+    {
+      "name": "/forceset/piri_r",
+      "coordinates": [
+        "/jointset/hip_r/hip_flexion_r",
+        "/jointset/hip_r/hip_adduction_r",
+        "/jointset/hip_r/hip_rotation_r"
+      ]
+    },
+    {
+      "name": "/forceset/psoas_r",
+      "coordinates": [
+        "/jointset/hip_r/hip_flexion_r",
+        "/jointset/hip_r/hip_adduction_r",
+        "/jointset/hip_r/hip_rotation_r"
+      ]
+    },
+    {
+      "name": "/forceset/recfem_r",
+      "coordinates": [
+        "/jointset/hip_r/hip_flexion_r",
+        "/jointset/hip_r/hip_adduction_r",
+        "/jointset/hip_r/hip_rotation_r",
+        "/jointset/walker_knee_r/knee_angle_r"
+      ]
+    },
+    {
+      "name": "/forceset/sart_r",
+      "coordinates": [
+        "/jointset/hip_r/hip_flexion_r",
+        "/jointset/hip_r/hip_adduction_r",
+        "/jointset/hip_r/hip_rotation_r",
+        "/jointset/walker_knee_r/knee_angle_r"
+      ]
+    },
+    {
+      "name": "/forceset/semimem_r",
+      "coordinates": [
+        "/jointset/hip_r/hip_flexion_r",
+        "/jointset/hip_r/hip_adduction_r",
+        "/jointset/hip_r/hip_rotation_r",
+        "/jointset/walker_knee_r/knee_angle_r"
+      ]
+    },
+    {
+      "name": "/forceset/semiten_r",
+      "coordinates": [
+        "/jointset/hip_r/hip_flexion_r",
+        "/jointset/hip_r/hip_adduction_r",
+        "/jointset/hip_r/hip_rotation_r",
+        "/jointset/walker_knee_r/knee_angle_r"
+      ]
+    },
+    {
+      "name": "/forceset/soleus_r",
+      "coordinates": [
+        "/jointset/ankle_r/ankle_angle_r"
+      ]
+    },
+    {
+      "name": "/forceset/tfl_r",
+      "coordinates": [
+        "/jointset/hip_r/hip_flexion_r",
+        "/jointset/hip_r/hip_adduction_r",
+        "/jointset/hip_r/hip_rotation_r",
+        "/jointset/walker_knee_r/knee_angle_r"
+      ]
+    },
+    {
+      "name": "/forceset/tibant_r",
+      "coordinates": [
+        "/jointset/ankle_r/ankle_angle_r"
+      ]
+    },
+    {
+      "name": "/forceset/tibpost_r",
+      "coordinates": [
+        "/jointset/ankle_r/ankle_angle_r"
+      ]
+    },
+    {
+      "name": "/forceset/vasint_r",
+      "coordinates": [
+        "/jointset/walker_knee_r/knee_angle_r"
+      ]
+    },
+    {
+      "name": "/forceset/vaslat_r",
+      "coordinates": [
+        "/jointset/walker_knee_r/knee_angle_r"
+      ]
+    },
+    {
+      "name": "/forceset/vasmed_r",
+      "coordinates": [
+        "/jointset/walker_knee_r/knee_angle_r"
+      ]
+    },
+    {
+      "name": "/forceset/addbrev_l",
+      "coordinates": [
+        "/jointset/hip_l/hip_flexion_l",
+        "/jointset/hip_l/hip_adduction_l",
+        "/jointset/hip_l/hip_rotation_l"
+      ]
+    },
+    {
+      "name": "/forceset/addlong_l",
+      "coordinates": [
+        "/jointset/hip_l/hip_flexion_l",
+        "/jointset/hip_l/hip_adduction_l",
+        "/jointset/hip_l/hip_rotation_l"
+      ]
+    },
+    {
+      "name": "/forceset/addmagDist_l",
+      "coordinates": [
+        "/jointset/hip_l/hip_flexion_l",
+        "/jointset/hip_l/hip_adduction_l",
+        "/jointset/hip_l/hip_rotation_l"
+      ]
+    },
+    {
+      "name": "/forceset/addmagIsch_l",
+      "coordinates": [
+        "/jointset/hip_l/hip_flexion_l",
+        "/jointset/hip_l/hip_adduction_l",
+        "/jointset/hip_l/hip_rotation_l"
+      ]
+    },
+    {
+      "name": "/forceset/addmagMid_l",
+      "coordinates": [
+        "/jointset/hip_l/hip_flexion_l",
+        "/jointset/hip_l/hip_adduction_l",
+        "/jointset/hip_l/hip_rotation_l"
+      ]
+    },
+    {
+      "name": "/forceset/addmagProx_l",
+      "coordinates": [
+        "/jointset/hip_l/hip_flexion_l",
+        "/jointset/hip_l/hip_adduction_l",
+        "/jointset/hip_l/hip_rotation_l"
+      ]
+    },
+    {
+      "name": "/forceset/bflh_l",
+      "coordinates": [
+        "/jointset/hip_l/hip_flexion_l",
+        "/jointset/hip_l/hip_adduction_l",
+        "/jointset/hip_l/hip_rotation_l",
+        "/jointset/walker_knee_l/knee_angle_l"
+      ]
+    },
+    {
+      "name": "/forceset/bfsh_l",
+      "coordinates": [
+        "/jointset/walker_knee_l/knee_angle_l"
+      ]
+    },
+    {
+      "name": "/forceset/edl_l",
+      "coordinates": [
+        "/jointset/ankle_l/ankle_angle_l"
+      ]
+    },
+    {
+      "name": "/forceset/ehl_l",
+      "coordinates": [
+        "/jointset/ankle_l/ankle_angle_l"
+      ]
+    },
+    {
+      "name": "/forceset/fdl_l",
+      "coordinates": [
+        "/jointset/ankle_l/ankle_angle_l"
+      ]
+    },
+    {
+      "name": "/forceset/fhl_l",
+      "coordinates": [
+        "/jointset/ankle_l/ankle_angle_l"
+      ]
+    },
+    {
+      "name": "/forceset/gaslat_l",
+      "coordinates": [
+        "/jointset/walker_knee_l/knee_angle_l",
+        "/jointset/ankle_l/ankle_angle_l"
+      ]
+    },
+    {
+      "name": "/forceset/gasmed_l",
+      "coordinates": [
+        "/jointset/walker_knee_l/knee_angle_l",
+        "/jointset/ankle_l/ankle_angle_l"
+      ]
+    },
+    {
+      "name": "/forceset/glmax1_l",
+      "coordinates": [
+        "/jointset/hip_l/hip_flexion_l",
+        "/jointset/hip_l/hip_adduction_l",
+        "/jointset/hip_l/hip_rotation_l"
+      ]
+    },
+    {
+      "name": "/forceset/glmax2_l",
+      "coordinates": [
+        "/jointset/hip_l/hip_flexion_l",
+        "/jointset/hip_l/hip_adduction_l",
+        "/jointset/hip_l/hip_rotation_l"
+      ]
+    },
+    {
+      "name": "/forceset/glmax3_l",
+      "coordinates": [
+        "/jointset/hip_l/hip_flexion_l",
+        "/jointset/hip_l/hip_adduction_l",
+        "/jointset/hip_l/hip_rotation_l"
+      ]
+    },
+    {
+      "name": "/forceset/glmed1_l",
+      "coordinates": [
+        "/jointset/hip_l/hip_flexion_l",
+        "/jointset/hip_l/hip_adduction_l",
+        "/jointset/hip_l/hip_rotation_l"
+      ]
+    },
+    {
+      "name": "/forceset/glmed2_l",
+      "coordinates": [
+        "/jointset/hip_l/hip_flexion_l",
+        "/jointset/hip_l/hip_adduction_l",
+        "/jointset/hip_l/hip_rotation_l"
+      ]
+    },
+    {
+      "name": "/forceset/glmed3_l",
+      "coordinates": [
+        "/jointset/hip_l/hip_flexion_l",
+        "/jointset/hip_l/hip_adduction_l",
+        "/jointset/hip_l/hip_rotation_l"
+      ]
+    },
+    {
+      "name": "/forceset/glmin1_l",
+      "coordinates": [
+        "/jointset/hip_l/hip_flexion_l",
+        "/jointset/hip_l/hip_adduction_l",
+        "/jointset/hip_l/hip_rotation_l"
+      ]
+    },
+    {
+      "name": "/forceset/glmin2_l",
+      "coordinates": [
+        "/jointset/hip_l/hip_flexion_l",
+        "/jointset/hip_l/hip_adduction_l",
+        "/jointset/hip_l/hip_rotation_l"
+      ]
+    },
+    {
+      "name": "/forceset/glmin3_l",
+      "coordinates": [
+        "/jointset/hip_l/hip_flexion_l",
+        "/jointset/hip_l/hip_adduction_l",
+        "/jointset/hip_l/hip_rotation_l"
+      ]
+    },
+    {
+      "name": "/forceset/grac_l",
+      "coordinates": [
+        "/jointset/hip_l/hip_flexion_l",
+        "/jointset/hip_l/hip_adduction_l",
+        "/jointset/hip_l/hip_rotation_l",
+        "/jointset/walker_knee_l/knee_angle_l"
+      ]
+    },
+    {
+      "name": "/forceset/iliacus_l",
+      "coordinates": [
+        "/jointset/hip_l/hip_flexion_l",
+        "/jointset/hip_l/hip_adduction_l",
+        "/jointset/hip_l/hip_rotation_l"
+      ]
+    },
+    {
+      "name": "/forceset/perbrev_l",
+      "coordinates": [
+        "/jointset/ankle_l/ankle_angle_l"
+      ]
+    },
+    {
+      "name": "/forceset/perlong_l",
+      "coordinates": [
+        "/jointset/ankle_l/ankle_angle_l"
+      ]
+    },
+    {
+      "name": "/forceset/piri_l",
+      "coordinates": [
+        "/jointset/hip_l/hip_flexion_l",
+        "/jointset/hip_l/hip_adduction_l",
+        "/jointset/hip_l/hip_rotation_l"
+      ]
+    },
+    {
+      "name": "/forceset/psoas_l",
+      "coordinates": [
+        "/jointset/hip_l/hip_flexion_l",
+        "/jointset/hip_l/hip_adduction_l",
+        "/jointset/hip_l/hip_rotation_l"
+      ]
+    },
+    {
+      "name": "/forceset/recfem_l",
+      "coordinates": [
+        "/jointset/hip_l/hip_flexion_l",
+        "/jointset/hip_l/hip_adduction_l",
+        "/jointset/hip_l/hip_rotation_l",
+        "/jointset/walker_knee_l/knee_angle_l"
+      ]
+    },
+    {
+      "name": "/forceset/sart_l",
+      "coordinates": [
+        "/jointset/hip_l/hip_flexion_l",
+        "/jointset/hip_l/hip_adduction_l",
+        "/jointset/hip_l/hip_rotation_l",
+        "/jointset/walker_knee_l/knee_angle_l"
+      ]
+    },
+    {
+      "name": "/forceset/semimem_l",
+      "coordinates": [
+        "/jointset/hip_l/hip_flexion_l",
+        "/jointset/hip_l/hip_adduction_l",
+        "/jointset/hip_l/hip_rotation_l",
+        "/jointset/walker_knee_l/knee_angle_l"
+      ]
+    },
+    {
+      "name": "/forceset/semiten_l",
+      "coordinates": [
+        "/jointset/hip_l/hip_flexion_l",
+        "/jointset/hip_l/hip_adduction_l",
+        "/jointset/hip_l/hip_rotation_l",
+        "/jointset/walker_knee_l/knee_angle_l"
+      ]
+    },
+    {
+      "name": "/forceset/soleus_l",
+      "coordinates": [
+        "/jointset/ankle_l/ankle_angle_l"
+      ]
+    },
+    {
+      "name": "/forceset/tfl_l",
+      "coordinates": [
+        "/jointset/hip_l/hip_flexion_l",
+        "/jointset/hip_l/hip_adduction_l",
+        "/jointset/hip_l/hip_rotation_l",
+        "/jointset/walker_knee_l/knee_angle_l"
+      ]
+    },
+    {
+      "name": "/forceset/tibant_l",
+      "coordinates": [
+        "/jointset/ankle_l/ankle_angle_l"
+      ]
+    },
+    {
+      "name": "/forceset/tibpost_l",
+      "coordinates": [
+        "/jointset/ankle_l/ankle_angle_l"
+      ]
+    },
+    {
+      "name": "/forceset/vasint_l",
+      "coordinates": [
+        "/jointset/walker_knee_l/knee_angle_l"
+      ]
+    },
+    {
+      "name": "/forceset/vaslat_l",
+      "coordinates": [
+        "/jointset/walker_knee_l/knee_angle_l"
+      ]
+    },
+    {
+      "name": "/forceset/vasmed_l",
+      "coordinates": [
+        "/jointset/walker_knee_l/knee_angle_l"
+      ]
+    }
+  ],
+  "arm_paths": [
+    {
+      "name": "arm26_TRIlong_r",
+      "points": [
+        {
+          "body": "torso",
+          "station_m": [
+            -0.03549160077929807,
+            0.3765045113775302,
+            0.17370821676150705
+          ]
+        },
+        {
+          "body": "humerus_r",
+          "station_m": [
+            -0.026895006124858765,
+            -0.12687383606232733,
+            -0.005928305464704246
+          ]
+        },
+        {
+          "body": "humerus_r",
+          "station_m": [
+            -0.029125924421544623,
+            -0.25044435179690594,
+            -0.01063605461655058
+          ]
+        },
+        {
+          "body": "humerus_r",
+          "station_m": [
+            -0.01216343931642476,
+            -0.2954663945327599,
+            -0.010006312781430606
+          ]
+        },
+        {
+          "body": "ulna_r",
+          "station_m": [
+            -0.024408526278671624,
+            0.010941605994758016,
+            -0.001016844622988786
+          ]
+        }
+      ],
+      "crosses_shoulder": true,
+      "wraps": [
+        "<PathWrap name=\"TRIlong-wrap-cylinder1\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>arm26_TRI_r</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>-1 -1</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t\t",
+        "<PathWrap name=\"TRIlong-wrap-ellipsoid\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>arm26_TRIlonghh_r</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>-1 -1</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t\t",
+        "<PathWrap name=\"TRIlong-wrap-cylinder2\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>arm26_TRIlongglen_r</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>-1 -1</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t"
+      ]
+    },
+    {
+      "name": "arm26_TRIlat_r",
+      "points": [
+        {
+          "body": "humerus_r",
+          "station_m": [
+            -0.0032866970730491187,
+            -0.13946141358173375,
+            0.006284716634844891
+          ]
+        },
+        {
+          "body": "humerus_r",
+          "station_m": [
+            -0.022030914942335632,
+            -0.16059725897826113,
+            0.012009098370326168
+          ]
+        },
+        {
+          "body": "humerus_r",
+          "station_m": [
+            -0.029125924421544623,
+            -0.25044435179690594,
+            -0.01063605461655058
+          ]
+        },
+        {
+          "body": "humerus_r",
+          "station_m": [
+            -0.01216343931642476,
+            -0.2954663945327599,
+            -0.010006312781430606
+          ]
+        },
+        {
+          "body": "ulna_r",
+          "station_m": [
+            -0.024408526278671624,
+            0.010941605994758016,
+            -0.001016844622988786
+          ]
+        }
+      ],
+      "crosses_shoulder": false,
+      "wraps": [
+        "<PathWrap name=\"pathwrap\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>arm26_TRI_r</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>-1 -1</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t"
+      ]
+    },
+    {
+      "name": "arm26_TRImed_r",
+      "points": [
+        {
+          "body": "humerus_r",
+          "station_m": [
+            -0.005624814672564414,
+            -0.1512496750946115,
+            -0.00829228725360465
+          ]
+        },
+        {
+          "body": "humerus_r",
+          "station_m": [
+            -0.024672173169331787,
+            -0.16764723322096903,
+            -0.01005213994001328
+          ]
+        },
+        {
+          "body": "humerus_r",
+          "station_m": [
+            -0.029125924421544623,
+            -0.25044435179690594,
+            -0.01063605461655058
+          ]
+        },
+        {
+          "body": "humerus_r",
+          "station_m": [
+            -0.01216343931642476,
+            -0.2954663945327599,
+            -0.010006312781430606
+          ]
+        },
+        {
+          "body": "ulna_r",
+          "station_m": [
+            -0.024408526278671624,
+            0.010941605994758016,
+            -0.001016844622988786
+          ]
+        }
+      ],
+      "crosses_shoulder": false,
+      "wraps": [
+        "<PathWrap name=\"pathwrap\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>arm26_TRI_r</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>-1 -1</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t"
+      ]
+    },
+    {
+      "name": "arm26_BIClong_r",
+      "points": [
+        {
+          "body": "torso",
+          "station_m": [
+            -0.02005828138988639,
+            0.3958464038464662,
+            0.174305427251991
+          ]
+        },
+        {
+          "body": "torso",
+          "station_m": [
+            -0.009005156531377774,
+            0.40772632387958135,
+            0.18349147507685928
+          ]
+        },
+        {
+          "body": "humerus_r",
+          "station_m": [
+            0.022998268802450136,
+            0.020446220975797035,
+            0.011134544947262197
+          ]
+        },
+        {
+          "body": "humerus_r",
+          "station_m": [
+            0.026322795184468846,
+            -0.004857151138540815,
+            0.013331358880392132
+          ]
+        },
+        {
+          "body": "humerus_r",
+          "station_m": [
+            0.015563007878958372,
+            -0.03078282266078254,
+            0.0018675263785952773
+          ]
+        },
+        {
+          "body": "humerus_r",
+          "station_m": [
+            0.013804111300517268,
+            -0.08498947553564173,
+            -0.0008426953675343256
+          ]
+        },
+        {
+          "body": "humerus_r",
+          "station_m": [
+            0.021951937072584887,
+            -0.13316531132297219,
+            0.001794790548510586
+          ]
+        },
+        {
+          "body": "humerus_r",
+          "station_m": [
+            0.02974285203134206,
+            -0.19276742830429755,
+            -0.004733087917641217
+          ]
+        },
+        {
+          "body": "radius_r",
+          "station_m": [
+            0.016707577391553097,
+            -0.03983612563929734,
+            -0.0038440203315044837
+          ]
+        }
+      ],
+      "crosses_shoulder": true,
+      "wraps": [
+        "<PathWrap name=\"pathwrap\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>arm26_BIClonghh_r</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>2 3</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t"
+      ]
+    },
+    {
+      "name": "arm26_BICshort_r",
+      "points": [
+        {
+          "body": "torso",
+          "station_m": [
+            0.0287674734597715,
+            0.37944703564649906,
+            0.16000534514489284
+          ]
+        },
+        {
+          "body": "torso",
+          "station_m": [
+            0.016530870527692035,
+            0.34870832955527825,
+            0.17171185465761973
+          ]
+        },
+        {
+          "body": "humerus_r",
+          "station_m": [
+            0.014316344400050914,
+            -0.08332963217776859,
+            -0.011179523399798686
+          ]
+        },
+        {
+          "body": "humerus_r",
+          "station_m": [
+            0.021968724443926443,
+            -0.13330225577329322,
+            -0.010363558653521406
+          ]
+        },
+        {
+          "body": "humerus_r",
+          "station_m": [
+            0.02974285203134206,
+            -0.19276742830429755,
+            -0.004733087917641217
+          ]
+        },
+        {
+          "body": "radius_r",
+          "station_m": [
+            0.016707577391553097,
+            -0.03983612563929734,
+            -0.0038440203315044837
+          ]
+        }
+      ],
+      "crosses_shoulder": true,
+      "wraps": []
+    },
+    {
+      "name": "arm26_BRA_r",
+      "points": [
+        {
+          "body": "humerus_r",
+          "station_m": [
+            0.0120664652856763,
+            -0.19150137151645685,
+            -0.0017951659095627095
+          ]
+        },
+        {
+          "body": "ulna_r",
+          "station_m": [
+            -0.0029002780851852443,
+            -0.0264103800341415,
+            0.001285662530784035
+          ]
+        }
+      ],
+      "crosses_shoulder": false,
+      "wraps": [
+        "<PathWrap name=\"pathwrap\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>arm26_TRI_r</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>-1 -1</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t"
+      ]
+    },
+    {
+      "name": "arm26_TRIlong_l",
+      "points": [
+        {
+          "body": "torso",
+          "station_m": [
+            -0.03549160077929807,
+            0.3765045113775302,
+            -0.17370821676150705
+          ]
+        },
+        {
+          "body": "humerus_l",
+          "station_m": [
+            -0.026895006124858765,
+            -0.12687383606232733,
+            0.005928305464704246
+          ]
+        },
+        {
+          "body": "humerus_l",
+          "station_m": [
+            -0.029125924421544623,
+            -0.25044435179690594,
+            0.01063605461655058
+          ]
+        },
+        {
+          "body": "humerus_l",
+          "station_m": [
+            -0.01216343931642476,
+            -0.2954663945327599,
+            0.010006312781430606
+          ]
+        },
+        {
+          "body": "ulna_l",
+          "station_m": [
+            -0.024408526278671624,
+            0.010941605994758016,
+            0.001016844622988786
+          ]
+        }
+      ],
+      "crosses_shoulder": true,
+      "wraps": [
+        "<PathWrap name=\"TRIlong-wrap-cylinder1\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>arm26_TRI_l</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>-1 -1</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t\t",
+        "<PathWrap name=\"TRIlong-wrap-ellipsoid\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>arm26_TRIlonghh_l</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>-1 -1</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t\t",
+        "<PathWrap name=\"TRIlong-wrap-cylinder2\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>arm26_TRIlongglen_l</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>-1 -1</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t"
+      ]
+    },
+    {
+      "name": "arm26_TRIlat_l",
+      "points": [
+        {
+          "body": "humerus_l",
+          "station_m": [
+            -0.0032866970730491187,
+            -0.13946141358173375,
+            -0.006284716634844891
+          ]
+        },
+        {
+          "body": "humerus_l",
+          "station_m": [
+            -0.022030914942335632,
+            -0.16059725897826113,
+            -0.012009098370326168
+          ]
+        },
+        {
+          "body": "humerus_l",
+          "station_m": [
+            -0.029125924421544623,
+            -0.25044435179690594,
+            0.01063605461655058
+          ]
+        },
+        {
+          "body": "humerus_l",
+          "station_m": [
+            -0.01216343931642476,
+            -0.2954663945327599,
+            0.010006312781430606
+          ]
+        },
+        {
+          "body": "ulna_l",
+          "station_m": [
+            -0.024408526278671624,
+            0.010941605994758016,
+            0.001016844622988786
+          ]
+        }
+      ],
+      "crosses_shoulder": false,
+      "wraps": [
+        "<PathWrap name=\"pathwrap\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>arm26_TRI_l</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>-1 -1</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t"
+      ]
+    },
+    {
+      "name": "arm26_TRImed_l",
+      "points": [
+        {
+          "body": "humerus_l",
+          "station_m": [
+            -0.005624814672564414,
+            -0.1512496750946115,
+            0.00829228725360465
+          ]
+        },
+        {
+          "body": "humerus_l",
+          "station_m": [
+            -0.024672173169331787,
+            -0.16764723322096903,
+            0.01005213994001328
+          ]
+        },
+        {
+          "body": "humerus_l",
+          "station_m": [
+            -0.029125924421544623,
+            -0.25044435179690594,
+            0.01063605461655058
+          ]
+        },
+        {
+          "body": "humerus_l",
+          "station_m": [
+            -0.01216343931642476,
+            -0.2954663945327599,
+            0.010006312781430606
+          ]
+        },
+        {
+          "body": "ulna_l",
+          "station_m": [
+            -0.024408526278671624,
+            0.010941605994758016,
+            0.001016844622988786
+          ]
+        }
+      ],
+      "crosses_shoulder": false,
+      "wraps": [
+        "<PathWrap name=\"pathwrap\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>arm26_TRI_l</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>-1 -1</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t"
+      ]
+    },
+    {
+      "name": "arm26_BIClong_l",
+      "points": [
+        {
+          "body": "torso",
+          "station_m": [
+            -0.02005828138988639,
+            0.3958464038464662,
+            -0.174305427251991
+          ]
+        },
+        {
+          "body": "torso",
+          "station_m": [
+            -0.009005156531377774,
+            0.40772632387958135,
+            -0.18349147507685928
+          ]
+        },
+        {
+          "body": "humerus_l",
+          "station_m": [
+            0.022998268802450136,
+            0.020446220975797035,
+            -0.011134544947262197
+          ]
+        },
+        {
+          "body": "humerus_l",
+          "station_m": [
+            0.026322795184468846,
+            -0.004857151138540815,
+            -0.013331358880392132
+          ]
+        },
+        {
+          "body": "humerus_l",
+          "station_m": [
+            0.015563007878958372,
+            -0.03078282266078254,
+            -0.0018675263785952773
+          ]
+        },
+        {
+          "body": "humerus_l",
+          "station_m": [
+            0.013804111300517268,
+            -0.08498947553564173,
+            0.0008426953675343256
+          ]
+        },
+        {
+          "body": "humerus_l",
+          "station_m": [
+            0.021951937072584887,
+            -0.13316531132297219,
+            -0.001794790548510586
+          ]
+        },
+        {
+          "body": "humerus_l",
+          "station_m": [
+            0.02974285203134206,
+            -0.19276742830429755,
+            0.004733087917641217
+          ]
+        },
+        {
+          "body": "radius_l",
+          "station_m": [
+            0.016707577391553097,
+            -0.03983612563929734,
+            0.0038440203315044837
+          ]
+        }
+      ],
+      "crosses_shoulder": true,
+      "wraps": [
+        "<PathWrap name=\"pathwrap\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>arm26_BIClonghh_l</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>2 3</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t"
+      ]
+    },
+    {
+      "name": "arm26_BICshort_l",
+      "points": [
+        {
+          "body": "torso",
+          "station_m": [
+            0.0287674734597715,
+            0.37944703564649906,
+            -0.16000534514489284
+          ]
+        },
+        {
+          "body": "torso",
+          "station_m": [
+            0.016530870527692035,
+            0.34870832955527825,
+            -0.17171185465761973
+          ]
+        },
+        {
+          "body": "humerus_l",
+          "station_m": [
+            0.014316344400050914,
+            -0.08332963217776859,
+            0.011179523399798686
+          ]
+        },
+        {
+          "body": "humerus_l",
+          "station_m": [
+            0.021968724443926443,
+            -0.13330225577329322,
+            0.010363558653521406
+          ]
+        },
+        {
+          "body": "humerus_l",
+          "station_m": [
+            0.02974285203134206,
+            -0.19276742830429755,
+            0.004733087917641217
+          ]
+        },
+        {
+          "body": "radius_l",
+          "station_m": [
+            0.016707577391553097,
+            -0.03983612563929734,
+            0.0038440203315044837
+          ]
+        }
+      ],
+      "crosses_shoulder": true,
+      "wraps": []
+    },
+    {
+      "name": "arm26_BRA_l",
+      "points": [
+        {
+          "body": "humerus_l",
+          "station_m": [
+            0.0120664652856763,
+            -0.19150137151645685,
+            0.0017951659095627095
+          ]
+        },
+        {
+          "body": "ulna_l",
+          "station_m": [
+            -0.0029002780851852443,
+            -0.0264103800341415,
+            -0.001285662530784035
+          ]
+        }
+      ],
+      "crosses_shoulder": false,
+      "wraps": [
+        "<PathWrap name=\"pathwrap\">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<wrap_object>arm26_TRI_l</wrap_object>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<method>hybrid</method>\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<range>-1 -1</range>\n\t\t\t\t\t\t\t\t</PathWrap>\n\t\t\t\t\t\t\t"
+      ]
+    }
+  ],
+  "lumbar_candidate": [
+    {
+      "source_name": "ercspn_r",
+      "candidate_name": "gait2392_ercspn_r",
+      "type": "Thelen2003Muscle",
+      "stations": [
+        {
+          "body": "pelvis",
+          "donor_station_m": [
+            -0.14,
+            0.0439,
+            0.0436
+          ],
+          "target_station_m": [
+            -0.1551377177321,
+            0.054530303884750005,
+            0.0436
+          ]
+        },
+        {
+          "body": "torso",
+          "donor_station_m": [
+            -0.055,
+            0.11,
+            0.0241
+          ],
+          "target_station_m": [
+            -0.055,
+            0.11,
+            0.0241
+          ]
+        }
+      ],
+      "parameters": {
+        "max_isometric_force": 2500.0,
+        "optimal_fiber_length": 0.12,
+        "tendon_slack_length": 0.03,
+        "pennation_angle_at_optimal": 0.0,
+        "max_contraction_velocity": 10.0,
+        "activation_time_constant": 0.01,
+        "deactivation_time_constant": 0.04
+      },
+      "neutral_path_length_m": 0.1497080492157987,
+      "neutral_moment_arms_m": [
+        0.04268975538374431,
+        0.03808853318087489,
+        0.009691329274544375
+      ],
+      "neutral_max_isometric_torque_Nm": [
+        106.72438845936078,
+        95.22133295218723,
+        24.22832318636094
+      ]
+    },
+    {
+      "source_name": "intobl_r",
+      "candidate_name": "gait2392_intobl_r",
+      "type": "Thelen2003Muscle",
+      "stations": [
+        {
+          "body": "pelvis",
+          "donor_station_m": [
+            -0.04,
+            0.07,
+            0.1157
+          ],
+          "target_station_m": [
+            -0.0551377177321,
+            0.08063030388475001,
+            0.1157
+          ]
+        },
+        {
+          "body": "torso",
+          "donor_station_m": [
+            0.07,
+            0.16,
+            0.015
+          ],
+          "target_station_m": [
+            0.07,
+            0.16,
+            0.015
+          ]
+        }
+      ],
+      "parameters": {
+        "max_isometric_force": 900.0,
+        "optimal_fiber_length": 0.1,
+        "tendon_slack_length": 0.1,
+        "pennation_angle_at_optimal": 0.0,
+        "max_contraction_velocity": 10.0,
+        "activation_time_constant": 0.01,
+        "deactivation_time_constant": 0.04
+      },
+      "neutral_path_length_m": 0.19909603210511254,
+      "neutral_moment_arms_m": [
+        -0.05282375489255135,
+        0.09384667189216277,
+        -0.03610569193164453
+      ],
+      "neutral_max_isometric_torque_Nm": [
+        -47.54137940329622,
+        84.46200470294649,
+        -32.49512273848008
+      ]
+    },
+    {
+      "source_name": "extobl_r",
+      "candidate_name": "gait2392_extobl_r",
+      "type": "Thelen2003Muscle",
+      "stations": [
+        {
+          "body": "pelvis",
+          "donor_station_m": [
+            -0.03,
+            -0.0636,
+            0.01
+          ],
+          "target_station_m": [
+            -0.0451377177321,
+            -0.05296969611525,
+            0.01
+          ]
+        },
+        {
+          "body": "torso",
+          "donor_station_m": [
+            0.065,
+            0.11,
+            0.11
+          ],
+          "target_station_m": [
+            0.065,
+            0.11,
+            0.11
+          ]
+        }
+      ],
+      "parameters": {
+        "max_isometric_force": 900.0,
+        "optimal_fiber_length": 0.12,
+        "tendon_slack_length": 0.14,
+        "pennation_angle_at_optimal": 0.0,
+        "max_contraction_velocity": 10.0,
+        "activation_time_constant": 0.01,
+        "deactivation_time_constant": 0.04
+      },
+      "neutral_path_length_m": 0.2740593001523576,
+      "neutral_moment_arms_m": [
+        -0.06279115501803183,
+        0.06225295033051346,
+        0.02600532073181933
+      ],
+      "neutral_max_isometric_torque_Nm": [
+        -56.51203951622865,
+        56.02765529746211,
+        23.404788658637397
+      ]
+    },
+    {
+      "source_name": "ercspn_l",
+      "candidate_name": "gait2392_ercspn_l",
+      "type": "Thelen2003Muscle",
+      "stations": [
+        {
+          "body": "pelvis",
+          "donor_station_m": [
+            -0.14,
+            0.0439,
+            -0.0436
+          ],
+          "target_station_m": [
+            -0.1551377177321,
+            0.054530303884750005,
+            -0.0436
+          ]
+        },
+        {
+          "body": "torso",
+          "donor_station_m": [
+            -0.055,
+            0.11,
+            -0.0241
+          ],
+          "target_station_m": [
+            -0.055,
+            0.11,
+            -0.0241
+          ]
+        }
+      ],
+      "parameters": {
+        "max_isometric_force": 2500.0,
+        "optimal_fiber_length": 0.12,
+        "tendon_slack_length": 0.03,
+        "pennation_angle_at_optimal": 0.0,
+        "max_contraction_velocity": 10.0,
+        "activation_time_constant": 0.01,
+        "deactivation_time_constant": 0.04
+      },
+      "neutral_path_length_m": 0.1497080492157987,
+      "neutral_moment_arms_m": [
+        0.04268975538374431,
+        -0.03808853318087489,
+        -0.009691329274544375
+      ],
+      "neutral_max_isometric_torque_Nm": [
+        106.72438845936078,
+        -95.22133295218723,
+        -24.22832318636094
+      ]
+    },
+    {
+      "source_name": "intobl_l",
+      "candidate_name": "gait2392_intobl_l",
+      "type": "Thelen2003Muscle",
+      "stations": [
+        {
+          "body": "pelvis",
+          "donor_station_m": [
+            -0.04,
+            0.07,
+            -0.1157
+          ],
+          "target_station_m": [
+            -0.0551377177321,
+            0.08063030388475001,
+            -0.1157
+          ]
+        },
+        {
+          "body": "torso",
+          "donor_station_m": [
+            0.07,
+            0.16,
+            -0.015
+          ],
+          "target_station_m": [
+            0.07,
+            0.16,
+            -0.015
+          ]
+        }
+      ],
+      "parameters": {
+        "max_isometric_force": 900.0,
+        "optimal_fiber_length": 0.1,
+        "tendon_slack_length": 0.1,
+        "pennation_angle_at_optimal": 0.0,
+        "max_contraction_velocity": 10.0,
+        "activation_time_constant": 0.01,
+        "deactivation_time_constant": 0.04
+      },
+      "neutral_path_length_m": 0.19909603210511254,
+      "neutral_moment_arms_m": [
+        -0.05282375489255135,
+        -0.09384667189216277,
+        0.03610569193164453
+      ],
+      "neutral_max_isometric_torque_Nm": [
+        -47.54137940329622,
+        -84.46200470294649,
+        32.49512273848008
+      ]
+    },
+    {
+      "source_name": "extobl_l",
+      "candidate_name": "gait2392_extobl_l",
+      "type": "Thelen2003Muscle",
+      "stations": [
+        {
+          "body": "pelvis",
+          "donor_station_m": [
+            -0.03,
+            -0.0636,
+            -0.01
+          ],
+          "target_station_m": [
+            -0.0451377177321,
+            -0.05296969611525,
+            -0.01
+          ]
+        },
+        {
+          "body": "torso",
+          "donor_station_m": [
+            0.065,
+            0.11,
+            -0.11
+          ],
+          "target_station_m": [
+            0.065,
+            0.11,
+            -0.11
+          ]
+        }
+      ],
+      "parameters": {
+        "max_isometric_force": 900.0,
+        "optimal_fiber_length": 0.12,
+        "tendon_slack_length": 0.14,
+        "pennation_angle_at_optimal": 0.0,
+        "max_contraction_velocity": 10.0,
+        "activation_time_constant": 0.01,
+        "deactivation_time_constant": 0.04
+      },
+      "neutral_path_length_m": 0.2740593001523576,
+      "neutral_moment_arms_m": [
+        -0.06279115501803183,
+        -0.06225295033051346,
+        -0.02600532073181933
+      ],
+      "neutral_max_isometric_torque_Nm": [
+        -56.51203951622865,
+        -56.02765529746211,
+        -23.404788658637397
+      ]
+    }
+  ],
+  "registration": {
+    "method": "joint-frame rigid station transfer, unit scale, matched rotation axes",
+    "donor_joint": "back",
+    "target_joint": "back",
+    "donor_frames_m": {
+      "pelvis": [
+        -0.1007,
+        0.0815,
+        0.0
+      ],
+      "torso": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "target_frames_m": {
+      "pelvis": [
+        -0.1158377177321,
+        0.09213030388475,
+        0.0
+      ],
+      "torso": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "coordinate_order": [
+      "lumbar_extension",
+      "lumbar_bending",
+      "lumbar_rotation"
+    ],
+    "neutral_moment_arm_rank": 3,
+    "world_transform_change": false,
+    "mass_added_kg": 0.0
+  },
+  "canonical_candidates": [
+    {
+      "id": "body-bp3d-FJ1446",
+      "name": "abdominal part of right pectoralis major",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-bp3d-FJ1446.json.gz",
+        "sha256": "5aca300b1a635c09dbeea7da46309a1b3c757bee2e071a53a52ab0c266d523eb",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-bp3d-FJ1446",
+          "canonical_entity_id": "body-bp3d-FJ1446",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3368",
+              "point_m": [
+                -0.17893299999999998,
+                0.48809059999999993,
+                -0.014562000000000005
+              ],
+              "projection_distance_m": 0.004914367964448764,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3344",
+              "point_m": [
+                -0.09060869999999997,
+                0.35133059999999994,
+                0.08752330000000001
+              ],
+              "projection_distance_m": 0.04996521253322151,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.19216109920215382,
+          "max_isometric_force_n": 62.35019008424652,
+          "optimal_fiber_length_m": 0.12079143089121004,
+          "tendon_slack_length_m": 0.019216109920215385,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 25.80902868035473,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-bp3d-FJ1446M",
+      "name": "abdominal part of left pectoralis major",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-bp3d-FJ1446M.json.gz",
+        "sha256": "7252fddbb27a13b101605ebb20a1d8a1505ffcdecf53b7266393ad6ba1a6b2b4",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-bp3d-FJ1446M",
+          "canonical_entity_id": "body-bp3d-FJ1446M",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3262",
+              "point_m": [
+                0.17961200000000005,
+                0.49212060000000013,
+                -0.014487199999999992
+              ],
+              "projection_distance_m": 0.0037136915932802507,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3233",
+              "point_m": [
+                0.09058490000000004,
+                0.35132059999999987,
+                0.08749729999999999
+              ],
+              "projection_distance_m": 0.04899582004018294,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.1953235847885761,
+          "max_isometric_force_n": 62.35034481735723,
+          "optimal_fiber_length_m": 0.12079142120724498,
+          "tendon_slack_length_m": 0.01953235847885761,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 25.809094799199826,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-bp3d-FJ1447",
+      "name": "clavicular part of right pectoralis major",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-bp3d-FJ1447.json.gz",
+        "sha256": "9bc5e22cd1df8c1e75bf83640a85b2668fb725b0dec7b6d684ef3e2cf823a6fe",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-bp3d-FJ1447",
+          "canonical_entity_id": "body-bp3d-FJ1447",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3368",
+              "point_m": [
+                -0.19681099999999996,
+                0.44657059999999993,
+                -0.018096299999999996
+              ],
+              "projection_distance_m": 0.003629929332645443,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3362",
+              "point_m": [
+                -0.025381799999999965,
+                0.5367106,
+                0.045617299999999986
+              ],
+              "projection_distance_m": 0.0035430995526515648,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.20389363167494962,
+          "max_isometric_force_n": 142.6829291322475,
+          "optimal_fiber_length_m": 0.09930856440165836,
+          "tendon_slack_length_m": 0.020389363167494963,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 71.83817931108106,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-bp3d-FJ1447M",
+      "name": "clavicular part of left pectoralis major",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-bp3d-FJ1447M.json.gz",
+        "sha256": "46687910416a3b39e8997a851a5b53281aba6f0663291a2068dadb52b5676801",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-bp3d-FJ1447M",
+          "canonical_entity_id": "body-bp3d-FJ1447M",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3262",
+              "point_m": [
+                0.19931500000000005,
+                0.4478806000000001,
+                -0.0209134
+              ],
+              "projection_distance_m": 0.005274997392416425,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3237",
+              "point_m": [
+                0.024838800000000036,
+                0.5368006,
+                0.045580300000000004
+              ],
+              "projection_distance_m": 0.004380078907965006,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.2068093878578291,
+          "max_isometric_force_n": 142.6738093751733,
+          "optimal_fiber_length_m": 0.0993078757444336,
+          "tendon_slack_length_m": 0.02068093878578291,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 71.83408581930647,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-bp3d-FJ1452",
+      "name": "right external oblique",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-bp3d-FJ1452.json.gz",
+        "sha256": "c300f12bea50daa85ce2e0a06ffe3e5b2039246bd8854363e94eb99d103df081",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-bp3d-FJ1452",
+          "canonical_entity_id": "body-bp3d-FJ1452",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3342",
+              "point_m": [
+                -0.12567299999999995,
+                0.4244705999999999,
+                0.013401299999999991
+              ],
+              "projection_distance_m": 0.0024705578317456836,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3152",
+              "point_m": [
+                -0.008072029999999964,
+                0.007163599999999937,
+                0.029686300000000013
+              ],
+              "projection_distance_m": 0.0015394555714277796,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.433866709507587,
+          "max_isometric_force_n": 371.9806204592812,
+          "optimal_fiber_length_m": 0.21256841548012323,
+          "tendon_slack_length_m": 0.0433866709507587,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 87.49668186101343,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-bp3d-FJ1452M",
+      "name": "left external oblique",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-bp3d-FJ1452M.json.gz",
+        "sha256": "d8887553c210070ca5e0f98ac15505420111b1b247b759d02f316f69b45a0a5f",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-bp3d-FJ1452M",
+          "canonical_entity_id": "body-bp3d-FJ1452M",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3232",
+              "point_m": [
+                0.12538300000000005,
+                0.4267905999999998,
+                0.014276299999999992
+              ],
+              "projection_distance_m": 0.002501335043531784,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3288",
+              "point_m": [
+                0.009385370000000037,
+                0.007791599999999899,
+                0.03013629999999999
+              ],
+              "projection_distance_m": 0.0014576790790842772,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.43504844760855865,
+          "max_isometric_force_n": 371.9685468252682,
+          "optimal_fiber_length_m": 0.2125746600895158,
+          "tendon_slack_length_m": 0.043504844760855865,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 87.49127169452635,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-bp3d-FJ1456",
+      "name": "right pectoralis minor",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-bp3d-FJ1456.json.gz",
+        "sha256": "a83135362dfa4aebadf79e6908915d535894674d1cb7480c7c73cae37027ed39",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-bp3d-FJ1456",
+          "canonical_entity_id": "body-bp3d-FJ1456",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3384",
+              "point_m": [
+                -0.12255199999999997,
+                0.5359105999999999,
+                -0.019935099999999997
+              ],
+              "projection_distance_m": 0.003094140793499851,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3342",
+              "point_m": [
+                -0.09773919999999997,
+                0.3938605999999999,
+                0.06984929999999999
+              ],
+              "projection_distance_m": 0.0029133519251886395,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.16986793701932099,
+          "max_isometric_force_n": 131.1886072146719,
+          "optimal_fiber_length_m": 0.08514002557381488,
+          "tendon_slack_length_m": 0.0169867937019321,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 77.04285166142787,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-bp3d-FJ1456M",
+      "name": "left pectoralis minor",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-bp3d-FJ1456M.json.gz",
+        "sha256": "60ac5301fb552631df03ba782dc225cdc1d54f91b00d30419ad220b1949fe3a8",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-bp3d-FJ1456M",
+          "canonical_entity_id": "body-bp3d-FJ1456M",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3279",
+              "point_m": [
+                0.12380100000000004,
+                0.5359405999999999,
+                -0.019482899999999997
+              ],
+              "projection_distance_m": 0.003110548840638902,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3232",
+              "point_m": [
+                0.10242600000000003,
+                0.3965405999999999,
+                0.07122830000000001
+              ],
+              "projection_distance_m": 0.0020450322735839515,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.16768354847879383,
+          "max_isometric_force_n": 131.19213054985389,
+          "optimal_fiber_length_m": 0.08513885415615283,
+          "tendon_slack_length_m": 0.016768354847879384,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 77.04598085689229,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-bp3d-FJ1464",
+      "name": "sternocostal part of right pectoralis major",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-bp3d-FJ1464.json.gz",
+        "sha256": "8c18ca6a47ec6b351448337e4089b4651a0faa24d233a99fac701f33d13b239f",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-bp3d-FJ1464",
+          "canonical_entity_id": "body-bp3d-FJ1464",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3368",
+              "point_m": [
+                -0.18931599999999996,
+                0.45659059999999985,
+                -0.014155200000000007
+              ],
+              "projection_distance_m": 0.004401474894850579,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3178",
+              "point_m": [
+                -0.010126799999999964,
+                0.4211805999999999,
+                0.10731730000000002
+              ],
+              "projection_distance_m": 0.0071940552490511196,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.21935862361186076,
+          "max_isometric_force_n": 1102.048086249667,
+          "optimal_fiber_length_m": 0.10810010870962003,
+          "tendon_slack_length_m": 0.021935862361186078,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 509.73495744116383,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-bp3d-FJ1464M",
+      "name": "sternocostal part of left pectoralis major",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-bp3d-FJ1464M.json.gz",
+        "sha256": "c995b1803aae4caed9deb857db821ae11ca61b20c82e42ba675d63db154c1561",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-bp3d-FJ1464M",
+          "canonical_entity_id": "body-bp3d-FJ1464M",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3262",
+              "point_m": [
+                0.18688300000000002,
+                0.45832059999999986,
+                -0.014632699999999998
+              ],
+              "projection_distance_m": 0.003544526625658224,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3178",
+              "point_m": [
+                0.012386700000000035,
+                0.4238205999999999,
+                0.1063563
+              ],
+              "projection_distance_m": 0.007264480771562344,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.21512216723222644,
+          "max_isometric_force_n": 1101.9156312956788,
+          "optimal_fiber_length_m": 0.10811176542978657,
+          "tendon_slack_length_m": 0.021512216723222646,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 509.6187389573804,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-bp3d-FJ1467",
+      "name": "acromial part of right deltoid",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-bp3d-FJ1467.json.gz",
+        "sha256": "9ec62f29e482d8dbe18bdc0a5ad40cb3b6c92e651c52d9be8d5c125a94981b55",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-bp3d-FJ1467",
+          "canonical_entity_id": "body-bp3d-FJ1467",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3368",
+              "point_m": [
+                -0.20356299999999997,
+                0.4169405999999999,
+                -0.023356199999999994
+              ],
+              "projection_distance_m": 0.0036956078201020757,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3384",
+              "point_m": [
+                -0.14677499999999996,
+                0.5592605999999999,
+                -0.0252675
+              ],
+              "projection_distance_m": 0.0010747223083197527,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.1532433111482847,
+          "max_isometric_force_n": 369.6787042543088,
+          "optimal_fiber_length_m": 0.07560902742099875,
+          "tendon_slack_length_m": 0.015324331114828471,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 244.4673056008909,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-bp3d-FJ1467M",
+      "name": "acromial part of left deltoid",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-bp3d-FJ1467M.json.gz",
+        "sha256": "3e05d60d13e7e1e1fae9b59b3b379fe3b8764185308daaa62120ff4498a8f69e",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-bp3d-FJ1467M",
+          "canonical_entity_id": "body-bp3d-FJ1467M",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3262",
+              "point_m": [
+                0.20497700000000005,
+                0.4167605999999998,
+                -0.023764400000000005
+              ],
+              "projection_distance_m": 0.0033859636501297075,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3279",
+              "point_m": [
+                0.14801700000000004,
+                0.5592205999999998,
+                -0.0252777
+              ],
+              "projection_distance_m": 0.0010816912683387035,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.1534326669157843,
+          "max_isometric_force_n": 369.6125362433658,
+          "optimal_fiber_length_m": 0.07562171213699995,
+          "tendon_slack_length_m": 0.015343266691578431,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 244.38254953402662,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-bp3d-FJ1468",
+      "name": "clavicular part of right deltoid",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-bp3d-FJ1468.json.gz",
+        "sha256": "2224b093219ff36a82193361c634b1c7f048f1a94e64e51e25c0095346016a2a",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-bp3d-FJ1468",
+          "canonical_entity_id": "body-bp3d-FJ1468",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3368",
+              "point_m": [
+                -0.19792899999999997,
+                0.4158906000000001,
+                -0.018237500000000004
+              ],
+              "projection_distance_m": 0.002542367093871216,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3362",
+              "point_m": [
+                -0.12011199999999997,
+                0.5667905999999999,
+                -0.02651020000000001
+              ],
+              "projection_distance_m": 0.0013438616930324875,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.16998450827734257,
+          "max_isometric_force_n": 197.50501477372845,
+          "optimal_fiber_length_m": 0.08353243062917731,
+          "tendon_slack_length_m": 0.016998450827734258,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 118.22056013819697,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-bp3d-FJ1468M",
+      "name": "clavicular part of left deltoid",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-bp3d-FJ1468M.json.gz",
+        "sha256": "b15e8182e84a44d01d85ad8976a26d650c526d6bfb5742efa98918738cd476bc",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-bp3d-FJ1468M",
+          "canonical_entity_id": "body-bp3d-FJ1468M",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3262",
+              "point_m": [
+                0.20062200000000002,
+                0.42070059999999987,
+                -0.01873799999999999
+              ],
+              "projection_distance_m": 0.0036947849585599506,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3237",
+              "point_m": [
+                0.12320500000000005,
+                0.5665505999999999,
+                -0.024853799999999995
+              ],
+              "projection_distance_m": 0.0012287448107723903,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.1652362472299586,
+          "max_isometric_force_n": 197.49514260433963,
+          "optimal_fiber_length_m": 0.083532058671983,
+          "tendon_slack_length_m": 0.016523624722995862,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 118.21517734877779,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-bp3d-FJ1500",
+      "name": "right infraspinatus muscle",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-bp3d-FJ1500.json.gz",
+        "sha256": "cebb1f753602281dfb5ba5a33db92886e77c0926f90a554d2d91acb6a857dd78",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-bp3d-FJ1500",
+          "canonical_entity_id": "body-bp3d-FJ1500",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3368",
+              "point_m": [
+                -0.18691299999999997,
+                0.5385805999999999,
+                -0.023024500000000003
+              ],
+              "projection_distance_m": 0.002727920453385719,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3384",
+              "point_m": [
+                -0.07694539999999997,
+                0.4241005999999997,
+                -0.101611926
+              ],
+              "projection_distance_m": 0.001517123732625626,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.17712856058542764,
+          "max_isometric_force_n": 362.1178918970387,
+          "optimal_fiber_length_m": 0.08804608563991297,
+          "tendon_slack_length_m": 0.017712856058542763,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 205.64110787276374,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-bp3d-FJ1500M",
+      "name": "left infraspinatus muscle",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-bp3d-FJ1500M.json.gz",
+        "sha256": "efb3bf76b0016b72bce26623c920be00c0a48d62d1da5b03373125d5dd5be36e",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-bp3d-FJ1500M",
+          "canonical_entity_id": "body-bp3d-FJ1500M",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3262",
+              "point_m": [
+                0.18799900000000005,
+                0.5401005999999998,
+                -0.0247888
+              ],
+              "projection_distance_m": 0.00042713404219288793,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3279",
+              "point_m": [
+                0.07974900000000004,
+                0.4243205999999998,
+                -0.1007858704
+              ],
+              "projection_distance_m": 0.0015691110094267005,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.1757800489514739,
+          "max_isometric_force_n": 362.26201636040554,
+          "optimal_fiber_length_m": 0.08804443389291526,
+          "tendon_slack_length_m": 0.01757800489514739,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 205.7268133502963,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-bp3d-FJ1504",
+      "name": "right subscapularis",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-bp3d-FJ1504.json.gz",
+        "sha256": "e48caba166f92daa196576f091e470df83ebfbb4a6a4adffabd07df6308c596a",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-bp3d-FJ1504",
+          "canonical_entity_id": "body-bp3d-FJ1504",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3368",
+              "point_m": [
+                -0.16656599999999996,
+                0.5328806,
+                -0.0016115000000000018
+              ],
+              "projection_distance_m": 0.0016592330035291943,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3384",
+              "point_m": [
+                -0.07608109999999996,
+                0.4304806,
+                -0.1009112
+              ],
+              "projection_distance_m": 0.0029196433907071706,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.16891923380154203,
+          "max_isometric_force_n": 175.5233354156623,
+          "optimal_fiber_length_m": 0.07945983183483367,
+          "tendon_slack_length_m": 0.016891923380154203,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 110.4478397214001,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-bp3d-FJ1504M",
+      "name": "left subscapularis",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-bp3d-FJ1504M.json.gz",
+        "sha256": "04979c863342ea13f748eb9e001c98b306af3f7b289d140e8f4f4237daaeb839",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-bp3d-FJ1504M",
+          "canonical_entity_id": "body-bp3d-FJ1504M",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3262",
+              "point_m": [
+                0.16795800000000005,
+                0.5323905999999999,
+                -0.0014727999999999963
+              ],
+              "projection_distance_m": 0.001494790249499974,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3279",
+              "point_m": [
+                0.07799960000000003,
+                0.42866060000000006,
+                -0.100943323
+              ],
+              "projection_distance_m": 0.00366190880733109,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.16954884716934382,
+          "max_isometric_force_n": 175.5610063818832,
+          "optimal_fiber_length_m": 0.07944298186201006,
+          "tendon_slack_length_m": 0.016954884716934383,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 110.49497530620586,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-bp3d-FJ1506",
+      "name": "right supraspinatus",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-bp3d-FJ1506.json.gz",
+        "sha256": "d9e5eaba4a775ac9a6e6dbed66a0267a023c3748f4bd168855237ba753796e1e",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-bp3d-FJ1506",
+          "canonical_entity_id": "body-bp3d-FJ1506",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3368",
+              "point_m": [
+                -0.18171799999999996,
+                0.5397005999999999,
+                -0.012270599999999993
+              ],
+              "projection_distance_m": 0.0037166914709187123,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3384",
+              "point_m": [
+                -0.06403449999999997,
+                0.5206806,
+                -0.0885954
+              ],
+              "projection_distance_m": 0.0008876527361530184,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.14155084481305646,
+          "max_isometric_force_n": 140.51225591381333,
+          "optimal_fiber_length_m": 0.0718405075064066,
+          "tendon_slack_length_m": 0.014155084481305646,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 97.79458747648931,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-bp3d-FJ1506M",
+      "name": "left supraspinatus",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-bp3d-FJ1506M.json.gz",
+        "sha256": "1925c141fe71337fdd5638b5d3ff053a2af3567e39528883c9f19d78b2d288c7",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-bp3d-FJ1506M",
+          "canonical_entity_id": "body-bp3d-FJ1506M",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3262",
+              "point_m": [
+                0.18361500000000003,
+                0.5386905999999999,
+                -0.012610499999999997
+              ],
+              "projection_distance_m": 0.003263130496930806,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3279",
+              "point_m": [
+                0.06520850000000003,
+                0.5206605999999999,
+                -0.0886458
+              ],
+              "projection_distance_m": 0.0009309265169711043,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.14186806190379847,
+          "max_isometric_force_n": 140.48856101408455,
+          "optimal_fiber_length_m": 0.07183686408912082,
+          "tendon_slack_length_m": 0.014186806190379847,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 97.78305525683473,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-bp3d-FJ1507",
+      "name": "right teres major",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-bp3d-FJ1507.json.gz",
+        "sha256": "8d8aec5668c55a9f45cfadc9723159955b83a2967217c0d36e9620a05e08649f",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-bp3d-FJ1507",
+          "canonical_entity_id": "body-bp3d-FJ1507",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3368",
+              "point_m": [
+                -0.16116099999999997,
+                0.4962705999999998,
+                -0.025754600000000002
+              ],
+              "projection_distance_m": 0.002208716842422094,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3384",
+              "point_m": [
+                -0.08611249999999997,
+                0.4093005999999998,
+                -0.1046234
+              ],
+              "projection_distance_m": 0.0030899829139995295,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.13934254865506804,
+          "max_isometric_force_n": 163.54146942418618,
+          "optimal_fiber_length_m": 0.06867829148867335,
+          "tendon_slack_length_m": 0.013934254865506805,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 119.0634375719422,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-bp3d-FJ1507M",
+      "name": "left teres major",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-bp3d-FJ1507M.json.gz",
+        "sha256": "948cc696d498948ef9f3a4bd5170ea37dbacb8d627b5d175c3bd891f6d2e8884",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-bp3d-FJ1507M",
+          "canonical_entity_id": "body-bp3d-FJ1507M",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3262",
+              "point_m": [
+                0.16212300000000004,
+                0.4972206,
+                -0.0240422
+              ],
+              "projection_distance_m": 0.0028885021048979075,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3279",
+              "point_m": [
+                0.08676700000000004,
+                0.4088605999999998,
+                -0.10447299
+              ],
+              "projection_distance_m": 0.0031062748089068027,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.14126262179367952,
+          "max_isometric_force_n": 163.54845638063605,
+          "optimal_fiber_length_m": 0.0686774723307327,
+          "tendon_slack_length_m": 0.014126262179367952,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 119.0699445030749,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-bp3d-FJ1508",
+      "name": "right teres minor",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-bp3d-FJ1508.json.gz",
+        "sha256": "715039ac2e49132ef05fae76084bd083dce001a8ac5d455099c02a5fa118a349",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-bp3d-FJ1508",
+          "canonical_entity_id": "body-bp3d-FJ1508",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3368",
+              "point_m": [
+                -0.18711399999999997,
+                0.5285006,
+                -0.019892499999999994
+              ],
+              "projection_distance_m": 0.000611716568354993,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3384",
+              "point_m": [
+                -0.10668599999999996,
+                0.43542059999999994,
+                -0.0902953
+              ],
+              "projection_distance_m": 0.0033545775605879837,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.14173603575604904,
+          "max_isometric_force_n": 139.09096709471436,
+          "optimal_fiber_length_m": 0.07070580842136451,
+          "tendon_slack_length_m": 0.014173603575604904,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 98.3589398100189,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-bp3d-FJ1508M",
+      "name": "left teres minor",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-bp3d-FJ1508M.json.gz",
+        "sha256": "db413274b15f6a7f4cef45b466a7701f640ebcf58e9abf482dbae88c6e2ad57e",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-bp3d-FJ1508M",
+          "canonical_entity_id": "body-bp3d-FJ1508M",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3262",
+              "point_m": [
+                0.18865500000000004,
+                0.5288305999999999,
+                -0.020559800000000003
+              ],
+              "projection_distance_m": 0.0003842815244062433,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3279",
+              "point_m": [
+                0.10831400000000004,
+                0.43509059999999977,
+                -0.0902188
+              ],
+              "projection_distance_m": 0.0032535868760492576,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.14175415394971688,
+          "max_isometric_force_n": 139.08211337981746,
+          "optimal_fiber_length_m": 0.07070682712224441,
+          "tendon_slack_length_m": 0.01417541539497169,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 98.35126185153212,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-bp3d-FJ1513",
+      "name": "spinal part of right deltoid",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-bp3d-FJ1513.json.gz",
+        "sha256": "5f3b1137ad55e352f70f262dddd84ae6ffbcde9b8ecc79991af06016622fd0e0",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-bp3d-FJ1513",
+          "canonical_entity_id": "body-bp3d-FJ1513",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3368",
+              "point_m": [
+                -0.20291699999999996,
+                0.39956059999999993,
+                -0.036939200000000005
+              ],
+              "projection_distance_m": 0.004359187021681931,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3384",
+              "point_m": [
+                -0.08149789999999997,
+                0.5161905999999999,
+                -0.0829295
+              ],
+              "projection_distance_m": 0.0012473252382597985,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.17452868657873982,
+          "max_isometric_force_n": 582.2784759107998,
+          "optimal_fiber_length_m": 0.08772371129412876,
+          "tendon_slack_length_m": 0.017452868657873984,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 331.8820346978246,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-bp3d-FJ1513M",
+      "name": "spinal part of left deltoid",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-bp3d-FJ1513M.json.gz",
+        "sha256": "a9b28d0fb21a0e98bdfb2d8a1ec243684434f1231ab8b44674c7495831981100",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-bp3d-FJ1513M",
+          "canonical_entity_id": "body-bp3d-FJ1513M",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3262",
+              "point_m": [
+                0.20703800000000003,
+                0.3972006,
+                -0.03158710000000001
+              ],
+              "projection_distance_m": 0.004848033564240192,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3279",
+              "point_m": [
+                0.08405820000000003,
+                0.5172506,
+                -0.0836507
+              ],
+              "projection_distance_m": 0.0006210147341247673,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.17957352854193182,
+          "max_isometric_force_n": 582.2155481212457,
+          "optimal_fiber_length_m": 0.08772907972789805,
+          "tendon_slack_length_m": 0.01795735285419318,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 331.8258608930214,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-bp3d-FJ1527",
+      "name": "right iliocostalis lumborum",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-bp3d-FJ1527.json.gz",
+        "sha256": "95b7d0f5d97e4f2f11b20ebc22cf2ddf76c095681752c5eef778d4ea71615001",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-bp3d-FJ1527",
+          "canonical_entity_id": "body-bp3d-FJ1527",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3393",
+              "point_m": [
+                -0.013872899999999964,
+                0.04362659999999985,
+                -0.09716583000000001
+              ],
+              "projection_distance_m": 0.0015453857306187192,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3344",
+              "point_m": [
+                -0.09130929999999997,
+                0.4513505999999997,
+                -0.08280850000000001
+              ],
+              "projection_distance_m": 0.0008310042719507882,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.4152606279743949,
+          "max_isometric_force_n": 75.19343416755488,
+          "optimal_fiber_length_m": 0.20821319752107564,
+          "tendon_slack_length_m": 0.04152606279743949,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 18.05683670938863,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-bp3d-FJ1527M",
+      "name": "left iliocostalis lumborum",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-bp3d-FJ1527M.json.gz",
+        "sha256": "68459b02be96ba955e3ad687ba0b34bc6eff4ab6b4e0c038095dd7f4b84be01d",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-bp3d-FJ1527M",
+          "canonical_entity_id": "body-bp3d-FJ1527M",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3393",
+              "point_m": [
+                0.013753800000000036,
+                0.042623599999999984,
+                -0.09618201
+              ],
+              "projection_distance_m": 0.0009988085151819333,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3233",
+              "point_m": [
+                0.09124940000000004,
+                0.4518505999999999,
+                -0.0819676
+              ],
+              "projection_distance_m": 0.001867453121232257,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.4167425524229653,
+          "max_isometric_force_n": 75.19314100161968,
+          "optimal_fiber_length_m": 0.20821306514311383,
+          "tendon_slack_length_m": 0.04167425524229654,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 18.05677778912101,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-bp3d-FJ1528",
+      "name": "right iliocostalis thoracis",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-bp3d-FJ1528.json.gz",
+        "sha256": "f29cc4fd22d9fde0bfe2de46ae962add0c72236402228f99efd4caa67ef945f8",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-bp3d-FJ1528",
+          "canonical_entity_id": "body-bp3d-FJ1528",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3332",
+              "point_m": [
+                -0.04755799999999996,
+                0.26875059999999984,
+                -0.0664875
+              ],
+              "projection_distance_m": 0.0015723281750321255,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3334",
+              "point_m": [
+                -0.046243299999999966,
+                0.5729006,
+                -0.029807399999999998
+              ],
+              "projection_distance_m": 0.0028107233037067015,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.3063566233527522,
+          "max_isometric_force_n": 49.922686505917675,
+          "optimal_fiber_length_m": 0.15320778613315555,
+          "tendon_slack_length_m": 0.030635662335275222,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 16.292476957577403,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-bp3d-FJ1528M",
+      "name": "left iliocostalis thoracis",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-bp3d-FJ1528M.json.gz",
+        "sha256": "789b32b1cd6d691d79c2b1b6837540511a2daa1fdfb5c4f0ae58c3aeeaaa3dea",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-bp3d-FJ1528M",
+          "canonical_entity_id": "body-bp3d-FJ1528M",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3227",
+              "point_m": [
+                0.04766560000000004,
+                0.2686605999999999,
+                -0.0665866
+              ],
+              "projection_distance_m": 0.0015462521204511546,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3228",
+              "point_m": [
+                0.04568450000000004,
+                0.5739506,
+                -0.028890300000000008
+              ],
+              "projection_distance_m": 0.0012357396570475505,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.30761488892916095,
+          "max_isometric_force_n": 49.92253106120008,
+          "optimal_fiber_length_m": 0.15321041759397946,
+          "tendon_slack_length_m": 0.030761488892916095,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 16.29214639747899,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-bp3d-FJ1535",
+      "name": "right longissimus thoracis",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-bp3d-FJ1535.json.gz",
+        "sha256": "042591d19ed91412fed9c8bf7eb07e20a4356bf1d8a3e0efa4756c2645db4167",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-bp3d-FJ1535",
+          "canonical_entity_id": "body-bp3d-FJ1535",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3393",
+              "point_m": [
+                -0.011153099999999964,
+                0.06355259999999996,
+                -0.10346654
+              ],
+              "projection_distance_m": 0.0021464078179367946,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3158",
+              "point_m": [
+                -0.03673599999999997,
+                0.5839405999999999,
+                -0.0386394
+              ],
+              "projection_distance_m": 0.00038395377325920425,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.5250340116573302,
+          "max_isometric_force_n": 129.45305811022442,
+          "optimal_fiber_length_m": 0.26065201638076596,
+          "tendon_slack_length_m": 0.05250340116573302,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 24.832544920948678,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-bp3d-FJ1535M",
+      "name": "left longissimus thoracis",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-bp3d-FJ1535M.json.gz",
+        "sha256": "7b8edd8946814cf656550371dcf261a6c38058fb012f9c00854639ddc0735bf7",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-bp3d-FJ1535M",
+          "canonical_entity_id": "body-bp3d-FJ1535M",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3393",
+              "point_m": [
+                0.013100600000000037,
+                0.059692599999999874,
+                -0.10117356400000001
+              ],
+              "projection_distance_m": 0.003095498779989424,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3158",
+              "point_m": [
+                0.03656320000000004,
+                0.5832905999999999,
+                -0.037821999999999995
+              ],
+              "projection_distance_m": 0.001864351731836047,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.5279382348949601,
+          "max_isometric_force_n": 129.45818345951352,
+          "optimal_fiber_length_m": 0.26064705368845087,
+          "tendon_slack_length_m": 0.05279382348949601,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 24.834000927218185,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-bp3d-FJ1540",
+      "name": "right semispinalis thoracis",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-bp3d-FJ1540.json.gz",
+        "sha256": "a70575aa977fc1d8b031471f43be98a152285d43072e1ac0ad7074abec16a657",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-bp3d-FJ1540",
+          "canonical_entity_id": "body-bp3d-FJ1540",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3156",
+              "point_m": [
+                -0.020373999999999965,
+                0.2952505999999998,
+                -0.0604686
+              ],
+              "projection_distance_m": 0.0006623913118391532,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3158",
+              "point_m": [
+                -0.0019857799999999635,
+                0.5707306,
+                -0.0743227
+              ],
+              "projection_distance_m": 0.0032902866853968655,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.27644039705075396,
+          "max_isometric_force_n": 31.51881728724471,
+          "optimal_fiber_length_m": 0.1382840666815092,
+          "tendon_slack_length_m": 0.027644039705075396,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 11.396402363490544,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-bp3d-FJ1540M",
+      "name": "left semispinalis thoracis",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-bp3d-FJ1540M.json.gz",
+        "sha256": "c5c20d969fcfe8aa92d2fd97ee2a58d06c4c48e970bd3b3b48d8e87829ae7bfb",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-bp3d-FJ1540M",
+          "canonical_entity_id": "body-bp3d-FJ1540M",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3156",
+              "point_m": [
+                0.020265700000000036,
+                0.2952005999999999,
+                -0.06089750000000001
+              ],
+              "projection_distance_m": 0.0009176375373751704,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3158",
+              "point_m": [
+                0.0016290630000000365,
+                0.5717405999999999,
+                -0.0740193
+              ],
+              "projection_distance_m": 0.004477576936572836,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.27747770626468315,
+          "max_isometric_force_n": 31.49029628900265,
+          "optimal_fiber_length_m": 0.1382835498443774,
+          "tendon_slack_length_m": 0.027747770626468316,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 11.386132451922677,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-bp3d-FJ1544",
+      "name": "right spinalis thoracis",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-bp3d-FJ1544.json.gz",
+        "sha256": "c388057254767f27468f680852e4b479f50c26766a141079ff3196986337f22a",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-bp3d-FJ1544",
+          "canonical_entity_id": "body-bp3d-FJ1544",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3160",
+              "point_m": [
+                -0.0008875899999999635,
+                0.5495505999999998,
+                -0.08586
+              ],
+              "projection_distance_m": 0.001515025290250859,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3162",
+              "point_m": [
+                -0.003065329999999964,
+                0.18757659999999987,
+                -0.0593349
+              ],
+              "projection_distance_m": 0.0024182234183176663,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.36295109885150856,
+          "max_isometric_force_n": 13.209000574733745,
+          "optimal_fiber_length_m": 0.1805283085592067,
+          "tendon_slack_length_m": 0.036295109885150854,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 3.658429162759721,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-bp3d-FJ1544M",
+      "name": "left spinalis thoracis",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-bp3d-FJ1544M.json.gz",
+        "sha256": "7e44e948f2ed481db8104ad812129b3b9b83d05d67d24a9edbfd31ed9bc28195",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-bp3d-FJ1544M",
+          "canonical_entity_id": "body-bp3d-FJ1544M",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3160",
+              "point_m": [
+                0.0013555030000000365,
+                0.5491605999999999,
+                -0.0853713
+              ],
+              "projection_distance_m": 0.0014552982688813402,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3162",
+              "point_m": [
+                0.0036463400000000365,
+                0.18887759999999987,
+                -0.0613899
+              ],
+              "projection_distance_m": 0.0017286931600488606,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.3610875178805279,
+          "max_isometric_force_n": 13.209652522767932,
+          "optimal_fiber_length_m": 0.18052701544451671,
+          "tendon_slack_length_m": 0.03610875178805279,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 3.658635936078995,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-bp3d-FJ1551",
+      "name": "right interspinalis thoracis",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-bp3d-FJ1551.json.gz",
+        "sha256": "d0449f0488b9bffbdfb9154eaa3c837d668134996c735b37e0d1be148d5bdeda",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-bp3d-FJ1551",
+          "canonical_entity_id": "body-bp3d-FJ1551",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3158",
+              "point_m": [
+                -0.0019157899999999637,
+                0.5633005999999999,
+                -0.0781323
+              ],
+              "projection_distance_m": 0.0003982818223319731,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3163",
+              "point_m": [
+                -0.0024531199999999636,
+                0.5184205999999999,
+                -0.09548012
+              ],
+              "projection_distance_m": 0.0023861845062148534,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.04811912283366461,
+          "max_isometric_force_n": 4.323318853880178,
+          "optimal_fiber_length_m": 0.023137869402734795,
+          "tendon_slack_length_m": 0.004811912283366461,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 9.342517192549243,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-bp3d-FJ1551M",
+      "name": "left interspinalis thoracis",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-bp3d-FJ1551M.json.gz",
+        "sha256": "c0e50e98630ba77baa46e673ea5dd824d8537a8179d08177faddb3a5fde9a706",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-bp3d-FJ1551M",
+          "canonical_entity_id": "body-bp3d-FJ1551M",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3158",
+              "point_m": [
+                0.0016810400000000366,
+                0.5627306,
+                -0.07835349999999999
+              ],
+              "projection_distance_m": 0.0018238840046724022,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3163",
+              "point_m": [
+                0.002399940000000036,
+                0.5202606,
+                -0.09527971
+              ],
+              "projection_distance_m": 0.0011020083878084226,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.04572432943383753,
+          "max_isometric_force_n": 4.323279380527294,
+          "optimal_fiber_length_m": 0.023137928425341216,
+          "tendon_slack_length_m": 0.0045724329433837535,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 9.342408060594428,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-za-9f9ffda6d5eaf615",
+      "name": "left latissimus dorsi muscle",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-za-9f9ffda6d5eaf615.json.gz",
+        "sha256": "300ccba31f4088bb5d73232228da33f2db5544849b624430d4aa104be7fe48db",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-za-9f9ffda6d5eaf615",
+          "canonical_entity_id": "body-za-9f9ffda6d5eaf615",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3262",
+              "point_m": [
+                0.17201400000000003,
+                0.48877059999999994,
+                -0.015043399999999998
+              ],
+              "projection_distance_m": 0.002713538919600835,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3393",
+              "point_m": [
+                0.0007819220000000364,
+                0.08050959999999996,
+                -0.101267766
+              ],
+              "projection_distance_m": 0.004571415975212629,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.4510344886472652,
+          "max_isometric_force_n": 479.558655567877,
+          "optimal_fiber_length_m": 0.2253278643150768,
+          "tendon_slack_length_m": 0.045103448864726524,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 106.41352702329534,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-za-bc7dbad5f9689a32",
+      "name": "right latissimus dorsi muscle",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-za-bc7dbad5f9689a32.json.gz",
+        "sha256": "0bbc12353958649bc3b069a7fba30ac15915bc492c28149811654bdf10292bec",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-za-bc7dbad5f9689a32",
+          "canonical_entity_id": "body-za-bc7dbad5f9689a32",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3368",
+              "point_m": [
+                -0.17013099999999995,
+                0.48779059999999996,
+                -0.015515700000000007
+              ],
+              "projection_distance_m": 0.0018950178229710014,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3393",
+              "point_m": [
+                -0.0027292599999999634,
+                0.07889959999999985,
+                -0.10238966000000001
+              ],
+              "projection_distance_m": 0.004465153682156116,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.45029132499095437,
+          "max_isometric_force_n": 476.49631534138166,
+          "optimal_fiber_length_m": 0.22509748208060792,
+          "tendon_slack_length_m": 0.04502913249909544,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 105.84221354611759,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-za-4181c89ecc3abf6d",
+      "name": "left multifidus colli muscle",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-za-4181c89ecc3abf6d.json.gz",
+        "sha256": "47ab15a1c352e5a3ce481232e2643419f63da90ca057df31f4dcf6ea8a48a1ea",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-za-4181c89ecc3abf6d",
+          "canonical_entity_id": "body-za-4181c89ecc3abf6d",
+          "anchors": [
+            {
+              "entity_id": "body-za-7fb5720fb1239ed9",
+              "point_m": [
+                0.008621677487728355,
+                0.6794530152218187,
+                -0.053069793023835375
+              ],
+              "projection_distance_m": 0.0012362841404174312,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3158",
+              "point_m": [
+                0.020787900000000036,
+                0.5760305999999998,
+                -0.044668
+              ],
+              "projection_distance_m": 0.003732884881172556,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.10447393486677803,
+          "max_isometric_force_n": 15.356060646895779,
+          "optimal_fiber_length_m": 0.050747876396403734,
+          "tendon_slack_length_m": 0.010447393486677803,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 15.129756885732457,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-za-1ce5f83b20f135cb",
+      "name": "right multifidus colli muscle",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-za-1ce5f83b20f135cb.json.gz",
+        "sha256": "2b87fe185812bebfc45fc1b3d8ff87396510ac63d158452ed6025358225222ad",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-za-1ce5f83b20f135cb",
+          "canonical_entity_id": "body-za-1ce5f83b20f135cb",
+          "anchors": [
+            {
+              "entity_id": "body-za-7fb5720fb1239ed9",
+              "point_m": [
+                -0.008360875422256256,
+                0.6794561585876487,
+                -0.05307460688291759
+              ],
+              "projection_distance_m": 0.001245768386865693,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3158",
+              "point_m": [
+                -0.021839899999999964,
+                0.5780206,
+                -0.0432706
+              ],
+              "projection_distance_m": 0.002546009119622291,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.10279579369077334,
+          "max_isometric_force_n": 15.370520749690106,
+          "optimal_fiber_length_m": 0.050732652123307756,
+          "tendon_slack_length_m": 0.010279579369077335,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 15.148548426298943,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-za-116a0a2ac09b6a31",
+      "name": "left multifidus lumborum muscle",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-za-116a0a2ac09b6a31.json.gz",
+        "sha256": "17cbe75fec85d4f4d9605761f826f3ab65d19dd29ff26bb11a74c45a9f7d89fe",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-za-116a0a2ac09b6a31",
+          "canonical_entity_id": "body-za-116a0a2ac09b6a31",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3168",
+              "point_m": [
+                0.04211680000000004,
+                0.15108959999999994,
+                -0.0475939
+              ],
+              "projection_distance_m": 0.0030304855437268017,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3155",
+              "point_m": [
+                0.003948460000000036,
+                0.30554059999999994,
+                -0.0725529
+              ],
+              "projection_distance_m": 0.0022156110036407168,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.16104311615326997,
+          "max_isometric_force_n": 20.58072913744618,
+          "optimal_fiber_length_m": 0.08062137088547433,
+          "tendon_slack_length_m": 0.016104311615326997,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 12.763817404371526,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-za-ca0bbafaf771786e",
+      "name": "right multifidus lumborum muscle",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-za-ca0bbafaf771786e.json.gz",
+        "sha256": "73a814c61012f07b03640786c40978e08942b11eddad162b2df4fe5f2c0dd795",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-za-ca0bbafaf771786e",
+          "canonical_entity_id": "body-za-ca0bbafaf771786e",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3168",
+              "point_m": [
+                -0.043451299999999964,
+                0.15109559999999989,
+                -0.047223
+              ],
+              "projection_distance_m": 0.0027403706082582972,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3155",
+              "point_m": [
+                -0.005805239999999963,
+                0.30588059999999995,
+                -0.06910659999999999
+              ],
+              "projection_distance_m": 0.0025499451530968877,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.16079338919086075,
+          "max_isometric_force_n": 20.555708310591996,
+          "optimal_fiber_length_m": 0.08055792663770892,
+          "tendon_slack_length_m": 0.016079338919086077,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 12.758339972574426,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-za-5b0c21f69dc4df9b",
+      "name": "left multifidus thoracis muscle",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-za-5b0c21f69dc4df9b.json.gz",
+        "sha256": "55410db56c9735fc6a27f9a7b899c3cd0f12cbaaa20f8f81da9b8fb6c8aa6650",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-za-5b0c21f69dc4df9b",
+          "canonical_entity_id": "body-za-5b0c21f69dc4df9b",
+          "anchors": [
+            {
+              "entity_id": "body-za-792ba4c0105fcd61",
+              "point_m": [
+                0.014213194310041217,
+                0.29700513025468583,
+                -0.06267216208702421
+              ],
+              "projection_distance_m": 0.0016321767805984686,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3172",
+              "point_m": [
+                0.009650610000000037,
+                0.5886505999999999,
+                -0.0477223
+              ],
+              "projection_distance_m": 0.0032136172534672023,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.2920640264992801,
+          "max_isometric_force_n": 14.44026396785234,
+          "optimal_fiber_length_m": 0.14671473137186153,
+          "tendon_slack_length_m": 0.02920640264992801,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 4.921204514648297,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-za-e388be4301039128",
+      "name": "right multifidus thoracis muscle",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-za-e388be4301039128.json.gz",
+        "sha256": "fb2bda21bfc9a41a3147f3acd67fe9e8e7cc98acdf7162498416f3e3ef5d39a2",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-za-e388be4301039128",
+          "canonical_entity_id": "body-za-e388be4301039128",
+          "anchors": [
+            {
+              "entity_id": "body-za-792ba4c0105fcd61",
+              "point_m": [
+                -0.014443227202817452,
+                0.2970073182866999,
+                -0.06267373137197045
+              ],
+              "projection_distance_m": 0.001629829696997984,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3172",
+              "point_m": [
+                -0.009044059999999963,
+                0.5896506,
+                -0.0484791
+              ],
+              "projection_distance_m": 0.0025335616549664627,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.29303707768506027,
+          "max_isometric_force_n": 14.41606278107023,
+          "optimal_fiber_length_m": 0.1467222027086339,
+          "tendon_slack_length_m": 0.029303707768506028,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 4.912706637078696,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-za-10d019f9d6d60f0e",
+      "name": "left quadratus lumborum muscle",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-za-10d019f9d6d60f0e.json.gz",
+        "sha256": "3a7392f814015eac5d69fdb0a80660ccac9182da8da3c04d4f266c4604e50cf2",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-za-10d019f9d6d60f0e",
+          "canonical_entity_id": "body-za-10d019f9d6d60f0e",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3393",
+              "point_m": [
+                0.03947750000000004,
+                0.0914375999999999,
+                -0.0823947
+              ],
+              "projection_distance_m": 0.004112464914766641,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-za-792ba4c0105fcd61",
+              "point_m": [
+                0.01919852568300248,
+                0.2993812999439428,
+                -0.05619859659755557
+              ],
+              "projection_distance_m": 0.000640281959536398,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.21056603472354596,
+          "max_isometric_force_n": 242.66300487218237,
+          "optimal_fiber_length_m": 0.10647761082414556,
+          "tendon_slack_length_m": 0.021056603472354597,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 113.95024878655266,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-za-0dd9276e9e8748ec",
+      "name": "right quadratus lumborum muscle",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-za-0dd9276e9e8748ec.json.gz",
+        "sha256": "962ee37b8e256b3de33444c1bea070445f5ec24b6731f494265c43fd6d837644",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-za-0dd9276e9e8748ec",
+          "canonical_entity_id": "body-za-0dd9276e9e8748ec",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3393",
+              "point_m": [
+                -0.039229999999999966,
+                0.09239859999999989,
+                -0.08258750000000001
+              ],
+              "projection_distance_m": 0.004776564197113119,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-za-792ba4c0105fcd61",
+              "point_m": [
+                -0.01941750813602909,
+                0.29938399421457507,
+                -0.05620090708042541
+              ],
+              "projection_distance_m": 0.0006406549030071676,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.2095989993724358,
+          "max_isometric_force_n": 241.7176447770052,
+          "optimal_fiber_length_m": 0.10646034608258356,
+          "tendon_slack_length_m": 0.020959899937243582,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 113.52473182338693,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-za-a45e813cd3661ae2",
+      "name": "left rectus abdominis muscle",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-za-a45e813cd3661ae2.json.gz",
+        "sha256": "d788762abc448ce14e16d775a01b2fd6c620e94707a1f7e7416f7fddd669e200",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-za-a45e813cd3661ae2",
+          "canonical_entity_id": "body-za-a45e813cd3661ae2",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3178",
+              "point_m": [
+                0.023407300000000037,
+                0.4110005999999998,
+                0.1039443
+              ],
+              "projection_distance_m": 0.022055350615944224,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3288",
+              "point_m": [
+                0.010624630000000036,
+                0.016123599999999905,
+                0.034682299999999985
+              ],
+              "projection_distance_m": 0.004418714056781544,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.4011090455541097,
+          "max_isometric_force_n": 365.28240990133344,
+          "optimal_fiber_length_m": 0.19877901701603184,
+          "tendon_slack_length_m": 0.04011090455541097,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 91.88153140727948,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-za-f8e80e0f249b354b",
+      "name": "right rectus abdominis muscle",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-za-f8e80e0f249b354b.json.gz",
+        "sha256": "1d42de9838983d301578ffc3dc78047894c688a697c94d54c864c7ccb8e69cfe",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-za-f8e80e0f249b354b",
+          "canonical_entity_id": "body-za-f8e80e0f249b354b",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3178",
+              "point_m": [
+                -0.021938899999999963,
+                0.41102059999999996,
+                0.1040853
+              ],
+              "projection_distance_m": 0.02212107107160383,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3152",
+              "point_m": [
+                -0.008956409999999963,
+                0.016388599999999975,
+                0.0342263
+              ],
+              "projection_distance_m": 0.004459117750718834,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.4009778551885379,
+          "max_isometric_force_n": 365.36312688073275,
+          "optimal_fiber_length_m": 0.19877098483178873,
+          "tendon_slack_length_m": 0.04009778551885379,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 91.90554828460597,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-za-ef066e3635be03f5",
+      "name": "left sternocostal head of pectoralis major muscle",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-za-ef066e3635be03f5.json.gz",
+        "sha256": "b619a09aff112c27e6d184f889a8a24f0dbe2004f2869230e37d7e265f49d59f",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-za-ef066e3635be03f5",
+          "canonical_entity_id": "body-za-ef066e3635be03f5",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3262",
+              "point_m": [
+                0.18507500000000005,
+                0.47789059999999994,
+                -0.013862099999999988
+              ],
+              "projection_distance_m": 0.0038980918826994147,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3178",
+              "point_m": [
+                0.014408500000000036,
+                0.40611059999999977,
+                0.11236530000000002
+              ],
+              "projection_distance_m": 0.0031571637484426192,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.22408208124035714,
+          "max_isometric_force_n": 1072.926795881393,
+          "optimal_fiber_length_m": 0.1104081171390513,
+          "tendon_slack_length_m": 0.022408208124035715,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 485.8912658251915,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-za-33f3d0951bf3f448",
+      "name": "right sternocostal head of pectoralis major muscle",
+      "reference_geometry": {
+        "path": "data/derived/canonical/geometry/body-za-33f3d0951bf3f448.json.gz",
+        "sha256": "f0c5b7708b6ccdf4bd0f6a147afaeca4ce0d5d8cde207692d18617bdbebe49c1",
+        "frame": "bodyparts3d-display-m",
+        "units": "m",
+        "representation": "triangular_surface"
+      },
+      "mechanics_rows": [
+        {
+          "id": "body-muscle-prior-body-za-33f3d0951bf3f448",
+          "canonical_entity_id": "body-za-33f3d0951bf3f448",
+          "anchors": [
+            {
+              "entity_id": "body-bp3d-FJ3368",
+              "point_m": [
+                -0.18294599999999997,
+                0.4771705999999999,
+                -0.014054999999999998
+              ],
+              "projection_distance_m": 0.004062419619349533,
+              "surface_projection": true
+            },
+            {
+              "entity_id": "body-bp3d-FJ3178",
+              "point_m": [
+                -0.014651299999999963,
+                0.40973059999999994,
+                0.11130530000000001
+              ],
+              "projection_distance_m": 0.0026011010153195535,
+              "surface_projection": true
+            }
+          ],
+          "rest_path_length_m": 0.22042337549402513,
+          "max_isometric_force_n": 1075.095595810697,
+          "optimal_fiber_length_m": 0.11062108902505886,
+          "tendon_slack_length_m": 0.022042337549402515,
+          "pennation_angle_rad": 0.0,
+          "passive_stiffness_n_m": 485.9360928760866,
+          "parameter_basis": "PCSA=estimated volume / assumed fiber length (half surface principal extent); Fmax=PCSA*0.3 MPa; zero pennation, slack=10% path; passive=5% Fmax/fiber length",
+          "attachment_basis": "principal surface extrema projected onto nearest two same-side/axial bones; anatomical insertion unverified",
+          "prior_range_multiplier": [
+            0.1,
+            10.0
+          ],
+          "dependency_group": "geometry-muscle-synthesis",
+          "sources": [
+            "muscle_tension"
+          ]
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "Donor strengths and dynamics are transferred model priors, not subject calibration.",
+    "XML is a ForceSet insertion fragment; no native loading or runtime activation certified.",
+    "No excitation assignment, reserve removal, body creation, or inertia change.",
+    "Canonical inferred insertion paths are retained evidence, not certified muscle routing.",
+    "Shoulder crossing is topological; wrapping-dependent moment arms and feasible torque cone require native validation."
+  ],
+  "candidate_xml_sha256": "6301217b73029490aa03d431641374f1f07e65f02792781a5e235d184bd7ed4b"
+}

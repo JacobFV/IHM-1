@@ -1,0 +1,2792 @@
+[
+  {
+    "id": "addbrev_r",
+    "side": "r",
+    "body_group": "hip_pelvis",
+    "attachment_bodies": [
+      "femur_r",
+      "pelvis"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 625.819672131148,
+    "optimal_fiber_length_m": 0.10470262540614218,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "addlong_r",
+    "side": "r",
+    "body_group": "hip_pelvis",
+    "attachment_bodies": [
+      "femur_r",
+      "pelvis"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 916.8,
+    "optimal_fiber_length_m": 0.10638687381900952,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "addmagDist_r",
+    "side": "r",
+    "body_group": "hip_pelvis",
+    "attachment_bodies": [
+      "femur_r",
+      "pelvis"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 597.295081967214,
+    "optimal_fiber_length_m": 0.1682944814608249,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "addmagIsch_r",
+    "side": "r",
+    "body_group": "hip_pelvis",
+    "attachment_bodies": [
+      "femur_r",
+      "pelvis"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 597.295081967214,
+    "optimal_fiber_length_m": 0.14877947682871662,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "addmagMid_r",
+    "side": "r",
+    "body_group": "hip_pelvis",
+    "attachment_bodies": [
+      "femur_r",
+      "pelvis"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 597.295081967214,
+    "optimal_fiber_length_m": 0.1330412887404764,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "addmagProx_r",
+    "side": "r",
+    "body_group": "hip_pelvis",
+    "attachment_bodies": [
+      "femur_r",
+      "pelvis"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 597.295081967214,
+    "optimal_fiber_length_m": 0.11032716740817917,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "bflh_r",
+    "side": "r",
+    "body_group": "knee",
+    "attachment_bodies": [
+      "pelvis",
+      "tibia_r"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 1313.18360655738,
+    "optimal_fiber_length_m": 0.09598149531659689,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "bfsh_r",
+    "side": "r",
+    "body_group": "knee",
+    "attachment_bodies": [
+      "femur_r",
+      "tibia_r"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 557.11475409836,
+    "optimal_fiber_length_m": 0.11041104220277667,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "edl_r",
+    "side": "r",
+    "body_group": "ankle_foot",
+    "attachment_bodies": [
+      "calcn_r",
+      "tibia_r",
+      "toes_r"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 603.4981556,
+    "optimal_fiber_length_m": 0.08121528711063597,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "ehl_r",
+    "side": "r",
+    "body_group": "ankle_foot",
+    "attachment_bodies": [
+      "calcn_r",
+      "tibia_r",
+      "toes_r"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 285.8675474,
+    "optimal_fiber_length_m": 0.08793188714342019,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "fdl_r",
+    "side": "r",
+    "body_group": "ankle_foot",
+    "attachment_bodies": [
+      "calcn_r",
+      "tibia_r",
+      "toes_r"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 423.177049180328,
+    "optimal_fiber_length_m": 0.05268678552704337,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "fhl_r",
+    "side": "r",
+    "body_group": "ankle_foot",
+    "attachment_bodies": [
+      "calcn_r",
+      "tibia_r",
+      "toes_r"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 907.839344262294,
+    "optimal_fiber_length_m": 0.06211098855229553,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "gaslat_r",
+    "side": "r",
+    "body_group": "ankle_foot",
+    "attachment_bodies": [
+      "calcn_r",
+      "femur_r"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 1575.05901639344,
+    "optimal_fiber_length_m": 0.08102791344373252,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "gasmed_r",
+    "side": "r",
+    "body_group": "ankle_foot",
+    "attachment_bodies": [
+      "calcn_r",
+      "femur_r"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 3115.51475409836,
+    "optimal_fiber_length_m": 0.07004822175646847,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "glmax1_r",
+    "side": "r",
+    "body_group": "hip_pelvis",
+    "attachment_bodies": [
+      "femur_r",
+      "pelvis"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 983.783606557378,
+    "optimal_fiber_length_m": 0.15986425674142235,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "glmax2_r",
+    "side": "r",
+    "body_group": "hip_pelvis",
+    "attachment_bodies": [
+      "femur_r",
+      "pelvis"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 1406.04590163935,
+    "optimal_fiber_length_m": 0.16749760008962103,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "glmax3_r",
+    "side": "r",
+    "body_group": "hip_pelvis",
+    "attachment_bodies": [
+      "femur_r",
+      "pelvis"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 947.754098360656,
+    "optimal_fiber_length_m": 0.17574975744828164,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "glmed1_r",
+    "side": "r",
+    "body_group": "hip_pelvis",
+    "attachment_bodies": [
+      "femur_r",
+      "pelvis"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 1093.4667688,
+    "optimal_fiber_length_m": 0.08444271809689849,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "glmed2_r",
+    "side": "r",
+    "body_group": "hip_pelvis",
+    "attachment_bodies": [
+      "femur_r",
+      "pelvis"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 765.0916616,
+    "optimal_fiber_length_m": 0.09346316769972553,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "glmed3_r",
+    "side": "r",
+    "body_group": "hip_pelvis",
+    "attachment_bodies": [
+      "femur_r",
+      "pelvis"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 871.1992642,
+    "optimal_fiber_length_m": 0.08651339647906625,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "glmin1_r",
+    "side": "r",
+    "body_group": "hip_pelvis",
+    "attachment_bodies": [
+      "femur_r",
+      "pelvis"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 374.045901639344,
+    "optimal_fiber_length_m": 0.08988951163769844,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "glmin2_r",
+    "side": "r",
+    "body_group": "hip_pelvis",
+    "attachment_bodies": [
+      "femur_r",
+      "pelvis"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 394.819672131148,
+    "optimal_fiber_length_m": 0.07621242830500957,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "glmin3_r",
+    "side": "r",
+    "body_group": "hip_pelvis",
+    "attachment_bodies": [
+      "femur_r",
+      "pelvis"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 446.773770491804,
+    "optimal_fiber_length_m": 0.038979476313646566,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "grac_r",
+    "side": "r",
+    "body_group": "knee",
+    "attachment_bodies": [
+      "pelvis",
+      "tibia_r"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 281.311475409836,
+    "optimal_fiber_length_m": 0.22573400801268784,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "iliacus_r",
+    "side": "r",
+    "body_group": "hip_pelvis",
+    "attachment_bodies": [
+      "femur_r",
+      "pelvis"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 1021.14098360656,
+    "optimal_fiber_length_m": 0.11671110322527428,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "perbrev_r",
+    "side": "r",
+    "body_group": "ankle_foot",
+    "attachment_bodies": [
+      "calcn_r",
+      "tibia_r"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 521.2015988,
+    "optimal_fiber_length_m": 0.05426063528901981,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "perlong_r",
+    "side": "r",
+    "body_group": "ankle_foot",
+    "attachment_bodies": [
+      "calcn_r",
+      "tibia_r"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 1115.3714214,
+    "optimal_fiber_length_m": 0.060566143826234146,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "piri_r",
+    "side": "r",
+    "body_group": "hip_pelvis",
+    "attachment_bodies": [
+      "femur_r",
+      "pelvis"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 1029.7868852459,
+    "optimal_fiber_length_m": 0.028540156237817,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "psoas_r",
+    "side": "r",
+    "body_group": "hip_pelvis",
+    "attachment_bodies": [
+      "femur_r",
+      "pelvis"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 1426.79016393443,
+    "optimal_fiber_length_m": 0.12875378597531537,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "recfem_r",
+    "side": "r",
+    "body_group": "knee",
+    "attachment_bodies": [
+      "patella_r",
+      "pelvis",
+      "tibia_r"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 2191.74098360656,
+    "optimal_fiber_length_m": 0.07635157222967494,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "sart_r",
+    "side": "r",
+    "body_group": "knee",
+    "attachment_bodies": [
+      "femur_r",
+      "pelvis",
+      "tibia_r"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 249.413114754098,
+    "optimal_fiber_length_m": 0.41376047840930474,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "semimem_r",
+    "side": "r",
+    "body_group": "knee",
+    "attachment_bodies": [
+      "pelvis",
+      "tibia_r"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 2200.9868852459,
+    "optimal_fiber_length_m": 0.0841331136577854,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "semiten_r",
+    "side": "r",
+    "body_group": "knee",
+    "attachment_bodies": [
+      "pelvis",
+      "tibia_r"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 591.295081967214,
+    "optimal_fiber_length_m": 0.1922695871347662,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "soleus_r",
+    "side": "r",
+    "body_group": "ankle_foot",
+    "attachment_bodies": [
+      "calcn_r",
+      "tibia_r"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 6194.84262295082,
+    "optimal_fiber_length_m": 0.05243536532304544,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "tfl_r",
+    "side": "r",
+    "body_group": "knee",
+    "attachment_bodies": [
+      "femur_r",
+      "pelvis",
+      "tibia_r"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 411.20655737705,
+    "optimal_fiber_length_m": 0.09449845755617653,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "tibant_r",
+    "side": "r",
+    "body_group": "ankle_foot",
+    "attachment_bodies": [
+      "calcn_r",
+      "tibia_r"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 1227.45245901639,
+    "optimal_fiber_length_m": 0.08073431549920364,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "tibpost_r",
+    "side": "r",
+    "body_group": "ankle_foot",
+    "attachment_bodies": [
+      "calcn_r",
+      "tibia_r"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 1730.15409836065,
+    "optimal_fiber_length_m": 0.045001488626484315,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "vasint_r",
+    "side": "r",
+    "body_group": "knee",
+    "attachment_bodies": [
+      "femur_r",
+      "patella_r",
+      "tibia_r"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 1697.36065573771,
+    "optimal_fiber_length_m": 0.11848037593580166,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "vaslat_r",
+    "side": "r",
+    "body_group": "knee",
+    "attachment_bodies": [
+      "femur_r",
+      "patella_r",
+      "tibia_r"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 5148.76721311476,
+    "optimal_fiber_length_m": 0.1186528532321937,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "vasmed_r",
+    "side": "r",
+    "body_group": "knee",
+    "attachment_bodies": [
+      "femur_r",
+      "patella_r",
+      "tibia_r"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 2747.82295081966,
+    "optimal_fiber_length_m": 0.11177625389944876,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "addbrev_l",
+    "side": "l",
+    "body_group": "hip_pelvis",
+    "attachment_bodies": [
+      "femur_l",
+      "pelvis"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 625.819672131148,
+    "optimal_fiber_length_m": 0.10470262540354824,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "addlong_l",
+    "side": "l",
+    "body_group": "hip_pelvis",
+    "attachment_bodies": [
+      "femur_l",
+      "pelvis"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 916.8,
+    "optimal_fiber_length_m": 0.10638687380473157,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "addmagDist_l",
+    "side": "l",
+    "body_group": "hip_pelvis",
+    "attachment_bodies": [
+      "femur_l",
+      "pelvis"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 597.295081967214,
+    "optimal_fiber_length_m": 0.1682944815395002,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "addmagIsch_l",
+    "side": "l",
+    "body_group": "hip_pelvis",
+    "attachment_bodies": [
+      "femur_l",
+      "pelvis"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 597.295081967214,
+    "optimal_fiber_length_m": 0.14877947688268617,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "addmagMid_l",
+    "side": "l",
+    "body_group": "hip_pelvis",
+    "attachment_bodies": [
+      "femur_l",
+      "pelvis"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 597.295081967214,
+    "optimal_fiber_length_m": 0.1330412888005404,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "addmagProx_l",
+    "side": "l",
+    "body_group": "hip_pelvis",
+    "attachment_bodies": [
+      "femur_l",
+      "pelvis"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 597.295081967214,
+    "optimal_fiber_length_m": 0.11032716741935839,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "bflh_l",
+    "side": "l",
+    "body_group": "knee",
+    "attachment_bodies": [
+      "pelvis",
+      "tibia_l"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 1313.18360655738,
+    "optimal_fiber_length_m": 0.09598133890250536,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "bfsh_l",
+    "side": "l",
+    "body_group": "knee",
+    "attachment_bodies": [
+      "femur_l",
+      "tibia_l"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 557.11475409836,
+    "optimal_fiber_length_m": 0.1104108114265012,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "edl_l",
+    "side": "l",
+    "body_group": "ankle_foot",
+    "attachment_bodies": [
+      "calcn_l",
+      "tibia_l",
+      "toes_l"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 603.4981556,
+    "optimal_fiber_length_m": 0.08121528711625674,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "ehl_l",
+    "side": "l",
+    "body_group": "ankle_foot",
+    "attachment_bodies": [
+      "calcn_l",
+      "tibia_l",
+      "toes_l"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 285.8675474,
+    "optimal_fiber_length_m": 0.08793188715049659,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "fdl_l",
+    "side": "l",
+    "body_group": "ankle_foot",
+    "attachment_bodies": [
+      "calcn_l",
+      "tibia_l",
+      "toes_l"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 423.177049180328,
+    "optimal_fiber_length_m": 0.0526867855262355,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "fhl_l",
+    "side": "l",
+    "body_group": "ankle_foot",
+    "attachment_bodies": [
+      "calcn_l",
+      "tibia_l",
+      "toes_l"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 907.839344262294,
+    "optimal_fiber_length_m": 0.06211098855053352,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "gaslat_l",
+    "side": "l",
+    "body_group": "ankle_foot",
+    "attachment_bodies": [
+      "calcn_l",
+      "femur_l"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 1575.05901639344,
+    "optimal_fiber_length_m": 0.08102791344373238,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "gasmed_l",
+    "side": "l",
+    "body_group": "ankle_foot",
+    "attachment_bodies": [
+      "calcn_l",
+      "femur_l"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 3115.51475409836,
+    "optimal_fiber_length_m": 0.07004822175646845,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "glmax1_l",
+    "side": "l",
+    "body_group": "hip_pelvis",
+    "attachment_bodies": [
+      "femur_l",
+      "pelvis"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 983.783606557378,
+    "optimal_fiber_length_m": 0.15986425681092584,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "glmax2_l",
+    "side": "l",
+    "body_group": "hip_pelvis",
+    "attachment_bodies": [
+      "femur_l",
+      "pelvis"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 1406.04590163935,
+    "optimal_fiber_length_m": 0.1674976001836701,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "glmax3_l",
+    "side": "l",
+    "body_group": "hip_pelvis",
+    "attachment_bodies": [
+      "femur_l",
+      "pelvis"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 947.754098360656,
+    "optimal_fiber_length_m": 0.17574975761948067,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "glmed1_l",
+    "side": "l",
+    "body_group": "hip_pelvis",
+    "attachment_bodies": [
+      "femur_l",
+      "pelvis"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 1093.4667688,
+    "optimal_fiber_length_m": 0.08444271809689849,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "glmed2_l",
+    "side": "l",
+    "body_group": "hip_pelvis",
+    "attachment_bodies": [
+      "femur_l",
+      "pelvis"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 765.0916616,
+    "optimal_fiber_length_m": 0.09346316769972553,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "glmed3_l",
+    "side": "l",
+    "body_group": "hip_pelvis",
+    "attachment_bodies": [
+      "femur_l",
+      "pelvis"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 871.1992642,
+    "optimal_fiber_length_m": 0.08651339647906625,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "glmin1_l",
+    "side": "l",
+    "body_group": "hip_pelvis",
+    "attachment_bodies": [
+      "femur_l",
+      "pelvis"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 374.045901639344,
+    "optimal_fiber_length_m": 0.08988951163769844,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "glmin2_l",
+    "side": "l",
+    "body_group": "hip_pelvis",
+    "attachment_bodies": [
+      "femur_l",
+      "pelvis"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 394.819672131148,
+    "optimal_fiber_length_m": 0.07621242830500957,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "glmin3_l",
+    "side": "l",
+    "body_group": "hip_pelvis",
+    "attachment_bodies": [
+      "femur_l",
+      "pelvis"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 446.773770491804,
+    "optimal_fiber_length_m": 0.038979476313646566,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "grac_l",
+    "side": "l",
+    "body_group": "knee",
+    "attachment_bodies": [
+      "pelvis",
+      "tibia_l"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 281.311475409836,
+    "optimal_fiber_length_m": 0.22573374447128042,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "iliacus_l",
+    "side": "l",
+    "body_group": "hip_pelvis",
+    "attachment_bodies": [
+      "femur_l",
+      "pelvis"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 1021.14098360656,
+    "optimal_fiber_length_m": 0.11671110318088614,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "perbrev_l",
+    "side": "l",
+    "body_group": "ankle_foot",
+    "attachment_bodies": [
+      "calcn_l",
+      "tibia_l"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 521.2015988,
+    "optimal_fiber_length_m": 0.054260635287618264,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "perlong_l",
+    "side": "l",
+    "body_group": "ankle_foot",
+    "attachment_bodies": [
+      "calcn_l",
+      "tibia_l"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 1115.3714214,
+    "optimal_fiber_length_m": 0.060566143825049414,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "piri_l",
+    "side": "l",
+    "body_group": "hip_pelvis",
+    "attachment_bodies": [
+      "femur_l",
+      "pelvis"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 1029.7868852459,
+    "optimal_fiber_length_m": 0.02854015623654713,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "psoas_l",
+    "side": "l",
+    "body_group": "hip_pelvis",
+    "attachment_bodies": [
+      "femur_l",
+      "pelvis"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 1426.79016393443,
+    "optimal_fiber_length_m": 0.12875378594956213,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "recfem_l",
+    "side": "l",
+    "body_group": "knee",
+    "attachment_bodies": [
+      "patella_l",
+      "pelvis",
+      "tibia_l"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 2191.74098360656,
+    "optimal_fiber_length_m": 0.07635173671026267,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "sart_l",
+    "side": "l",
+    "body_group": "knee",
+    "attachment_bodies": [
+      "femur_l",
+      "pelvis",
+      "tibia_l"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 249.413114754098,
+    "optimal_fiber_length_m": 0.4137602953624063,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "semimem_l",
+    "side": "l",
+    "body_group": "knee",
+    "attachment_bodies": [
+      "pelvis",
+      "tibia_l"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 2200.9868852459,
+    "optimal_fiber_length_m": 0.0841331136577854,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "semiten_l",
+    "side": "l",
+    "body_group": "knee",
+    "attachment_bodies": [
+      "pelvis",
+      "tibia_l"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 591.295081967214,
+    "optimal_fiber_length_m": 0.19226921198801966,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "soleus_l",
+    "side": "l",
+    "body_group": "ankle_foot",
+    "attachment_bodies": [
+      "calcn_l",
+      "tibia_l"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 6194.84262295082,
+    "optimal_fiber_length_m": 0.05243536531740698,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "tfl_l",
+    "side": "l",
+    "body_group": "knee",
+    "attachment_bodies": [
+      "femur_l",
+      "pelvis",
+      "tibia_l"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 411.20655737705,
+    "optimal_fiber_length_m": 0.09449845755617653,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "tibant_l",
+    "side": "l",
+    "body_group": "ankle_foot",
+    "attachment_bodies": [
+      "calcn_l",
+      "tibia_l"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 1227.45245901639,
+    "optimal_fiber_length_m": 0.08073431550864302,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "tibpost_l",
+    "side": "l",
+    "body_group": "ankle_foot",
+    "attachment_bodies": [
+      "calcn_l",
+      "tibia_l"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 1730.15409836065,
+    "optimal_fiber_length_m": 0.045001488625432386,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "vasint_l",
+    "side": "l",
+    "body_group": "knee",
+    "attachment_bodies": [
+      "femur_l",
+      "patella_l",
+      "tibia_l"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 1697.36065573771,
+    "optimal_fiber_length_m": 0.11848037593580166,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "vaslat_l",
+    "side": "l",
+    "body_group": "knee",
+    "attachment_bodies": [
+      "femur_l",
+      "patella_l",
+      "tibia_l"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 5148.76721311476,
+    "optimal_fiber_length_m": 0.1186528532321937,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "vasmed_l",
+    "side": "l",
+    "body_group": "knee",
+    "attachment_bodies": [
+      "femur_l",
+      "patella_l",
+      "tibia_l"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 2747.82295081966,
+    "optimal_fiber_length_m": 0.11177625389944876,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/806ad1b248c6b2bc-subject_walk_scaled.osim",
+    "source_sha256": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "assignment_basis": "contralateral regional cortical assignment engineering prior; body group from source attachment names; no measured somatotopic recruitment"
+  },
+  {
+    "id": "arm26_TRIlong_r",
+    "side": "r",
+    "body_group": "shoulder_elbow",
+    "attachment_bodies": [
+      "humerus_r",
+      "torso",
+      "ulna_r"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 798.52,
+    "optimal_fiber_length_m": 0.14771746940871489,
+    "tendon_slack_length_m": 0.15763879198094197,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/e2224d0044eb393b-arm26.osim",
+    "source_sha256": "e2224d0044eb393b05d64926c3fa1682c451a9adc7f510e5517ef9958d3d41b9",
+    "source_muscle_name": "TRIlong",
+    "source_muscle_law": "Thelen2003Muscle",
+    "path_points": [
+      {
+        "source_body": "base",
+        "source_point_m": [
+          -0.05365,
+          -0.01373,
+          0.14723
+        ],
+        "body": "torso",
+        "point_m": [
+          -0.03549160077929807,
+          0.3765045113775302,
+          0.17370821676150705
+        ]
+      },
+      {
+        "source_body": "r_humerus",
+        "source_point_m": [
+          -0.02714,
+          -0.11441,
+          -0.00664
+        ],
+        "body": "humerus_r",
+        "point_m": [
+          -0.026895006124858765,
+          -0.12687383606232733,
+          -0.005928305464704246
+        ]
+      },
+      {
+        "source_body": "r_humerus",
+        "source_point_m": [
+          -0.03184,
+          -0.22637,
+          -0.01217
+        ],
+        "body": "humerus_r",
+        "point_m": [
+          -0.029125924421544623,
+          -0.25044435179690594,
+          -0.01063605461655058
+        ]
+      },
+      {
+        "source_body": "r_humerus",
+        "source_point_m": [
+          -0.01743,
+          -0.26757,
+          -0.01208
+        ],
+        "body": "humerus_r",
+        "point_m": [
+          -0.01216343931642476,
+          -0.2954663945327599,
+          -0.010006312781430606
+        ]
+      },
+      {
+        "source_body": "r_ulna_radius_hand",
+        "source_point_m": [
+          -0.0219,
+          0.01046,
+          -0.00078
+        ],
+        "body": "ulna_r",
+        "point_m": [
+          -0.024408526278671624,
+          0.010941605994758016,
+          -0.001016844622988786
+        ]
+      }
+    ],
+    "assignment_basis": "contralateral regional cortical engineering prior; no identified recruitment",
+    "geometry_basis": "donor similarity transfer using shoulder/elbow landmarks; left mirrored prior; biceps radius insertion assigned from named anatomy",
+    "parameter_basis": "source Thelen coefficients and Fmax preserved; fiber/slack lengths scaled by humeral landmark ratio",
+    "native_force_validation": false
+  },
+  {
+    "id": "arm26_TRIlat_r",
+    "side": "r",
+    "body_group": "shoulder_elbow",
+    "attachment_bodies": [
+      "humerus_r",
+      "ulna_r"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 624.3,
+    "optimal_fiber_length_m": 0.12544961207993843,
+    "tendon_slack_length_m": 0.10803217911980639,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/e2224d0044eb393b-arm26.osim",
+    "source_sha256": "e2224d0044eb393b05d64926c3fa1682c451a9adc7f510e5517ef9958d3d41b9",
+    "source_muscle_name": "TRIlat",
+    "source_muscle_law": "Thelen2003Muscle",
+    "path_points": [
+      {
+        "source_body": "r_humerus",
+        "source_point_m": [
+          -0.00599,
+          -0.12646,
+          0.00428
+        ],
+        "body": "humerus_r",
+        "point_m": [
+          -0.0032866970730491187,
+          -0.13946141358173375,
+          0.006284716634844891
+        ]
+      },
+      {
+        "source_body": "r_humerus",
+        "source_point_m": [
+          -0.02344,
+          -0.14528,
+          0.00928
+        ],
+        "body": "humerus_r",
+        "point_m": [
+          -0.022030914942335632,
+          -0.16059725897826113,
+          0.012009098370326168
+        ]
+      },
+      {
+        "source_body": "r_humerus",
+        "source_point_m": [
+          -0.03184,
+          -0.22637,
+          -0.01217
+        ],
+        "body": "humerus_r",
+        "point_m": [
+          -0.029125924421544623,
+          -0.25044435179690594,
+          -0.01063605461655058
+        ]
+      },
+      {
+        "source_body": "r_humerus",
+        "source_point_m": [
+          -0.01743,
+          -0.26757,
+          -0.01208
+        ],
+        "body": "humerus_r",
+        "point_m": [
+          -0.01216343931642476,
+          -0.2954663945327599,
+          -0.010006312781430606
+        ]
+      },
+      {
+        "source_body": "r_ulna_radius_hand",
+        "source_point_m": [
+          -0.0219,
+          0.01046,
+          -0.00078
+        ],
+        "body": "ulna_r",
+        "point_m": [
+          -0.024408526278671624,
+          0.010941605994758016,
+          -0.001016844622988786
+        ]
+      }
+    ],
+    "assignment_basis": "contralateral regional cortical engineering prior; no identified recruitment",
+    "geometry_basis": "donor similarity transfer using shoulder/elbow landmarks; left mirrored prior; biceps radius insertion assigned from named anatomy",
+    "parameter_basis": "source Thelen coefficients and Fmax preserved; fiber/slack lengths scaled by humeral landmark ratio",
+    "native_force_validation": false
+  },
+  {
+    "id": "arm26_TRImed_r",
+    "side": "r",
+    "body_group": "shoulder_elbow",
+    "attachment_bodies": [
+      "humerus_r",
+      "ulna_r"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 624.3,
+    "optimal_fiber_length_m": 0.12544961207993843,
+    "tendon_slack_length_m": 0.1000951210620247,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/e2224d0044eb393b-arm26.osim",
+    "source_sha256": "e2224d0044eb393b05d64926c3fa1682c451a9adc7f510e5517ef9958d3d41b9",
+    "source_muscle_name": "TRImed",
+    "source_muscle_law": "Thelen2003Muscle",
+    "path_points": [
+      {
+        "source_body": "r_humerus",
+        "source_point_m": [
+          -0.00838,
+          -0.13695,
+          -0.00906
+        ],
+        "body": "humerus_r",
+        "point_m": [
+          -0.005624814672564414,
+          -0.1512496750946115,
+          -0.00829228725360465
+        ]
+      },
+      {
+        "source_body": "r_humerus",
+        "source_point_m": [
+          -0.02601,
+          -0.15139,
+          -0.0108
+        ],
+        "body": "humerus_r",
+        "point_m": [
+          -0.024672173169331787,
+          -0.16764723322096903,
+          -0.01005213994001328
+        ]
+      },
+      {
+        "source_body": "r_humerus",
+        "source_point_m": [
+          -0.03184,
+          -0.22637,
+          -0.01217
+        ],
+        "body": "humerus_r",
+        "point_m": [
+          -0.029125924421544623,
+          -0.25044435179690594,
+          -0.01063605461655058
+        ]
+      },
+      {
+        "source_body": "r_humerus",
+        "source_point_m": [
+          -0.01743,
+          -0.26757,
+          -0.01208
+        ],
+        "body": "humerus_r",
+        "point_m": [
+          -0.01216343931642476,
+          -0.2954663945327599,
+          -0.010006312781430606
+        ]
+      },
+      {
+        "source_body": "r_ulna_radius_hand",
+        "source_point_m": [
+          -0.0219,
+          0.01046,
+          -0.00078
+        ],
+        "body": "ulna_r",
+        "point_m": [
+          -0.024408526278671624,
+          0.010941605994758016,
+          -0.001016844622988786
+        ]
+      }
+    ],
+    "assignment_basis": "contralateral regional cortical engineering prior; no identified recruitment",
+    "geometry_basis": "donor similarity transfer using shoulder/elbow landmarks; left mirrored prior; biceps radius insertion assigned from named anatomy",
+    "parameter_basis": "source Thelen coefficients and Fmax preserved; fiber/slack lengths scaled by humeral landmark ratio",
+    "native_force_validation": false
+  },
+  {
+    "id": "arm26_BIClong_r",
+    "side": "r",
+    "body_group": "shoulder_elbow",
+    "attachment_bodies": [
+      "humerus_r",
+      "radius_r",
+      "torso"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 624.3,
+    "optimal_fiber_length_m": 0.12754411351185305,
+    "tendon_slack_length_m": 0.3001751262686049,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/e2224d0044eb393b-arm26.osim",
+    "source_sha256": "e2224d0044eb393b05d64926c3fa1682c451a9adc7f510e5517ef9958d3d41b9",
+    "source_muscle_name": "BIClong",
+    "source_muscle_law": "Thelen2003Muscle",
+    "path_points": [
+      {
+        "source_body": "base",
+        "source_point_m": [
+          -0.039235,
+          0.00347,
+          0.14795
+        ],
+        "body": "torso",
+        "point_m": [
+          -0.02005828138988639,
+          0.3958464038464662,
+          0.174305427251991
+        ]
+      },
+      {
+        "source_body": "base",
+        "source_point_m": [
+          -0.028945,
+          0.01391,
+          0.15639
+        ],
+        "body": "torso",
+        "point_m": [
+          -0.009005156531377774,
+          0.40772632387958135,
+          0.18349147507685928
+        ]
+      },
+      {
+        "source_body": "r_humerus",
+        "source_point_m": [
+          0.02131,
+          0.01793,
+          0.01028
+        ],
+        "body": "humerus_r",
+        "point_m": [
+          0.022998268802450136,
+          0.020446220975797035,
+          0.011134544947262197
+        ]
+      },
+      {
+        "source_body": "r_humerus",
+        "source_point_m": [
+          0.02378,
+          -0.00511,
+          0.01201
+        ],
+        "body": "humerus_r",
+        "point_m": [
+          0.026322795184468846,
+          -0.004857151138540815,
+          0.013331358880392132
+        ]
+      },
+      {
+        "source_body": "r_humerus",
+        "source_point_m": [
+          0.01345,
+          -0.02827,
+          0.00136
+        ],
+        "body": "humerus_r",
+        "point_m": [
+          0.015563007878958372,
+          -0.03078282266078254,
+          0.0018675263785952773
+        ]
+      },
+      {
+        "source_body": "r_humerus",
+        "source_point_m": [
+          0.01068,
+          -0.07736,
+          -0.00165
+        ],
+        "body": "humerus_r",
+        "point_m": [
+          0.013804111300517268,
+          -0.08498947553564173,
+          -0.0008426953675343256
+        ]
+      },
+      {
+        "source_body": "r_humerus",
+        "source_point_m": [
+          0.01703,
+          -0.12125,
+          0.00024
+        ],
+        "body": "humerus_r",
+        "point_m": [
+          0.021951937072584887,
+          -0.13316531132297219,
+          0.001794790548510586
+        ]
+      },
+      {
+        "source_body": "r_humerus",
+        "source_point_m": [
+          0.0228,
+          -0.1754,
+          -0.0063
+        ],
+        "body": "humerus_r",
+        "point_m": [
+          0.02974285203134206,
+          -0.19276742830429755,
+          -0.004733087917641217
+        ]
+      },
+      {
+        "source_body": "r_ulna_radius_hand",
+        "source_point_m": [
+          0.00751,
+          -0.04839,
+          0.02179
+        ],
+        "body": "radius_r",
+        "point_m": [
+          0.016707577391553097,
+          -0.03983612563929734,
+          -0.0038440203315044837
+        ]
+      }
+    ],
+    "assignment_basis": "contralateral regional cortical engineering prior; no identified recruitment",
+    "geometry_basis": "donor similarity transfer using shoulder/elbow landmarks; left mirrored prior; biceps radius insertion assigned from named anatomy",
+    "parameter_basis": "source Thelen coefficients and Fmax preserved; fiber/slack lengths scaled by humeral landmark ratio",
+    "native_force_validation": false
+  },
+  {
+    "id": "arm26_BICshort_r",
+    "side": "r",
+    "body_group": "shoulder_elbow",
+    "attachment_bodies": [
+      "humerus_r",
+      "radius_r",
+      "torso"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 435.56,
+    "optimal_fiber_length_m": 0.14562296797680024,
+    "tendon_slack_length_m": 0.21198559229325276,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/e2224d0044eb393b-arm26.osim",
+    "source_sha256": "e2224d0044eb393b05d64926c3fa1682c451a9adc7f510e5517ef9958d3d41b9",
+    "source_muscle_name": "BICshort",
+    "source_muscle_law": "Thelen2003Muscle",
+    "path_points": [
+      {
+        "source_body": "base",
+        "source_point_m": [
+          0.004675,
+          -0.01231,
+          0.13475
+        ],
+        "body": "torso",
+        "point_m": [
+          0.0287674734597715,
+          0.37944703564649906,
+          0.16000534514489284
+        ]
+      },
+      {
+        "source_body": "base",
+        "source_point_m": [
+          -0.007075,
+          -0.04004,
+          0.14507
+        ],
+        "body": "torso",
+        "point_m": [
+          0.016530870527692035,
+          0.34870832955527825,
+          0.17171185465761973
+        ]
+      },
+      {
+        "source_body": "r_humerus",
+        "source_point_m": [
+          0.01117,
+          -0.07576,
+          -0.01101
+        ],
+        "body": "humerus_r",
+        "point_m": [
+          0.014316344400050914,
+          -0.08332963217776859,
+          -0.011179523399798686
+        ]
+      },
+      {
+        "source_body": "r_humerus",
+        "source_point_m": [
+          0.01703,
+          -0.12125,
+          -0.01079
+        ],
+        "body": "humerus_r",
+        "point_m": [
+          0.021968724443926443,
+          -0.13330225577329322,
+          -0.010363558653521406
+        ]
+      },
+      {
+        "source_body": "r_humerus",
+        "source_point_m": [
+          0.0228,
+          -0.1754,
+          -0.0063
+        ],
+        "body": "humerus_r",
+        "point_m": [
+          0.02974285203134206,
+          -0.19276742830429755,
+          -0.004733087917641217
+        ]
+      },
+      {
+        "source_body": "r_ulna_radius_hand",
+        "source_point_m": [
+          0.00751,
+          -0.04839,
+          0.02179
+        ],
+        "body": "radius_r",
+        "point_m": [
+          0.016707577391553097,
+          -0.03983612563929734,
+          -0.0038440203315044837
+        ]
+      }
+    ],
+    "assignment_basis": "contralateral regional cortical engineering prior; no identified recruitment",
+    "geometry_basis": "donor similarity transfer using shoulder/elbow landmarks; left mirrored prior; biceps radius insertion assigned from named anatomy",
+    "parameter_basis": "source Thelen coefficients and Fmax preserved; fiber/slack lengths scaled by humeral landmark ratio",
+    "native_force_validation": false
+  },
+  {
+    "id": "arm26_BRA_r",
+    "side": "r",
+    "body_group": "shoulder_elbow",
+    "attachment_bodies": [
+      "humerus_r",
+      "ulna_r"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 987.26,
+    "optimal_fiber_length_m": 0.09458327518856519,
+    "tendon_slack_length_m": 0.05897675084601676,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/e2224d0044eb393b-arm26.osim",
+    "source_sha256": "e2224d0044eb393b05d64926c3fa1682c451a9adc7f510e5517ef9958d3d41b9",
+    "source_muscle_name": "BRA",
+    "source_muscle_law": "Thelen2003Muscle",
+    "path_points": [
+      {
+        "source_body": "r_humerus",
+        "source_point_m": [
+          0.0068,
+          -0.1739,
+          -0.0036
+        ],
+        "body": "humerus_r",
+        "point_m": [
+          0.0120664652856763,
+          -0.19150137151645685,
+          -0.0017951659095627095
+        ]
+      },
+      {
+        "source_body": "r_ulna_radius_hand",
+        "source_point_m": [
+          -0.0032,
+          -0.0239,
+          0.0009
+        ],
+        "body": "ulna_r",
+        "point_m": [
+          -0.0029002780851852443,
+          -0.0264103800341415,
+          0.001285662530784035
+        ]
+      }
+    ],
+    "assignment_basis": "contralateral regional cortical engineering prior; no identified recruitment",
+    "geometry_basis": "donor similarity transfer using shoulder/elbow landmarks; left mirrored prior; biceps radius insertion assigned from named anatomy",
+    "parameter_basis": "source Thelen coefficients and Fmax preserved; fiber/slack lengths scaled by humeral landmark ratio",
+    "native_force_validation": false
+  },
+  {
+    "id": "arm26_TRIlong_l",
+    "side": "l",
+    "body_group": "shoulder_elbow",
+    "attachment_bodies": [
+      "humerus_l",
+      "torso",
+      "ulna_l"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 798.52,
+    "optimal_fiber_length_m": 0.14771746940871489,
+    "tendon_slack_length_m": 0.15763879198094197,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/e2224d0044eb393b-arm26.osim",
+    "source_sha256": "e2224d0044eb393b05d64926c3fa1682c451a9adc7f510e5517ef9958d3d41b9",
+    "source_muscle_name": "TRIlong",
+    "source_muscle_law": "Thelen2003Muscle",
+    "path_points": [
+      {
+        "source_body": "base",
+        "source_point_m": [
+          -0.05365,
+          -0.01373,
+          0.14723
+        ],
+        "body": "torso",
+        "point_m": [
+          -0.03549160077929807,
+          0.3765045113775302,
+          -0.17370821676150705
+        ]
+      },
+      {
+        "source_body": "r_humerus",
+        "source_point_m": [
+          -0.02714,
+          -0.11441,
+          -0.00664
+        ],
+        "body": "humerus_l",
+        "point_m": [
+          -0.026895006124858765,
+          -0.12687383606232733,
+          0.005928305464704246
+        ]
+      },
+      {
+        "source_body": "r_humerus",
+        "source_point_m": [
+          -0.03184,
+          -0.22637,
+          -0.01217
+        ],
+        "body": "humerus_l",
+        "point_m": [
+          -0.029125924421544623,
+          -0.25044435179690594,
+          0.01063605461655058
+        ]
+      },
+      {
+        "source_body": "r_humerus",
+        "source_point_m": [
+          -0.01743,
+          -0.26757,
+          -0.01208
+        ],
+        "body": "humerus_l",
+        "point_m": [
+          -0.01216343931642476,
+          -0.2954663945327599,
+          0.010006312781430606
+        ]
+      },
+      {
+        "source_body": "r_ulna_radius_hand",
+        "source_point_m": [
+          -0.0219,
+          0.01046,
+          -0.00078
+        ],
+        "body": "ulna_l",
+        "point_m": [
+          -0.024408526278671624,
+          0.010941605994758016,
+          0.001016844622988786
+        ]
+      }
+    ],
+    "assignment_basis": "contralateral regional cortical engineering prior; no identified recruitment",
+    "geometry_basis": "donor similarity transfer using shoulder/elbow landmarks; left mirrored prior; biceps radius insertion assigned from named anatomy",
+    "parameter_basis": "source Thelen coefficients and Fmax preserved; fiber/slack lengths scaled by humeral landmark ratio",
+    "native_force_validation": false
+  },
+  {
+    "id": "arm26_TRIlat_l",
+    "side": "l",
+    "body_group": "shoulder_elbow",
+    "attachment_bodies": [
+      "humerus_l",
+      "ulna_l"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 624.3,
+    "optimal_fiber_length_m": 0.12544961207993843,
+    "tendon_slack_length_m": 0.10803217911980639,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/e2224d0044eb393b-arm26.osim",
+    "source_sha256": "e2224d0044eb393b05d64926c3fa1682c451a9adc7f510e5517ef9958d3d41b9",
+    "source_muscle_name": "TRIlat",
+    "source_muscle_law": "Thelen2003Muscle",
+    "path_points": [
+      {
+        "source_body": "r_humerus",
+        "source_point_m": [
+          -0.00599,
+          -0.12646,
+          0.00428
+        ],
+        "body": "humerus_l",
+        "point_m": [
+          -0.0032866970730491187,
+          -0.13946141358173375,
+          -0.006284716634844891
+        ]
+      },
+      {
+        "source_body": "r_humerus",
+        "source_point_m": [
+          -0.02344,
+          -0.14528,
+          0.00928
+        ],
+        "body": "humerus_l",
+        "point_m": [
+          -0.022030914942335632,
+          -0.16059725897826113,
+          -0.012009098370326168
+        ]
+      },
+      {
+        "source_body": "r_humerus",
+        "source_point_m": [
+          -0.03184,
+          -0.22637,
+          -0.01217
+        ],
+        "body": "humerus_l",
+        "point_m": [
+          -0.029125924421544623,
+          -0.25044435179690594,
+          0.01063605461655058
+        ]
+      },
+      {
+        "source_body": "r_humerus",
+        "source_point_m": [
+          -0.01743,
+          -0.26757,
+          -0.01208
+        ],
+        "body": "humerus_l",
+        "point_m": [
+          -0.01216343931642476,
+          -0.2954663945327599,
+          0.010006312781430606
+        ]
+      },
+      {
+        "source_body": "r_ulna_radius_hand",
+        "source_point_m": [
+          -0.0219,
+          0.01046,
+          -0.00078
+        ],
+        "body": "ulna_l",
+        "point_m": [
+          -0.024408526278671624,
+          0.010941605994758016,
+          0.001016844622988786
+        ]
+      }
+    ],
+    "assignment_basis": "contralateral regional cortical engineering prior; no identified recruitment",
+    "geometry_basis": "donor similarity transfer using shoulder/elbow landmarks; left mirrored prior; biceps radius insertion assigned from named anatomy",
+    "parameter_basis": "source Thelen coefficients and Fmax preserved; fiber/slack lengths scaled by humeral landmark ratio",
+    "native_force_validation": false
+  },
+  {
+    "id": "arm26_TRImed_l",
+    "side": "l",
+    "body_group": "shoulder_elbow",
+    "attachment_bodies": [
+      "humerus_l",
+      "ulna_l"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 624.3,
+    "optimal_fiber_length_m": 0.12544961207993843,
+    "tendon_slack_length_m": 0.1000951210620247,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/e2224d0044eb393b-arm26.osim",
+    "source_sha256": "e2224d0044eb393b05d64926c3fa1682c451a9adc7f510e5517ef9958d3d41b9",
+    "source_muscle_name": "TRImed",
+    "source_muscle_law": "Thelen2003Muscle",
+    "path_points": [
+      {
+        "source_body": "r_humerus",
+        "source_point_m": [
+          -0.00838,
+          -0.13695,
+          -0.00906
+        ],
+        "body": "humerus_l",
+        "point_m": [
+          -0.005624814672564414,
+          -0.1512496750946115,
+          0.00829228725360465
+        ]
+      },
+      {
+        "source_body": "r_humerus",
+        "source_point_m": [
+          -0.02601,
+          -0.15139,
+          -0.0108
+        ],
+        "body": "humerus_l",
+        "point_m": [
+          -0.024672173169331787,
+          -0.16764723322096903,
+          0.01005213994001328
+        ]
+      },
+      {
+        "source_body": "r_humerus",
+        "source_point_m": [
+          -0.03184,
+          -0.22637,
+          -0.01217
+        ],
+        "body": "humerus_l",
+        "point_m": [
+          -0.029125924421544623,
+          -0.25044435179690594,
+          0.01063605461655058
+        ]
+      },
+      {
+        "source_body": "r_humerus",
+        "source_point_m": [
+          -0.01743,
+          -0.26757,
+          -0.01208
+        ],
+        "body": "humerus_l",
+        "point_m": [
+          -0.01216343931642476,
+          -0.2954663945327599,
+          0.010006312781430606
+        ]
+      },
+      {
+        "source_body": "r_ulna_radius_hand",
+        "source_point_m": [
+          -0.0219,
+          0.01046,
+          -0.00078
+        ],
+        "body": "ulna_l",
+        "point_m": [
+          -0.024408526278671624,
+          0.010941605994758016,
+          0.001016844622988786
+        ]
+      }
+    ],
+    "assignment_basis": "contralateral regional cortical engineering prior; no identified recruitment",
+    "geometry_basis": "donor similarity transfer using shoulder/elbow landmarks; left mirrored prior; biceps radius insertion assigned from named anatomy",
+    "parameter_basis": "source Thelen coefficients and Fmax preserved; fiber/slack lengths scaled by humeral landmark ratio",
+    "native_force_validation": false
+  },
+  {
+    "id": "arm26_BIClong_l",
+    "side": "l",
+    "body_group": "shoulder_elbow",
+    "attachment_bodies": [
+      "humerus_l",
+      "radius_l",
+      "torso"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 624.3,
+    "optimal_fiber_length_m": 0.12754411351185305,
+    "tendon_slack_length_m": 0.3001751262686049,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/e2224d0044eb393b-arm26.osim",
+    "source_sha256": "e2224d0044eb393b05d64926c3fa1682c451a9adc7f510e5517ef9958d3d41b9",
+    "source_muscle_name": "BIClong",
+    "source_muscle_law": "Thelen2003Muscle",
+    "path_points": [
+      {
+        "source_body": "base",
+        "source_point_m": [
+          -0.039235,
+          0.00347,
+          0.14795
+        ],
+        "body": "torso",
+        "point_m": [
+          -0.02005828138988639,
+          0.3958464038464662,
+          -0.174305427251991
+        ]
+      },
+      {
+        "source_body": "base",
+        "source_point_m": [
+          -0.028945,
+          0.01391,
+          0.15639
+        ],
+        "body": "torso",
+        "point_m": [
+          -0.009005156531377774,
+          0.40772632387958135,
+          -0.18349147507685928
+        ]
+      },
+      {
+        "source_body": "r_humerus",
+        "source_point_m": [
+          0.02131,
+          0.01793,
+          0.01028
+        ],
+        "body": "humerus_l",
+        "point_m": [
+          0.022998268802450136,
+          0.020446220975797035,
+          -0.011134544947262197
+        ]
+      },
+      {
+        "source_body": "r_humerus",
+        "source_point_m": [
+          0.02378,
+          -0.00511,
+          0.01201
+        ],
+        "body": "humerus_l",
+        "point_m": [
+          0.026322795184468846,
+          -0.004857151138540815,
+          -0.013331358880392132
+        ]
+      },
+      {
+        "source_body": "r_humerus",
+        "source_point_m": [
+          0.01345,
+          -0.02827,
+          0.00136
+        ],
+        "body": "humerus_l",
+        "point_m": [
+          0.015563007878958372,
+          -0.03078282266078254,
+          -0.0018675263785952773
+        ]
+      },
+      {
+        "source_body": "r_humerus",
+        "source_point_m": [
+          0.01068,
+          -0.07736,
+          -0.00165
+        ],
+        "body": "humerus_l",
+        "point_m": [
+          0.013804111300517268,
+          -0.08498947553564173,
+          0.0008426953675343256
+        ]
+      },
+      {
+        "source_body": "r_humerus",
+        "source_point_m": [
+          0.01703,
+          -0.12125,
+          0.00024
+        ],
+        "body": "humerus_l",
+        "point_m": [
+          0.021951937072584887,
+          -0.13316531132297219,
+          -0.001794790548510586
+        ]
+      },
+      {
+        "source_body": "r_humerus",
+        "source_point_m": [
+          0.0228,
+          -0.1754,
+          -0.0063
+        ],
+        "body": "humerus_l",
+        "point_m": [
+          0.02974285203134206,
+          -0.19276742830429755,
+          0.004733087917641217
+        ]
+      },
+      {
+        "source_body": "r_ulna_radius_hand",
+        "source_point_m": [
+          0.00751,
+          -0.04839,
+          0.02179
+        ],
+        "body": "radius_l",
+        "point_m": [
+          0.016707577391553097,
+          -0.03983612563929734,
+          0.0038440203315044837
+        ]
+      }
+    ],
+    "assignment_basis": "contralateral regional cortical engineering prior; no identified recruitment",
+    "geometry_basis": "donor similarity transfer using shoulder/elbow landmarks; left mirrored prior; biceps radius insertion assigned from named anatomy",
+    "parameter_basis": "source Thelen coefficients and Fmax preserved; fiber/slack lengths scaled by humeral landmark ratio",
+    "native_force_validation": false
+  },
+  {
+    "id": "arm26_BICshort_l",
+    "side": "l",
+    "body_group": "shoulder_elbow",
+    "attachment_bodies": [
+      "humerus_l",
+      "radius_l",
+      "torso"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 435.56,
+    "optimal_fiber_length_m": 0.14562296797680024,
+    "tendon_slack_length_m": 0.21198559229325276,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/e2224d0044eb393b-arm26.osim",
+    "source_sha256": "e2224d0044eb393b05d64926c3fa1682c451a9adc7f510e5517ef9958d3d41b9",
+    "source_muscle_name": "BICshort",
+    "source_muscle_law": "Thelen2003Muscle",
+    "path_points": [
+      {
+        "source_body": "base",
+        "source_point_m": [
+          0.004675,
+          -0.01231,
+          0.13475
+        ],
+        "body": "torso",
+        "point_m": [
+          0.0287674734597715,
+          0.37944703564649906,
+          -0.16000534514489284
+        ]
+      },
+      {
+        "source_body": "base",
+        "source_point_m": [
+          -0.007075,
+          -0.04004,
+          0.14507
+        ],
+        "body": "torso",
+        "point_m": [
+          0.016530870527692035,
+          0.34870832955527825,
+          -0.17171185465761973
+        ]
+      },
+      {
+        "source_body": "r_humerus",
+        "source_point_m": [
+          0.01117,
+          -0.07576,
+          -0.01101
+        ],
+        "body": "humerus_l",
+        "point_m": [
+          0.014316344400050914,
+          -0.08332963217776859,
+          0.011179523399798686
+        ]
+      },
+      {
+        "source_body": "r_humerus",
+        "source_point_m": [
+          0.01703,
+          -0.12125,
+          -0.01079
+        ],
+        "body": "humerus_l",
+        "point_m": [
+          0.021968724443926443,
+          -0.13330225577329322,
+          0.010363558653521406
+        ]
+      },
+      {
+        "source_body": "r_humerus",
+        "source_point_m": [
+          0.0228,
+          -0.1754,
+          -0.0063
+        ],
+        "body": "humerus_l",
+        "point_m": [
+          0.02974285203134206,
+          -0.19276742830429755,
+          0.004733087917641217
+        ]
+      },
+      {
+        "source_body": "r_ulna_radius_hand",
+        "source_point_m": [
+          0.00751,
+          -0.04839,
+          0.02179
+        ],
+        "body": "radius_l",
+        "point_m": [
+          0.016707577391553097,
+          -0.03983612563929734,
+          0.0038440203315044837
+        ]
+      }
+    ],
+    "assignment_basis": "contralateral regional cortical engineering prior; no identified recruitment",
+    "geometry_basis": "donor similarity transfer using shoulder/elbow landmarks; left mirrored prior; biceps radius insertion assigned from named anatomy",
+    "parameter_basis": "source Thelen coefficients and Fmax preserved; fiber/slack lengths scaled by humeral landmark ratio",
+    "native_force_validation": false
+  },
+  {
+    "id": "arm26_BRA_l",
+    "side": "l",
+    "body_group": "shoulder_elbow",
+    "attachment_bodies": [
+      "humerus_l",
+      "ulna_l"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 987.26,
+    "optimal_fiber_length_m": 0.09458327518856519,
+    "tendon_slack_length_m": 0.05897675084601676,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/e2224d0044eb393b-arm26.osim",
+    "source_sha256": "e2224d0044eb393b05d64926c3fa1682c451a9adc7f510e5517ef9958d3d41b9",
+    "source_muscle_name": "BRA",
+    "source_muscle_law": "Thelen2003Muscle",
+    "path_points": [
+      {
+        "source_body": "r_humerus",
+        "source_point_m": [
+          0.0068,
+          -0.1739,
+          -0.0036
+        ],
+        "body": "humerus_l",
+        "point_m": [
+          0.0120664652856763,
+          -0.19150137151645685,
+          0.0017951659095627095
+        ]
+      },
+      {
+        "source_body": "r_ulna_radius_hand",
+        "source_point_m": [
+          -0.0032,
+          -0.0239,
+          0.0009
+        ],
+        "body": "ulna_l",
+        "point_m": [
+          -0.0029002780851852443,
+          -0.0264103800341415,
+          -0.001285662530784035
+        ]
+      }
+    ],
+    "assignment_basis": "contralateral regional cortical engineering prior; no identified recruitment",
+    "geometry_basis": "donor similarity transfer using shoulder/elbow landmarks; left mirrored prior; biceps radius insertion assigned from named anatomy",
+    "parameter_basis": "source Thelen coefficients and Fmax preserved; fiber/slack lengths scaled by humeral landmark ratio",
+    "native_force_validation": false
+  },
+  {
+    "id": "gait2392_ercspn_r",
+    "side": "r",
+    "body_group": "lumbar_trunk",
+    "attachment_bodies": [
+      "pelvis",
+      "torso"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 2500.0,
+    "optimal_fiber_length_m": 0.12,
+    "tendon_slack_length_m": 0.03,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/3af1ca20aa87bc88-gait2392_thelen2003muscle.osim",
+    "source_muscle_name": "ercspn_r",
+    "source_muscle_law": "Thelen2003Muscle",
+    "path_points": [
+      {
+        "body": "pelvis",
+        "donor_station_m": [
+          -0.14,
+          0.0439,
+          0.0436
+        ],
+        "target_station_m": [
+          -0.1551377177321,
+          0.054530303884750005,
+          0.0436
+        ]
+      },
+      {
+        "body": "torso",
+        "donor_station_m": [
+          -0.055,
+          0.11,
+          0.0241
+        ],
+        "target_station_m": [
+          -0.055,
+          0.11,
+          0.0241
+        ]
+      }
+    ],
+    "assignment_basis": "Contralateral regional cortical engineering prior only; no measured trunk recruitment or excitation policy.",
+    "parameter_basis": "Unscaled retained donor parameters; unit-scale homologous back-frame station transfer, anatomical correspondence unvalidated.",
+    "native_control_ready": false,
+    "default_excitation_assignment": null,
+    "source_sha256": "3af1ca20aa87bc88b0b8cd54f2504331afa2aa03537cc868f1175fa1f50f3c0f"
+  },
+  {
+    "id": "gait2392_intobl_r",
+    "side": "r",
+    "body_group": "lumbar_trunk",
+    "attachment_bodies": [
+      "pelvis",
+      "torso"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 900.0,
+    "optimal_fiber_length_m": 0.1,
+    "tendon_slack_length_m": 0.1,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/3af1ca20aa87bc88-gait2392_thelen2003muscle.osim",
+    "source_muscle_name": "intobl_r",
+    "source_muscle_law": "Thelen2003Muscle",
+    "path_points": [
+      {
+        "body": "pelvis",
+        "donor_station_m": [
+          -0.04,
+          0.07,
+          0.1157
+        ],
+        "target_station_m": [
+          -0.0551377177321,
+          0.08063030388475001,
+          0.1157
+        ]
+      },
+      {
+        "body": "torso",
+        "donor_station_m": [
+          0.07,
+          0.16,
+          0.015
+        ],
+        "target_station_m": [
+          0.07,
+          0.16,
+          0.015
+        ]
+      }
+    ],
+    "assignment_basis": "Contralateral regional cortical engineering prior only; no measured trunk recruitment or excitation policy.",
+    "parameter_basis": "Unscaled retained donor parameters; unit-scale homologous back-frame station transfer, anatomical correspondence unvalidated.",
+    "native_control_ready": false,
+    "default_excitation_assignment": null,
+    "source_sha256": "3af1ca20aa87bc88b0b8cd54f2504331afa2aa03537cc868f1175fa1f50f3c0f"
+  },
+  {
+    "id": "gait2392_extobl_r",
+    "side": "r",
+    "body_group": "lumbar_trunk",
+    "attachment_bodies": [
+      "pelvis",
+      "torso"
+    ],
+    "sensory_region": "brain-lh-postcentral",
+    "motor_region": "brain-lh-precentral",
+    "max_isometric_force_n": 900.0,
+    "optimal_fiber_length_m": 0.12,
+    "tendon_slack_length_m": 0.14,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/3af1ca20aa87bc88-gait2392_thelen2003muscle.osim",
+    "source_muscle_name": "extobl_r",
+    "source_muscle_law": "Thelen2003Muscle",
+    "path_points": [
+      {
+        "body": "pelvis",
+        "donor_station_m": [
+          -0.03,
+          -0.0636,
+          0.01
+        ],
+        "target_station_m": [
+          -0.0451377177321,
+          -0.05296969611525,
+          0.01
+        ]
+      },
+      {
+        "body": "torso",
+        "donor_station_m": [
+          0.065,
+          0.11,
+          0.11
+        ],
+        "target_station_m": [
+          0.065,
+          0.11,
+          0.11
+        ]
+      }
+    ],
+    "assignment_basis": "Contralateral regional cortical engineering prior only; no measured trunk recruitment or excitation policy.",
+    "parameter_basis": "Unscaled retained donor parameters; unit-scale homologous back-frame station transfer, anatomical correspondence unvalidated.",
+    "native_control_ready": false,
+    "default_excitation_assignment": null,
+    "source_sha256": "3af1ca20aa87bc88b0b8cd54f2504331afa2aa03537cc868f1175fa1f50f3c0f"
+  },
+  {
+    "id": "gait2392_ercspn_l",
+    "side": "l",
+    "body_group": "lumbar_trunk",
+    "attachment_bodies": [
+      "pelvis",
+      "torso"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 2500.0,
+    "optimal_fiber_length_m": 0.12,
+    "tendon_slack_length_m": 0.03,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/3af1ca20aa87bc88-gait2392_thelen2003muscle.osim",
+    "source_muscle_name": "ercspn_l",
+    "source_muscle_law": "Thelen2003Muscle",
+    "path_points": [
+      {
+        "body": "pelvis",
+        "donor_station_m": [
+          -0.14,
+          0.0439,
+          -0.0436
+        ],
+        "target_station_m": [
+          -0.1551377177321,
+          0.054530303884750005,
+          -0.0436
+        ]
+      },
+      {
+        "body": "torso",
+        "donor_station_m": [
+          -0.055,
+          0.11,
+          -0.0241
+        ],
+        "target_station_m": [
+          -0.055,
+          0.11,
+          -0.0241
+        ]
+      }
+    ],
+    "assignment_basis": "Contralateral regional cortical engineering prior only; no measured trunk recruitment or excitation policy.",
+    "parameter_basis": "Unscaled retained donor parameters; unit-scale homologous back-frame station transfer, anatomical correspondence unvalidated.",
+    "native_control_ready": false,
+    "default_excitation_assignment": null,
+    "source_sha256": "3af1ca20aa87bc88b0b8cd54f2504331afa2aa03537cc868f1175fa1f50f3c0f"
+  },
+  {
+    "id": "gait2392_intobl_l",
+    "side": "l",
+    "body_group": "lumbar_trunk",
+    "attachment_bodies": [
+      "pelvis",
+      "torso"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 900.0,
+    "optimal_fiber_length_m": 0.1,
+    "tendon_slack_length_m": 0.1,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/3af1ca20aa87bc88-gait2392_thelen2003muscle.osim",
+    "source_muscle_name": "intobl_l",
+    "source_muscle_law": "Thelen2003Muscle",
+    "path_points": [
+      {
+        "body": "pelvis",
+        "donor_station_m": [
+          -0.04,
+          0.07,
+          -0.1157
+        ],
+        "target_station_m": [
+          -0.0551377177321,
+          0.08063030388475001,
+          -0.1157
+        ]
+      },
+      {
+        "body": "torso",
+        "donor_station_m": [
+          0.07,
+          0.16,
+          -0.015
+        ],
+        "target_station_m": [
+          0.07,
+          0.16,
+          -0.015
+        ]
+      }
+    ],
+    "assignment_basis": "Contralateral regional cortical engineering prior only; no measured trunk recruitment or excitation policy.",
+    "parameter_basis": "Unscaled retained donor parameters; unit-scale homologous back-frame station transfer, anatomical correspondence unvalidated.",
+    "native_control_ready": false,
+    "default_excitation_assignment": null,
+    "source_sha256": "3af1ca20aa87bc88b0b8cd54f2504331afa2aa03537cc868f1175fa1f50f3c0f"
+  },
+  {
+    "id": "gait2392_extobl_l",
+    "side": "l",
+    "body_group": "lumbar_trunk",
+    "attachment_bodies": [
+      "pelvis",
+      "torso"
+    ],
+    "sensory_region": "brain-rh-postcentral",
+    "motor_region": "brain-rh-precentral",
+    "max_isometric_force_n": 900.0,
+    "optimal_fiber_length_m": 0.12,
+    "tendon_slack_length_m": 0.14,
+    "source_path": "data/models/engineering_supported_rest_v1/provenance/sources/3af1ca20aa87bc88-gait2392_thelen2003muscle.osim",
+    "source_muscle_name": "extobl_l",
+    "source_muscle_law": "Thelen2003Muscle",
+    "path_points": [
+      {
+        "body": "pelvis",
+        "donor_station_m": [
+          -0.03,
+          -0.0636,
+          -0.01
+        ],
+        "target_station_m": [
+          -0.0451377177321,
+          -0.05296969611525,
+          -0.01
+        ]
+      },
+      {
+        "body": "torso",
+        "donor_station_m": [
+          0.065,
+          0.11,
+          -0.11
+        ],
+        "target_station_m": [
+          0.065,
+          0.11,
+          -0.11
+        ]
+      }
+    ],
+    "assignment_basis": "Contralateral regional cortical engineering prior only; no measured trunk recruitment or excitation policy.",
+    "parameter_basis": "Unscaled retained donor parameters; unit-scale homologous back-frame station transfer, anatomical correspondence unvalidated.",
+    "native_control_ready": false,
+    "default_excitation_assignment": null,
+    "source_sha256": "3af1ca20aa87bc88b0b8cd54f2504331afa2aa03537cc868f1175fa1f50f3c0f"
+  }
+]

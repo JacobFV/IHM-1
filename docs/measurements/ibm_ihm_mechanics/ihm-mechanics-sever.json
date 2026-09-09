@@ -1,0 +1,390 @@
+{
+  "sever": true,
+  "no_cord": false,
+  "seed": 0,
+  "mechanics": "IHM reduced SI BodyMechanics",
+  "dt_s": 0.01,
+  "n_muscles": 249,
+  "steps": [
+    {
+      "step": 0,
+      "n_afferent": 64,
+      "reflex_max": 0.0,
+      "spindle_max_hz": 0.0,
+      "proprioceptor_max_hz": 9.938822495252626e-16,
+      "motor_activation_max": 0.0,
+      "arc_max": {
+        "stretch": 0.0,
+        "reciprocal": 0.0,
+        "autogenic": 0.0,
+        "renshaw": 0.0
+      },
+      "cmd_mean": 0.48958002317352706,
+      "cmd_sd": 0.30038746582914033,
+      "cmd_min": 0.0058187153190374374,
+      "cmd_max": 0.9926666617393494,
+      "nerve_activity": 0
+    },
+    {
+      "step": 1,
+      "n_afferent": 64,
+      "reflex_max": 0.0,
+      "spindle_max_hz": 0.0,
+      "proprioceptor_max_hz": 1.5967023060064963e-15,
+      "motor_activation_max": 0.19428345810252978,
+      "arc_max": {
+        "stretch": 0.0,
+        "reciprocal": 0.0,
+        "autogenic": 0.0,
+        "renshaw": 0.0
+      },
+      "cmd_mean": 0.48958002317352706,
+      "cmd_sd": 0.30038746582914033,
+      "cmd_min": 0.0058187153190374374,
+      "cmd_max": 0.9926666617393494,
+      "nerve_activity": 40
+    },
+    {
+      "step": 2,
+      "n_afferent": 64,
+      "reflex_max": 0.0,
+      "spindle_max_hz": 0.7402882442275038,
+      "proprioceptor_max_hz": 78.69386805747331,
+      "motor_activation_max": 0.41875961884072577,
+      "arc_max": {
+        "stretch": 0.0,
+        "reciprocal": 0.0,
+        "autogenic": 0.0,
+        "renshaw": 0.1985333412885666
+      },
+      "cmd_mean": 0.39166401910135545,
+      "cmd_sd": 0.2403099732573912,
+      "cmd_min": 0.004654972348362207,
+      "cmd_max": 0.7941333055496216,
+      "nerve_activity": 50
+    },
+    {
+      "step": 3,
+      "n_afferent": 64,
+      "reflex_max": 0.0,
+      "spindle_max_hz": 1.954992512636674,
+      "proprioceptor_max_hz": 126.42411176571153,
+      "motor_activation_max": 0.5798377520742971,
+      "arc_max": {
+        "stretch": 0.0,
+        "reciprocal": 0.0,
+        "autogenic": 0.0,
+        "renshaw": 0.1985333412885666
+      },
+      "cmd_mean": 0.39166401910135545,
+      "cmd_sd": 0.2403099732573912,
+      "cmd_min": 0.004654972348362207,
+      "cmd_max": 0.7941333055496216,
+      "nerve_activity": 51
+    },
+    {
+      "step": 4,
+      "n_afferent": 64,
+      "reflex_max": 0.0,
+      "spindle_max_hz": 3.668678913497446,
+      "proprioceptor_max_hz": 155.37396797031403,
+      "motor_activation_max": 0.6564638807042682,
+      "arc_max": {
+        "stretch": 0.0,
+        "reciprocal": 0.0,
+        "autogenic": 0.0,
+        "renshaw": 0.15882666409015656
+      },
+      "cmd_mean": 0.4112472166643893,
+      "cmd_sd": 0.25232546926000443,
+      "cmd_min": 0.004887721035629511,
+      "cmd_max": 0.833840012550354,
+      "nerve_activity": 52
+    },
+    {
+      "step": 5,
+      "n_afferent": 64,
+      "reflex_max": 0.0016415746649727225,
+      "spindle_max_hz": 5.28185920510168,
+      "proprioceptor_max_hz": 172.93294335267746,
+      "motor_activation_max": 0.6942036202629521,
+      "arc_max": {
+        "stretch": 0.0016415746649727225,
+        "reciprocal": 0.0,
+        "autogenic": 0.0,
+        "renshaw": 0.15882666409015656
+      },
+      "cmd_mean": 0.41130509489144845,
+      "cmd_sd": 0.25232617062306717,
+      "cmd_min": 0.004887721035629511,
+      "cmd_max": 0.833840012550354,
+      "nerve_activity": 52
+    },
+    {
+      "step": 6,
+      "n_afferent": 64,
+      "reflex_max": 0.004449530504643917,
+      "spindle_max_hz": 5.541919910969103,
+      "proprioceptor_max_hz": 183.58300027522023,
+      "motor_activation_max": 0.7290036047657806,
+      "arc_max": {
+        "stretch": 0.004449530504643917,
+        "reciprocal": 0.0,
+        "autogenic": 0.0,
+        "renshaw": 0.16676799952983856
+      },
+      "cmd_mean": 0.4074914826745968,
+      "cmd_sd": 0.24993840101568096,
+      "cmd_min": 0.004841171205043793,
+      "cmd_max": 0.8258986473083496,
+      "nerve_activity": 52
+    },
+    {
+      "step": 7,
+      "n_afferent": 64,
+      "reflex_max": 0.009866027161478996,
+      "spindle_max_hz": 4.557143743308289,
+      "proprioceptor_max_hz": 190.0425863264272,
+      "motor_activation_max": 0.7573719394320887,
+      "arc_max": {
+        "stretch": 0.009866027161478996,
+        "reciprocal": 0.0,
+        "autogenic": 0.0,
+        "renshaw": 0.16676799952983856
+      },
+      "cmd_mean": 0.4075555121301707,
+      "cmd_sd": 0.24998403813886647,
+      "cmd_min": 0.004841171205043793,
+      "cmd_max": 0.8258986473083496,
+      "nerve_activity": 52
+    },
+    {
+      "step": 8,
+      "n_afferent": 64,
+      "reflex_max": 0.014729236252605915,
+      "spindle_max_hz": 2.924706309970348,
+      "proprioceptor_max_hz": 193.96052331553628,
+      "motor_activation_max": 0.7762854119224539,
+      "arc_max": {
+        "stretch": 0.014729236252605915,
+        "reciprocal": 0.0,
+        "autogenic": 0.0,
+        "renshaw": 0.16517972946166992
+      },
+      "cmd_mean": 0.4083712438185022,
+      "cmd_sd": 0.2505063521514677,
+      "cmd_min": 0.004850481171160936,
+      "cmd_max": 0.8274869322776794,
+      "nerve_activity": 52
+    },
+    {
+      "step": 9,
+      "n_afferent": 64,
+      "reflex_max": 0.015950169414281845,
+      "spindle_max_hz": 2.0700259745001444,
+      "proprioceptor_max_hz": 196.33687222225316,
+      "motor_activation_max": 0.7895616346143717,
+      "arc_max": {
+        "stretch": 0.015950169414281845,
+        "reciprocal": 0.0,
+        "autogenic": 0.0,
+        "renshaw": 0.16517972946166992
+      },
+      "cmd_mean": 0.40835117045827357,
+      "cmd_sd": 0.2505013956337294,
+      "cmd_min": 0.004850481171160936,
+      "cmd_max": 0.8274869322776794,
+      "nerve_activity": 52
+    },
+    {
+      "step": 10,
+      "n_afferent": 64,
+      "reflex_max": 0.013482756912708282,
+      "spindle_max_hz": 1.772193661030894,
+      "proprioceptor_max_hz": 197.77820069235153,
+      "motor_activation_max": 0.7997447377428348,
+      "arc_max": {
+        "stretch": 0.013482756912708282,
+        "reciprocal": 0.0,
+        "autogenic": 0.0,
+        "renshaw": 0.16549739241600037
+      },
+      "cmd_mean": 0.4081367684311297,
+      "cmd_sd": 0.2503824722870141,
+      "cmd_min": 0.004848618991672993,
+      "cmd_max": 0.8271692991256714,
+      "nerve_activity": 52
+    },
+    {
+      "step": 11,
+      "n_afferent": 64,
+      "reflex_max": 0.0088649345561862,
+      "spindle_max_hz": 1.3230275794141153,
+      "proprioceptor_max_hz": 198.6524106001829,
+      "motor_activation_max": 0.8069315687071722,
+      "arc_max": {
+        "stretch": 0.0088649345561862,
+        "reciprocal": 0.0,
+        "autogenic": 0.0,
+        "renshaw": 0.16549739241600037
+      },
+      "cmd_mean": 0.40808382624737827,
+      "cmd_sd": 0.25035190113282557,
+      "cmd_min": 0.004848618991672993,
+      "cmd_max": 0.8271692991256714,
+      "nerve_activity": 52
+    },
+    {
+      "step": 12,
+      "n_afferent": 64,
+      "reflex_max": 0.005492528434842825,
+      "spindle_max_hz": 1.2734010103189697,
+      "proprioceptor_max_hz": 199.18264571230716,
+      "motor_activation_max": 0.8117463901872742,
+      "arc_max": {
+        "stretch": 0.005492528434842825,
+        "reciprocal": 0.0,
+        "autogenic": 0.0,
+        "renshaw": 0.165433868765831
+      },
+      "cmd_mean": 0.40808465460270466,
+      "cmd_sd": 0.2503513953280379,
+      "cmd_min": 0.004848991520702839,
+      "cmd_max": 0.8272327780723572,
+      "nerve_activity": 52
+    },
+    {
+      "step": 13,
+      "n_afferent": 64,
+      "reflex_max": 0.004003067500889301,
+      "spindle_max_hz": 1.3682110183426959,
+      "proprioceptor_max_hz": 199.5042495646667,
+      "motor_activation_max": 0.8159018950083703,
+      "arc_max": {
+        "stretch": 0.004003067500889301,
+        "reciprocal": 0.0,
+        "autogenic": 0.0,
+        "renshaw": 0.165433868765831
+      },
+      "cmd_mean": 0.4080633769451405,
+      "cmd_sd": 0.2503396062604343,
+      "cmd_min": 0.004848991520702839,
+      "cmd_max": 0.8272327780723572,
+      "nerve_activity": 52
+    },
+    {
+      "step": 14,
+      "n_afferent": 64,
+      "reflex_max": 0.0040293121710419655,
+      "spindle_max_hz": 1.5036078569948819,
+      "proprioceptor_max_hz": 199.69931216140446,
+      "motor_activation_max": 0.8190258204790468,
+      "arc_max": {
+        "stretch": 0.0040293121710419655,
+        "reciprocal": 0.0,
+        "autogenic": 0.0,
+        "renshaw": 0.16544656455516815
+      },
+      "cmd_mean": 0.4080394383381499,
+      "cmd_sd": 0.25032841884806895,
+      "cmd_min": 0.00484891701489687,
+      "cmd_max": 0.82722008228302,
+      "nerve_activity": 52
+    },
+    {
+      "step": 15,
+      "n_afferent": 64,
+      "reflex_max": 0.004229967948049307,
+      "spindle_max_hz": 1.6637380469287733,
+      "proprioceptor_max_hz": 199.81762360688907,
+      "motor_activation_max": 0.8213507438344912,
+      "arc_max": {
+        "stretch": 0.004229967948049307,
+        "reciprocal": 0.0,
+        "autogenic": 0.0,
+        "renshaw": 0.16544656455516815
+      },
+      "cmd_mean": 0.4080279457839168,
+      "cmd_sd": 0.2503270635065566,
+      "cmd_min": 0.00484891701489687,
+      "cmd_max": 0.82722008228302,
+      "nerve_activity": 52
+    },
+    {
+      "step": 16,
+      "n_afferent": 64,
+      "reflex_max": 0.004606543108820915,
+      "spindle_max_hz": 1.8328100212109786,
+      "proprioceptor_max_hz": 199.88938312597043,
+      "motor_activation_max": 0.8230181163710589,
+      "arc_max": {
+        "stretch": 0.004606543108820915,
+        "reciprocal": 0.0,
+        "autogenic": 0.0,
+        "renshaw": 0.165444016456604
+      },
+      "cmd_mean": 0.4080245057925073,
+      "cmd_sd": 0.2503278870818904,
+      "cmd_min": 0.0048489319160580635,
+      "cmd_max": 0.8272226452827454,
+      "nerve_activity": 52
+    },
+    {
+      "step": 17,
+      "n_afferent": 64,
+      "reflex_max": 0.0051233647391200066,
+      "spindle_max_hz": 1.9959895949107134,
+      "proprioceptor_max_hz": 199.9329074744195,
+      "motor_activation_max": 0.8242095405726774,
+      "arc_max": {
+        "stretch": 0.0051233647391200066,
+        "reciprocal": 0.0,
+        "autogenic": 0.0,
+        "renshaw": 0.165444016456604
+      },
+      "cmd_mean": 0.40802333101136495,
+      "cmd_sd": 0.250328351441188,
+      "cmd_min": 0.0048489319160580635,
+      "cmd_max": 0.8272226452827454,
+      "nerve_activity": 52
+    },
+    {
+      "step": 18,
+      "n_afferent": 64,
+      "reflex_max": 0.005729699041694403,
+      "spindle_max_hz": 2.140988852619659,
+      "proprioceptor_max_hz": 199.95930632619786,
+      "motor_activation_max": 0.8250629348857711,
+      "arc_max": {
+        "stretch": 0.005729699041694403,
+        "reciprocal": 0.0,
+        "autogenic": 0.0,
+        "renshaw": 0.1654445379972458
+      },
+      "cmd_mean": 0.40802342045573464,
+      "cmd_sd": 0.25032946610787576,
+      "cmd_min": 0.00484892912209034,
+      "cmd_max": 0.8272221088409424,
+      "nerve_activity": 52
+    },
+    {
+      "step": 19,
+      "n_afferent": 64,
+      "reflex_max": 0.006372150965034962,
+      "spindle_max_hz": 2.2600167407810714,
+      "proprioceptor_max_hz": 199.97531803918267,
+      "motor_activation_max": 0.8256750849147977,
+      "arc_max": {
+        "stretch": 0.006372150965034962,
+        "reciprocal": 0.0,
+        "autogenic": 0.0,
+        "renshaw": 0.1654445379972458
+      },
+      "cmd_mean": 0.4080256868404407,
+      "cmd_sd": 0.25033074559284074,
+      "cmd_min": 0.00484892912209034,
+      "cmd_max": 0.8272221088409424,
+      "nerve_activity": 52
+    }
+  ]
+}

@@ -625,3 +625,34 @@ test("the Materialization list offers fidelity tiers and keeps the complete body
   await expect(page.locator("#materialization")).toHaveValue(complete.value, { timeout: 120000 });
   expect(errors).toEqual([]);
 });
+
+test('body controller and ablation choices are explicit before start', async ({ page }) => {
+  await page.addInitScript(()=>localStorage.setItem('ihm.panes.v1',JSON.stringify({shown:['scene'],collapsed:[]})));
+  await page.goto('/');
+  const controller=page.locator('#scene-controller'),ablation=page.locator('#scene-ablation');
+  await expect(controller).toHaveValue('regional', {timeout:60000});
+  await expect(controller.locator('option[value="engineering_stance"]')).toHaveJSProperty('disabled',false);
+  await expect(ablation).toBeDisabled();
+  await controller.selectOption('implicit');
+  await expect(ablation).toBeEnabled();
+  await ablation.selectOption('sever');
+  await expect(ablation).toHaveValue('sever');
+  await controller.selectOption('implicit_ankle_primitive');
+  await expect(page.locator('#scene-ankle-target')).toBeVisible();
+  await expect(ablation.locator('option[value="no-cord"]')).toHaveJSProperty('disabled',true);
+  await expect(ablation).toHaveValue('sever');
+  await controller.selectOption('implicit_cortical_ankle');
+  await expect(ablation.locator('option[value="no-cord"]')).toHaveJSProperty('disabled',false);
+  await expect(page.locator('#scene-ankle-target')).toBeVisible();
+  await ablation.selectOption('no-cord');
+  await controller.selectOption('implicit_cortical_stance');
+  await expect(ablation).toHaveValue('full');
+  await expect(ablation.locator('option[value="no-cord"]')).toHaveJSProperty('disabled',true);
+  await expect(page.locator('#scene-ankle-target-label')).toBeHidden();
+  await ablation.selectOption('sever');
+  await expect(ablation).toHaveValue('sever');
+  await expect(page.locator('#scene-controller-note')).toContainText('fixed body mass');
+  await controller.selectOption('regional');
+  await expect(ablation).toHaveValue('full');
+  await expect(ablation).toBeDisabled();
+});

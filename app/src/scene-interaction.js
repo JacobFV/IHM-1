@@ -1,17 +1,19 @@
+import {continuousMaterialPorts} from "./continuous-surface.js";
+import {surfacePickBone,surfacePickAnchor,surfaceMetadata} from "./surface-binding.js";
+import {canonicalEnvironmentObject} from "./world-frame.js";
 import * as THREE from 'three';
 import { TransformControls } from 'three/addons/controls/TransformControls.js';
 import {cursorSpring,advanceScene} from './scene-forces.js';
-import {bodyEndpoint,bodyEnvironment,bodyCommand,frameScope,materialOffset,materialPoint,createBodyOwner,closeBodyOwner,scheduleBodyIntakes} from './embodied-live.js';
+import {bodyEndpoint,bodyEnvironment,bodyCommand,frameScope,softObjectAnchor,controllerConfiguration,materialOffset,materialPoint,createBodyOwner,closeBodyOwner,scheduleBodyIntakes} from './embodied-live.js';
 import {mountTemporalSpectrumMonitor} from './temporal-spectrum-monitor.js';
 import {mountSkinVoltageMonitor} from './skin-voltage-monitor.js';
 import {mountIntakeMassMonitor} from './intake-mass-monitor.js';
 import {mountIntakeMonitor} from './intake-monitor.js';
 import {mountEmbodiedPanels} from './embodied-panels.js';
 
-// One native body. There is no owner picker, no candidate picker and no
-// reconnect flow: the workbench resolves the active source itself.
-export function mountSceneInteraction({scene,camera,renderer,controls,group,getObjects,onSelect,onFrame,onPauseReplay,mount,monitor,onStatus}) {
-  mount.innerHTML=`<div class="scene-modes" role="group" aria-label="Cursor mode"><button data-scene-mode="select" aria-pressed="true">Select</button><button data-scene-mode="gimbal" aria-pressed="false">Gimbal</button><button data-scene-mode="force" aria-pressed="false">Force</button></div><div class="scene-actions"><button id="scene-reset" type="button">Reset</button></div>`;
+// One native body; controller and ablation choices are frozen at session creation.
+export function mountSceneInteraction({scene,camera,renderer,controls,group,getObjects,getEnvironmentObjects=()=>[],onSelect,onFrame,onPauseReplay,mount,monitor,onStatus}) {
+  mount.innerHTML=`<div class="scene-modes" role="group" aria-label="Cursor mode"><button data-scene-mode="select" aria-pressed="true">Select</button><button data-scene-mode="gimbal" aria-pressed="false">Gimbal</button><button data-scene-mode="force" aria-pressed="false">Force</button></div><div class="scene-actions"><button id="scene-reset" type="button">Reset</button></div><label class="live-input-label">Controller<select id="scene-controller" aria-label="Body controller"><option value="regional">Regional baseline</option><option value="implicit">Implicit IBM cortex (untrained motor heads)</option><option value="implicit_curriculum16">IBM 16-objective curriculum kernel (untrained motor heads)</option><option value="implicit_ankle_primitive">Learned ankle primitive (8-site kernel)</option><option value="implicit_cortical_ankle">Learned IBM cortical ankle control (128 sites)</option><option value="engineering_stance">Engineered balance</option><option value="implicit_cortical_stance">Experimental learned IBM balance (1024 sites)</option><option value="implicit_curriculum16_stance">Experimental learned IBM balance · 16-objective kernel (1024 sites)</option></select></label><label class="live-input-label" id="scene-ablation-label">Ablation<select id="scene-ablation" aria-label="Controller ablation"><option value="full">Full controller + cord</option><option value="sever">Sever cortical kernel</option><option value="no-cord">Bypass cord</option></select></label><label class="live-input-label" id="scene-ankle-target-label" hidden>Ankle target · rad<input id="scene-ankle-target" aria-label="Learned ankle target in radians" type="number" min="-.25" max=".25" step=".01" value=".12"></label><p class="note" id="scene-controller-note">Controller choices apply when Body starts. Reset to change them. After Body starts, use Force to drag the ball or blanket.</p>`;
   monitor.innerHTML=`<div class="scene-values"><span>Time <b id="scene-clock">0.00 s</b></span><span>Applied force <b id="scene-force-value">0 N</b></span></div><p id="scene-target" class="note">No force target</p><p id="scene-scope" class="note"></p>`;
   const $=id=>document.getElementById(id);
   const objectMeshes=new Map(),ray=new THREE.Raycaster(),plane=new THREE.Plane(),cursor=new THREE.Vector3();
@@ -21,7 +23,7 @@ export function mountSceneInteraction({scene,camera,renderer,controls,group,getO
   scene.add(gizmo.getHelper());
   const arrow=new THREE.ArrowHelper(new THREE.Vector3(0,1,0),new THREE.Vector3(),0,0xe9b979,.02,.009);group.add(arrow);arrow.visible=false;
   let mode='select',session=null,state=null,running=false,pending=false,creating=null,drag=null,gizmoDragging=false;
-  let lastStep=0,lastPoll=0,disposed=false,environment='bed',initializing=false,faulted=false,selectedId=null,lastError='',resetting=false,resetTask=null;
+  let lastStep=0,lastPoll=0,disposed=false,environment='bed',initializing=false,faulted=false,selectedId=null,selectedSurfaceAnchor=null,lastError='',resetting=false,resetTask=null;
   let options={regional_skin:false,intake_mass:false};
   let environmentSelection={};
   const panels=mountEmbodiedPanels();
@@ -59,32 +61,48 @@ export function mountSceneInteraction({scene,camera,renderer,controls,group,getO
     try{return await intakeTask;}finally{intakeTask=null;syncIntake();}
   }
   const endpoint=()=>bodyEndpoint('embodied');
+  function syncController(){
+    $('scene-controller').disabled=!!session||!!creating||resetting;
+    const kind=$('scene-controller').value;
+    $('scene-ablation-label').hidden=kind==='engineering_stance';
+    $('scene-ablation').disabled=$('scene-controller').disabled||['regional','engineering_stance'].includes(kind);
+    $('scene-ablation').querySelector('option[value="no-cord"]').disabled=!['implicit','implicit_curriculum16','implicit_cortical_ankle'].includes(kind);
+    $('scene-ablation').querySelector('option[value="full"]').textContent=['implicit_cortical_stance','implicit_curriculum16_stance'].includes(kind)?'Full cortical controller (no cord)':'Full controller + cord';
+    $('scene-controller-note').textContent=['engineering_stance','implicit_cortical_stance','implicit_curriculum16_stance'].includes(kind)?'Balance requires Floor and fixed body mass (Digestive off). Privileged native feedback; walking is not established. Reset to change controller.':'Controller choices apply when Body starts. Reset to change them. After Body starts, use Force to drag the ball or blanket.';
+    $('scene-ablation').querySelector('option[value="sever"]').textContent=kind==='implicit_ankle_primitive'?'Sever learned motor kernel':'Sever cortical kernel';
+    $('scene-ankle-target-label').hidden=!['implicit_ankle_primitive','implicit_cortical_ankle'].includes(kind);
+    $('scene-ankle-target').disabled=$('scene-controller').disabled;
+  }
+  $('scene-controller').onchange=()=>{if(['regional','engineering_stance'].includes($('scene-controller').value)||['implicit_ankle_primitive','implicit_cortical_stance','implicit_curriculum16_stance'].includes($('scene-controller').value)&&$('scene-ablation').value==='no-cord')$('scene-ablation').value='full';syncController();};
+  syncController();
 
   async function request(path,data) {
     const response=await fetch(path,data===undefined?{cache:'no-store'}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
     const payload=await response.json();if(!response.ok){const error=Error(payload.error||'Body request failed');error.httpStatus=response.status;throw error;}return payload;
   }
   function allObjects() {
-    const raw=getObjects();return [...(raw instanceof Map?raw.values():raw||[]),...objectMeshes.values()].filter(x=>x.visible);
+    const raw=getObjects();return [...(raw instanceof Map?raw.values():raw||[]),...objectMeshes.values(),...getEnvironmentObjects()].filter(x=>x.visible);
   }
   function pick(event) {
     const r=renderer.domElement.getBoundingClientRect();ray.setFromCamera(new THREE.Vector2((event.clientX-r.left)/r.width*2-1,-(event.clientY-r.top)/r.height*2+1),camera);
     const hit=ray.intersectObjects(allObjects(),true)[0];if(!hit)return null;
     let mesh=hit.object;while(!mesh.userData.structure&&!mesh.userData.sceneObject&&mesh.parent)mesh=mesh.parent;
     const ident=mesh.userData.sceneObject||mesh.userData.structure?.id;if(!ident)return null;
-    return {id:ident,point:group.worldToLocal(hit.point.clone()),mesh,world:hit.point.clone()};
+    const point=group.worldToLocal(hit.point.clone()),surfaceAnchor=surfacePickAnchor(hit.object,hit.face,point.toArray()),forceId=surfacePickBone(hit.object,hit.face,point.toArray())||ident;
+    return {id:ident,forceId,surfaceAnchor,point,mesh,world:hit.point.clone()};
   }
   function centroid(id,fallback) {
-    const object=state?.objects?.find(o=>o.id===id),body=state?.entities?.[id];
+    const object=worldObject(id),body=state?.entities?.[id];
+    if(object?.positions){const p=object.positions;return new THREE.Vector3(...[0,1,2].map(axis=>{let sum=0;for(let i=axis;i<p.length;i+=3)sum+=p[i];return sum/(p.length/3);}));}
     if(object)return new THREE.Vector3(...object.position_m);
     if(body)return new THREE.Vector3(...body.centroid_m);
     if(fallback?.geometry){fallback.geometry.computeBoundingBox();const p=fallback.geometry.boundingBox.getCenter(new THREE.Vector3());return group.worldToLocal(fallback.localToWorld(p));}
     return new THREE.Vector3();
   }
   function selected(hit) {
-    selectedId=hit.id;if(hit.mesh.userData.structure)onSelect(hit.mesh.userData.structure);
-    $('scene-target').textContent=hit.mesh.userData.structure?.name||'Free sphere · 0.4 kg';
-    gizmoTarget.position.copy(centroid(hit.id,hit.mesh));gizmoTarget.updateMatrixWorld();
+    selectedId=hit.forceId||hit.id;selectedSurfaceAnchor=hit.surfaceAnchor||null;if(hit.mesh.userData.structure)onSelect(hit.mesh.userData.structure);
+    $('scene-target').textContent=hit.mesh.userData.structure?.name||hit.id;
+    gizmoTarget.position.copy(selectedSurfaceAnchor?new THREE.Vector3(...continuousMaterialPorts(selectedSurfaceAnchor,surfaceMetadata(state).transforms,[0,0,0]).point_m):centroid(selectedId,hit.mesh));gizmoTarget.updateMatrixWorld();
     if(mode==='gimbal')gizmo.attach(gizmoTarget);else gizmo.detach();
   }
   function accept(frame) {
@@ -103,10 +121,11 @@ export function mountSceneInteraction({scene,camera,renderer,controls,group,getO
       mesh.position.fromArray(item.position_m);const r=item.rotation_matrix;mesh.setRotationFromMatrix(new THREE.Matrix4().set(r[0][0],r[0][1],r[0][2],0,r[1][0],r[1][1],r[1][2],0,r[2][0],r[2][1],r[2][2],0,0,0,0,1));
     }
     $('scene-clock').textContent=frame.time_s.toFixed(2)+' s';
-    if(selectedId&&!gizmoDragging)gizmoTarget.position.copy(centroid(selectedId));
+    if(selectedId&&!gizmoDragging)gizmoTarget.position.copy(selectedSurfaceAnchor?new THREE.Vector3(...continuousMaterialPorts(selectedSurfaceAnchor,surfaceMetadata(state).transforms,[0,0,0]).point_m):centroid(selectedId));
   }
   function initialized(frame) {
     initializing=false;onPauseReplay();accept(frame);
+    if(drag?.initialAnchor&&surfaceMetadata(frame)?.binding.surface_entity_ids?.includes(drag.id)){drag=null;arrow.visible=false;controls.enabled=true;}
     if(drag?.initialAnchor){
       if(drag.gimbal)drag.target.sub(drag.initialAnchor).add(centroid(drag.id));
       else drag.offset.fromArray(materialOffset(drag.initialAnchor.toArray(),materialEntity(drag.id)));
@@ -124,23 +143,28 @@ export function mountSceneInteraction({scene,camera,renderer,controls,group,getO
   async function start() {
     if(disposed||resetting)return;
     if(faulted){status('Reset is required before this body can restart.');return;}
+    if(['engineering_stance','implicit_cortical_stance','implicit_curriculum16_stance'].includes($('scene-controller').value)){
+      if(environment!=='floor'){status('Balance requires the Floor environment.');return;}
+      if(options.intake_mass){status('Balance requires fixed body mass; turn Digestive off.');return;}
+    }
     if(creating)return creating;
     if(!session){
       creating=(async()=>{
         onPauseReplay();running=true;status('Initializing body…');
-        const frame=await createBodyOwner(request,endpoint(),{environment:bodyEnvironment(environment,'embodied'),environment_selection:environmentSelection,...options});
-        session=frame.id;
+        const frame=await createBodyOwner(request,endpoint(),{environment:bodyEnvironment(environment,'embodied'),environment_selection:environmentSelection,...options,controller:controllerConfiguration($('scene-controller').value,$('scene-ablation').value,$('scene-ankle-target').value===''?NaN:Number($('scene-ankle-target').value))});
+        session=frame.id;syncController();
         if(!session)throw Error('Body startup returned no session identity');
         if(disposed){await request(endpoint()+'/'+session+'/close',{});return;}
         pendingStatus(frame);
       })();
-      try{await creating;}catch(error){running=false;if(session)faulted=true;throw error;}finally{creating=null;}
+      syncController();
+      try{await creating;}catch(error){running=false;if(session)faulted=true;throw error;}finally{creating=null;syncController();}
     }else if(!initializing){running=true;panels.status('Body resumed · awaiting the next accepted native frame.');}
   }
-  function pause(){running=false;panels.status('Paused · last accepted body state. Inputs take effect on resume.');}
+  function pause(){running=false;const text='Paused · last accepted body state. Inputs take effect on resume.';panels.status(text);status(text);}
   function reset() {
     if(resetTask)return resetTask;
-    resetting=true;syncIntake();running=false;drag=null;gizmoDragging=false;arrow.visible=false;gizmo.detach();controls.enabled=true;
+    resetting=true;syncController();syncIntake();running=false;drag=null;gizmoDragging=false;arrow.visible=false;gizmo.detach();controls.enabled=true;
     resetTask=Promise.resolve().then(async()=>{
     try{
       if(creating){try{await creating;}catch(error){if(!session)throw error;}}
@@ -151,10 +175,10 @@ export function mountSceneInteraction({scene,camera,renderer,controls,group,getO
         await new Promise(resolve=>setTimeout(resolve,500));
       });
       if(disposed)return;
-      session=null;state=null;initializing=false;faulted=false;selectedId=null;panels.clear();spectrum.clear();intakeMass.clear();skinVoltage.clear();clearIntake();syncIntake();
+      session=null;state=null;initializing=false;faulted=false;selectedId=null;selectedSurfaceAnchor=null;panels.clear();spectrum.clear();intakeMass.clear();skinVoltage.clear();clearIntake();syncIntake();
       $('scene-clock').textContent='0.00 s';$('scene-force-value').textContent='0 N';
       onFrame(null);status('Body stopped.');
-    }catch(e){status(e.message);throw e;}finally{resetting=false;resetTask=null;syncIntake();}
+    }catch(e){status(e.message);throw e;}finally{resetting=false;resetTask=null;syncController();syncIntake();}
     });
     return resetTask;
   }
@@ -167,7 +191,7 @@ export function mountSceneInteraction({scene,camera,renderer,controls,group,getO
   });
   gizmo.addEventListener('dragging-changed',event=>{
     gizmoDragging=event.value;controls.enabled=!event.value;
-    if(event.value&&selectedId){drag={id:selectedId,offset:new THREE.Vector3(),target:gizmoTarget.position.clone(),initialAnchor:session&&!initializing?null:gizmoTarget.position.clone(),gimbal:true};start().catch(e=>{status(e.message);gizmoDragging=false;drag=null;});}
+    if(event.value&&selectedId){drag={id:selectedId,surfaceAnchor:selectedSurfaceAnchor,offset:new THREE.Vector3(),target:gizmoTarget.position.clone(),initialAnchor:session&&!initializing?null:gizmoTarget.position.clone(),gimbal:true};start().catch(e=>{status(e.message);gizmoDragging=false;drag=null;});}
     else {drag=null;arrow.visible=false;}
   });
   gizmo.addEventListener('objectChange',()=>{if(gizmoDragging&&drag)drag.target.copy(gizmoTarget.position);});
@@ -176,11 +200,11 @@ export function mountSceneInteraction({scene,camera,renderer,controls,group,getO
     if(mode==='gimbal'&&gizmo.axis)return;
     const hit=pick(event);if(!hit)return;selected(hit);
     if(mode==='gimbal')return;
-    let offset;try{offset=session&&!initializing?materialOffset(hit.point.toArray(),materialEntity(hit.id)):[0,0,0];}catch(error){status(error.message);return;}
+    let offset;try{offset=session&&!initializing?materialOffset(hit.point.toArray(),materialEntity(hit.forceId)):[0,0,0];}catch(error){status(error.message);return;}
     event.preventDefault();event.stopImmediatePropagation();controls.enabled=false;
     renderer.domElement.setPointerCapture(event.pointerId);
     plane.setFromNormalAndCoplanarPoint(camera.getWorldDirection(new THREE.Vector3()),hit.world);
-    drag={id:hit.id,offset:new THREE.Vector3(...offset),target:hit.point.clone(),initialAnchor:session&&!initializing?null:hit.point.clone(),pointer:event.pointerId};
+    drag={id:hit.forceId,surfaceAnchor:hit.surfaceAnchor,offset:new THREE.Vector3(...offset),target:hit.point.clone(),initialAnchor:session&&!initializing?null:hit.point.clone(),pointer:event.pointerId};
     start().catch(e=>{status(e.message);drag=null;controls.enabled=true;});
   }
   function move(event) {
@@ -196,19 +220,28 @@ export function mountSceneInteraction({scene,camera,renderer,controls,group,getO
   }
   renderer.domElement.addEventListener('pointerdown',down,true);renderer.domElement.addEventListener('pointermove',move,true);
   renderer.domElement.addEventListener('pointerup',up,true);renderer.domElement.addEventListener('pointercancel',up,true);
+  function worldObject(id){const object=state?.environment_state?.objects?.find(o=>o.id===id);return object?canonicalEnvironmentObject(state.environment_state,object):state?.objects?.find(o=>o.id===id);}
   function materialEntity(id) {
     const entity=state?.entities?.[id];if(entity)return entity;
-    const object=state?.objects?.find(o=>o.id===id);
+    const object=worldObject(id);
+    if(object?.positions)return {centroid_m:centroid(id).toArray()};
     if(object)return {...object,centroid_m:object.position_m};
     throw Error('Selected structure has no live mechanical owner');
   }
   function forceCommand() {
     if(!drag)return [];
-    const point=new THREE.Vector3(...materialPoint(drag.offset.toArray(),materialEntity(drag.id))),force=cursorSpring(point.toArray(),drag.target.toArray());
+    const surface=drag.surfaceAnchor?surfaceMetadata(state):null;
+    let location=surface?continuousMaterialPorts(drag.surfaceAnchor,surface.transforms,[0,0,0]).point_m:materialPoint(drag.offset.toArray(),materialEntity(drag.id));
+    const object=worldObject(drag.id);
+    if(object?.positions){
+      const anchor=softObjectAnchor(object,location,drag.nodeIndex);
+      drag.nodeIndex=anchor.nodeIndex;location=anchor.point;
+    }
+    const point=new THREE.Vector3(...location),force=cursorSpring(point.toArray(),drag.target.toArray());
     const magnitude=Math.hypot(...force);$('scene-force-value').textContent=magnitude.toFixed(2)+' N';
     arrow.position.copy(point);arrow.visible=magnitude>1e-5;
     if(arrow.visible){arrow.setDirection(new THREE.Vector3(...force).normalize());arrow.setLength(Math.min(.3,magnitude*.015),.018,.009);}
-    return [{id:drag.id,force_n:force,point_m:point.toArray()}];
+    return surface?continuousMaterialPorts(drag.surfaceAnchor,surface.transforms,force).ports:[{id:drag.id,force_n:force,point_m:point.toArray()}];
   }
   async function update(now) {
     if(disposed||resetting||pending||intakeTask||!session)return;

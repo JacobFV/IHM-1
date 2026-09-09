@@ -84,3 +84,77 @@ test('known rejection remains correctable if read recovery is offline',async()=>
  await assert.rejects(scheduleBodyIntakes(async(path,data)=>{if(data){posts++;throw error;}throw Error('Offline');},'/body/id',2,[{event_id:'water'}]),e=>e===error&&e.definitelyRejected===true);
  assert.equal(posts,1);
 });
+
+test('controller telemetry distinguishes ablation from evidence of cortical control',async()=>{
+ const {controllerReadouts}=await import('../src/embodied-live.js');
+ const rows=Object.fromEntries(controllerReadouts({controller:{kind:'implicit',sever:true,checkpoint_sha256:'abc'},neural:{motor_excitations:{a:.1,b:.4},arc_max:{stretch:0,renshaw:.2}}}));
+ assert.equal(rows.Controller,'IBM fused implicit kernel');
+ assert.equal(rows.Ablation,'Cortical kernel severed');
+ assert.equal(rows['Motor excitation peak'],.4);
+ assert.equal(rows['Stretch arc peak'],0);
+ assert.equal(rows['Renshaw arc peak'],.2);
+ assert.equal(rows['Autogenic arc peak'],null);
+ assert.match(rows['Cortical contribution'],/matched full \/ severed/);
+ assert.equal(Object.fromEntries(controllerReadouts({}))['Motor excitation peak'],null);
+ assert.equal(Object.fromEntries(controllerReadouts({})).Controller,'Unavailable');
+});
+
+test('deformable object grab follows one free material node through motion',async()=>{
+ const {softObjectAnchor}=await import('../src/embodied-live.js');
+ const object={positions:[0,0,0,.1,0,0,.2,0,0],fixed_nodes:[0]};
+ const first=softObjectAnchor(object,[0,0,0]);
+ assert.equal(first.nodeIndex,1);
+ assert.deepEqual(first.point,[.1,0,0]);
+ const moved={...object,positions:[0,0,0,.3,.4,0,.1,0,0]};
+ assert.deepEqual(softObjectAnchor(moved,[.1,0,0],first.nodeIndex).point,[.3,.4,0]);
+ assert.throws(()=>softObjectAnchor({positions:[0,0,0],fixed_nodes:[0]},[0,0,0]),/No movable/);
+});
+
+test('learned primitive configuration restricts targets and incompatible ablations',async()=>{
+ const {controllerConfiguration,controllerReadouts}=await import('../src/embodied-live.js');
+ assert.deepEqual(controllerConfiguration('implicit_cortical_ankle','no-cord',.1),{kind:'implicit_cortical_ankle',sever:false,no_cord:true,target_rad:.1});
+ assert.deepEqual(controllerConfiguration('implicit_ankle_primitive','sever',-.1),{kind:'implicit_ankle_primitive',sever:true,target_rad:-.1});
+ assert.throws(()=>controllerConfiguration('implicit_ankle_primitive','no-cord'),/Unsupported/);
+ assert.throws(()=>controllerConfiguration('implicit_ankle_primitive','full',NaN),/target/);
+ assert.throws(()=>controllerConfiguration('implicit_ankle_primitive','full',.3),/target/);
+ const rows=Object.fromEntries(controllerReadouts({controller:{kind:'implicit_ankle_primitive',target_rad:.12},neural:{motor_primitive:{angle_rad:.01}}}));
+ assert.equal(rows['Ankle angle · rad'],.01);assert.match(rows['Ankle feedback'],/privileged/);
+});
+
+test('engineered balance has no ablations and never claims cortical control',async()=>{
+ const {controllerConfiguration,controllerReadouts}=await import('../src/embodied-live.js');
+ assert.deepEqual(controllerConfiguration('engineering_stance'),{kind:'engineering_stance'});
+ assert.throws(()=>controllerConfiguration('engineering_stance','sever'),/Unsupported/);
+ const rows=Object.fromEntries(controllerReadouts({controller:{kind:'engineering_stance',motor_owner:'engineered-postural-feedback'},neural:{motor_excitations:{soleus_r:.3}}}));
+ assert.equal(rows.Controller,'Engineered balance');
+ assert.equal(rows['Motor owner'],'engineered-postural-feedback');
+ assert.equal(rows.Ablation,'Not applicable');
+ assert.equal(rows['Cortical contribution'],'Not used by this controller');
+ assert.equal(rows['Stretch arc peak'],'Not provided by this controller');
+ assert.match(rows.Task,/walking not established/);
+});
+
+test('learned cortical stance preserves explicit severing and fixed no-cord topology',async()=>{
+ const {controllerConfiguration,controllerReadouts}=await import('../src/embodied-live.js');
+ assert.deepEqual(controllerConfiguration('implicit_cortical_stance','full'),{kind:'implicit_cortical_stance',sever:false,no_cord:false});
+ assert.deepEqual(controllerConfiguration('implicit_cortical_stance','sever'),{kind:'implicit_cortical_stance',sever:true,no_cord:false});
+ assert.throws(()=>controllerConfiguration('implicit_cortical_stance','no-cord'),/Unsupported/);
+ const rows=Object.fromEntries(controllerReadouts({neural:{controller:{kind:'implicit_cortical_stance',sites:1024,muscle_count:98,motor_owner:'trained1024site-persistent-IBM-EI-cortex',sampling_interval_s:.01},cortical_stance:{max_cortical_correction:.02}}}));
+ assert.match(rows.Controller,/Experimental.*1024/);assert.equal(rows['Controlled muscles'],98);assert.equal(rows['Cortical correction peak'],.02);
+ assert.equal(rows['Stretch arc peak'],'Not provided by this controller');assert.match(rows['Balance feedback'],/Privileged/);assert.match(rows['Cortical contribution'],/matched/);assert.match(rows.Task,/walking not established/);
+});
+
+test('curriculum16 kernel selections keep their own ablations and disclose the kernel lineage',async()=>{
+ const {controllerConfiguration,controllerReadouts}=await import('../src/embodied-live.js');
+ // The retained-kernel raw path keeps the cord ablation the trained stance path cannot have.
+ assert.deepEqual(controllerConfiguration('implicit_curriculum16','no-cord'),{kind:'implicit_curriculum16',sever:false,no_cord:true});
+ assert.deepEqual(controllerConfiguration('implicit_curriculum16_stance','sever'),{kind:'implicit_curriculum16_stance',sever:true,no_cord:false});
+ assert.throws(()=>controllerConfiguration('implicit_curriculum16_stance','no-cord'),/Unsupported/);
+ const lineage='IBM-1 ckpt/ibm1_curriculum16.pt, the 16-objective consolidated kernel, retained locally';
+ const rows=Object.fromEntries(controllerReadouts({neural:{controller:{kind:'implicit_curriculum16_stance',sites:1024,muscle_count:98,sampling_interval_s:.01,kernel_identity:lineage,checkpoint_sha256:'a'.repeat(64)},cortical_stance:{max_cortical_correction:.01}}}));
+ assert.match(rows.Controller,/16-objective/);assert.equal(rows['Association kernel'],lineage);
+ assert.equal(rows['Base kernel SHA-256'],'a'.repeat(64));assert.equal(rows['Controlled muscles'],98);
+ assert.match(rows['Cortical contribution'],/matched/);assert.match(rows.Walking,/Not established/);
+ const raw=Object.fromEntries(controllerReadouts({neural:{controller:{kind:'implicit_curriculum16',sites:1024,no_cord:true,kernel_name:'kernel.pt'},arc_max:{stretch:0}}}));
+ assert.match(raw.Controller,/16-objective/);assert.equal(raw['Stretch arc peak'],'Inactive for this controller');
+});

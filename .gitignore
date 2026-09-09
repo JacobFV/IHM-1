@@ -9,5 +9,13 @@ artifacts/
 /data/derived/
 /.venv-physiology/
 /data/runtime/
+/data/research/locomotion_control/
 
 /test-results/
+
+# IBM-1 kernels copied in for the embodied controllers.  they are 15 MB each and
+# are published at huggingface.co/jacob-valdez/ibm-1 under implicit/ -- pinned by
+# sha256 in each bundle's manifest.json, so the copy is reproducible and does not
+# need to live in two repos.  IBM-1's own rule is that weights are never
+# committed; this keeps that true on both sides of the join.
+/data/models/*/kernel.pt

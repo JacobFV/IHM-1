@@ -672,7 +672,7 @@ def object_specs():
          'base_environment': None, 'mass_kg': .4, 'radius_m': .065,
          'engine_object_id': 'scene-ball', 'always_present': True,
          'mass_basis': 'Retained scene default: Sphere(radius=.065, mass=.4) in ihm/assembly/interactive_scene.py.',
-         'material': {'response': 'zero restitution, Coulomb-capped tangential impulse against the environment plane',
+         'material': {'response': 'restitution 0.75, friction 0.35, analytic impact against the environment plane (uncalibrated engineering rubber)',
                       'tier': 'synthesized', 'source': 'Sphere.step in ihm/assembly/interactive_scene.py'},
          'dimensions_basis': 'The radius and mass the scene already instantiates.',
          'collider': 'sphere', 'start_m': [.42, .1, .3],
@@ -700,7 +700,7 @@ def object_specs():
         {'id': 'ball-large', 'label': 'Ball (0.11 m)', 'colour': 'ball-large',
          'base_environment': None, 'mass_kg': .6, 'radius_m': .11,
          'mass_basis': 'Engineering choice inside the accepted Sphere bounds (0 < radius <= 1 m, 0 < mass <= 100 kg).',
-         'material': {'response': 'zero restitution, Coulomb-capped tangential impulse against the environment plane',
+         'material': {'response': 'restitution 0.75, friction 0.35, analytic impact against the environment plane (uncalibrated engineering rubber)',
                       'tier': 'synthesized', 'source': 'Sphere.step in ihm/assembly/interactive_scene.py'},
          'dimensions_basis': 'Engineering choice; accepted by the existing Sphere constructor.',
          'collider': 'sphere', 'start_m': [-.52, .18, .34],
@@ -1426,7 +1426,7 @@ def build(render=True):
 
     # ------------------------------------------------ interactable objects
     contact_model = ('Simulated as a finite-mass sphere with rotational inertia: gravity, applied force ports, '
-                     'zero-restitution contact with the environment plane and a Coulomb-capped tangential impulse. '
+                     'restitution-0.75 contact with the environment plane and a Coulomb-capped tangential impulse. '
                      'There is no body-object contact and no object-object contact in any engine here '
                      '(interactive scene scope: body_object_contact=false).')
     for ident, entry in objects.items():

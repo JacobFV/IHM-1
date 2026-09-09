@@ -1,0 +1,9 @@
+{
+  "activation_induced_spindle_peak_hz": 4.1787090015693735,
+  "first_spindle_s": 0.001,
+  "first_stretch_arc_s": 0.031,
+  "first_alpha_s": 0.031,
+  "first_muscle_activation_s": 0.046,
+  "cord_delay_s": 0.03,
+  "biological_validation": false
+}

@@ -1,0 +1,342 @@
+{
+  "schema": "ihm.upperbody-registration.v1",
+  "model_path": "data/derived/mechanics/whole_body_arm26_v2/subject_with_arms.osim",
+  "model_sha256": "e697dc40b2939f5edbc2879bcbd7e5954ffbabbb234032c403d57f5c39ea3810",
+  "catalog_path": "data/derived/mechanics/whole_body_arm26_v2/catalog.json",
+  "catalog_sha256": "002a939642e534f08f22fc651e98b536eee23d199f989fe613b9701354cc864d",
+  "sources": {
+    "data/raw/anatomy/opensim-models/source/Models/Arm26/arm26.osim": "e2224d0044eb393b05d64926c3fa1682c451a9adc7f510e5517ef9958d3d41b9",
+    "data/raw/mechanics/opensim-core/OpenSim/Examples/Moco/example3DWalking/subject_walk_scaled.osim": "806ad1b248c6b2bc48ab43b58865915d1664e144b4ff6846457d80adacc23ce5",
+    "data/raw/mechanics/opensim-core/OpenSim/Simulation/Model/Force.cpp": "9ee76a13e7a224cfbb4b4103b79229b683cef2e516381c6e2d98d4baac06b8be"
+  },
+  "builder_sha256": "994edf52d0d14aa605ca8668e521ef409bd5c8b721f7cc2f2054cf38f98d90c6",
+  "registrations": [
+    {
+      "side": "r",
+      "length_scale": 1.102369174691902,
+      "linear_map": [
+        [
+          1.1020552497760565,
+          -0.02626227993911563,
+          -0.001521973829696871
+        ],
+        [
+          0.02627777591256901,
+          1.1019859925697493,
+          0.012415634661924477
+        ],
+        [
+          0.0012256610573749625,
+          -0.012448379146262263,
+          1.102298205079963
+        ]
+      ],
+      "source_shoulder_m": [
+        -0.017545,
+        -0.007,
+        0.17
+      ],
+      "target_shoulder_m": [
+        0.0040867035257739995,
+        0.38515234020809996,
+        0.198768021792
+      ],
+      "source_elbow_m": [
+        0.0061,
+        -0.2904,
+        -0.0123
+      ],
+      "target_elbow_m": [
+        0.014367823396058398,
+        -0.3200091501155302,
+        -0.009935782085959
+      ],
+      "elbow_landmark_residual_m": 5.56465114693644e-17,
+      "radius_offset_from_ulna_m": [
+        -0.0071934745492301996,
+        -0.013021093764766099,
+        0.028474680001625396
+      ],
+      "wraps": [
+        {
+          "name": "arm26_TRIlongglen_r",
+          "source_name": "TRIlongglen",
+          "body": "torso",
+          "type": "WrapCylinder",
+          "rotation_matrix": [
+            [
+              -0.7371828646401709,
+              -0.6201944151426938,
+              -0.2681796254504129
+            ],
+            [
+              0.33198204996485087,
+              0.013243580204690327,
+              -0.9431927300846299
+            ],
+            [
+              0.5885145219805937,
+              -0.7843363404874047,
+              0.19613047292243777
+            ]
+          ],
+          "source_quadrant": "x",
+          "quadrant": "x"
+        },
+        {
+          "name": "arm26_TRIlonghh_r",
+          "source_name": "TRIlonghh",
+          "body": "humerus_r",
+          "type": "WrapEllipsoid",
+          "rotation_matrix": [
+            [
+              -0.5446124474683813,
+              -0.374832677857716,
+              -0.7502651169236866
+            ],
+            [
+              -0.4486564086953798,
+              0.8860156918598148,
+              -0.11697700934259625
+            ],
+            [
+              0.7085934723090973,
+              0.27290411757279737,
+              -0.6507062575484803
+            ]
+          ],
+          "source_quadrant": "z",
+          "quadrant": "z"
+        },
+        {
+          "name": "arm26_BIClonghh_r",
+          "source_name": "BIClonghh",
+          "body": "humerus_r",
+          "type": "WrapEllipsoid",
+          "rotation_matrix": [
+            [
+              0.30151707632639735,
+              -0.4250912740614189,
+              -0.8534546627679884
+            ],
+            [
+              0.07733625125664188,
+              -0.8812595259984696,
+              0.46626253557252667
+            ],
+            [
+              -0.9503191868657344,
+              -0.2065891007623388,
+              -0.23283983018602547
+            ]
+          ],
+          "source_quadrant": "-y",
+          "quadrant": "-y"
+        },
+        {
+          "name": "arm26_TRI_r",
+          "source_name": "TRI",
+          "body": "humerus_r",
+          "type": "WrapCylinder",
+          "rotation_matrix": [
+            [
+              0.9840721534679827,
+              -0.17743031693185982,
+              -0.010976310962558763
+            ],
+            [
+              0.17704321508384796,
+              0.9726060404502335,
+              0.1506425904998098
+            ],
+            [
+              -0.016052936231772858,
+              -0.15018645981971482,
+              0.9885273544647916
+            ]
+          ],
+          "source_quadrant": "all",
+          "quadrant": "all"
+        }
+      ],
+      "reference_pose": "all target arm coordinates zero",
+      "reflection_prior": false,
+      "independent_registration_landmarks": 2,
+      "unresolved": "3D moment-arm validity, independent scapula motion, regional morphology and intersubject strength scaling"
+    },
+    {
+      "side": "l",
+      "length_scale": 1.102369174691902,
+      "linear_map": [
+        [
+          1.1020552497760565,
+          -0.02626227993911563,
+          -0.001521973829696871
+        ],
+        [
+          0.02627777591256901,
+          1.1019859925697493,
+          0.012415634661924477
+        ],
+        [
+          -0.0012256610573749625,
+          0.012448379146262263,
+          -1.102298205079963
+        ]
+      ],
+      "source_shoulder_m": [
+        -0.017545,
+        -0.007,
+        0.17
+      ],
+      "target_shoulder_m": [
+        0.0040867035257739995,
+        0.38515234020809996,
+        -0.198768021792
+      ],
+      "source_elbow_m": [
+        0.0061,
+        -0.2904,
+        -0.0123
+      ],
+      "target_elbow_m": [
+        0.014367823396058398,
+        -0.3200091501155302,
+        0.009935782085959
+      ],
+      "elbow_landmark_residual_m": 5.56465114693644e-17,
+      "radius_offset_from_ulna_m": [
+        -0.0071934745492301996,
+        -0.013021093764766099,
+        -0.028474680001625396
+      ],
+      "wraps": [
+        {
+          "name": "arm26_TRIlongglen_l",
+          "source_name": "TRIlongglen",
+          "body": "torso",
+          "type": "WrapCylinder",
+          "rotation_matrix": [
+            [
+              -0.7371828646401709,
+              -0.6201944151426938,
+              0.2681796254504129
+            ],
+            [
+              0.33198204996485087,
+              0.013243580204690327,
+              0.9431927300846299
+            ],
+            [
+              -0.5885145219805937,
+              0.7843363404874047,
+              0.19613047292243777
+            ]
+          ],
+          "source_quadrant": "x",
+          "quadrant": "x"
+        },
+        {
+          "name": "arm26_TRIlonghh_l",
+          "source_name": "TRIlonghh",
+          "body": "humerus_l",
+          "type": "WrapEllipsoid",
+          "rotation_matrix": [
+            [
+              -0.5446124474683813,
+              -0.374832677857716,
+              0.7502651169236866
+            ],
+            [
+              -0.4486564086953798,
+              0.8860156918598148,
+              0.11697700934259625
+            ],
+            [
+              -0.7085934723090973,
+              -0.27290411757279737,
+              -0.6507062575484803
+            ]
+          ],
+          "source_quadrant": "z",
+          "quadrant": "-z"
+        },
+        {
+          "name": "arm26_BIClonghh_l",
+          "source_name": "BIClonghh",
+          "body": "humerus_l",
+          "type": "WrapEllipsoid",
+          "rotation_matrix": [
+            [
+              0.30151707632639735,
+              -0.4250912740614189,
+              0.8534546627679884
+            ],
+            [
+              0.07733625125664188,
+              -0.8812595259984696,
+              -0.46626253557252667
+            ],
+            [
+              0.9503191868657344,
+              0.2065891007623388,
+              -0.23283983018602547
+            ]
+          ],
+          "source_quadrant": "-y",
+          "quadrant": "-y"
+        },
+        {
+          "name": "arm26_TRI_l",
+          "source_name": "TRI",
+          "body": "humerus_l",
+          "type": "WrapCylinder",
+          "rotation_matrix": [
+            [
+              0.9840721534679827,
+              -0.17743031693185982,
+              0.010976310962558763
+            ],
+            [
+              0.17704321508384796,
+              0.9726060404502335,
+              -0.1506425904998098
+            ],
+            [
+              0.016052936231772858,
+              0.15018645981971482,
+              0.9885273544647916
+            ]
+          ],
+          "source_quadrant": "all",
+          "quadrant": "all"
+        }
+      ],
+      "reference_pose": "all target arm coordinates zero",
+      "reflection_prior": true,
+      "independent_registration_landmarks": 2,
+      "unresolved": "3D moment-arm validity, independent scapula motion, regional morphology and intersubject strength scaling"
+    }
+  ],
+  "muscle_count": 92,
+  "added_upperbody_muscles": 12,
+  "xml_migration": {
+    "source_document_version": 40000,
+    "target_document_version": 40500,
+    "law_source": "data/raw/mechanics/opensim-core/OpenSim/Simulation/Model/Force.cpp",
+    "law_source_sha256": "9ee76a13e7a224cfbb4b4103b79229b683cef2e516381c6e2d98d4baac06b8be",
+    "operation": "Force::updateFromXMLNode: GeometryPath name geometrypath -> path; concrete element retained without wrapper",
+    "applied_to": 12,
+    "numerical_parameters_changed_by_migration": false
+  },
+  "body_count": 22,
+  "body_mass_modified": false,
+  "joint_tree_modified": false,
+  "source_urls": {
+    "Arm26": "https://github.com/opensim-org/opensim-models/blob/master/Models/Arm26/arm26.osim",
+    "law": "https://github.com/opensim-org/opensim-core/blob/main/OpenSim/Actuators/Thelen2003Muscle.cpp"
+  },
+  "license": "Arm26: CC BY 3.0; Holzbaur, Murray, Delp, and OpenSim adaptation team credited in source",
+  "scope": "source-derived bilateral shoulder/elbow actuators; XML validity only until native mechanical tests; no new mass, no torque surrogate",
+  "native_verified": false
+}

@@ -515,3 +515,5 @@ input[type="range"]:disabled::-moz-range-thumb { background: var(--faint); }
 .palette-popover select { width: 100%; }
 .palette-popover .note { margin: 0; }
 .palette-popover .opacity-title:not(:first-child) { margin-top: 4px; }
+
+.pane-body .live-input-label[hidden] { display: none; }

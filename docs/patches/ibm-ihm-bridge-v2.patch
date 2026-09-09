@@ -1,0 +1,106 @@
+--- a/ibm/topologies/ihm_bridge.py
++++ b/ibm/topologies/ihm_bridge.py
+@@ -1,48 +1,8 @@
+-"""join IHM-1's measured nerve routes to IBM-1's fibre-class axis.
++"""Join IHM inferred endpoint-to-relay geometry to IBM fibre physiology.
+ 
+-the two projects declare nerves for different reasons and each has what the other
+-lacks.  this is the join, not a migration.
+-
+-**what IHM-1 has that this repo does not.**
+-
+-*sidedness*.  52 nerve ids, which is 26 nerves x 2 sides.  `TRUNK_COMPOSITION`
+-here has one "median", and a body has two.  every delay this repo computes has
+-been implicitly bilateral-symmetric because there was no way to say otherwise.
+-
+-*measured geometry*.  `path_length_m` comes from routing over an actual body
+-mesh with BodyParts3D entity ids, against the hand-typed millimetres in
+-`TRUNK_LENGTH_MM`.  compared on the 25 nerves both declare, the limb trunks agree
+-within about 20% -- median 587 mm against 700, radial 526 against 650, ulnar 609
+-against 700 -- which is reassuring for both.  the disagreements are systematic
+-and instructive: plantar nerves differ 4.4x (888 mm against 200) and the ocular
+-nerves 2.5-3.2x (oculomotor 142 against 45).  that is not one side being wrong.
+-**IHM measures the whole conduction route from receptor to relay; this repo typed
+-the length of the named trunk alone.**  for a delay the route is the right
+-quantity, and this repo's numbers understate it by whatever the root and cord
+-segment contribute.
+-
+-*evidence flags on every record*.  `evidence_kind`, `geometry_kind:
+-schematic_route`, `measured_axon_geometry: false`, and a `limitations` list
+-saying the centrelines are inferred and not dissected.  `TRUNK_LENGTH_MM` is bare
+-floats with no provenance -- a reader cannot tell which are measured and which I
+-typed from memory.  this repo's whole corrections ledger is a list of numbers
+-that turned out to be compared against the wrong thing, and IHM's schema makes
+-that class of error visible at the point of use.
+-
+-**what this repo has that IHM-1 does not.**
+-
+-one delay per route.  a binding carries `motor_delay_s` and `afferent_delay_s`,
+-each a single number -- which is exactly the lumping `nerve.py`'s docstring
+-argues makes every reflex latency wrong: a trunk carries populations whose
+-velocities span two orders of magnitude, and a group Ia axon and a C fibre in the
+-same sciatic nerve arrive 5.5 ms and 550 ms after the same event.  IHM's 0.0153 s
+-motor delay for the obturator is a reasonable alpha-motor number and says nothing
+-about gamma.
+-
+-**so the join is: IHM's identity, geometry and evidence as the spine; this
+-repo's fibre classes as the axis on it.**  one route becomes N delays.  neither
+-schema is flattened into the other, because neither is a superset -- the product
+-is what a materialization actually needs.
++Lengths exclude downstream cortical conduction and synaptic delays. A route is
++one representative branch, not an anatomical trunk measurement. New special
++sense and visceral routes are topology-only, not executable transducers.
+ """
+ from __future__ import annotations
+ 
+@@ -79,7 +39,7 @@
+ 
+ 
+ def routes(path: str = IHM_PERIPHERAL) -> Iterator[dict]:
+-    """every IHM route, carrying its measured length and IBM's fibre classes.
++    """every IHM route, carrying its inferred length and IBM's fibre classes.
+ 
+     yields one record per (nerve, side), with:
+         name, side, ihm_id, relay_id, path_length_m  -- from IHM
+@@ -98,14 +58,25 @@
+         name, side = _bare(n["id"])
+         classes = TRUNK_COMPOSITION.get(name)
+         if not classes:
+-            continue                     # IHM route this repo has not declared
++            if name == "sciatic_fibular":
++                import warnings
++                warnings.warn(f"Unjoined IHM route: {n['id']} (no IBM fibre composition)", stacklevel=2)
++                continue
++            raise ValueError(f"Unmatched IHM nerve: {n['id']}")
+         seen = sorted(lengths.get((name, side), []))
+-        if seen:
++        if "path_length_m" in n:
++            L = float(n["path_length_m"])
++            src = "ihm_inferred_endpoint_to_relay"
++        elif d.get("route_contract", {}).get("version", 0) >= 2:
++            raise ValueError(f"Missing contracted route length: {n['id']}")
++        elif seen:
+             L = seen[len(seen) // 2]     # median route, in metres
+-            src = "ihm_measured_route"
++            src = "ihm_inferred_endpoint_to_relay"
+         else:
+-            L = TRUNK_LENGTH_MM.get(name, 300.0) * 1e-3
+-            src = "ibm_declared_trunk"
++            raise ValueError(f"No IHM endpoint-to-relay length: {n['id']}")
++        import math
++        if not math.isfinite(L) or L <= 0:
++            raise ValueError(f"Invalid IHM route length: {n['id']}")
+         yield {
+             "name": name, "side": side, "ihm_id": n["id"],
+             "relay_id": n.get("relay_id"), "path_length_m": L,
+@@ -117,6 +88,10 @@
+             "measured_axon_geometry": n.get("measured_axon_geometry", False),
+             "evidence_kind": n.get("evidence_kind"),
+             "geometry_kind": n.get("geometry_kind"),
++            "path_length_scope": n.get("path_length_scope", "representative_endpoint_to_relay"),
++            "limitations": n.get("limitations", d.get("limitations", [])),
++            "runtime_support": n.get("runtime_support"),
++            "downstream_brain_target_ids": n.get("downstream_brain_target_ids", []),
+         }
+ 
+ 

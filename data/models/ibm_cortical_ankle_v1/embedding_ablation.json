@@ -1,0 +1,6 @@
+{
+  "reset_embedding_mse": 0.043007854372262955,
+  "trained_mse": 0.0007544578402303159,
+  "sever_mse": 0.044748179614543915,
+  "scope": "Trained decoder retained; only copied embedding reset to source initialization; heldout synthetic examples"
+}

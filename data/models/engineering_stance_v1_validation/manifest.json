@@ -1,0 +1,12 @@
+{
+  "schema": "ihm.engineered-stance-heldout-validation.v1",
+  "policy_sha256": "74305e40de65c91c75a85b1de1f6852834d44f91d16c2519979a9a3f88ac1d55",
+  "files": {
+    "report.json": "e80b632f7530c28d621bce6a95f7e39bc4f2aea991b4e6c2430ef6f501ae07e3",
+    "evaluate_native_lqr.py": "22e3fa30d58e2b3910aa142a7e7f3699ee19edc4ad200bfddfdcfcf118edbc6d",
+    "stance_lqr.py": "5d4c64587abd5315560b4771fa34f205cc6da06cef772615e13b056813d9bb51",
+    "negative_com_push_trajectory.json.gz": "878f25c54b232c0b932fee1f8d6c75a821ff620457f5a35a945ef9bc21edcff6"
+  },
+  "trajectory_uncompressed_sha256": "989ea0c0d731ba0d204566f186bed6be19614c44442af7407cbac7af5d12e4cb",
+  "scope": "Same fixed patient-matched engineering stance policy, independent opposite COM push. No training on this trace; no walking claim."
+}

@@ -1,0 +1,98 @@
+{
+  "schema": "ihm.ibm-cortical-stance-bundle.v1",
+  "native_model_sha256": "be3baf542b44425c2802095439cabf976eccaad42406564338d20c2deb421d68",
+  "target_mass_kg": 77.6122029,
+  "dt_s": 0.01,
+  "sites": 1024,
+  "state_width": 258,
+  "muscles": 98,
+  "sensory_sites": 516,
+  "motor_sites": 508,
+  "computation_dtype": "float64",
+  "artifact_sha256": "0747ac07a4baa02d30964933c1f1fd1bf1285d9a30a9c35e9eac7de2e2c98042",
+  "source_sha256": {
+    "report.json": "930af1f0cff7efeac3d313e0443df0501bd75b0ab5527082ccbba3f32f51b3b2",
+    "pretrain_video_loop.py": "9329ce624bd0ec6676fc76dc307210e8a0724ef3f79dece01c3668d6e4beb9e4",
+    "cortical_stance.py": "a31f9e0962abeae1b74536dea925e2de7a1d87bd423f71e967cdfc4a56336394",
+    "provenance.json": "b8028e41a6fc9be16bb2d5fb95b271d4e6c5d2197aeb0779f3df0986ebc23da8",
+    "scale_cortical_stance_regime.py": "57f5544f8b20194c069a633677a59c8f877a3febe2535d1b91f3b421a7046b29",
+    "negative-native10s.json": "8aa16e7e13c01c5db4f7ca7a5256c2b6e61160b168ff076b4ebf3fcaeebcfa84",
+    "positive-native10s.json": "77810ab743ca3d96617dad793985e9890133c8fad48403bf946818324db591ff",
+    "cortical_stance.pt": "0747ac07a4baa02d30964933c1f1fd1bf1285d9a30a9c35e9eac7de2e2c98042",
+    "teacher.npz": "f8740ca0c27112b6889e2d2ce108018969114cd72026abb0759cab28ebe22ecd"
+  },
+  "validation": {
+    "negative": {
+      "source": "data/runtime/motor-learning/cortical-stance-native-patient-small-signal-negative10-20260908/report.json",
+      "sha256": "8aa16e7e13c01c5db4f7ca7a5256c2b6e61160b168ff076b4ebf3fcaeebcfa84",
+      "full": {
+        "elapsed_s": 9.999999999999831,
+        "pelvis_height_m": 1.0186884072618738,
+        "forward_displacement_m": -0.00012958543157844818,
+        "lateral_displacement_m": -0.00011513116667295318,
+        "pelvis_tilt_rad": -0.10472947215559378,
+        "pelvis_list_rad": -9.966930645061717e-05,
+        "arm": "full",
+        "error": null,
+        "completed_horizon": true,
+        "peak_com_displacement_m": 0.002263960717574423,
+        "final_com_displacement_m": 0.0001717009663555569,
+        "final_com_speed_m_s": 5.200930438823812e-06
+      },
+      "sever": {
+        "elapsed_s": 1.9400000000000015,
+        "pelvis_height_m": 0.5882163948893105,
+        "forward_displacement_m": -0.08366710104136638,
+        "lateral_displacement_m": -0.01594522916422616,
+        "pelvis_tilt_rad": 0.43733595444600365,
+        "pelvis_list_rad": 0.022054071732543166,
+        "arm": "sever",
+        "error": null,
+        "completed_horizon": false,
+        "peak_com_displacement_m": 0.37667744895172667,
+        "final_com_displacement_m": 0.37667744895172667,
+        "final_com_speed_m_s": 2.1903574450026952
+      }
+    },
+    "positive": {
+      "source": "data/runtime/motor-learning/cortical-stance-native-patient-small-signal-positive-20260908/report.json",
+      "sha256": "77810ab743ca3d96617dad793985e9890133c8fad48403bf946818324db591ff",
+      "full": {
+        "elapsed_s": 9.999999999999831,
+        "pelvis_height_m": 1.0186854120765279,
+        "forward_displacement_m": 0.00014712389052652425,
+        "lateral_displacement_m": 0.0001331037862152386,
+        "pelvis_tilt_rad": -0.10478192190785082,
+        "pelvis_list_rad": -7.329260353805393e-05,
+        "arm": "full",
+        "error": null,
+        "completed_horizon": true,
+        "peak_com_displacement_m": 0.0017843922629451872,
+        "final_com_displacement_m": 0.00019555200348842929,
+        "final_com_speed_m_s": 3.6083422294191344e-06
+      },
+      "sever": {
+        "elapsed_s": 2.899999999999982,
+        "pelvis_height_m": 0.5897768105601077,
+        "forward_displacement_m": 0.38538584341946736,
+        "lateral_displacement_m": 0.22193357331817576,
+        "pelvis_tilt_rad": 0.42837865419665044,
+        "pelvis_list_rad": 1.0512055729382164,
+        "arm": "sever",
+        "error": null,
+        "completed_horizon": false,
+        "peak_com_displacement_m": 0.769708614772774,
+        "final_com_displacement_m": 0.769708614772774,
+        "final_com_speed_m_s": 2.0200953670059714
+      }
+    }
+  },
+  "scope": [
+    "Actual persistent trained IBM E/I owns corrective motor output; native small-push stance only",
+    "Privileged full native state and paired zero-input cortical reference are engineering extensions",
+    "Offline slow LQR supplies decoder training targets; no live teacher or cord motor bypass",
+    "Original IBM shared checkpoint unchanged; copied embeddings trained",
+    "Ten-second matched mechanics receipts at baseline physiology; full physiology/world runtime validation separate",
+    "No walking, anatomical cortical port mapping, or general human brain claim"
+  ]
+}

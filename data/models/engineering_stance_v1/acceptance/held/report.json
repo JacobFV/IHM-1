@@ -1,0 +1,39 @@
+{
+  "elapsed_s": 2.8899999999999824,
+  "pelvis_height_m": 0.6096458373147438,
+  "forward_displacement_m": 0.37463809958054173,
+  "lateral_displacement_m": 0.21888275221191675,
+  "pelvis_tilt_rad": 0.4418395938183896,
+  "pelvis_list_rad": 1.022911854860533,
+  "final_com_displacement_m": [
+    0.4573684753686962,
+    -0.572318718541897,
+    0.16028731351373318
+  ],
+  "final_com_speed_m_s": 1.9694152213317022,
+  "peak_com_displacement_m": 0.7499511055582054,
+  "arm": "held",
+  "gain": 1,
+  "seconds_requested": 10.0,
+  "completed_horizon": false,
+  "error": null,
+  "wall_seconds": 35.58879482897464,
+  "source_sha256": {
+    "data/research/locomotion_control/linearization_73pkqle2/discrete_margin/linearization.npz": "74305e40de65c91c75a85b1de1f6852834d44f91d16c2519979a9a3f88ac1d55",
+    "scripts/evaluate_native_lqr.py": "22e3fa30d58e2b3910aa142a7e7f3699ee19edc4ad200bfddfdcfcf118edbc6d",
+    "ihm/native/stance_lqr.py": "5d4c64587abd5315560b4771fa34f205cc6da06cef772615e13b056813d9bb51"
+  },
+  "walking_demonstrated": false,
+  "brain_trained": false,
+  "target_mass_kg": 77.6122029,
+  "perturbation": {
+    "start_s": 1.0,
+    "duration_s": 0.1,
+    "force_n": [
+      5.0,
+      0.0,
+      5.0
+    ],
+    "point_basis": "current pelvis COM in source ground; recomputed each step"
+  }
+}

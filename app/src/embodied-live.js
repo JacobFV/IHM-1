@@ -58,7 +58,7 @@ export class LiveBodyHistory {
 }
 export function frameScope(frame) {
  if(frame?.schema==='ihm.embodied-frame.v1')return [
-  'Live articulated muscles ↔ pinned IBM/controller ↔ native physiology. Generic source registration and decoder calibration remain incomplete.',
+  `Live articulated muscles ↔ ${controllerReadouts(frame)[0][1]} ↔ native physiology. Source registration and decoder calibration remain incomplete.`,
   frame.mechanics?.body_environment?.scope,
   frame.environment_state ? `Environment: ${frame.environment_state.contact_count} active body contacts. ${frame.environment_state.scope}` : 'Native supports are computational contact proxies; no scene contact owner is attached.',...(frame.mechanics?.limitations||[]),frame.coupling?.metabolic_law,
  ].filter(Boolean).join(' ');
@@ -111,4 +111,49 @@ export async function scheduleBodyIntakes(request,path,sequence,events) {
   if(error.httpStatus===400)error.definitelyRejected=true;
   try{return {frame:await request(path),recovered:true,error};}catch{throw error;}
  }
+}
+
+// Every readout comes from an accepted frame. Missing observations stay missing;
+// movement alone never establishes a cortical contribution or successful gait.
+export function controllerReadouts(frame) {
+ const neural=frame?.neural,controller=frame?.controller||neural?.controller?{...neural?.controller,...frame?.controller}:null;
+ const kind=controller?.kind;
+ const mode=kind==='implicit_cortical_stance'?'Experimental learned IBM balance (1024 sites)':kind==='implicit_curriculum16_stance'?'Experimental learned IBM balance · 16-objective kernel (1024 sites)':kind==='engineering_stance'?'Engineered balance':kind==='implicit_cortical_ankle'?'Learned IBM cortical ankle control (128 sites)':kind==='implicit_ankle_primitive'?'Learned ankle primitive (8-site kernel)':kind==='implicit'?'IBM fused implicit kernel':kind==='implicit_curriculum16'?'IBM 16-objective curriculum kernel (untrained motor heads)':kind==='regional'?'Regional baseline':neural?.schema==='ihm.sensorimotor.v1'?'Regional baseline':'Unavailable';
+ const maximum=values=>{const numbers=Object.values(values||{}).filter(Number.isFinite);return numbers.length?Math.max(...numbers.map(Math.abs)):null;};
+ const rows=[['Controller',mode],['Ablation',kind==='engineering_stance'?'Not applicable':controller?[controller.sever?(kind==='implicit_ankle_primitive'?'Learned motor kernel severed':'Cortical kernel severed'):null,controller.no_cord?'Cord bypassed':null].filter(Boolean).join(' + ')||'Full':'Unavailable']];
+ const checkpoint=controller?.checkpoint_sha256||neural?.brain?.source_identity?.checkpoint_sha256;
+ if(checkpoint)rows.push([['implicit_ankle_primitive','implicit_cortical_ankle','implicit_cortical_stance','implicit_curriculum16_stance'].includes(kind)?'Base kernel SHA-256':'Checkpoint SHA-256',checkpoint]);
+ if(controller?.kernel_identity)rows.push(['Association kernel',controller.kernel_identity]);
+ for(const arc of ['stretch','reciprocal','autogenic','renshaw'])rows.push([`${arc[0].toUpperCase()+arc.slice(1)} arc peak`,['engineering_stance','implicit_cortical_stance','implicit_curriculum16_stance'].includes(kind)?'Not provided by this controller':controller?.no_cord||controller?.arc_availability?.[arc]===false?'Inactive for this controller':Number.isFinite(neural?.arc_max?.[arc])?neural.arc_max[arc]:null]);
+ if(Array.isArray(neural?.mapping?.unmapped_spinal_muscles))rows.push(['Unmapped spinal muscles',neural.mapping.unmapped_spinal_muscles.length]);
+ if(['implicit_ankle_primitive','implicit_cortical_ankle'].includes(kind)){rows.push(['Motor owner',controller.motor_owner||(kind==='implicit_cortical_ankle'?'trained128site-IBM-EI-cortex':'reduced-eight-site-ankle-kernel')],['Ankle angle · rad',neural?.motor_primitive?.angle_rad??null],['Ankle target · rad',neural?.motor_primitive?.target_rad??controller.target_rad??null],['Ankle feedback','Native joint coordinate; privileged engineering input, not biologically mapped']);if(controller.artifact_sha256)rows.push(['Motor artifact SHA-256',controller.artifact_sha256]);}
+ if(kind==='engineering_stance')rows.push(['Motor owner',controller.motor_owner||'Engineered muscle balance'],['Task','Standing balance; walking not established'],['Balance feedback',controller.sensory_basis||'Privileged native joint/muscle state'],['Sampling interval · s',controller.sampling_interval_s??null],['Clipped muscle requests',neural?.lqr_stance?.clipped_muscles??null],['Balance artifact SHA-256',controller.artifact_sha256??null]);
+ if(['implicit_cortical_stance','implicit_curriculum16_stance'].includes(kind))rows.push(['Motor owner',controller.motor_owner||'trained1024site-persistent-IBM-EI-cortex'],['Task','Experimental standing balance; walking not established'],['Balance feedback',controller.sensory_basis||'Privileged native joint/muscle state'],['Sampling interval · s',controller.sampling_interval_s??null],['Controlled muscles',controller.muscle_count??null],['Cortical correction peak',neural?.cortical_stance?.max_cortical_correction??null],['Balance artifact SHA-256',controller.artifact_sha256??null]);
+ const surface=frame?.mechanics?.surface_binding||frame?.surface_binding;
+ if(surface)rows.push(['Surface motion',surface.rule==='graph_regularized_linear_blend'?'Shared graph-weighted native segment attachment; approximate geometry, no skin FEM':'Hard attachment to native segments; inferred bone envelopes, no continuous tissue solve'],['Respiratory surface motion','Not included in this mechanical surface binding']);
+ rows.push(['Motor excitation peak',maximum(neural?.motor_excitations)],[kind==='implicit_ankle_primitive'?'Learned motor contribution':'Cortical contribution',kind==='engineering_stance'?'Not used by this controller':'Requires matched full / severed runs'],['Walking','Not established by motion alone']);
+ return rows;
+}
+
+export function softObjectAnchor(object,point,nodeIndex) {
+ const p=object?.positions;
+ if(!Array.isArray(p)||p.length<3||p.length%3||p.some(v=>!Number.isFinite(v)))throw Error('Invalid deformable object frame');
+ if(nodeIndex===undefined){
+  const fixed=new Set(object.fixed_nodes||[]);let best=Infinity;
+  for(let i=0;i<p.length;i+=3){if(fixed.has(i/3))continue;const d=p.slice(i,i+3).reduce((sum,v,k)=>sum+(v-point[k])**2,0);if(d<best){best=d;nodeIndex=i/3;}}
+ }
+ if(!Number.isInteger(nodeIndex)||nodeIndex<0||nodeIndex>=p.length/3)throw Error('No movable material node on this object');
+ return {nodeIndex,point:p.slice(nodeIndex*3,nodeIndex*3+3)};
+}
+
+export function controllerConfiguration(kind,ablation='full',target=.12) {
+ if(['implicit_cortical_stance','implicit_curriculum16_stance'].includes(kind)){if(!['full','sever'].includes(ablation))throw Error('Unsupported controller ablation');return {kind,sever:ablation==='sever',no_cord:false};}
+ if(kind==='engineering_stance'){if(ablation!=='full')throw Error('Unsupported controller ablation');return {kind};}
+ if(!['regional','implicit','implicit_curriculum16','implicit_ankle_primitive','implicit_cortical_ankle'].includes(kind)||!['full','sever','no-cord'].includes(ablation))throw Error('Unknown body controller or ablation');
+ if(kind==='regional'&&ablation!=='full'||kind==='implicit_ankle_primitive'&&ablation==='no-cord')throw Error('Unsupported controller ablation');
+ if(['implicit_ankle_primitive','implicit_cortical_ankle'].includes(kind)){
+  if(!Number.isFinite(target)||Math.abs(target)>.25)throw Error('Ankle target must be between −0.25 and 0.25 radians');
+  return {kind,sever:ablation==='sever',target_rad:target,...(kind==='implicit_cortical_ankle'?{no_cord:ablation==='no-cord'}:{})};
+ }
+ return {kind,sever:ablation==='sever',no_cord:ablation==='no-cord'};
 }

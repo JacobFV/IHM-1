@@ -22,6 +22,7 @@ import numpy as np
 
 from .mechanics import BodyMechanics
 from . import mechanics as _mechanics_module
+from . import rigid_contact as _rigid_contact_module
 
 
 def _code_hash(code):
@@ -164,10 +165,12 @@ def vector(value,name):
 
 
 class Sphere:
-    def __init__(self,ident,position,radius=.065,mass=.4):
+    def __init__(self,ident,position,radius=.065,mass=.4,restitution=.75,friction=.35):
         self.id=ident;self.position=vector(position,'position');self.velocity=np.zeros(3)
         self.omega=np.zeros(3);self.rotation=np.eye(3)
         if not 0<radius<=1 or not 0<mass<=100:raise ValueError('Positive bounded sphere radius and mass required')
+        if not np.isfinite(restitution) or not 0<=restitution<=1 or not np.isfinite(friction) or friction<0:raise ValueError('Invalid contact material')
+        self.restitution=float(restitution);self.friction=float(friction)
         self.radius=radius;self.mass=mass;self.inertia=.4*mass*radius**2
         self.work=0.;self.contact_loss=0.;self.projection_work=0.;self.support_impulse=np.zeros(3)
 
@@ -179,33 +182,22 @@ class Sphere:
         before=self.position.copy();omega_before=self.omega.copy()
         torque=np.cross(point-before,force)
         acceleration=gravity+force/self.mass
-        self.position+=self.velocity*dt+.5*acceleration*dt**2
-        self.velocity+=acceleration*dt;self.omega+=torque/self.inertia*dt
+        self.omega+=torque/self.inertia*dt
+        if contact:
+            from .rigid_contact import sphere_plane_step
+            loss,impulse,repair=sphere_plane_step(self.position,self.velocity,self.omega,dt,acceleration,
+                self.radius,self.mass,axis,plane,self.restitution,self.friction)
+            self.contact_loss+=loss;self.support_impulse-=impulse
+            self.projection_work-=self.mass*gravity[axis]*repair
+        else:
+            self.position+=self.velocity*dt+.5*acceleration*dt**2;self.velocity+=acceleration*dt
         self.rotation=_rotation(.5*(omega_before+self.omega)*dt)@self.rotation
         self.work+=float(force@(self.position-before)+torque@(.5*(omega_before+self.omega)*dt))
-        normal=np.eye(3)[axis]
-        penetration=plane+self.radius-self.position[axis]
-        if contact and penetration>0:
-            self.position+=penetration*normal
-            self.projection_work-=self.mass*float(gravity@normal)*penetration
-            lever=-self.radius*normal
-            relative=self.velocity+np.cross(self.omega,lever)
-            vn=float(relative@normal)
-            jn=max(0.,-vn*self.mass)  # zero restitution, no manufactured bounce
-            tangent=relative-vn*normal;speed=float(np.linalg.norm(tangent))
-            inverse_tangent_mass=1/self.mass+self.radius**2/self.inertia
-            needed=speed/inverse_tangent_mass
-            magnitude=needed if needed<=.5*jn else min(needed,.35*jn)
-            jt=-magnitude*tangent/speed if speed else np.zeros(3)
-            impulse=jn*normal+jt
-            energy=self.kinetic()
-            self.velocity+=impulse/self.mass;self.omega+=np.cross(lever,impulse)/self.inertia
-            self.contact_loss+=energy-self.kinetic();self.support_impulse-=impulse
 
     def snapshot(self):
         return dict(id=self.id,kind='sphere',position_m=self.position.tolist(),velocity_m_s=self.velocity.tolist(),
                     angular_velocity_rad_s=self.omega.tolist(),rotation_matrix=self.rotation.tolist(),
-                    radius_m=self.radius,mass_kg=self.mass,kinetic_energy_j=self.kinetic(),
+                    radius_m=self.radius,mass_kg=self.mass,material={"restitution":self.restitution,"friction":self.friction,"bounce_threshold_m_s":.05},kinetic_energy_j=self.kinetic(),
                     applied_work_j=self.work,contact_dissipation_j=self.contact_loss,
                     contact_projection_potential_change_j=self.projection_work,
                     ground_support_impulse_ns=self.support_impulse.tolist())
@@ -281,7 +273,7 @@ class InteractiveScene:
             body_rotations='Reference orientations constrained; applied moments carried by constraints',
             body_environment='Explicit named ideal supports; no body-surface mattress or floor contact solve',
             body_gravity='Incremental motion assumes a balanced reference preload; gravitational prestress and support distribution are not solved',
-            objects='Finite-mass spheres with rotational inertia and Coulomb ground contact',
+            objects='Finite-mass spheres with rotational inertia, restitution 0.75 and Coulomb ground contact',
             scene_objects='A composed scene adds only its sphere-collider objects; its constructed furniture is display geometry the engine never instantiates',
             body_object_contact=False,clothing_contact=False,physiology_feedback=False,
             force_location='Force acts on the selected entity translation; off-centroid moment is an explicit constraint reaction',
@@ -450,4 +442,4 @@ class SceneSessions:
         raise ValueError('Unknown scene action')
 
 
-_IMPORT_SOURCES=(_loaded_source(_mechanics_module),_loaded_source(sys.modules[__name__]))
+_IMPORT_SOURCES=(_loaded_source(_mechanics_module),_loaded_source(_rigid_contact_module),_loaded_source(sys.modules[__name__]))

@@ -1,0 +1,19 @@
+{
+  "elapsed_s": 9.999999999999831,
+  "completed_horizon": true,
+  "final_left_load_fraction": 0.7922309719555837,
+  "fraction": 1.0,
+  "gain_scheduled": true,
+  "transition_s": 5.0,
+  "seconds_requested": 10.0,
+  "error": null,
+  "wall_seconds": 191.9749746180023,
+  "source_sha256": {
+    "target.npz": "f3e114a1b8fadb8101f4964b2595ec5ea4536261783ae84076c8d8b74d4fa683",
+    "policy.npz": "74305e40de65c91c75a85b1de1f6852834d44f91d16c2519979a9a3f88ac1d55",
+    "evaluator.py": "d318df238755d6ccb23376d4b5977755fb9b7582288da00d6928b8a6d4823ef9",
+    "target_policy.npz": "65057177075bdfecac6d9e8f2ecebd94226028381eef1eb953cf4766befefab0"
+  },
+  "walking_demonstrated": false,
+  "scope": "Desired full equilibrium states and excitations are interpolated only in feedback reference; plant coordinates freely integrate. No root forces or prescribed motion. Endpoint LQR gains optionally interpolate; no guarantee along interpolation."
+}

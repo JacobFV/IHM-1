@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { environmentWorldMatrix } from "./world-frame.js";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { environmentMaterial, materialUVs } from "./environment-materials.js";
 import { canopyLeaves } from "./environment-foliage.js";
@@ -207,14 +208,18 @@ export function mountSurround(scene, { api }) {
       if (node.material) for (const material of Array.isArray(node.material) ? node.material : [node.material]) material.dispose();
     });
     root.clear(); instancesById.clear();
+    root.position.set(0,0,0); root.quaternion.identity(); root.scale.set(1,1,1);
   }
 
   function update(state) {
     latestState = state;
+    new THREE.Matrix4().set(...environmentWorldMatrix(state).flat()).decompose(root.position,root.quaternion,root.scale);
+    root.updateMatrixWorld(true);
     if (!state) return;
     for (const item of state.objects || []) {
       const instance = instancesById.get(item.id);
       if (!instance) continue;
+      instance.userData.sceneObject=item.id;
       if (item.kind === "rigid") {
         const matrix = new THREE.Matrix4().set(
           ...item.rotation_matrix[0], 0, ...item.rotation_matrix[1], 0,
@@ -222,6 +227,7 @@ export function mountSurround(scene, { api }) {
         instance.quaternion.setFromRotationMatrix(matrix);
         const origin = new THREE.Vector3(...item.origin_m).applyQuaternion(instance.quaternion);
         instance.position.fromArray(item.position_m).sub(origin);
+        instance.traverse(node=>{if(node.isMesh)node.raycast=THREE.Mesh.prototype.raycast;});
       } else {
         let mesh = instance.userData.deformed;
         if (!mesh) {
@@ -235,6 +241,7 @@ export function mountSurround(scene, { api }) {
           geometry.setIndex(item.indices); geometry.computeVertexNormals();
           const name = item.kind === "cloth" ? "blanket" : "pillow";
           mesh = scenery(new THREE.Mesh(materialUVs(geometry, name), environmentMaterial(name, item.kind === "cloth" ? 0x627e99 : 0xe9e3d7, {doubleSided:true})));
+          mesh.raycast=THREE.Mesh.prototype.raycast;
           instance.add(mesh); instance.userData.deformed = mesh;
         }
         mesh.geometry.getAttribute("position").array.set(item.positions);
@@ -246,6 +253,7 @@ export function mountSurround(scene, { api }) {
   return {
     update,
     group: root,
+    get interactiveObjects(){const active=new Set((latestState?.objects||[]).map(item=>item.id));return [...instancesById.values()].filter(item=>active.has(item.userData.sceneObject));},
     // `entry` is the selected scene, or the environment when no scene is chosen;
     // `environment` is always the base environment record, because the sky axis
     // and the engine plane belong to it and a scene never changes them.
@@ -314,7 +322,7 @@ export function mountSurround(scene, { api }) {
     // Called every frame: the sky dome keeps the camera at its centre.
     follow(camera) {
       for (const child of root.children)
-        if (child.userData.sky) child.position.copy(camera.position);
+        if (child.userData.sky) child.position.copy(root.worldToLocal(camera.getWorldPosition(new THREE.Vector3())));
     },
     dispose() { generation++; empty(); root.removeFromParent(); },
   };

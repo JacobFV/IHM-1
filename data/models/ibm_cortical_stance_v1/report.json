@@ -1,0 +1,11 @@
+{
+  "schema": "ihm.cortical-stance-regime-scaling.v1",
+  "scale": 100.0,
+  "dtype": "float64",
+  "nominal_exact_baseline": true,
+  "sever_exact_baseline": true,
+  "parent_artifact_sha256": "75e3e483ca3ff0fdb7194756e828d93b989a5379aae136299064a22fc5508036",
+  "native_stance_demonstrated": false,
+  "scope": "Engineering small-signal cortical operating regime; actual nonlinear native verification required",
+  "artifact_sha256": "0747ac07a4baa02d30964933c1f1fd1bf1285d9a30a9c35e9eac7de2e2c98042"
+}

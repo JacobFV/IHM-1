@@ -29,6 +29,20 @@ class ReflexParameters:
     loop_delay_s: float=.02
     activation_tau_s: float=.01
 
+    @classmethod
+    def from_binding(cls, binding, *, synaptic_delay_s=.001, extra_delay_s=0., **kwargs):
+        """Ia outward sensory leg + alpha return leg, excluding cortical delay.
+
+        The synaptic delay is an explicit illustrative prior. A gamma delay is
+        never substituted for alpha; this primitive has no fusimotor controller.
+        """
+        synaptic = finite(synaptic_delay_s,0,1,'synaptic delay')
+        extra = finite(extra_delay_s,0,1,'extra delay')
+        delays = binding['delays_s']
+        ia = finite(delays['ia'],0,1,'Ia conduction delay')
+        alpha = finite(delays['alpha'],0,1,'alpha conduction delay')
+        return cls(loop_delay_s=ia+alpha+synaptic+extra, **kwargs)
+
     def __post_init__(self):
         for key in ('length_gain','length_offset'):
             finite(getattr(self,key),0,100,key)
@@ -39,7 +53,7 @@ class ReflexParameters:
 
 
 class BodyReflex:
-    """One TA-like length-feedback primitive, with a single lumped neural delay.
+    """One TA-like length-feedback primitive with an explicit Ia/alpha loop delay.
 
     At time t, consume a computed mechanical observation at t. Its sampled
     sensory feature arrives at t+loop_delay_s. Advance activation exactly across

@@ -1,0 +1,12 @@
+{
+  "final_left_load_fraction": 0.7922309719555837,
+  "final_com_speed_m_s": 1.7523506216166283e-05,
+  "final_com_position_ground_m": [
+    -0.09223928039032764,
+    1.0175568212057373,
+    -0.09612292570877985
+  ],
+  "max_clipped_count": 0,
+  "min_com_support_proxy_margin_m": 0.05148479049329108,
+  "final_state_reference_error_norm": 0.034082125987531034
+}

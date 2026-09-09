@@ -3,6 +3,7 @@ from pathlib import Path
 import copy,gzip,hashlib,json,os,re,selectors,shutil,subprocess,threading,uuid
 import numpy as np
 from .instance_mass import variant_identity,pointer_directory
+from ..assembly.snapshot_data import clone_snapshot_data
 
 SOURCE_FILES=('subject_walk_scaled.osim','subject_walk_scaled_ExpressionBasedCoordinateForceSet.xml','subject_walk_scaled_FunctionBasedPathSet.xml','subject_walk_scaled_ContactForceSet.xml','subject_walk_scaled_ContactGeometrySet.xml')
 def sha(path):return hashlib.sha256(Path(path).read_bytes()).hexdigest()
@@ -18,7 +19,7 @@ class NativeCommandRejected(ValueError):
     """Native command explicitly rejected after transactional rollback."""
 
 class NativeMechanicalStream:
-    def __init__(self,root,output,*,environment='supine',target_mass_kg,augmented_registration=None,surface_contact_manifest=None,surface_sensor_indices=(),bed_material=None,instance_mass_variant=None):
+    def __init__(self,root,output,*,environment='supine',target_mass_kg,augmented_registration=None,surface_contact_manifest=None,surface_sensor_indices=(),bed_material=None,instance_mass_variant=None,initial_pose=None):
         self.root=Path(root).resolve();self.output=Path(output).resolve()
         if self.output.exists() or not self.output.is_relative_to(self.root):raise ValueError('Fresh owned native output directory required')
         if environment not in ('free','supine','upright') or finite(target_mass_kg)<=0:raise ValueError('Invalid native environment or mass')
@@ -70,7 +71,13 @@ class NativeMechanicalStream:
             bed=load_bed(self.root,bed_material)
             bed['implementation_sha256']=sha(self.root/'ihm/assembly/bed_compression.py')
         self.output.mkdir(parents=True);source=self.output/'inputs';source.mkdir()
+        pose=None
+        if initial_pose is not None:
+            if not isinstance(initial_pose,dict) or not initial_pose or any(not isinstance(name,str) or re.fullmatch(r'[A-Za-z0-9_]+',name) is None for name in initial_pose):raise ValueError('Initial pose requires a nonempty coordinate mapping')
+            pose={name:finite(value) for name,value in initial_pose.items()}
+            (source/'initial_pose.txt').write_text('IHM_INITIAL_POSE_V1 '+str(len(pose))+'\n'+''.join(name+' '+str(value)+'\n' for name,value in pose.items()))
         original=self.root/'data/raw/mechanics/opensim-core/OpenSim/Examples/Moco/example3DWalking';inputs={}
+        if pose is not None:inputs['initial_pose.txt']=sha(source/'initial_pose.txt')
         for name in SOURCE_FILES:
             data=((self.root/augmentation['model_path']) if augmentation is not None and name=='subject_walk_scaled.osim' else original/name).read_bytes();(source/name).write_bytes(data);inputs[name]=hashlib.sha256(data).hexdigest()
         if augmentation is not None:
@@ -97,8 +104,9 @@ class NativeMechanicalStream:
         command=[limiter,'--as=4294967296','--','nice','-n','10',*engine_command]
         self.lock=threading.RLock();self.closed=False;self.tokens=set();self.log=(self.output/'engine.log').open('w')
         execution={'schema':'ihm.native-mechanical-stream.v1','command':command,'engine_command':engine_command,'address_space_limit_bytes':4294967296,'source_sha256':inputs,'build':manifest,'target_mass_kg':target_mass_kg,
+                   'initial_pose':pose,'initial_pose_basis':'Explicit source coordinate initialization after contact reference construction, before muscle equilibrium and energy reference; no ongoing pose constraint or equilibrium claim',
                    'instance_mass_variant':self.instance_mass_variant,'mass_reference_id':self.identity if self.instance_mass_variant is not None else None,'bed_material':bed,'surface_contact_manifest':surface_manifest,'augmented_registration':augmentation,'checkpoint_scope':'Complete in-process SimTK State including effective mass/inertia, excitation/load commands, work accumulators and local mass owner inventory/sequence/receipt; native process must remain alive. Call release(checkpoint) after accepted intervals.',
-                   'support_scope':('Retained posterior skin quadrature with prior-based confined neo-Hookean layers; rigid plane, uncalibrated mattress.' if surface_manifest is not None else 'Supine unilateral engineering posterior spheres from source COM and inertia ellipsoid approximation; source foot contact parameters transferred, not calibrated mattress.'),
+                   'support_scope':('Retained posterior skin quadrature with prior-based confined neo-Hookean layers in series with the explicitly identified measured conservative mattress compression curve; no calibrated damping or hysteresis, and an infinite native support-plane footprint.' if bed is not None else 'Retained posterior skin quadrature with prior-based confined neo-Hookean layers against an infinite rigid support plane; no mattress compliance.' if surface_manifest is not None else 'Upright source foot contacts plus unilateral non-foot COM spheres inscribed in inertia-derived ellipsoids; transferred source foot material, no balance support or anatomical skin fidelity.' if environment=='upright' else 'No contact support in free environment.' if environment=='free' else 'Supine unilateral engineering posterior spheres from source COM and inertia ellipsoid approximation; source foot contact parameters transferred, not calibrated mattress.'),
                    'external_work_scope':'Endpoint trapezoidal point-force power; not exact integration or metabolic energy'}
         (self.output/'execution.json').write_text(json.dumps(execution,indent=2)+'\n')
         self.process=subprocess.Popen(command,cwd=self.output,env=env,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=self.log,bufsize=0)
@@ -151,7 +159,7 @@ class NativeMechanicalStream:
                 payload=(command+'\n').encode()
                 if self.process.stdin.write(payload)!=len(payload):raise OSError('Short native command write')
                 self.process.stdin.flush();result=self._read()
-                expected={'advance':'advanced','observe':'observed','checkpoint':'checkpointed','restore':'restored','drop':'dropped','body_point':'body_point','mass_transfer':'mass_transferred'}.get(command.split()[0])
+                expected={'advance':'advanced','observe':'observed','checkpoint':'checkpointed','restore':'restored','drop':'dropped','body_point':'body_point','mass_transfer':'mass_transferred','moment_arms':'moment_arms'}.get(command.split()[0])
                 if expected is not None and result.get('kind')!=expected:raise ValueError('Unexpected native command response kind')
                 return result
             except NativeCommandRejected:raise
@@ -159,7 +167,10 @@ class NativeMechanicalStream:
                 # Dispatch may have succeeded. Never reuse a stream with an uncertain reply.
                 self.close();raise
     def snapshot(self):
-        with self.lock:return copy.deepcopy(self.state)
+        # The native state is plain parsed JSON that is only ever rebound, never
+        # mutated in place, so a pickle round trip is an identical deep copy and
+        # about four times cheaper than tree-walking deepcopy on this shape.
+        with self.lock:return clone_snapshot_data(self.state)
     def advance(self,dt_s,forces=(),actuation=None):
         dt=finite(dt_s)
         if not 0<dt<=.02:raise ValueError('Native mechanical step must be in (0,.02]s')
@@ -184,6 +195,44 @@ class NativeMechanicalStream:
                 vec(result['point_source_m']);vec(result['velocity_source_m_s'])
             except BaseException:self.close();raise
             return result
+    def moment_arms(self,*,muscles,coordinates):
+        """Query actual rotational source path moment arms, without advancing."""
+        muscles=list(muscles);coordinates=list(coordinates)
+        if not muscles or len(muscles)!=len(set(muscles)) or any(m not in self.state['muscles'] for m in muscles):raise ValueError('Unique known moment arm muscles required')
+        if not coordinates or len(coordinates)!=len(set(coordinates)) or any(c not in self.state['coordinates'] for c in coordinates):raise ValueError('Unique known moment arm coordinates required')
+        if any(self.state['coordinates'][c]['unit']!='rad' for c in coordinates):raise ValueError('Moment arms in metres require rotational coordinates')
+        with self.lock:
+            result=self._request(' '.join(['moment_arms',str(len(muscles)),*muscles,str(len(coordinates)),*coordinates]))
+            try:
+                if result.get('time_s')!=self.state['time_s'] or set(result.get('moment_arms_m',{}))!=set(muscles):raise ValueError('Moment arm receipt mismatch')
+                for row in result['moment_arms_m'].values():
+                    if set(row)!=set(coordinates):raise ValueError('Moment arm coordinate receipt mismatch')
+                    for value in row.values():finite(value)
+            except BaseException:self.close();raise
+            return result
+    def evaluate_static_pose(self,coordinates,*,activations=None):
+        """Read-only native pose/activation residual on a copied equilibrium State.
+
+        Activations modify candidate muscle states, never continuing excitations.
+        Native muscle laws may clamp activation floors; receipt reports actuals.
+        """
+        if not isinstance(coordinates,dict) or not coordinates or any(k not in self.state['coordinates'] for k in coordinates):raise ValueError('Nonempty known static coordinates required')
+        line=['evaluate_static_pose',str(len(coordinates))]
+        for name,value in coordinates.items():line += [name,str(finite(value))]
+        if activations is not None:
+            if not isinstance(activations,dict) or any(k not in self.state['muscles'] for k in activations):raise ValueError('Known static muscle activation names required')
+            line += [str(len(activations))]
+            for name,value in activations.items():
+                value=finite(value)
+                if not 0<=value<=1:raise ValueError('Static activation must be in[0,1]')
+                line += [name,str(value)]
+        with self.lock:
+            result=self._request(' '.join(line))
+            try:
+                if result.get('kind')!='static_pose_evaluated' or result.get('time_s')!=self.state['time_s'] or result.get('continuing_state_unchanged') is not True or result.get('physical_time_advanced_s')!=0:raise ValueError('Static candidate receipt mismatch')
+                if activations is not None and set(result.get('activation_overrides',{}))!=set(activations):raise ValueError('Static activation receipt mismatch')
+            except BaseException:self.close();raise
+            return result
     def transfer_mass(self,*,sequence,owner,delta_mass_kg,station_m,velocity_source_m_s,body='torso'):
         """Explicit endpoint payload transaction; no physiology mass inference."""
         if self.instance_mass_variant is None:raise ValueError('Instance mass mode was not explicitly selected')
@@ -206,7 +255,10 @@ class NativeMechanicalStream:
     def checkpoint(self):
         with self.lock:
             token=uuid.uuid4().hex;self._request('checkpoint '+token);self.tokens.add(token)
-            return {'session':self.identity,'token':token,'snapshot':self.snapshot()}
+            # Rollback is owned by the native process against the token. A Python
+            # copy of the state was never read back by restore or by any caller,
+            # so it is not taken; time_s is kept as a cheap ownership witness.
+            return {'session':self.identity,'token':token,'time_s':self.state['time_s']}
     def restore(self,checkpoint):
         with self.lock:
             if checkpoint.get('session')!=self.identity or checkpoint.get('token') not in self.tokens:raise ValueError('Unknown mechanical checkpoint ownership')

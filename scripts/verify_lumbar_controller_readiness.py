@@ -6,9 +6,9 @@ from unittest.mock import patch
 import numpy as np
 from ihm.assembly.sensorimotor import SensorimotorController
 ROOT=Path(__file__).resolve().parents[1]
-REGISTRATION='data/derived/lumbar-muscle-native-lb45uirs/variant/registration.json'
+REGISTRATION='data/derived/mechanics/whole_body_lumbar_current/registration.json'
 BASE=json.loads((ROOT/'data/derived/mechanics/whole_body_arm26_v2/catalog.json').read_text())
-ROWS=json.loads((ROOT/'data/derived/lumbar-muscle-native-lb45uirs/variant/catalog.json').read_text())
+ROWS=json.loads((ROOT/'data/derived/mechanics/whole_body_lumbar_current/catalog.json').read_text())
 ADDED=ROWS[92:]
 
 def observation(controller,stimulus=()):
@@ -44,8 +44,8 @@ class Tests(unittest.TestCase):
                 target=root/source.relative_to(ROOT);target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(raw)
             calls=[]
             with fixture.patches(root,manifests,calls):
-                from ihm.assembly.articulated import ArticulatedBodyPlant
-                ArticulatedBodyPlant.muscle_catalog=rows
+                from ihm.assembly import selective_projection
+                selective_projection.SelectiveProjectionPlant.muscle_catalog=rows
                 body=EmbodiedRuntime.from_workspace(root,root/'out',source_pin=None,augmented_registration=REGISTRATION)
                 self.assertEqual(body.plant.arguments['augmented_registration'],REGISTRATION)
                 receipt=json.loads((root/'out/manifest.json').read_text())
@@ -127,7 +127,7 @@ def native_probe():
         assert checkpoint==body.neural.checkpoint()
         receipt=json.loads((output/'body/manifest.json').read_bytes())
         assert receipt['mechanical_registration_override']['path']==REGISTRATION
-        assert receipt['mechanical_registration_override']['catalog_sha256']==hashlib.sha256((ROOT/'data/derived/lumbar-muscle-native-lb45uirs/variant/catalog.json').read_bytes()).hexdigest()
+        assert receipt['mechanical_registration_override']['catalog_sha256']==hashlib.sha256((ROOT/'data/derived/mechanics/whole_body_lumbar_current/catalog.json').read_bytes()).hexdigest()
         write('initial.json',{'time_s':0.,'added_native_sensors':selected,'controller_model_sha256':body.neural.model_sha256,
             'brain_source_identity':body.neural.brain.source_identity,'mechanical_registration':receipt['mechanical_registration_override']})
         physiology=body.native.process;mechanical=body.plant.native.process

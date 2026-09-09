@@ -4,8 +4,15 @@ import argparse,hashlib,json
 import xml.etree.ElementTree as ET
 ROOT=Path(__file__).resolve().parents[1]
 
-def materialize(root,output):
-    root=Path(root).resolve();output=Path(output).resolve()
+# The lumbar coverage audit is re-derived whenever canonical anatomy/mechanics are
+# rebuilt. `rematerialize_current_lumbar.py` proves the donor fragment and mechanical
+# audit fields are byte-identical across such a rebuild and retains the refreshed
+# audit beside the variant, so that directory is the current default here. The
+# original research audit stays on disk as the historical record.
+AUDIT='data/derived/mechanics/whole_body_lumbar_current'
+
+def materialize(root,output,audit_dir=AUDIT):
+    root=Path(root).resolve();output=Path(output).resolve();audit_dir=Path(audit_dir)
     if not output.is_relative_to(root/'data/derived'):raise ValueError('Owned derived output required')
     if output.exists() and any(output.iterdir()):raise ValueError('Refusing to overwrite materialized variant')
     inputs={}
@@ -17,8 +24,8 @@ def materialize(root,output):
     for p,h in base_reg['sources'].items():
         read(p)
         if inputs[p]!=h:raise ValueError('Base donor identity mismatch')
-    audit=json.loads(read('data/research/lumbar_shoulder_coverage/audit.json'))
-    fragment=read('data/research/lumbar_shoulder_coverage/lumbar_candidate_forces.xml')
+    audit=json.loads(read(str(audit_dir/'audit.json')))
+    fragment=read(str(audit_dir/'lumbar_candidate_forces.xml'))
     if hashlib.sha256(fragment).hexdigest()!=audit['candidate_xml_sha256']:raise ValueError('Fragment identity mismatch')
     for p,h in audit['sources'].items():
         read(p)

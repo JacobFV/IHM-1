@@ -1,0 +1,22 @@
+{
+  "schema": "ihm.native-stance-paired-acceptance.v1",
+  "mass_kg": 77.6122029,
+  "muscles": 98,
+  "dt_s": 0.01,
+  "feedback_completed_10s": true,
+  "held_posture_cutoff_s": 2.8899999999999824,
+  "min_static_com_support_proxy_margin_m": 0.11494480104109642,
+  "min_foot_upward_force_n": {
+    "r": 379.1268712883199,
+    "l": 372.1051176122683
+  },
+  "max_wire_clipped_muscles": 0,
+  "frames_requested_below_native_floor": 57,
+  "max_muscles_requested_below_native_floor": 10,
+  "min_requested_activation_margin": -0.0005839843922328218,
+  "scope": "Single bounded engineered standing recovery experiment. Both feet retained contact. No walking or brain motor control demonstrated. Static support margin is a contact-sphere proxy, not dynamic stability proof.",
+  "source_sha256": {
+    "report.json": "07273099717a5c3868dea97fd050c2d7da77e474397c908d39c2629d92dc908c",
+    "trajectory.json": "0ad095417686a5365fdbd36608af4d66d68de460c6c0b99f24dc981c4ec3c22f"
+  }
+}

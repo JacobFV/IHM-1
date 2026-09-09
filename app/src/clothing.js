@@ -1,3 +1,4 @@
+import {updateSegmentSurface} from "./surface-binding.js";
 import * as THREE from 'three';
 import { environmentMaterial, materialUVs } from './environment-materials.js';
 import {deformSkinVertices,bodyTransform,geometryArrays} from './state.js';
@@ -175,7 +176,7 @@ export class ClothingView {
 // envelope and cloth-simulated against it, served by /api/clothing. Nothing is
 // synthesized here — every vertex comes from the run, in the same
 // bodyparts3d-display-m frame as the skin, so a garment needs no fitting step
-// and is placed by the body's own transform alone.
+// and follows the accepted segment surface binding when available.
 export class WardrobeView {
   constructor(parent,{fetchGeometry}) {
     this.group=new THREE.Group();this.group.name='wardrobe';parent.add(this.group);
@@ -188,8 +189,8 @@ export class WardrobeView {
     this.drawOrder=catalog.draw_order||[];
     for(const [id,mesh] of this.meshes)if(!this.catalog.has(id)){mesh.geometry.dispose();mesh.material.dispose();mesh.removeFromParent();this.meshes.delete(id);}
   }
-  // The garment follows the skin entity it was registered against, so the body
-  // transform that moves the skin moves the clothes with it.
+  // Registration identity shared with the skin. Live per-vertex segment
+  // support replaces the legacy single-entity transform when provided.
   bind(source){this.source=source;}
   order(garment) {
     const index=this.drawOrder.indexOf((garment.slots||[])[0]);
@@ -239,8 +240,16 @@ export class WardrobeView {
     const applied=field?.entity_ids?.includes(this.source?.id)?field:null;
     const transform=bodyTransform(frame?.entities?.[this.source?.id],centroids[this.source?.id]);
     for(const mesh of this.meshes.values()) {
-      if(!mesh.visible)continue;
+      if(!mesh.visible&&!mesh.userData.surfaceBindingPending)continue;
       const positions=mesh.geometry.attributes.position;
+      const dynamic=frame?.mechanics?.garment_mechanics?.garments?.[mesh.name];
+      if(dynamic){
+        const current=dynamic.positions_m.flat();
+        if(current.length!==positions.array.length||!current.every(Number.isFinite))throw Error('Invalid owned garment geometry');
+        positions.array.set(current);positions.needsUpdate=true;mesh.geometry.computeVertexNormals();mesh.geometry.computeBoundingSphere();
+        mesh.matrixAutoUpdate=false;mesh.matrix.identity();mesh.matrixWorldNeedsUpdate=true;continue;
+      }
+      if(updateSegmentSurface(mesh,frame,this.source?.id,{garment:true}))continue;
       deformSkinVertices(mesh.userData.reference,applied,positions.array);
       positions.needsUpdate=true;mesh.geometry.computeVertexNormals();mesh.geometry.computeBoundingSphere();
       mesh.matrixAutoUpdate=false;mesh.matrix.set(...transform);mesh.matrixWorldNeedsUpdate=true;

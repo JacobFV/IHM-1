@@ -1,0 +1,135 @@
+{
+  "schema": "ihm.engineering-weight-transfer-bundle.v1",
+  "files": {
+    "data/models/engineering_weight_transfer_v1/target.npz": "f3e114a1b8fadb8101f4964b2595ec5ea4536261783ae84076c8d8b74d4fa683",
+    "data/models/engineering_weight_transfer_v1/target_policy.npz": "65057177075bdfecac6d9e8f2ecebd94226028381eef1eb953cf4766befefab0",
+    "data/models/engineering_weight_transfer_v1/provenance/baseline_policy.npz": "74305e40de65c91c75a85b1de1f6852834d44f91d16c2519979a9a3f88ac1d55",
+    "data/models/engineering_weight_transfer_v1/provenance/baseline_registration.json": "2cc082af1d2326c5c2eb83123182facdfdbc26fe0d3b083cef7a4eeccd4286c4",
+    "data/models/engineering_weight_transfer_v1/provenance/baseline_manifest.json": "4efd05d587190304b36a7c15ef9ce848ac4eb92499a3b8eb1eb90abd46d03924",
+    "data/models/engineering_weight_transfer_v1/provenance/target_model.osim": "71295c49f042cf9af2dcaf6f750435407facfb9c0e9b6160c778d64cac0e5d9a",
+    "data/models/engineering_weight_transfer_v1/provenance/target_registration.json": "c35d0d418c52e365c0dc611b857423888e7b04aba9db2a295f45e9fe09c0b7c3",
+    "data/models/engineering_weight_transfer_v1/provenance/target_manifest.json": "fe4a5a5974f74e039fbf7d53ff1acf2dbc03990d6ceb54285ffa247eb6353478",
+    "data/models/engineering_weight_transfer_v1/provenance/target_snapshot.json.gz": "1c53913a00a257e50d0df256d3e1129a33195baec1747d3a174b723ef0481886",
+    "data/models/engineering_weight_transfer_v1/acceptance/report.json": "3f570c78629531c6503d8a872e5962686ab26cef14d6ae91b1ac04cbb25560fa",
+    "data/models/engineering_weight_transfer_v1/acceptance/balance_summary.json": "5fbdbfa2168d3a411b3f7abdca069f4e96d058a5c83b98a0c4b1de824906c033",
+    "data/models/engineering_weight_transfer_v1/acceptance/trajectory.json.gz": "c47390e8a9ed645d972a3ebb5da2f09cfec931b844245107d561c30908e13ae4",
+    "data/models/engineering_weight_transfer_v1/provenance/evaluator.py": "d318df238755d6ccb23376d4b5977755fb9b7582288da00d6928b8a6d4823ef9",
+    "data/models/engineering_weight_transfer_v1/provenance/promote_engineering_weight_transfer.py": "99005e8890324bb1a0d2b023ea71152839734900315bc569941db7f190685ce6",
+    "data/models/engineering_weight_transfer_v1/provenance/native_execution.json": "a12e7e0bd580d7fc0b23e29c32701ea5514675b4d12168966cf19c8ff08984c9",
+    "data/models/engineering_weight_transfer_v1/provenance/model_equivalence.json": "b4c4645bc135854d268b5e30a7482b8450e39062ee4750212b4475cbe793c5a0",
+    "data/models/engineering_weight_transfer_v1/program.json": "426b5f29eb5710d26363169d21b8da009350adbd28613deb8092be583be515ae"
+  },
+  "origins": {
+    "data/derived/mechanics/patient_left80_stance98/lqr_target/target.npz": {
+      "bundle_path": "data/models/engineering_weight_transfer_v1/target.npz",
+      "sha256": "f3e114a1b8fadb8101f4964b2595ec5ea4536261783ae84076c8d8b74d4fa683"
+    },
+    "data/research/locomotion_control/linearization_bkcuq9xn/discrete_margin/linearization.npz": {
+      "bundle_path": "data/models/engineering_weight_transfer_v1/target_policy.npz",
+      "sha256": "65057177075bdfecac6d9e8f2ecebd94226028381eef1eb953cf4766befefab0"
+    },
+    "data/models/engineering_stance_v1/linearization.npz": {
+      "bundle_path": "data/models/engineering_weight_transfer_v1/provenance/baseline_policy.npz",
+      "sha256": "74305e40de65c91c75a85b1de1f6852834d44f91d16c2519979a9a3f88ac1d55"
+    },
+    "data/models/engineering_stance_v1/registration.json": {
+      "bundle_path": "data/models/engineering_weight_transfer_v1/provenance/baseline_registration.json",
+      "sha256": "2cc082af1d2326c5c2eb83123182facdfdbc26fe0d3b083cef7a4eeccd4286c4"
+    },
+    "data/models/engineering_stance_v1/manifest.json": {
+      "bundle_path": "data/models/engineering_weight_transfer_v1/provenance/baseline_manifest.json",
+      "sha256": "4efd05d587190304b36a7c15ef9ce848ac4eb92499a3b8eb1eb90abd46d03924"
+    },
+    "data/derived/mechanics/patient_left80_stance98/model.osim": {
+      "bundle_path": "data/models/engineering_weight_transfer_v1/provenance/target_model.osim",
+      "sha256": "71295c49f042cf9af2dcaf6f750435407facfb9c0e9b6160c778d64cac0e5d9a"
+    },
+    "data/derived/mechanics/patient_left80_stance98/registration.json": {
+      "bundle_path": "data/models/engineering_weight_transfer_v1/provenance/target_registration.json",
+      "sha256": "c35d0d418c52e365c0dc611b857423888e7b04aba9db2a295f45e9fe09c0b7c3"
+    },
+    "data/derived/mechanics/patient_left80_stance98/lqr_target/manifest.json": {
+      "bundle_path": "data/models/engineering_weight_transfer_v1/provenance/target_manifest.json",
+      "sha256": "fe4a5a5974f74e039fbf7d53ff1acf2dbc03990d6ceb54285ffa247eb6353478"
+    },
+    "data/derived/mechanics/patient_left80_stance98/initial_snapshot.json": {
+      "bundle_path": "data/models/engineering_weight_transfer_v1/provenance/target_snapshot.json.gz",
+      "sha256": "1c53913a00a257e50d0df256d3e1129a33195baec1747d3a174b723ef0481886",
+      "encoding": "gzip"
+    },
+    "data/research/locomotion_control/patient_weight_transfer80_scheduled/report.json": {
+      "bundle_path": "data/models/engineering_weight_transfer_v1/acceptance/report.json",
+      "sha256": "3f570c78629531c6503d8a872e5962686ab26cef14d6ae91b1ac04cbb25560fa"
+    },
+    "data/research/locomotion_control/patient_weight_transfer80_scheduled/balance_summary.json": {
+      "bundle_path": "data/models/engineering_weight_transfer_v1/acceptance/balance_summary.json",
+      "sha256": "5fbdbfa2168d3a411b3f7abdca069f4e96d058a5c83b98a0c4b1de824906c033"
+    },
+    "data/research/locomotion_control/patient_weight_transfer80_scheduled/trajectory.json": {
+      "bundle_path": "data/models/engineering_weight_transfer_v1/acceptance/trajectory.json.gz",
+      "sha256": "c47390e8a9ed645d972a3ebb5da2f09cfec931b844245107d561c30908e13ae4",
+      "encoding": "gzip"
+    },
+    "data/research/locomotion_control/patient_weight_transfer80_scheduled/evaluator.py": {
+      "bundle_path": "data/models/engineering_weight_transfer_v1/provenance/evaluator.py",
+      "sha256": "d318df238755d6ccb23376d4b5977755fb9b7582288da00d6928b8a6d4823ef9"
+    },
+    "scripts/promote_engineering_weight_transfer.py": {
+      "bundle_path": "data/models/engineering_weight_transfer_v1/provenance/promote_engineering_weight_transfer.py",
+      "sha256": "99005e8890324bb1a0d2b023ea71152839734900315bc569941db7f190685ce6"
+    },
+    "data/research/locomotion_control/patient_weight_transfer80_scheduled/plant/execution.json": {
+      "bundle_path": "data/models/engineering_weight_transfer_v1/provenance/native_execution.json",
+      "sha256": "a12e7e0bd580d7fc0b23e29c32701ea5514675b4d12168966cf19c8ff08984c9"
+    }
+  },
+  "baseline_binding": {
+    "bundle_path": "data/models/engineering_stance_v1",
+    "manifest_sha256": "4efd05d587190304b36a7c15ef9ce848ac4eb92499a3b8eb1eb90abd46d03924",
+    "registration_sha256": "2cc082af1d2326c5c2eb83123182facdfdbc26fe0d3b083cef7a4eeccd4286c4",
+    "policy_sha256": "74305e40de65c91c75a85b1de1f6852834d44f91d16c2519979a9a3f88ac1d55",
+    "native_model_sha256": "be3baf542b44425c2802095439cabf976eccaad42406564338d20c2deb421d68",
+    "target_mass_kg": 77.6122029
+  },
+  "accepted_program": {
+    "schema": "ihm.engineering-weight-transfer-program.v1",
+    "sampling_interval_s": 0.01,
+    "start_s": 1.0,
+    "transition_s": 5.0,
+    "fraction": 1.0,
+    "blend": "10*p^3-15*p^4+6*p^5 withp=clip((t-start)/transition,0,1)",
+    "reference": "Use baseline policy x0/u0, interpolate toward target.npz x_target/u_target; add derivative-of-blend times position delta to joint speed references",
+    "target_alias_warning": "target.npz x0/u0 are aliases for ENDPOINT target state/excitation; never use them as baseline x0/u0",
+    "gain": "Linear blend of baseline and endpoint K; muscle excitation clipped[0,1]",
+    "target_path": "data/models/engineering_weight_transfer_v1/target.npz",
+    "target_policy_path": "data/models/engineering_weight_transfer_v1/target_policy.npz",
+    "baseline_binding": {
+      "bundle_path": "data/models/engineering_stance_v1",
+      "manifest_sha256": "4efd05d587190304b36a7c15ef9ce848ac4eb92499a3b8eb1eb90abd46d03924",
+      "registration_sha256": "2cc082af1d2326c5c2eb83123182facdfdbc26fe0d3b083cef7a4eeccd4286c4",
+      "policy_sha256": "74305e40de65c91c75a85b1de1f6852834d44f91d16c2519979a9a3f88ac1d55",
+      "native_model_sha256": "be3baf542b44425c2802095439cabf976eccaad42406564338d20c2deb421d68",
+      "target_mass_kg": 77.6122029
+    },
+    "runtime_model_substitution": false,
+    "external_root_forces": false,
+    "prescribed_motion": false,
+    "walking_demonstrated": false,
+    "brain_trained": false,
+    "scope": "Single demonstrated left-weight-transfer trajectory; bothfeet supported, no footstep or gait. Endpoint gain interpolation has no general nonlinear guarantee."
+  },
+  "acceptance": {
+    "final_left_load_fraction": 0.7922309719555837,
+    "final_com_speed_m_s": 1.7523506216166283e-05,
+    "final_com_position_ground_m": [
+      -0.09223928039032764,
+      1.0175568212057373,
+      -0.09612292570877985
+    ],
+    "max_clipped_count": 0,
+    "min_com_support_proxy_margin_m": 0.05148479049329108,
+    "final_state_reference_error_norm": 0.034082125987531034
+  },
+  "trajectory_uncompressed_sha256": "1a5f749663c22f3db163b06ca384f327173967e80e574cd6ec28ec60e6c6ddde",
+  "archival_path_scope": "Historical paths inside byte-retained provenance identify origins only. Runtime program uses bundlefiles plus digest-bound baseline stance bundle. Target model is proofonly; it mustneverreplace baseline runtime model."
+}

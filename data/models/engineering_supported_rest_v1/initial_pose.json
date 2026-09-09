@@ -1,0 +1,1297 @@
+{
+  "schema": "ihm.native-initial-pose.v1",
+  "environment": "supine",
+  "target_mass_kg": 77.6122029,
+  "coordinates": {
+    "ankle_angle_l": -0.5322951119434609,
+    "ankle_angle_r": -0.5341626021349691,
+    "arm_add_l": -0.014845197387871498,
+    "arm_add_r": -0.012421948050149748,
+    "arm_flex_l": -0.251862741552864,
+    "arm_flex_r": -0.23995339411368327,
+    "arm_rot_l": 0.2537099310632087,
+    "arm_rot_r": 0.254214871426084,
+    "elbow_flex_l": 1.2400010658598286,
+    "elbow_flex_r": 1.2468633091661416,
+    "hip_adduction_l": 0.11616885898194464,
+    "hip_adduction_r": 0.10100369927929598,
+    "hip_flexion_l": -0.07947590960102668,
+    "hip_flexion_r": -0.0686960444382628,
+    "hip_rotation_l": -0.27311131679115147,
+    "hip_rotation_r": -0.22158416423712246,
+    "knee_angle_l": 0.0656733671231762,
+    "knee_angle_r": 0.09154271790427701,
+    "lumbar_bending": -0.09994942100455442,
+    "lumbar_extension": -0.02944327290983009,
+    "lumbar_rotation": -0.018331002774232063,
+    "mtp_angle_l": -0.003288733735760129,
+    "mtp_angle_r": -0.00319143259998893,
+    "pelvis_list": -0.000357449733436074,
+    "pelvis_rotation": -0.00499040957301078,
+    "pelvis_tilt": -0.060328928552647536,
+    "pelvis_tx": -0.0887812127722417,
+    "pelvis_ty": 0.9317339881413487,
+    "pelvis_tz": 0.002398884026479335,
+    "pro_sup_l": 0.14095932515506387,
+    "pro_sup_r": 0.14030244515215878
+  },
+  "activations": {
+    "addlong_l": 0.17380896302485702,
+    "addlong_r": 0.07357172151168478,
+    "gait2392_ercspn_l": 0.0835640753353586,
+    "gait2392_ercspn_r": 0.07375930287466642,
+    "gait2392_extobl_l": 0.03894921161919505,
+    "gait2392_extobl_r": 0.020142194744924236,
+    "gait2392_intobl_l": 0.01972017523021509,
+    "gait2392_intobl_r": 0.038621328118723965,
+    "glmax2_l": 0.051490175642900364,
+    "glmax2_r": 0.010989685475309964,
+    "glmax3_l": 0.08191031381291737,
+    "glmax3_r": 0.09315698538349458,
+    "glmed1_l": 0.16956438597211781,
+    "glmed1_r": 0.0854536322941009,
+    "glmed2_l": 0.04505678905031779,
+    "glmed2_r": 0.010847895589376622,
+    "glmin1_l": 0.1372382217141051,
+    "glmin1_r": 0.14497993165249085,
+    "iliacus_l": 0.09958955738197699,
+    "iliacus_r": 0.15324353606393462,
+    "piri_l": 0.016563276695281383,
+    "piri_r": 0.012632715470702856,
+    "recfem_l": 0.05663874002331905,
+    "recfem_r": 0.0657873462392892,
+    "semimem_l": 0.14716640545684082,
+    "semimem_r": 0.1583843090668003
+  },
+  "protocol_sha256": "94db3f1340569518ef7383bf024eddfc6bddc49d3091c9f573efa8c9d48a92fe",
+  "posture_bounds_rad": {
+    "pelvis_tilt": [
+      -0.15,
+      0.15
+    ],
+    "pelvis_list": [
+      -0.15,
+      0.15
+    ],
+    "pelvis_rotation": [
+      -0.15,
+      0.15
+    ],
+    "lumbar_extension": [
+      -0.15,
+      0.15
+    ],
+    "lumbar_bending": [
+      -0.15,
+      0.15
+    ],
+    "lumbar_rotation": [
+      -0.15,
+      0.15
+    ]
+  },
+  "accepted_equilibrium": false,
+  "model_sha256": "16af7ffdc6d346b553d5ba9ba24a85f69248a493f844197ca15af2de4409769d",
+  "scope": "For acceleration objective: full udot normalized by gravity (translations) and gravity/body length (rotations), an engineering aggregate. For torque objective: strength-normalized joint force refinement with actual external root wrench enforced by linear equality and nonlinear rigid-root correction. No geometry/domain/guard change; tonic inverse statics, not learned brain control.",
+  "support_geometry": {
+    "manifest_path": "data/models/engineering_supported_rest_v1/surface/manifest.json",
+    "manifest_sha256": "51c28339d9e70681b5a02e039504708b6ea07a912cb4489afd85678d920cd723",
+    "bed_material": "MM",
+    "bed_material_manifest_path": "data/models/engineering_supported_rest_v1/bed/manifest.json"
+  },
+  "source_pose_sha256": "d13812fcad6db9a17650f3359a3bbf12475f1fd365149d87ac05982395048adf",
+  "body_length_m": 1.7100000000000002,
+  "interior_coordinate_changes": {
+    "knee_angle_r": {
+      "previous": 4.872156559994912e-06,
+      "proposal": 0.005
+    },
+    "knee_angle_l": {
+      "previous": 4.872156559994912e-06,
+      "proposal": 0.005
+    },
+    "pro_sup_r": {
+      "previous": 4.872185065594987e-06,
+      "proposal": 0.005
+    },
+    "pro_sup_l": {
+      "previous": 4.872185065594987e-06,
+      "proposal": 0.005
+    }
+  },
+  "external_support_residual": [
+    5.0264056526665963e-14,
+    0.0,
+    0.0,
+    3.3017976211482775e-15,
+    1.6357717170144984e-16,
+    -2.8111438425158232e-15
+  ],
+  "external_support_order": [
+    "pelvis_tx",
+    "pelvis_ty",
+    "pelvis_tz",
+    "pelvis_tilt",
+    "pelvis_list",
+    "pelvis_rotation"
+  ],
+  "requested_coordinates": {
+    "ankle_angle_l": -0.5322951119812378,
+    "ankle_angle_r": -0.5341626021734504,
+    "arm_add_l": -0.014845197387934675,
+    "arm_add_r": -0.012421948050202612,
+    "arm_flex_l": -0.25186274155393634,
+    "arm_flex_r": -0.23995339411470487,
+    "arm_rot_l": 0.2537099310642889,
+    "arm_rot_r": 0.25421487142716637,
+    "elbow_flex_l": 1.240001065857641,
+    "elbow_flex_r": 1.2468633091641694,
+    "hip_adduction_l": 0.11616885900271098,
+    "hip_adduction_r": 0.10100369929716918,
+    "hip_flexion_l": -0.07947590961453432,
+    "hip_flexion_r": -0.0686960444508725,
+    "hip_rotation_l": -0.2731113168086016,
+    "hip_rotation_r": -0.22158416424765445,
+    "knee_angle_l": 0.06567336691527237,
+    "knee_angle_r": 0.09154271775901819,
+    "lumbar_bending": -0.09994942100800631,
+    "lumbar_extension": -0.029443272910851886,
+    "lumbar_rotation": -0.0183310027748684,
+    "mtp_angle_l": -0.003288733736228953,
+    "mtp_angle_r": -0.003191432600443879,
+    "pelvis_list": -0.00035744973344435833,
+    "pelvis_rotation": -0.004990409573126439,
+    "pelvis_tilt": -0.06032892855404575,
+    "pelvis_tx": -0.0887812127722608,
+    "pelvis_ty": 0.9317339881542451,
+    "pelvis_tz": 0.0023988840265377225,
+    "pro_sup_l": 0.14095932506529718,
+    "pro_sup_r": 0.14030244506356465
+  },
+  "activation_selection_path": "data/models/engineering_supported_rest_v1/provenance/sources/110a16a3e22c59d5-selection.json",
+  "objective": "acceleration",
+  "dynamic_seed": {
+    "report": "data/derived/supine-tonic-world-r90qq71u/report.json",
+    "sha256": "03c2e51362cfc07132a9f68d8db9eaca34f7520fddf9c728c7de7cc5348c4ba9",
+    "scope": "Final realized q only; all velocities set to zero by static query; no cloth load or contact state copied."
+  },
+  "native_static_residual": {
+    "kind": "static_pose_evaluated",
+    "physical_time_advanced_s": 0,
+    "continuing_state_unchanged": true,
+    "time_s": 0,
+    "activation_overrides": {
+      "addlong_l": {
+        "requested": 0.17380896302485702,
+        "actual": 0.17380896302485702
+      },
+      "addlong_r": {
+        "requested": 0.07357172151168478,
+        "actual": 0.07357172151168478
+      },
+      "gait2392_ercspn_l": {
+        "requested": 0.0835640753353586,
+        "actual": 0.0835640753353586
+      },
+      "gait2392_ercspn_r": {
+        "requested": 0.07375930287466642,
+        "actual": 0.07375930287466642
+      },
+      "gait2392_extobl_l": {
+        "requested": 0.03894921161919505,
+        "actual": 0.03894921161919505
+      },
+      "gait2392_extobl_r": {
+        "requested": 0.020142194744924236,
+        "actual": 0.020142194744924236
+      },
+      "gait2392_intobl_l": {
+        "requested": 0.01972017523021509,
+        "actual": 0.01972017523021509
+      },
+      "gait2392_intobl_r": {
+        "requested": 0.038621328118723965,
+        "actual": 0.038621328118723965
+      },
+      "glmax2_l": {
+        "requested": 0.051490175642900364,
+        "actual": 0.051490175642900364
+      },
+      "glmax2_r": {
+        "requested": 0.010989685475309964,
+        "actual": 0.010989685475309964
+      },
+      "glmax3_l": {
+        "requested": 0.08191031381291737,
+        "actual": 0.08191031381291737
+      },
+      "glmax3_r": {
+        "requested": 0.09315698538349458,
+        "actual": 0.09315698538349458
+      },
+      "glmed1_l": {
+        "requested": 0.16956438597211781,
+        "actual": 0.16956438597211781
+      },
+      "glmed1_r": {
+        "requested": 0.0854536322941009,
+        "actual": 0.0854536322941009
+      },
+      "glmed2_l": {
+        "requested": 0.04505678905031779,
+        "actual": 0.04505678905031779
+      },
+      "glmed2_r": {
+        "requested": 0.010847895589376622,
+        "actual": 0.010847895589376622
+      },
+      "glmin1_l": {
+        "requested": 0.1372382217141051,
+        "actual": 0.1372382217141051
+      },
+      "glmin1_r": {
+        "requested": 0.14497993165249085,
+        "actual": 0.14497993165249085
+      },
+      "iliacus_l": {
+        "requested": 0.09958955738197699,
+        "actual": 0.09958955738197699
+      },
+      "iliacus_r": {
+        "requested": 0.15324353606393462,
+        "actual": 0.15324353606393462
+      },
+      "piri_l": {
+        "requested": 0.016563276695281383,
+        "actual": 0.016563276695281383
+      },
+      "piri_r": {
+        "requested": 0.012632715470702856,
+        "actual": 0.012632715470702856
+      },
+      "recfem_l": {
+        "requested": 0.05663874002331905,
+        "actual": 0.05663874002331905
+      },
+      "recfem_r": {
+        "requested": 0.0657873462392892,
+        "actual": 0.0657873462392892
+      },
+      "semimem_l": {
+        "requested": 0.14716640545684082,
+        "actual": 0.14716640545684082
+      },
+      "semimem_r": {
+        "requested": 0.1583843090668003,
+        "actual": 0.1583843090668003
+      }
+    },
+    "q": [
+      -0.060328928552647536,
+      -0.000357449733436074,
+      -0.00499040957301078,
+      -0.0887812127722417,
+      0.9317339881413487,
+      0.002398884026479335,
+      -0.0686960444382628,
+      0.10100369927929598,
+      -0.22158416423712246,
+      -0.07947590960102668,
+      0.11616885898194464,
+      -0.27311131679115147,
+      -0.02944327290983009,
+      -0.09994942100455442,
+      -0.018331002774232063,
+      0.09154271790427701,
+      0.09154271790427701,
+      0.0656733671231762,
+      0.0656733671231762,
+      -0.23995339411368327,
+      -0.012421948050149748,
+      0.254214871426084,
+      -0.251862741552864,
+      -0.014845197387871498,
+      0.2537099310632087,
+      -0.5341626021349691,
+      -0.5322951119434609,
+      1.2468633091661416,
+      1.2400010658598286,
+      0.14030244515215878,
+      0.14095932515506387,
+      -0.00319143259998893,
+      -0.003288733735760129
+    ],
+    "u": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "udot": [
+      -6.516275565856551e-12,
+      -3.269100788727926e-12,
+      3.078101065642241e-12,
+      -1.0116540890196731e-12,
+      -3.9649160916046763e-13,
+      1.5913876691896292e-13,
+      8.256254472612958e-12,
+      7.84723974586113e-13,
+      3.874277250421475e-12,
+      6.557243876619207e-12,
+      -1.059297190383142e-11,
+      1.1423182511867383e-12,
+      5.052513774790208e-12,
+      1.8706951084495717e-12,
+      4.2932592290191516e-13,
+      -5.043634754736272e-12,
+      -5.0623908671418394e-12,
+      -4.932063544206832e-12,
+      -4.925375226636151e-12,
+      -1.0358628732391272e-12,
+      -1.7340954284959406e-12,
+      -9.87113812218021e-13,
+      1.7299598544511218e-12,
+      1.1620570779005812e-12,
+      -5.4768044559273505e-12,
+      2.138946064287972e-11,
+      -2.5910720386721774e-11,
+      1.2526450192409594e-12,
+      -8.388704984287428e-12,
+      1.4535824950863603e-12,
+      1.0729660106408996e-12,
+      -4.184880913080902e-11,
+      3.3176293841952825e-11
+    ],
+    "mobility_coordinate_names": [
+      "pelvis_tilt",
+      "pelvis_list",
+      "pelvis_rotation",
+      "pelvis_tx",
+      "pelvis_ty",
+      "pelvis_tz",
+      "hip_flexion_r",
+      "hip_adduction_r",
+      "hip_rotation_r",
+      "hip_flexion_l",
+      "hip_adduction_l",
+      "hip_rotation_l",
+      "lumbar_extension",
+      "lumbar_bending",
+      "lumbar_rotation",
+      "knee_angle_r",
+      "knee_angle_r_beta",
+      "knee_angle_l",
+      "knee_angle_l_beta",
+      "arm_flex_r",
+      "arm_add_r",
+      "arm_rot_r",
+      "arm_flex_l",
+      "arm_add_l",
+      "arm_rot_l",
+      "ankle_angle_r",
+      "ankle_angle_l",
+      "elbow_flex_r",
+      "elbow_flex_l",
+      "pro_sup_r",
+      "pro_sup_l",
+      "mtp_angle_r",
+      "mtp_angle_l"
+    ],
+    "mobility_rotational": [
+      1,
+      1,
+      1,
+      0,
+      0,
+      0,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "constraint_position_error": 0,
+    "constraint_velocity_error": 0,
+    "constraint_acceleration_error": 1.9912944144363635e-14,
+    "mass_times_udot": [
+      -4.293070604625339e-12,
+      -2.2218006286328449e-13,
+      3.65598452430379e-12,
+      -3.8261997629055806e-11,
+      -5.6443574424202073e-14,
+      -4.01854777627092e-15,
+      4.900804118439495e-12,
+      -1.46107129190877e-11,
+      4.921612635834139e-13,
+      -4.414900191514942e-12,
+      -1.9753028781906917e-11,
+      1.2331309861156435e-13,
+      -2.248633300014946e-12,
+      -3.87051789915002e-12,
+      3.3528270375197993e-12,
+      -5.048462429355475e-12,
+      -1.2455314557513475e-15,
+      -2.1574621788009854e-12,
+      1.8041124150158794e-15,
+      -1.1781047818543685e-13,
+      -6.971914208833465e-13,
+      -1.66865271059922e-13,
+      -8.141941664584024e-13,
+      -5.940400139255553e-13,
+      -3.3578764471785047e-13,
+      6.254214402147938e-13,
+      5.841868445982507e-14,
+      -4.5150477429374957e-14,
+      -5.659354439492776e-13,
+      -2.221239024198419e-16,
+      -3.028830135363851e-14,
+      1.3641865415081605e-14,
+      7.896461262646427e-15
+    ],
+    "dynamic_residual_identity_norm": 5.94738258046315e-14,
+    "constraint_multipliers": [
+      -0.01572153317756597,
+      -0.01668357092834124
+    ],
+    "tree_zero_acceleration_residual_mobility_force": [
+      4.298783551348606e-12,
+      2.1296970189280437e-13,
+      -3.659975654861387e-12,
+      3.8269831748038996e-11,
+      0,
+      0,
+      -4.9036330551643914e-12,
+      1.4610757048671985e-11,
+      -4.922728891187944e-13,
+      4.419575816427823e-12,
+      1.9753088054130785e-11,
+      -1.2256862191861728e-13,
+      2.2484706335246984e-12,
+      3.861591879982876e-12,
+      -3.355611002029079e-12,
+      0.01572153318261371,
+      -0.015721533177564726,
+      0.016683570930499325,
+      -0.016683570928343043,
+      1.1707301794672276e-13,
+      6.976641486744484e-13,
+      1.674216321134736e-13,
+      8.172629240021934e-13,
+      5.908606937055083e-13,
+      3.348432642269472e-13,
+      -6.252776074688882e-13,
+      -5.839773109528323e-14,
+      4.522424101871536e-14,
+      5.660853730216076e-13,
+      2.2212390241983717e-16,
+      3.0288301353638537e-14,
+      -1.3641865415081611e-14,
+      -7.896461262646426e-15
+    ],
+    "constrained_zero_acceleration_residual_mobility_force": [
+      4.298783551348606e-12,
+      2.1296970189280437e-13,
+      -3.659975654861387e-12,
+      3.8269831748038996e-11,
+      0,
+      0,
+      -4.9036330551643914e-12,
+      1.4610757048671985e-11,
+      -4.922728891187944e-13,
+      4.419575816427823e-12,
+      1.9753088054130785e-11,
+      -1.2256862191861728e-13,
+      2.2484706335246984e-12,
+      3.861591879982876e-12,
+      -3.355611002029079e-12,
+      5.047962048365662e-12,
+      1.2455314557513475e-15,
+      2.1582735598713043e-12,
+      -1.8041124150158794e-15,
+      1.1707301794672276e-13,
+      6.976641486744484e-13,
+      1.674216321134736e-13,
+      8.172629240021934e-13,
+      5.908606937055083e-13,
+      3.348432642269472e-13,
+      -6.252776074688882e-13,
+      -5.839773109528323e-14,
+      4.522424101871536e-14,
+      5.660853730216076e-13,
+      2.2212390241983717e-16,
+      3.0288301353638537e-14,
+      -1.3641865415081611e-14,
+      -7.896461262646426e-15
+    ],
+    "residual_basis": "Simbody mobility order and mixed force/torque units; tree residual omits constraints; constrained residual uses native dynamic multipliers at this zero-speed pose",
+    "coordinates": {
+      "pelvis_tilt": {
+        "value": -0.060328928552647536,
+        "speed": 0,
+        "acceleration": -6.516275565856551e-12,
+        "rotational": true,
+        "independent": true
+      },
+      "pelvis_list": {
+        "value": -0.000357449733436074,
+        "speed": 0,
+        "acceleration": -3.269100788727926e-12,
+        "rotational": true,
+        "independent": true
+      },
+      "pelvis_rotation": {
+        "value": -0.00499040957301078,
+        "speed": 0,
+        "acceleration": 3.078101065642241e-12,
+        "rotational": true,
+        "independent": true
+      },
+      "pelvis_tx": {
+        "value": -0.0887812127722417,
+        "speed": 0,
+        "acceleration": -1.0116540890196731e-12,
+        "rotational": false,
+        "independent": true
+      },
+      "pelvis_ty": {
+        "value": 0.9317339881413487,
+        "speed": 0,
+        "acceleration": -3.9649160916046763e-13,
+        "rotational": false,
+        "independent": true
+      },
+      "pelvis_tz": {
+        "value": 0.002398884026479335,
+        "speed": 0,
+        "acceleration": 1.5913876691896292e-13,
+        "rotational": false,
+        "independent": true
+      },
+      "hip_flexion_r": {
+        "value": -0.0686960444382628,
+        "speed": 0,
+        "acceleration": 8.256254472612958e-12,
+        "rotational": true,
+        "independent": true
+      },
+      "hip_adduction_r": {
+        "value": 0.10100369927929598,
+        "speed": 0,
+        "acceleration": 7.84723974586113e-13,
+        "rotational": true,
+        "independent": true
+      },
+      "hip_rotation_r": {
+        "value": -0.22158416423712246,
+        "speed": 0,
+        "acceleration": 3.874277250421475e-12,
+        "rotational": true,
+        "independent": true
+      },
+      "knee_angle_r": {
+        "value": 0.09154271790427701,
+        "speed": 0,
+        "acceleration": -5.043634754736272e-12,
+        "rotational": true,
+        "independent": true
+      },
+      "knee_angle_r_beta": {
+        "value": 0.09154271790427701,
+        "speed": 0,
+        "acceleration": -5.0623908671418394e-12,
+        "rotational": false,
+        "independent": false
+      },
+      "ankle_angle_r": {
+        "value": -0.5341626021349691,
+        "speed": 0,
+        "acceleration": 2.138946064287972e-11,
+        "rotational": true,
+        "independent": true
+      },
+      "hip_flexion_l": {
+        "value": -0.07947590960102668,
+        "speed": 0,
+        "acceleration": 6.557243876619207e-12,
+        "rotational": true,
+        "independent": true
+      },
+      "hip_adduction_l": {
+        "value": 0.11616885898194464,
+        "speed": 0,
+        "acceleration": -1.059297190383142e-11,
+        "rotational": true,
+        "independent": true
+      },
+      "hip_rotation_l": {
+        "value": -0.27311131679115147,
+        "speed": 0,
+        "acceleration": 1.1423182511867383e-12,
+        "rotational": true,
+        "independent": true
+      },
+      "knee_angle_l": {
+        "value": 0.0656733671231762,
+        "speed": 0,
+        "acceleration": -4.932063544206832e-12,
+        "rotational": true,
+        "independent": true
+      },
+      "knee_angle_l_beta": {
+        "value": 0.0656733671231762,
+        "speed": 0,
+        "acceleration": -4.925375226636151e-12,
+        "rotational": false,
+        "independent": false
+      },
+      "ankle_angle_l": {
+        "value": -0.5322951119434609,
+        "speed": 0,
+        "acceleration": -2.5910720386721774e-11,
+        "rotational": true,
+        "independent": true
+      },
+      "lumbar_extension": {
+        "value": -0.02944327290983009,
+        "speed": 0,
+        "acceleration": 5.052513774790208e-12,
+        "rotational": true,
+        "independent": true
+      },
+      "lumbar_bending": {
+        "value": -0.09994942100455442,
+        "speed": 0,
+        "acceleration": 1.8706951084495717e-12,
+        "rotational": true,
+        "independent": true
+      },
+      "lumbar_rotation": {
+        "value": -0.018331002774232063,
+        "speed": 0,
+        "acceleration": 4.2932592290191516e-13,
+        "rotational": true,
+        "independent": true
+      },
+      "arm_flex_r": {
+        "value": -0.23995339411368327,
+        "speed": 0,
+        "acceleration": -1.0358628732391272e-12,
+        "rotational": true,
+        "independent": true
+      },
+      "arm_add_r": {
+        "value": -0.012421948050149748,
+        "speed": 0,
+        "acceleration": -1.7340954284959406e-12,
+        "rotational": true,
+        "independent": true
+      },
+      "arm_rot_r": {
+        "value": 0.254214871426084,
+        "speed": 0,
+        "acceleration": -9.87113812218021e-13,
+        "rotational": true,
+        "independent": true
+      },
+      "elbow_flex_r": {
+        "value": 1.2468633091661416,
+        "speed": 0,
+        "acceleration": 1.2526450192409594e-12,
+        "rotational": true,
+        "independent": true
+      },
+      "pro_sup_r": {
+        "value": 0.14030244515215878,
+        "speed": 0,
+        "acceleration": 1.4535824950863603e-12,
+        "rotational": true,
+        "independent": true
+      },
+      "arm_flex_l": {
+        "value": -0.251862741552864,
+        "speed": 0,
+        "acceleration": 1.7299598544511218e-12,
+        "rotational": true,
+        "independent": true
+      },
+      "arm_add_l": {
+        "value": -0.014845197387871498,
+        "speed": 0,
+        "acceleration": 1.1620570779005812e-12,
+        "rotational": true,
+        "independent": true
+      },
+      "arm_rot_l": {
+        "value": 0.2537099310632087,
+        "speed": 0,
+        "acceleration": -5.4768044559273505e-12,
+        "rotational": true,
+        "independent": true
+      },
+      "elbow_flex_l": {
+        "value": 1.2400010658598286,
+        "speed": 0,
+        "acceleration": -8.388704984287428e-12,
+        "rotational": true,
+        "independent": true
+      },
+      "pro_sup_l": {
+        "value": 0.14095932515506387,
+        "speed": 0,
+        "acceleration": 1.0729660106408996e-12,
+        "rotational": true,
+        "independent": true
+      },
+      "mtp_angle_r": {
+        "value": -0.00319143259998893,
+        "speed": 0,
+        "acceleration": -4.184880913080902e-11,
+        "rotational": true,
+        "independent": true
+      },
+      "mtp_angle_l": {
+        "value": -0.003288733735760129,
+        "speed": 0,
+        "acceleration": 3.3176293841952825e-11,
+        "rotational": true,
+        "independent": true
+      }
+    },
+    "state_variables": {
+      "/jointset/ground_pelvis/pelvis_tilt/value": -0.060328928552647536,
+      "/jointset/ground_pelvis/pelvis_tilt/speed": 0,
+      "/jointset/ground_pelvis/pelvis_list/value": -0.000357449733436074,
+      "/jointset/ground_pelvis/pelvis_list/speed": 0,
+      "/jointset/ground_pelvis/pelvis_rotation/value": -0.00499040957301078,
+      "/jointset/ground_pelvis/pelvis_rotation/speed": 0,
+      "/jointset/ground_pelvis/pelvis_tx/value": -0.0887812127722417,
+      "/jointset/ground_pelvis/pelvis_tx/speed": 0,
+      "/jointset/ground_pelvis/pelvis_ty/value": 0.9317339881413487,
+      "/jointset/ground_pelvis/pelvis_ty/speed": 0,
+      "/jointset/ground_pelvis/pelvis_tz/value": 0.002398884026479335,
+      "/jointset/ground_pelvis/pelvis_tz/speed": 0,
+      "/jointset/hip_r/hip_flexion_r/value": -0.0686960444382628,
+      "/jointset/hip_r/hip_flexion_r/speed": 0,
+      "/jointset/hip_r/hip_adduction_r/value": 0.10100369927929598,
+      "/jointset/hip_r/hip_adduction_r/speed": 0,
+      "/jointset/hip_r/hip_rotation_r/value": -0.22158416423712246,
+      "/jointset/hip_r/hip_rotation_r/speed": 0,
+      "/jointset/walker_knee_r/knee_angle_r/value": 0.09154271790427701,
+      "/jointset/walker_knee_r/knee_angle_r/speed": 0,
+      "/jointset/patellofemoral_r/knee_angle_r_beta/value": 0.09154271790427701,
+      "/jointset/patellofemoral_r/knee_angle_r_beta/speed": 0,
+      "/jointset/ankle_r/ankle_angle_r/value": -0.5341626021349691,
+      "/jointset/ankle_r/ankle_angle_r/speed": 0,
+      "/jointset/hip_l/hip_flexion_l/value": -0.07947590960102668,
+      "/jointset/hip_l/hip_flexion_l/speed": 0,
+      "/jointset/hip_l/hip_adduction_l/value": 0.11616885898194464,
+      "/jointset/hip_l/hip_adduction_l/speed": 0,
+      "/jointset/hip_l/hip_rotation_l/value": -0.27311131679115147,
+      "/jointset/hip_l/hip_rotation_l/speed": 0,
+      "/jointset/walker_knee_l/knee_angle_l/value": 0.0656733671231762,
+      "/jointset/walker_knee_l/knee_angle_l/speed": 0,
+      "/jointset/patellofemoral_l/knee_angle_l_beta/value": 0.0656733671231762,
+      "/jointset/patellofemoral_l/knee_angle_l_beta/speed": 0,
+      "/jointset/ankle_l/ankle_angle_l/value": -0.5322951119434609,
+      "/jointset/ankle_l/ankle_angle_l/speed": 0,
+      "/jointset/back/lumbar_extension/value": -0.02944327290983009,
+      "/jointset/back/lumbar_extension/speed": 0,
+      "/jointset/back/lumbar_bending/value": -0.09994942100455442,
+      "/jointset/back/lumbar_bending/speed": 0,
+      "/jointset/back/lumbar_rotation/value": -0.018331002774232063,
+      "/jointset/back/lumbar_rotation/speed": 0,
+      "/jointset/acromial_r/arm_flex_r/value": -0.23995339411368327,
+      "/jointset/acromial_r/arm_flex_r/speed": 0,
+      "/jointset/acromial_r/arm_add_r/value": -0.012421948050149748,
+      "/jointset/acromial_r/arm_add_r/speed": 0,
+      "/jointset/acromial_r/arm_rot_r/value": 0.254214871426084,
+      "/jointset/acromial_r/arm_rot_r/speed": 0,
+      "/jointset/elbow_r/elbow_flex_r/value": 1.2468633091661416,
+      "/jointset/elbow_r/elbow_flex_r/speed": 0,
+      "/jointset/radioulnar_r/pro_sup_r/value": 0.14030244515215878,
+      "/jointset/radioulnar_r/pro_sup_r/speed": 0,
+      "/jointset/acromial_l/arm_flex_l/value": -0.251862741552864,
+      "/jointset/acromial_l/arm_flex_l/speed": 0,
+      "/jointset/acromial_l/arm_add_l/value": -0.014845197387871498,
+      "/jointset/acromial_l/arm_add_l/speed": 0,
+      "/jointset/acromial_l/arm_rot_l/value": 0.2537099310632087,
+      "/jointset/acromial_l/arm_rot_l/speed": 0,
+      "/jointset/elbow_l/elbow_flex_l/value": 1.2400010658598286,
+      "/jointset/elbow_l/elbow_flex_l/speed": 0,
+      "/jointset/radioulnar_l/pro_sup_l/value": 0.14095932515506387,
+      "/jointset/radioulnar_l/pro_sup_l/speed": 0,
+      "/jointset/mtp_r/mtp_angle_r/value": -0.00319143259998893,
+      "/jointset/mtp_r/mtp_angle_r/speed": 0,
+      "/jointset/mtp_l/mtp_angle_l/value": -0.003288733735760129,
+      "/jointset/mtp_l/mtp_angle_l/speed": 0,
+      "/forceset/addbrev_r/activation": 0.01,
+      "/forceset/addbrev_r/fiber_length": 0.10457879054444194,
+      "/forceset/addlong_r/activation": 0.07357172151168478,
+      "/forceset/addlong_r/fiber_length": 0.10892789139871788,
+      "/forceset/addmagDist_r/activation": 0.01,
+      "/forceset/addmagDist_r/fiber_length": 0.12584048996805716,
+      "/forceset/addmagIsch_r/activation": 0.01,
+      "/forceset/addmagIsch_r/fiber_length": 0.11443845928014362,
+      "/forceset/addmagMid_r/activation": 0.01,
+      "/forceset/addmagMid_r/fiber_length": 0.09121150396492979,
+      "/forceset/addmagProx_r/activation": 0.01,
+      "/forceset/addmagProx_r/fiber_length": 0.08174252645924264,
+      "/forceset/bflh_r/activation": 0.01,
+      "/forceset/bflh_r/fiber_length": 0.07806980312855301,
+      "/forceset/bfsh_r/activation": 0.01,
+      "/forceset/bfsh_r/fiber_length": 0.12510260332241513,
+      "/forceset/edl_r/activation": 0.01,
+      "/forceset/edl_r/fiber_length": 0.0981587264309101,
+      "/forceset/ehl_r/activation": 0.01,
+      "/forceset/ehl_r/fiber_length": 0.10989683376961641,
+      "/forceset/fdl_r/activation": 0.01,
+      "/forceset/fdl_r/fiber_length": 0.04570899018081339,
+      "/forceset/fhl_r/activation": 0.01,
+      "/forceset/fhl_r/fiber_length": 0.04923383770717939,
+      "/forceset/gaslat_r/activation": 0.01,
+      "/forceset/gaslat_r/fiber_length": 0.058799627206094975,
+      "/forceset/gasmed_r/activation": 0.01,
+      "/forceset/gasmed_r/fiber_length": 0.04697757859250185,
+      "/forceset/glmax1_r/activation": 0.01,
+      "/forceset/glmax1_r/fiber_length": 0.11950390630964441,
+      "/forceset/glmax2_r/activation": 0.010989685475309964,
+      "/forceset/glmax2_r/fiber_length": 0.12357806902338717,
+      "/forceset/glmax3_r/activation": 0.09315698538349458,
+      "/forceset/glmax3_r/fiber_length": 0.1247312733642724,
+      "/forceset/glmed1_r/activation": 0.0854536322941009,
+      "/forceset/glmed1_r/fiber_length": 0.08417769031312491,
+      "/forceset/glmed2_r/activation": 0.010847895589376622,
+      "/forceset/glmed2_r/fiber_length": 0.0905835372910286,
+      "/forceset/glmed3_r/activation": 0.01,
+      "/forceset/glmed3_r/fiber_length": 0.07901645337999987,
+      "/forceset/glmin1_r/activation": 0.14497993165249085,
+      "/forceset/glmin1_r/fiber_length": 0.09586159568910414,
+      "/forceset/glmin2_r/activation": 0.01,
+      "/forceset/glmin2_r/fiber_length": 0.08131727426881949,
+      "/forceset/glmin3_r/activation": 0.01,
+      "/forceset/glmin3_r/fiber_length": 0.03868349465576556,
+      "/forceset/grac_r/activation": 0.01,
+      "/forceset/grac_r/fiber_length": 0.25948391165929047,
+      "/forceset/iliacus_r/activation": 0.15324353606393462,
+      "/forceset/iliacus_r/fiber_length": 0.1302818505820602,
+      "/forceset/perbrev_r/activation": 0.01,
+      "/forceset/perbrev_r/fiber_length": 0.051939415191330655,
+      "/forceset/perlong_r/activation": 0.01,
+      "/forceset/perlong_r/fiber_length": 0.05797499036474741,
+      "/forceset/piri_r/activation": 0.012632715470702856,
+      "/forceset/piri_r/fiber_length": 0.020413679821218635,
+      "/forceset/psoas_r/activation": 0.01,
+      "/forceset/psoas_r/fiber_length": 0.14616209001330147,
+      "/forceset/recfem_r/activation": 0.0657873462392892,
+      "/forceset/recfem_r/fiber_length": 0.06948155472651803,
+      "/forceset/sart_r/activation": 0.01,
+      "/forceset/sart_r/fiber_length": 0.4753621466986886,
+      "/forceset/semimem_r/activation": 0.1583843090668003,
+      "/forceset/semimem_r/fiber_length": 0.06806112842787973,
+      "/forceset/semiten_r/activation": 0.01,
+      "/forceset/semiten_r/fiber_length": 0.20246701689828162,
+      "/forceset/soleus_r/activation": 0.01,
+      "/forceset/soleus_r/fiber_length": 0.027895818663709465,
+      "/forceset/tfl_r/activation": 0.01,
+      "/forceset/tfl_r/fiber_length": 0.10817311044742713,
+      "/forceset/tibant_r/activation": 0.01,
+      "/forceset/tibant_r/fiber_length": 0.09945022310291367,
+      "/forceset/tibpost_r/activation": 0.01,
+      "/forceset/tibpost_r/fiber_length": 0.03844303136106503,
+      "/forceset/vasint_r/activation": 0.01,
+      "/forceset/vasint_r/fiber_length": 0.08282803402125566,
+      "/forceset/vaslat_r/activation": 0.01,
+      "/forceset/vaslat_r/fiber_length": 0.08511824299580341,
+      "/forceset/vasmed_r/activation": 0.01,
+      "/forceset/vasmed_r/fiber_length": 0.08163535755798743,
+      "/forceset/addbrev_l/activation": 0.01,
+      "/forceset/addbrev_l/fiber_length": 0.10428883494339165,
+      "/forceset/addlong_l/activation": 0.17380896302485702,
+      "/forceset/addlong_l/fiber_length": 0.107956529044887,
+      "/forceset/addmagDist_l/activation": 0.01,
+      "/forceset/addmagDist_l/fiber_length": 0.12492031296021712,
+      "/forceset/addmagIsch_l/activation": 0.01,
+      "/forceset/addmagIsch_l/fiber_length": 0.11378654424110674,
+      "/forceset/addmagMid_l/activation": 0.01,
+      "/forceset/addmagMid_l/fiber_length": 0.09012169286153315,
+      "/forceset/addmagProx_l/activation": 0.01,
+      "/forceset/addmagProx_l/fiber_length": 0.08093484635829035,
+      "/forceset/bflh_l/activation": 0.01,
+      "/forceset/bflh_l/fiber_length": 0.07780321405063506,
+      "/forceset/bfsh_l/activation": 0.01,
+      "/forceset/bfsh_l/fiber_length": 0.12571612046746683,
+      "/forceset/edl_l/activation": 0.01,
+      "/forceset/edl_l/fiber_length": 0.09812808692838149,
+      "/forceset/ehl_l/activation": 0.01,
+      "/forceset/ehl_l/fiber_length": 0.10985832410284306,
+      "/forceset/fdl_l/activation": 0.01,
+      "/forceset/fdl_l/fiber_length": 0.04575639429876853,
+      "/forceset/fhl_l/activation": 0.01,
+      "/forceset/fhl_l/fiber_length": 0.049297405597896186,
+      "/forceset/gaslat_l/activation": 0.01,
+      "/forceset/gaslat_l/fiber_length": 0.0601407068062061,
+      "/forceset/gasmed_l/activation": 0.01,
+      "/forceset/gasmed_l/fiber_length": 0.04742883186554118,
+      "/forceset/glmax1_l/activation": 0.01,
+      "/forceset/glmax1_l/fiber_length": 0.11835573919152176,
+      "/forceset/glmax2_l/activation": 0.051490175642900364,
+      "/forceset/glmax2_l/fiber_length": 0.12225850254053636,
+      "/forceset/glmax3_l/activation": 0.08191031381291737,
+      "/forceset/glmax3_l/fiber_length": 0.12272595928761942,
+      "/forceset/glmed1_l/activation": 0.16956438597211781,
+      "/forceset/glmed1_l/fiber_length": 0.08463086564155962,
+      "/forceset/glmed2_l/activation": 0.04505678905031779,
+      "/forceset/glmed2_l/fiber_length": 0.08970909709840104,
+      "/forceset/glmed3_l/activation": 0.01,
+      "/forceset/glmed3_l/fiber_length": 0.07781972264631093,
+      "/forceset/glmin1_l/activation": 0.1372382217141051,
+      "/forceset/glmin1_l/fiber_length": 0.09732603212703708,
+      "/forceset/glmin2_l/activation": 0.01,
+      "/forceset/glmin2_l/fiber_length": 0.08169090494421714,
+      "/forceset/glmin3_l/activation": 0.01,
+      "/forceset/glmin3_l/fiber_length": 0.0382011513841171,
+      "/forceset/grac_l/activation": 0.01,
+      "/forceset/grac_l/fiber_length": 0.2594210525085302,
+      "/forceset/iliacus_l/activation": 0.09958955738197699,
+      "/forceset/iliacus_l/fiber_length": 0.13182493571976991,
+      "/forceset/perbrev_l/activation": 0.01,
+      "/forceset/perbrev_l/fiber_length": 0.05198469841526098,
+      "/forceset/perlong_l/activation": 0.01,
+      "/forceset/perlong_l/fiber_length": 0.05803171351421917,
+      "/forceset/piri_l/activation": 0.016563276695281383,
+      "/forceset/piri_l/fiber_length": 0.018853142452257027,
+      "/forceset/psoas_l/activation": 0.01,
+      "/forceset/psoas_l/fiber_length": 0.14664070773533663,
+      "/forceset/recfem_l/activation": 0.05663874002331905,
+      "/forceset/recfem_l/fiber_length": 0.069178516003616,
+      "/forceset/sart_l/activation": 0.01,
+      "/forceset/sart_l/fiber_length": 0.4760331525194982,
+      "/forceset/semimem_l/activation": 0.14716640545684082,
+      "/forceset/semimem_l/fiber_length": 0.06878164693507918,
+      "/forceset/semiten_l/activation": 0.01,
+      "/forceset/semiten_l/fiber_length": 0.2028570798359778,
+      "/forceset/soleus_l/activation": 0.01,
+      "/forceset/soleus_l/fiber_length": 0.027986238901740526,
+      "/forceset/tfl_l/activation": 0.01,
+      "/forceset/tfl_l/fiber_length": 0.10922251899778294,
+      "/forceset/tibant_l/activation": 0.01,
+      "/forceset/tibant_l/fiber_length": 0.09941541650366,
+      "/forceset/tibpost_l/activation": 0.01,
+      "/forceset/tibpost_l/fiber_length": 0.038492194867137515,
+      "/forceset/vasint_l/activation": 0.01,
+      "/forceset/vasint_l/fiber_length": 0.08165982158530176,
+      "/forceset/vaslat_l/activation": 0.01,
+      "/forceset/vaslat_l/fiber_length": 0.08411542425811794,
+      "/forceset/vasmed_l/activation": 0.01,
+      "/forceset/vasmed_l/fiber_length": 0.08070051199136544,
+      "/forceset/arm26_TRIlong_r/activation": 0.05,
+      "/forceset/arm26_TRIlong_r/fiber_length": 0.17207977438792266,
+      "/forceset/arm26_TRIlat_r/activation": 0.05,
+      "/forceset/arm26_TRIlat_r/fiber_length": 0.10687367064417658,
+      "/forceset/arm26_TRImed_r/activation": 0.05,
+      "/forceset/arm26_TRImed_r/fiber_length": 0.10135810574738667,
+      "/forceset/arm26_BIClong_r/activation": 0.05,
+      "/forceset/arm26_BIClong_r/fiber_length": 0.13373635291990338,
+      "/forceset/arm26_BICshort_r/activation": 0.05,
+      "/forceset/arm26_BICshort_r/fiber_length": 0.131744770111509,
+      "/forceset/arm26_BRA_r/activation": 0.05,
+      "/forceset/arm26_BRA_r/fiber_length": 0.08334247911230164,
+      "/forceset/arm26_TRIlong_l/activation": 0.05,
+      "/forceset/arm26_TRIlong_l/fiber_length": 0.1715870660081365,
+      "/forceset/arm26_TRIlat_l/activation": 0.05,
+      "/forceset/arm26_TRIlat_l/fiber_length": 0.10673185863792554,
+      "/forceset/arm26_TRImed_l/activation": 0.05,
+      "/forceset/arm26_TRImed_l/fiber_length": 0.10121663838401941,
+      "/forceset/arm26_BIClong_l/activation": 0.05,
+      "/forceset/arm26_BIClong_l/fiber_length": 0.13429580074350797,
+      "/forceset/arm26_BICshort_l/activation": 0.05,
+      "/forceset/arm26_BICshort_l/fiber_length": 0.13244926522554673,
+      "/forceset/arm26_BRA_l/activation": 0.05,
+      "/forceset/arm26_BRA_l/fiber_length": 0.08348795830755056,
+      "/forceset/gait2392_ercspn_r/activation": 0.07375930287466642,
+      "/forceset/gait2392_ercspn_r/fiber_length": 0.12439885209591252,
+      "/forceset/gait2392_intobl_r/activation": 0.038621328118723965,
+      "/forceset/gait2392_intobl_r/fiber_length": 0.10525967256286971,
+      "/forceset/gait2392_extobl_r/activation": 0.020142194744924236,
+      "/forceset/gait2392_extobl_r/fiber_length": 0.13732114181795518,
+      "/forceset/gait2392_ercspn_l/activation": 0.0835640753353586,
+      "/forceset/gait2392_ercspn_l/fiber_length": 0.11644915386979873,
+      "/forceset/gait2392_intobl_l/activation": 0.01972017523021509,
+      "/forceset/gait2392_intobl_l/fiber_length": 0.08809235093600985,
+      "/forceset/gait2392_extobl_l/activation": 0.03894921161919505,
+      "/forceset/gait2392_extobl_l/fiber_length": 0.12403723620832514
+    },
+    "mass_kg": 77.6122029,
+    "gravity_m_s2": [
+      -9.81,
+      0,
+      0
+    ],
+    "com_acceleration_m_s2": [
+      -4.929894552581474e-13,
+      -7.272512867200718e-16,
+      -5.177726731250195e-17
+    ],
+    "kinetic_energy_j": 0,
+    "contacts": [
+      {
+        "name": "surface_calcn_l",
+        "force_n": [
+          13.15601311250046,
+          0,
+          0
+        ],
+        "penetration_m": 0.0013002872868487167
+      },
+      {
+        "name": "surface_calcn_r",
+        "force_n": [
+          13.180330951324736,
+          0,
+          0
+        ],
+        "penetration_m": 0.0013069788932326236
+      },
+      {
+        "name": "surface_femur_l",
+        "force_n": [
+          23.530642445631564,
+          0,
+          0
+        ],
+        "penetration_m": 0.0012189485222614334
+      },
+      {
+        "name": "surface_femur_r",
+        "force_n": [
+          18.613917316962155,
+          0,
+          0
+        ],
+        "penetration_m": 0.0012087197540901502
+      },
+      {
+        "name": "surface_hand_l",
+        "force_n": [
+          0,
+          0,
+          0
+        ],
+        "penetration_m": 0
+      },
+      {
+        "name": "surface_hand_r",
+        "force_n": [
+          0,
+          0,
+          0
+        ],
+        "penetration_m": 0
+      },
+      {
+        "name": "surface_humerus_l",
+        "force_n": [
+          31.767803414061923,
+          0,
+          0
+        ],
+        "penetration_m": 0.001292582703719423
+      },
+      {
+        "name": "surface_humerus_r",
+        "force_n": [
+          32.963662201647004,
+          0,
+          0
+        ],
+        "penetration_m": 0.0012995315395876994
+      },
+      {
+        "name": "surface_pelvis",
+        "force_n": [
+          132.14924021134038,
+          0,
+          0
+        ],
+        "penetration_m": 0.0012883457418596997
+      },
+      {
+        "name": "surface_radius_l",
+        "force_n": [
+          0.10932110299286481,
+          0,
+          0
+        ],
+        "penetration_m": 0.0009256699742585372
+      },
+      {
+        "name": "surface_radius_r",
+        "force_n": [
+          0.13003990500409546,
+          0,
+          0
+        ],
+        "penetration_m": 0.0009707202017218185
+      },
+      {
+        "name": "surface_talus_l",
+        "force_n": [
+          0.013030119079046835,
+          0,
+          0
+        ],
+        "penetration_m": 9.799409737488714e-05
+      },
+      {
+        "name": "surface_talus_r",
+        "force_n": [
+          0,
+          0,
+          0
+        ],
+        "penetration_m": 0
+      },
+      {
+        "name": "surface_tibia_l",
+        "force_n": [
+          81.92525114474736,
+          0,
+          0
+        ],
+        "penetration_m": 0.001303496454784927
+      },
+      {
+        "name": "surface_tibia_r",
+        "force_n": [
+          80.13387514566331,
+          0,
+          0
+        ],
+        "penetration_m": 0.0012910407340085256
+      },
+      {
+        "name": "surface_toes_l",
+        "force_n": [
+          0.3419635649601402,
+          0,
+          0
+        ],
+        "penetration_m": 0.0011097059696974138
+      },
+      {
+        "name": "surface_toes_r",
+        "force_n": [
+          0.3046654523689905,
+          0,
+          0
+        ],
+        "penetration_m": 0.0010140843875159078
+      },
+      {
+        "name": "surface_torso",
+        "force_n": [
+          300.10268960849174,
+          0,
+          0
+        ],
+        "penetration_m": 0.001298283394674018
+      },
+      {
+        "name": "surface_ulna_l",
+        "force_n": [
+          16.750841334684885,
+          0,
+          0
+        ],
+        "penetration_m": 0.001455669271063694
+      },
+      {
+        "name": "surface_ulna_r",
+        "force_n": [
+          16.202423417501027,
+          0,
+          0
+        ],
+        "penetration_m": 0.001454994632827403
+      }
+    ],
+    "contact_force_n": [
+      761.3757104489601,
+      0,
+      0
+    ],
+    "maximum_penetration_m": 0.001455669271063694,
+    "surface_foundation": {
+      "elastic_energy_j": 16.831157994080787,
+      "skin_elastic_energy_j": 0.39876686510194986,
+      "bed_elastic_energy_j": 16.4323911289788,
+      "maximum_bed_indentation_m": 0.08064326835668026,
+      "maximum_total_approach_m": 0.08209893762774395,
+      "bed_force_n": [
+        -761.3757104489601,
+        0,
+        0
+      ],
+      "bed_moment_about_source_origin_nm": [
+        0,
+        7.583346849050962,
+        710.6443079149444
+      ]
+    },
+    "accepted_equilibrium": false,
+    "scope": "Static candidate only; requires sustained forward verification and explicit new reference initialization"
+  },
+  "source_model_sha256": "7f6c40224fbc43359d6b2997efeb499c5ffe4d19c786d37b849312efd20d2114",
+  "registration_path": "data/models/engineering_supported_rest_v1/registration.json"
+}
