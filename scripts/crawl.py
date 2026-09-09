@@ -763,6 +763,19 @@ def write_best(params, horizon, destination):
     }
     (destination / 'trajectory.json').write_text(json.dumps(trajectory) + '\n')
     report['frames'] = len(frames)
+    # Per-coordinate audit against the model's own declared ranges, so the claim
+    # that this motion stays inside them is checkable without rerunning anything.
+    ranges = declared_ranges()
+    audit = []
+    for name, (lo, hi) in sorted(ranges.items()):
+        values = [f['joints'][name]['value'] for f in frames if name in f['joints']]
+        if not values:
+            continue
+        audit.append({'coordinate': name, 'declared_rad': [lo, hi],
+                      'spanned_rad': [min(values), max(values)],
+                      'past_declared_rad': max(lo - min(values), max(values) - hi, 0.0)})
+    audit.sort(key=lambda r: -r['past_declared_rad'])
+    report['declared_range_audit'] = audit
     report['trajectory_path'] = str((destination / 'trajectory.json').relative_to(ROOT))
     (destination / 'report.json').write_text(json.dumps(report, indent=2) + '\n')
     shutil.rmtree(work, ignore_errors=True)
