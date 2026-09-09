@@ -20,6 +20,12 @@ executable research assembly, not a complete or independently validated digital
 twin.** Mechanical and neural feedback into native physiology, articulated motion,
 whole-body voltage coupling and calibrated tissue-resolved drainage remain open.
 
+The live embodied body currently advances about one second before its mechanical
+integrator stops. Before working on that runtime, read the
+[embodied runtime handoff](docs/HANDOFF_EMBODIED_RUNTIME.md): it records the
+metabolic exchange coupling, the two open failures with their measurements, and
+the operational constraints that otherwise cost an hour to rediscover.
+
 The anatomy viewer preserves full source surface topology: 6,681,030 triangles
 from BodyParts3D and 8,111,194 from Z-Anatomy, with source frames and overlapping
 ancestry retained separately. [Anatomical grouping](docs/ANATOMY_COVERAGE.md) now
