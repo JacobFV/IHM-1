@@ -447,7 +447,8 @@ def run_gates(root, entities, scaled, by_id, scaled_by_id, binding, scaled_bindi
     #    draft of this gate did it anyway and failed at s = 1.0 by 0.155%,
     #    which was the shell, not the scaling. They get their own gate below.
     CLOSED = 'absolute signed surface integral'
-    base_area_error, scaled_area_error, volume_error = 0.0, 0.0, 0.0
+    base_area_error, scaled_area_error = 0.0, 0.0
+    volume_shift, volume_agreement = 0.0, []
     checked, volumes = 0, 0
     for entity in sample:
         path = geometry / ('%s.json.gz' % entity['id'])
@@ -462,7 +463,19 @@ def run_gates(root, entities, scaled, by_id, scaled_by_id, binding, scaled_bindi
         if entity.get('volume_m3') and (entity.get('volume_method') or '').startswith(CLOSED):
             record_volume = scaled_by_id[entity['id']]['volume_m3']
             if abs(record_volume) > 1e-12:
-                volume_error = max(volume_error, abs(abs(volume_s) / abs(record_volume) - 1.0))
+                # RATIO, not agreement. One entity -- the right external
+                # intercostals -- disagrees with its own record by 0.155%
+                # before any scaling, and its volume_method says why: edge
+                # incidence closed, SELF-INTERSECTION NOT CERTIFIED, so the
+                # divergence integral double-counts where the surface passes
+                # through itself. Demanding agreement would fail at s = 1.0 on
+                # a defect in the mesh; demanding that the ratio not MOVE tests
+                # the exponent and nothing else, which is the same shape as the
+                # mechanical scaler's polyline gate and for the same reason.
+                r0 = abs(volume_1) / abs(entity['volume_m3'])
+                r1 = abs(volume_s) / abs(record_volume)
+                volume_shift = max(volume_shift, abs(r1 / r0 - 1.0))
+                volume_agreement.append(r0)
                 volumes += 1
         checked += 1
     record('recorded area agrees with the mesh it points at', base_area_error, 1e-9,
@@ -475,11 +488,20 @@ def run_gates(root, entities, scaled, by_id, scaled_by_id, binding, scaled_bindi
            'coordinates, from the gzipped mesh files, against surface_area_m2 '
            'times s**%g. Give area the length exponent by mistake and these '
            'differ by exactly s.' % bs.exponent('area'), entities=checked)
-    record('volume integrated over SCALED triangles matches the scaled record',
-           volume_error, 1e-9,
-           'the same arm on the divergence-theorem volume, exponent s**%g, over '
-           'the entities whose recorded volume is itself a closed-surface integral'
-           % bs.exponent('volume'), entities=volumes)
+    record('mesh volume over recorded volume does not move under scaling',
+           volume_shift, 1e-9,
+           'the same independent arm on the divergence-theorem volume, exponent '
+           's**%g. Stated as a ratio that must not move rather than an agreement '
+           'that must hold, because the two representations already disagree by '
+           'up to %.3f%% on a mesh whose own volume_method says self-intersection '
+           'is not certified. Scale the record by anything other than s**%g and '
+           'this ratio moves by that discrepancy.'
+           % (bs.exponent('volume'),
+              100 * max((abs(1 - r) for r in volume_agreement), default=0.0),
+              bs.exponent('volume')),
+           entities=volumes,
+           base_agreement_min=min(volume_agreement, default=None),
+           base_agreement_max=max(volume_agreement, default=None))
 
     # 4b. The open shells. Their volume is an area times a thickness, and that
     #     identity has to survive scaling -- which it does only if area really
@@ -493,7 +515,7 @@ def run_gates(root, entities, scaled, by_id, scaled_by_id, binding, scaled_bindi
         support = entity.get('physical_surface_support')
         if not shell or not support or not entity.get('volume_m3'):
             continue
-        implied = support['raw_source_area_m2'] * shell['thickness_m']
+        implied = support['area_m2'] * shell['thickness_m']
         worst = max(worst, abs(implied / entity['volume_m3'] - 1.0))
         shells += 1
     record('open-shell volume is still area times thickness after scaling',
@@ -563,7 +585,21 @@ def main():
     parser.add_argument('--output', default=None)
     parser.add_argument('--mesh-sample', type=int, default=200,
                         help='entities whose triangles the independent gate walks')
+    parser.add_argument('--sabotage', choices=('area-as-length', 'volume-as-area',
+                                               'thickness-unscaled'), default=None,
+                        help=('deliberately break one exponent and report which '
+                              'gates notice. A gate suite nobody has watched fail '
+                              'is a gate suite nobody has tested.'))
     args = parser.parse_args()
+
+    if args.sabotage == 'area-as-length':
+        ENTITY_FIELDS['surface_area_m2'] = 'length'
+        ENTITY_FIELDS['physical_surface_support.area_m2'] = 'length'
+        ENTITY_FIELDS['physical_surface_support.raw_source_area_m2'] = 'length'
+    elif args.sabotage == 'volume-as-area':
+        ENTITY_FIELDS['volume_m3'] = 'area'
+    elif args.sabotage == 'thickness-unscaled':
+        del ENTITY_FIELDS['shell.thickness_m']
 
     stature = args.stature_m if args.stature_m is not None else args.scale * MECHANICAL_STATURE_M
     scale = resolve({'stature_m': stature})['derived']['stature_scale']
