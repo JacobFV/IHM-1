@@ -678,8 +678,13 @@ def overlay(rb, image, width, height, title, binding, rows, drawn, kept_area,
     bound = sum(1 for r in rows.values() if r["segment"])
     fit = binding["registration"]
     lines = [
-        f"t = {t:6.2f} s   phase {frame.get('phase','-')}   "
-        f"swing {frame.get('swing_side','-')}",
+        f"t = {t:6.2f} s   " + "   ".join(
+            f"{name} {value:.2f}" if isinstance(value, (int, float))
+            else f"{name} {value}"
+            for name, value in (("phase", frame.get("phase")),
+                                ("swing", frame.get("swing_side")),
+                                ("fallen", frame.get("fallen")))
+            if value is not None),
         (f"{drawn} anatomical surfaces drawn of {bound} bound "
          f"({kept_area/max(total_area,1e-9)*100:.0f}% of the selected surface "
          f"area)" if drawn else "skin surface only; the other "
