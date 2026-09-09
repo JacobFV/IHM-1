@@ -33,9 +33,11 @@ from scipy.sparse.linalg import splu
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
+from ihm.assembly.garment_remesh import quality, remesh, split_components  # noqa: E402
 from ihm.assembly.garment_wardrobe import (  # noqa: E402
     CATALOGUE, SOURCE_UNITS_PER_M, boundary_edge_count, compact, edge_table, face_components,
-    keep_components, load_envelope, load_obj, mesh_area_m2, orient_outward, sha256_file, weld)
+    intersection_report, keep_components, load_envelope, load_obj, mesh_area_m2, orient_outward,
+    sha256_file, slot_model, weld)
 
 ENVELOPE = ROOT / 'data/derived/outer-envelope/outer-envelope.npz'
 RAW = ROOT / 'data/raw/clothing/makehuman'
@@ -63,6 +65,50 @@ ATTRACT_RANGE = {
     'drape': lambda standoff: max(DRAPE_ATTRACT_RANGE_FLOOR_M, DRAPE_ATTRACT_RANGE_MULTIPLE * standoff),
     'shell': lambda standoff: max(SHELL_ATTRACT_RANGE_FLOOR_M, SHELL_ATTRACT_RANGE_MULTIPLE * standoff),
 }
+# Two garments only have a layering relation where they are close enough to be
+# in contact. Beyond this range an outer hem hanging free of the inner garment
+# would otherwise be scored as generous clearance it does not actually provide.
+# The acquired meshes are far too coarse to be fitted: at a 76 mm median edge a
+# single triangle spans a whole limb, so it passes through the body between its
+# own corners and the shrinkwrap has no vertices to distribute strain across.
+# Every garment is therefore resampled to one uniform edge length first. 10 mm
+# puts roughly twenty-five segments around a forearm and is a little finer than
+# the 8 mm contact faces of the body it has to be measured against.
+# The shape term of the shrinkwrap is a graph-Laplacian energy, and a graph
+# Laplacian is not resolution-invariant: on a surface sampled at edge length h,
+# (L x) scales like h^2, so the shape energy scales like h^4 against a fit term
+# that is a plain positional penalty. Resampling a garment therefore silently
+# changes the balance the FIT_MODES weights were chosen for, and the fit stops
+# distributing strain and starts pulling single vertices onto the standoff
+# shell. So each garment's declared weight is restated for its new resolution
+# against its own authored edge length, which makes the resample a change of
+# resolution only and leaves every garment the character it was fitted with.
+#
+# Measured, holding everything else fixed:
+#
+#   t-shirt      conform  25.2 -> 8.2 mm  factor  89
+#                edge ratio p99 2.88 -> 5.17 unscaled -> 2.77 scaled
+#                standoff p50 4.00 -> 4.4 mm, body-penetration rate 0.69% -> 0.22%
+#   casual-shirt drape    34.0 -> 8.5 mm  factor 256
+#                edge ratio p99 2.28 -> 2.26 unscaled -> 1.62 scaled
+#                standoff p50 24.90 -> 25.09 mm, penetration rate 0.54% -> 0.06%
+#
+# The standoff medians are the check that matters: a drape garment carries real
+# ease, and at the unscaled weight the casual shirt collapsed onto the body
+# (24.90 -> 6.98 mm) even though its edge-ratio numbers looked fine.
+REGULARISATION_RESOLUTION_EXPONENT = 4.0
+REMESH_TARGET_EDGE_M = 0.010
+REMESH_PASSES = 10
+# A component has to be big enough for a uniform target-edge sampling to mean
+# anything. The polo shirt carries two closed boxes 13 mm across, smaller than
+# two target edges: there is no resampling of those to do, and attempting it
+# collapses them out of the garment. So a component is resampled only if it
+# spans several target edges and holds more than a couple of target triangles,
+# and anything else is carried through exactly as authored.
+MIN_RESAMPLED_COMPONENT_TRIANGLES = 2.0
+MIN_RESAMPLED_COMPONENT_EXTENT_EDGES = 6.0
+LAYER_MEETING_RANGE_M = 0.060
+LAYER_MEETING_MIN_VERTICES = 10
 SHRINKWRAP_ITERATIONS = 18
 # A sample deeper than this is a long edge or face cutting a concave corner, not
 # the body emerging through the cloth. Moving its vertices cannot fix it and
@@ -93,6 +139,112 @@ def load_obj_group(path, group):
 def surface_distance(points, envelope_v, envelope_f):
     squared, index, closest = igl.point_mesh_squared_distance(np.ascontiguousarray(points), envelope_v, envelope_f)
     return np.sqrt(np.maximum(squared, 0.0)), index, closest
+
+
+def surface_projectors(positions, triangles):
+    """Closest-point maps onto a mesh and onto its own boundary polyline.
+
+    Remeshing needs both. Interior samples go back onto the surface, so the
+    resampled garment is the authored one at a different resolution rather than
+    a smoothed approximation of it; boundary samples go back onto the boundary
+    curve, so a hem, a neckline and an armhole keep the outline they were drawn
+    with instead of being rounded off by the relaxation.
+    """
+    positions = np.ascontiguousarray(positions)
+    triangles = np.ascontiguousarray(triangles)
+    edges = np.sort(np.concatenate([triangles[:, [0, 1]], triangles[:, [1, 2]], triangles[:, [2, 0]]]), axis=1)
+    unique, count = np.unique(edges, axis=0, return_counts=True)
+    border = np.ascontiguousarray(unique[count == 1])
+
+    def onto_surface(points):
+        _, _, closest = igl.point_mesh_squared_distance(np.ascontiguousarray(points), positions, triangles)
+        return closest
+
+    def onto_boundary(points):
+        _, _, closest = igl.point_mesh_squared_distance(np.ascontiguousarray(points), positions, border)
+        return closest
+
+    return onto_surface, (onto_boundary if len(border) else None)
+
+
+def resample(positions, triangles, target_edge_m, passes=REMESH_PASSES):
+    """Isotropic remesh of one garment onto its own surface, with a receipt.
+
+    Component by component, because several garments are not one sheet: the polo
+    shirt is five, three of them scraps of eight vertices. Resampled together, a
+    scrap is collapsed away or absorbed by its neighbour and the garment quietly
+    loses a piece. Resampled apart, each piece is projected onto its own surface
+    and its own boundary, and a piece with less area than a couple of target
+    triangles is carried through untouched rather than destroyed, since there is
+    no resampling of it to do.
+    """
+    floor = MIN_RESAMPLED_COMPONENT_TRIANGLES * (3.0 ** 0.5 / 4.0) * target_edge_m ** 2
+    reach = MIN_RESAMPLED_COMPONENT_EXTENT_EDGES * target_edge_m
+    report = {'before': quality(positions, triangles), 'components': []}
+    pieces, histories = [], []
+    for index, (piece_v, piece_f) in enumerate(split_components(positions, triangles)):
+        piece_area = mesh_area_m2(piece_v, piece_f)
+        extent = float(np.linalg.norm(piece_v.max(0) - piece_v.min(0)))
+        row = {'component': index, 'faces': int(len(piece_f)), 'area_m2': piece_area,
+               'extent_mm': extent * 1e3}
+        if piece_area < floor or extent < reach:
+            row.update({'resampled': False,
+                        'reason': f'spans {extent * 1e3:.1f} mm and holds {piece_area / (floor / 2):.1f} target '
+                                  f'triangles; below {reach * 1e3:.0f} mm or '
+                                  f'{MIN_RESAMPLED_COMPONENT_TRIANGLES:.0f} triangles there is no resampling to do'})
+            report['components'].append(row)
+            pieces.append((piece_v, piece_f))
+            continue
+        onto_surface, onto_boundary = surface_projectors(piece_v, piece_f)
+        piece_report = {}
+        try:
+            new_v, new_f = remesh(piece_v, piece_f, target_edge_m, passes=passes,
+                                  project=onto_surface, project_boundary=onto_boundary, report=piece_report)
+        except ValueError as failure:
+            # Carried, not dropped, and the refusal is recorded rather than
+            # swallowed: a component the resampler will not accept is still part
+            # of the garment and must reach the fit as authored.
+            row.update({'resampled': False, 'reason': f'resampler refused it: {failure}'})
+            report['components'].append(row)
+            pieces.append((piece_v, piece_f))
+            continue
+        row.update({'resampled': True, 'faces_after': int(len(new_f)),
+                    'boundary_edges_before': piece_report['boundary_edges_before'],
+                    'boundary_edges_after': piece_report['boundary_edges_after']})
+        report['components'].append(row)
+        histories.append(piece_report['history'])
+        pieces.append((new_v, new_f))
+    offset = 0
+    stacked_v, stacked_f = [], []
+    for piece_v, piece_f in pieces:
+        stacked_v.append(piece_v)
+        stacked_f.append(piece_f + offset)
+        offset += len(piece_v)
+    resampled = np.vstack(stacked_v)
+    faces = np.vstack(stacked_f)
+    if face_components(len(resampled), faces)[0] != face_components(len(positions), triangles)[0]:
+        raise ValueError('resample changed the number of surface components')
+    report['history'] = histories
+    report['passes'] = passes
+    report['target_edge_mm'] = target_edge_m * 1e3
+    report['source_vertices'] = int(len(positions))
+    report['source_faces'] = int(len(triangles))
+    report['vertices'] = int(len(resampled))
+    report['faces'] = int(len(faces))
+    report['boundary_edges_before'] = boundary_edge_count(triangles)[0]
+    report['boundary_edges_after'] = boundary_edge_count(faces)[0]
+    report['after'] = quality(resampled, faces)
+    deviation, _, _ = igl.point_mesh_squared_distance(
+        np.ascontiguousarray(resampled), np.ascontiguousarray(positions), np.ascontiguousarray(triangles))
+    before_area = mesh_area_m2(positions, triangles)
+    after_area = mesh_area_m2(resampled, faces)
+    report['max_deviation_from_source_mm'] = float(np.sqrt(max(0.0, deviation.max())) * 1e3)
+    report['area_m2_before'] = before_area
+    report['area_m2_after'] = after_area
+    report['area_change_percent'] = float(100.0 * (after_area - before_area) / before_area)
+    report['area_note'] = ('every resampled vertex lies on the source surface, so the only area the resample can '
+                           'lose is the ridge of a crease that a new triangle bridges as a chord')
+    return resampled, faces, report
 
 
 def fit_similarity(source, envelope_v, envelope_f, trunk_halfwidth_m=0.16, min_trunk_points=500):
@@ -438,6 +590,24 @@ def seat_extremity(positions, triangles, kind, standoff, envelope_v, envelope_f,
     return seated, report
 
 
+def median_edge_m(positions, triangles):
+    edges = edge_table(triangles)
+    return float(np.median(np.linalg.norm(positions[edges[:, 0]] - positions[edges[:, 1]], axis=1)))
+
+
+def resolution_scaled_regularisation(declared, authored_edge_m, fitted_edge_m):
+    """The declared shape weight, restated for the resolution actually fitted.
+
+    Both edge lengths are measured on the posed garment, so the ratio is a pure
+    resampling ratio and carries none of the similarity or limb scaling. With no
+    resample the two are the same mesh and the factor is exactly one.
+    """
+    if authored_edge_m <= 0 or fitted_edge_m <= 0:
+        raise ValueError('degenerate mesh: median edge length is zero')
+    factor = (authored_edge_m / fitted_edge_m) ** REGULARISATION_RESOLUTION_EXPONENT
+    return declared * factor, factor
+
+
 def uniform_laplacian(vertex_count, triangles):
     """Row-normalised graph Laplacian. Dimensionally commensurate with position,
     so one dimensionless weight balances shape against fit."""
@@ -614,15 +784,27 @@ def measure(fitted, start, triangles, envelope_v, envelope_f):
     }
 
 
-def penetration_check(ids):
-    """Interior-vertex check on the post-simulation garment states."""
+def penetration_check(ids, stage='simulated'):
+    """Audit of the garment states, after the cloth run or straight off the fit.
+
+    A vertex-only interior test is not a no-penetration result: three corners
+    can stand off the skin while the triangle between them passes through a
+    limb, and the coarser the garment the more of it a single triangle spans.
+    So the body test is stated on face centroids and edge midpoints as well,
+    the same stencils the shrinkwrap is constrained on, and the garment is
+    additionally tested against itself. Both are reported per garment; the
+    between-garment test is `layering_check`.
+    """
     envelope_v, envelope_f, _, _ = load_envelope(ENVELOPE)
     out = {}
     for name in ids:
-        data = np.load(OUT.parent / 'simulated' / f'{name}.npz', allow_pickle=False)
+        data = np.load(OUT.parent / stage / f'{name}.npz', allow_pickle=False)
         x = np.ascontiguousarray(np.asarray(data['positions'], float))
+        triangles = np.ascontiguousarray(np.asarray(data['indices'], np.int64))
         signed, _, _, _ = igl.signed_distance(x, envelope_v, envelope_f,
                                               igl.SignedDistanceType.SIGNED_DISTANCE_TYPE_FAST_WINDING_NUMBER)
+        stencil, stencil_weight = surface_samples(triangles, edge_table(triangles))
+        _, sample_signed, _, _ = sample_penetration(x, stencil, stencil_weight, envelope_v, envelope_f)
         out[name] = {
             'vertices': int(len(x)),
             'inside_body_vertices': int((signed < 0).sum()),
@@ -631,11 +813,100 @@ def penetration_check(ids):
             'max_penetration_mm': float(max(0.0, -signed.min()) * 1e3),
             'standoff_mm_min': float(signed.min() * 1e3),
             'standoff_mm_median': float(np.median(signed) * 1e3),
+            'surface_samples': int(len(stencil)),
+            'inside_body_surface_samples': int((sample_signed < 0).sum()),
+            'inside_beyond_0p1mm_surface_samples': int((sample_signed < -1e-4).sum()),
+            'max_surface_sample_penetration_mm': float(max(0.0, -sample_signed.min()) * 1e3),
+            'surface_sample_standoff_mm_median': float(np.median(sample_signed) * 1e3),
+            'self_intersection': intersection_report(x, triangles),
+            'sample_note': 'face centroids and edge midpoints, the stencils the shrinkwrap is constrained on. A '
+                           'garment whose vertices all stand off the body still penetrates it wherever a triangle '
+                           'is wider than the body feature it spans, and only these samples see that',
             'sign_note': 'the contact solver projects a resolved node exactly onto the body surface, so its signed '
                          'distance is zero to rounding and its sign is arbitrary; the thresholded counts separate '
                          'boundary-coincident nodes from real penetration'}
-    (OUT.parent / 'post-simulation-penetration.json').write_text(json.dumps(out, indent=1, sort_keys=True) + '\n')
-    print(f'post-simulation penetration checked for {len(out)} garments')
+    # The post-simulation file keeps its original shape, a bare map of garments,
+    # because the manifest and the verification already read it that way.
+    if stage == 'simulated':
+        name, payload = 'post-simulation-penetration.json', out
+    else:
+        name, payload = f'{stage}-penetration.json', {'stage': stage, 'garments': out}
+    (OUT.parent / name).write_text(json.dumps(payload, indent=1, sort_keys=True) + '\n')
+    clean = sum(1 for row in out.values()
+                if not row['inside_body_surface_samples']
+                and not row['self_intersection']['intersecting_face_pairs'])
+    print(f'{stage} penetration checked for {len(out)} garments; '
+          f'{clean} clear of the body and of themselves')
+    return 0
+
+
+def layering_check(ids, stage='simulated'):
+    """Between-garment audit over every combination the slot model permits.
+
+    Each garment is registered and simulated against the body alone, so nothing
+    upstream has ever compared two garments to each other. Two are reported:
+    whether their surfaces cross at all, for any wearable combination, and for
+    a pair in one body region with a declared inner and outer, how far the
+    outer one lies inside the inner one where the two actually meet.
+    """
+    model = slot_model()
+    slot_layer = {s['id']: s['layer'] for s in model['slots']}
+    slot_region = {s['id']: s['region'] for s in model['slots']}
+    occupies = {row['garment']: row['occupies'] for row in model['garments']}
+    excludes = {row['garment']: set(row['excludes']) for row in model['garments']}
+    wanted = [name for name in ids if name in occupies]
+    mesh = {}
+    for name in wanted:
+        data = np.load(OUT.parent / stage / f'{name}.npz', allow_pickle=False)
+        mesh[name] = (np.ascontiguousarray(np.asarray(data['positions'], float)),
+                      np.ascontiguousarray(np.asarray(data['indices'], np.int64)))
+    pairs = []
+    for i, inner in enumerate(sorted(wanted)):
+        for outer in sorted(wanted)[i + 1:]:
+            if outer in excludes[inner]:
+                continue
+            pairs.append((inner, outer))
+    rows = []
+    for first, second in pairs:
+        (v1, f1), (v2, f2) = mesh[first], mesh[second]
+        report = intersection_report(v1, f1, v2, f2)
+        row = {'garments': [first, second],
+               'intersecting_face_pairs': report['intersecting_face_pairs'],
+               'degenerate_faces_excluded': report['degenerate_faces_excluded']}
+        slot_1, slot_2 = occupies[first][0], occupies[second][0]
+        if slot_region[slot_1] == slot_region[slot_2] and slot_layer[slot_1] != slot_layer[slot_2]:
+            inner, outer = (first, second) if slot_layer[slot_1] < slot_layer[slot_2] else (second, first)
+            vi, fi = mesh[inner]
+            vo, _ = mesh[outer]
+            signed, _, _, _ = igl.signed_distance(
+                vo, vi, fi, igl.SignedDistanceType.SIGNED_DISTANCE_TYPE_PSEUDONORMAL)
+            near = np.abs(signed) < LAYER_MEETING_RANGE_M
+            if int(near.sum()) >= LAYER_MEETING_MIN_VERTICES:
+                inside = signed[near] < 0
+                row['layering'] = {
+                    'inner': inner, 'outer': outer,
+                    'outer_vertices_where_layers_meet': int(near.sum()),
+                    'outer_vertices_inside_inner': int(inside.sum()),
+                    'deepest_outer_vertex_inside_inner_mm': float(max(0.0, -signed[near].min()) * 1e3),
+                    'clearance_mm_median': float(np.median(signed[near]) * 1e3),
+                    'range_note': f'vertices within {LAYER_MEETING_RANGE_M * 1e3:.0f} mm of the inner garment, so a '
+                                  f'hem hanging clear of it is not counted as clearance it does not have'}
+        rows.append(row)
+    crossing = [row for row in rows if row['intersecting_face_pairs']]
+    out = {
+        'schema': 'ihm.garment-layering-audit.v1',
+        'scope': 'Every garment is registered onto the body envelope and cloth-simulated against the body alone. '
+                 'No stage of that pipeline compares one garment to another, so these are the first between-garment '
+                 'numbers in the wardrobe and they are expected to be bad until the fit is made layer-aware.',
+        'stage': stage,
+        'combinations_tested': len(rows),
+        'combinations_intersecting': len(crossing),
+        'garments': sorted(wanted),
+        'pairs': sorted(rows, key=lambda r: (-r['intersecting_face_pairs'], r['garments'])),
+    }
+    name = 'post-simulation-layering.json' if stage == 'simulated' else f'{stage}-layering.json'
+    (OUT.parent / name).write_text(json.dumps(out, indent=1, sort_keys=True) + '\n')
+    print(f'layering checked for {len(rows)} wearable combinations; {len(crossing)} interpenetrate')
     return 0
 
 
@@ -644,12 +915,24 @@ def run(argv=None):
     parser.add_argument('--only', nargs='*', default=None)
     parser.add_argument('--penetration', nargs='*', default=None,
                         help='re-check simulated garment states under data/derived/wardrobe-v1/simulated')
+    parser.add_argument('--layering', nargs='*', default=None,
+                        help='audit every wearable combination of the simulated garment states for '
+                             'between-garment interpenetration')
+    parser.add_argument('--no-remesh', action='store_true',
+                        help='fit the acquired meshes at their authored resolution, for comparison against '
+                             'the resampled fit')
+    parser.add_argument('--target-edge-mm', type=float, default=REMESH_TARGET_EDGE_M * 1e3)
+    parser.add_argument('--stage', choices=('fitted', 'simulated'), default='simulated',
+                        help='which garment state the audits read: the registered fit, or the cloth run. '
+                             'The served geometry is the fitted state, so that is the one a reader sees.')
     parser.add_argument('--self-test', action='store_true')
     args = parser.parse_args(argv)
     if args.self_test:
         return self_test()
     if args.penetration is not None:
-        return penetration_check(args.penetration)
+        return penetration_check(args.penetration, args.stage)
+    if args.layering is not None:
+        return layering_check(args.layering, args.stage)
 
     envelope_v, envelope_f, area, height = load_envelope(ENVELOPE)
     envelope_normals = igl.per_face_normals(envelope_v, envelope_f, np.zeros(3))
@@ -700,6 +983,16 @@ def run(argv=None):
                        'laplacian': 'row-normalised graph Laplacian; differential coordinates of the posed mesh '
                                     'are the shape term',
                        'push_weight': 60.0, 'fit_modes': FIT_MODES,
+                       'regularisation_resolution_exponent': REGULARISATION_RESOLUTION_EXPONENT,
+                       'regularisation_scaling_basis': 'the shape term is a graph-Laplacian energy and is not '
+                                                       'resolution-invariant: (L x) scales like the square of the '
+                                                       'edge length, so the energy scales like its fourth power '
+                                                       'against a positional fit term. Each garment therefore has '
+                                                       'its declared weight restated as declared x (its own '
+                                                       'authored median edge / its fitted median edge) ^ 4, both '
+                                                       'measured on the posed garment, so resampling changes '
+                                                       'resolution and nothing else. Without a resample the factor '
+                                                       'is exactly one.',
                        'conform_attract_range_m': CONFORM_ATTRACT_RANGE_M,
                        'skin_attract_range_m': CONFORM_ATTRACT_RANGE_M,
                        'drape_attract_range_m': f'max({DRAPE_ATTRACT_RANGE_FLOOR_M}, '
@@ -724,6 +1017,22 @@ def run(argv=None):
     }
 
     OUT.mkdir(parents=True, exist_ok=True)
+    target_edge_m = args.target_edge_mm * 1e-3
+    registration['resample'] = {
+        'applied': not args.no_remesh,
+        'target_edge_mm': args.target_edge_mm,
+        'passes': REMESH_PASSES,
+        'method': 'isotropic remeshing (Botsch and Kobbelt 2004): split above 4/3 of the target, collapse below '
+                  '4/5, flip toward valence six, tangential relaxation, then projection back onto the source '
+                  'surface. Boundary vertices are resampled along the source boundary polyline only, so hems, '
+                  'necklines and armholes keep their authored outline.',
+        'basis': 'the acquired meshes carry a median edge of up to 76 mm and single edges of 307 mm. A triangle '
+                 'wider than the body feature it spans penetrates that feature between its own corners, and a '
+                 'shrinkwrap can only distribute strain across the vertices it is given, which is why fitting the '
+                 'authored resolution stretched single edges by up to fifty times.',
+        'applied_in': 'the authoring body frame, before the similarity and pose correction, at the target divided '
+                      'by the similarity scale',
+    }
     selected = [e for e in CATALOGUE if args.only is None or e['id'] in args.only]
     results = {}
     for entry in selected:
@@ -734,6 +1043,27 @@ def run(argv=None):
         v, t = weld(v / SOURCE_UNITS_PER_M, t)
         t, flips = orient_outward(v, t)
         boundary, nonmanifold = boundary_edge_count(t)
+        # Resample before the similarity and the pose correction, not after, so
+        # the limb rotations are blended across a dense mesh rather than across
+        # triangles that span a whole limb. The target is divided by the
+        # similarity scale because it is stated in the fitted body's metres and
+        # the garment is still in the authoring body's.
+        remesh_report = None
+        authored_edge = median_edge_m(skinning.apply(scale * v + translation), t)
+        if not args.no_remesh:
+            # Resampling may refine a garment but must never coarsen one. The
+            # gloves are authored at a 6.4 mm edge, finer than the target, and
+            # pulling them out to 10 mm cost them faces and raised their body
+            # penetration: the target is a ceiling on edge length, not a value
+            # to drive every garment to.
+            piece_target = min(target_edge_m, authored_edge)
+            v, t, remesh_report = resample(v, t, piece_target / scale)
+            remesh_report['target_edge_mm'] = piece_target * 1e3
+            remesh_report['target_basis'] = (
+                'the declared target' if piece_target == target_edge_m else
+                f'the garment is authored finer than the {target_edge_m * 1e3:.0f} mm target, so its own '
+                f'{authored_edge * 1e3:.1f} mm edge is used and the resample refines shape without coarsening it')
+            boundary, nonmanifold = boundary_edge_count(t)
         posed_garment = skinning.apply(scale * v + translation)
         standoff = entry['standoff_mm'] * 1e-3
         mode = entry.get('fit_mode', 'conform')
@@ -742,19 +1072,34 @@ def run(argv=None):
         seated, seat_report = ((posed_garment, None) if 'seat' not in entry else
                                seat_extremity(posed_garment, t, entry['seat'], standoff,
                                               envelope_v, envelope_f, envelope_normals, landmarks))
+        fitted_edge = median_edge_m(seated, t)
+        scaled, factor = resolution_scaled_regularisation(settings['regularisation'], authored_edge, fitted_edge)
+        settings = {**settings, 'regularisation': scaled}
         fitted, history, projection = shrinkwrap(seated, t, envelope_v, envelope_f, envelope_normals, standoff,
                                                  attract_range_m=attract_range, **settings)
         stats = measure(fitted, seated, t, envelope_v, envelope_f)
         stats.update({'fit_mode': mode, 'attract_range_mm': attract_range * 1e3, 'fit_weights': settings,
+                      'regularisation_scaling': {'declared': FIT_MODES[mode]['regularisation'],
+                                                 'applied': scaled, 'factor': factor,
+                                                 'authored_median_edge_mm': authored_edge * 1e3,
+                                                 'fitted_median_edge_mm': fitted_edge * 1e3,
+                                                 'exponent': REGULARISATION_RESOLUTION_EXPONENT},
                       'extremity_seating': seat_report,
                       'boundary_edges': boundary, 'nonmanifold_edges': nonmanifold,
                       'orientation_component_flips': flips, 'target_standoff_mm': entry['standoff_mm'],
                       'shrinkwrap_history': history, 'final_projection': projection,
+                      'remesh': remesh_report,
                       'source_sha256': sha256_file(source),
                       'source_path': str(source.relative_to(ROOT))})
         np.savez_compressed(OUT / f'{entry["id"]}.npz', positions=fitted, indices=t,
                             posed_source_positions=posed_garment, seated_source_positions=seated)
         results[entry['id']] = stats
+        if remesh_report:
+            before, after = remesh_report['before'], remesh_report['after']
+            print(f'{entry["id"]:20s} resampled {before["faces"]:6d} -> {after["faces"]:6d} faces, '
+                  f'edge p50 {before["edge_mm_median"]:5.1f} -> {after["edge_mm_median"]:4.1f} mm, '
+                  f'min angle {before["min_corner_angle_deg"]:5.2f} -> {after["min_corner_angle_deg"]:5.2f} deg, '
+                  f'off source {remesh_report["max_deviation_from_source_mm"]:.4f} mm')
         print(f'{entry["id"]:20s} V={stats["vertices"]:5d} inside={stats["inside_body_vertices"]:4d} '
               f'maxpen={stats["max_penetration_mm"]:6.3f} mm  samples_in={stats["inside_body_surface_samples"]:4d} '
               f'standoff p50={stats["standoff_mm_percentiles"]["50"]:6.2f} mm '
@@ -806,6 +1151,62 @@ def self_test():
     scale, translation, report = fit_similarity(box * 0.5 + 4.0, box, faces, trunk_halfwidth_m=10.0, min_trunk_points=4)
     assert abs(scale - 2.0) < 1e-9, scale
     assert report['trunk_rms_mm_refined'] < 1e-3, report
+    # The intersection test the new receipts rest on, against cases whose answer
+    # is known by construction: a triangle skewered by another, the same pair
+    # pulled apart, and two sharing an edge, which touch rather than cross.
+    flat = np.array([[0., 0, 0], [1., 0, 0], [0., 1, 0]])
+    through = np.array([[0.2, 0.2, -1.], [0.2, 0.2, 1.], [0.6, 0.3, 1.]])
+    apart = through + [10.0, 0.0, 0.0]
+    one = np.array([[0, 1, 2]], np.int64)
+    two = np.array([[0, 1, 2], [3, 4, 5]], np.int64)
+    assert intersection_report(np.vstack([flat, through]), two)['intersecting_face_pairs'] == 1
+    assert intersection_report(np.vstack([flat, apart]), two)['intersecting_face_pairs'] == 0
+    assert intersection_report(flat, one, through, one)['intersecting_face_pairs'] == 1
+    assert intersection_report(flat, one, apart, one)['intersecting_face_pairs'] == 0
+    shared = np.array([[0., 0, 0], [1., 0, 0], [0., 1, 0], [1., 1, 0]])
+    assert intersection_report(shared, np.array([[0, 1, 2], [1, 3, 2]], np.int64))['intersecting_face_pairs'] == 0, \
+        'faces sharing an edge touch by construction and must not be reported as crossing'
+    sliver = np.array([[0., 0, 0], [1., 0, 0], [0.5, 1e-13, 0]])   # 5e-14 m^2, below the floor
+    assert intersection_report(np.vstack([sliver, through]), two)['degenerate_faces_excluded'] >= 1, \
+        'a face too thin for a trustworthy normal must be excluded and counted, not silently tested'
+    # A vertex-only body test cannot see a triangle spanning a feature, which is
+    # why penetration_check states the body test on surface samples too.
+    span = np.array([[-1., 0, 0], [1., 0, 0], [0., 0, 2.]])
+    stencil, weight = surface_samples(one, edge_table(one))
+    centroid = np.einsum('ij,ijk->ik', weight, span[stencil])
+    assert len(centroid) == 4 and np.allclose(centroid[0], span.mean(0)), centroid
+    # The resampler, on an open cylinder built the way the acquired garments are:
+    # far more segments around than rings along, so every face is a sliver. A
+    # correct resample lands on the cylinder exactly, keeps both rims, and
+    # leaves no sliver behind.
+    radius, tall, around = 0.05, 0.40, 40
+    theta = np.linspace(0, 2 * np.pi, around, endpoint=False)
+    tube = np.array([[radius * np.cos(a), tall * r / 2, radius * np.sin(a)] for r in range(3) for a in theta])
+    wall = np.array([[f(r, j) for f in (lambda r, j: r * around + j,
+                                        lambda r, j: r * around + (j + 1) % around,
+                                        lambda r, j: (r + 1) * around + (j + 1) % around)]
+                     for r in range(2) for j in range(around)]
+                    + [[r * around + j, (r + 1) * around + (j + 1) % around, (r + 1) * around + j]
+                       for r in range(2) for j in range(around)], dtype=np.int64)
+    coarse = quality(tube, wall)
+    assert coarse['min_corner_angle_deg'] < 5.0, coarse
+    fine, fine_faces, resample_report = resample(tube, wall, 0.012)
+    fine_quality = resample_report['after']
+    assert boundary_edge_count(fine_faces)[1] == 0, 'resample must stay manifold'
+    assert resample_report['boundary_edges_after'] == resample_report['boundary_edges_before'] == 2 * around, \
+        'both rims must survive with their own edge count'
+    assert fine_quality['min_corner_angle_deg'] > 15.0, fine_quality
+    assert fine_quality['faces_under_10_deg'] == 0, fine_quality
+    assert 0.8 * 12.0 <= fine_quality['edge_mm_median'] <= 1.34 * 12.0, fine_quality
+    assert resample_report['max_deviation_from_source_mm'] < 1e-6, resample_report
+    # The source is a forty-sided prism, not a cylinder, so its surface lies
+    # between the inscribed and circumscribed radii. Landing anywhere in that
+    # band is what "on the source surface" means here.
+    on_wall = np.linalg.norm(fine[:, [0, 2]], axis=1)
+    assert on_wall.min() > radius * np.cos(np.pi / around) - 1e-9 and on_wall.max() < radius + 1e-9, \
+        'resampled vertices must lie on the source surface'
+    assert fine[:, 1].min() > -1e-9 and fine[:, 1].max() < tall + 1e-9, 'rims must not migrate along the tube'
+    assert abs(resample_report['area_change_percent']) < 1.0, resample_report
     print('fit_garments_to_envelope self-test: pass')
     return 0
 

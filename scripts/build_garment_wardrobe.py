@@ -7,7 +7,9 @@ Stages, each emitting receipts:
   simulate    a gravity-loaded elastic cloth run of every garment against the
               body surface, using the repository's existing Cloth edge-spring
               model and MovingSurfaceContact node-face Coulomb contact
-  penetrate   post-simulation interior-vertex check (libigl venv)
+  penetrate   post-simulation body-penetration check on vertices and on face
+              centroids and edge midpoints, plus a self-intersection count, then
+              a between-garment audit of every wearable combination (libigl venv)
   emit        thumbnails, slot/exclusivity model, provenance records, manifest
 
   python scripts/build_garment_wardrobe.py [--skip-fit] [--only ID ...] [--self-test]
@@ -392,6 +394,29 @@ def simulate(entry, positions, triangles, envelope_v, envelope_f, *, seconds=SIM
 
 # -------------------------------------------------------------------- provenance
 
+def simulated_time_limitation(physics):
+    """State the simulated time actually reached, not the one asked for.
+
+    `simulate` caps its run at MAX_STEPS. The step size is set by the stiffest
+    edge, so a finely meshed garment takes smaller steps and reaches the cap
+    with only a fraction of the requested duration behind it. Reporting the
+    request rather than the outcome would overstate every garment that hit the
+    cap, so the range is measured off the runs.
+    """
+    reached = sorted(row['simulated_s'] for row in physics.values()
+                     if isinstance(row, dict) and row.get('contact_ready'))
+    if not reached:
+        return f'No garment completed a contact-ready run; {SIMULATED_SECONDS * 1e3:.0f} ms was requested.'
+    capped = [row for row in physics.values()
+              if isinstance(row, dict) and row.get('steps') == MAX_STEPS]
+    span = (f'{reached[0] * 1e3:.1f}' if reached[0] == reached[-1]
+            else f'{reached[0] * 1e3:.1f} to {reached[-1] * 1e3:.1f}')
+    return (f'{span} ms of simulated time per garment ({SIMULATED_SECONDS * 1e3:.0f} ms requested; '
+            f'{len(capped)} of {len(reached)} garments reached the {MAX_STEPS}-step cap first, because the '
+            f'explicit step size is set by the stiffest edge and a finer mesh takes smaller steps). This '
+            'demonstrates tension and contact; it is not a settled drape and not a donning simulation.')
+
+
 def git_state():
     def run(*args):
         return subprocess.run(['git', *args], cwd=ROOT, capture_output=True, text=True).stdout.strip()
@@ -667,6 +692,7 @@ def run(argv=None):
     ids = [r['id'] for r in records if r['contact_ready']]
     if extended:
         ids.append(f'{args.extended}-extended')
+    layering = {}
     if ids:
         command = [str(LIBIGL), str(FITTER), '--penetration', *ids]
         subprocess.run(command, check=True)
@@ -675,6 +701,11 @@ def run(argv=None):
             row = penetration.get(record['id'])
             if row:
                 record['post_simulation'] = row
+        # Every garment above was measured against the body alone. Nothing has
+        # yet asked how two of them sit against each other, and the answer is
+        # the wardrobe's largest open defect, so it gets its own receipt.
+        subprocess.run([str(LIBIGL), str(FITTER), '--layering', *ids], check=True)
+        layering = json.loads((OUT / 'post-simulation-layering.json').read_text())
 
     model = slot_model([e for e in CATALOGUE if e['id'] in {r['id'] for r in records}], SLOTS)
     (OUT / 'slots.json').write_text(json.dumps(model, indent=1, sort_keys=True) + '\n')
@@ -698,13 +729,21 @@ def run(argv=None):
         'prior_work_regression': prior_work_regression(),
         'extended_run': extended,
         'post_simulation_penetration': penetration,
+        'post_simulation_layering': layering,
         'limitations': [
             'The body is a static prescribed surface in these runs; reaction impulses are returned but not applied '
             'to any inertial owner.',
-            'Node-face contact only. Edge/vertex, continuous and self collision are not certified.',
+            'Node-face contact only. Edge/vertex, continuous and self collision are not certified: '
+            'post_simulation_penetration reports, per garment, how many face pairs of it currently pass through '
+            'itself.',
+            'Registration and contact are against the body envelope alone, so a garment has never been fitted or '
+            'simulated against the garment beneath it. post_simulation_layering reports how many wearable '
+            'combinations interpenetrate and how deeply; a worn outfit is not a certified stack.',
+            'Body penetration is reported on face centroids and edge midpoints as well as vertices. The sample '
+            'figures are the ones that bound the surface; the vertex figures alone understate it wherever a '
+            'triangle is wider than the body feature it spans.',
             'No bending stiffness, so drape shape is governed by membrane tension and contact alone.',
-            f'{SIMULATED_SECONDS * 1e3:.0f} ms of simulated time per garment demonstrates tension and contact; it is '
-            'not a settled drape and not a donning simulation.',
+            simulated_time_limitation(physics),
             'Areal density and stiffness are one uniform prior per garment; no per-material assignment exists.',
         ],
     }

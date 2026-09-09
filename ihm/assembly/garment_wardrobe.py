@@ -110,6 +110,156 @@ def boundary_edge_count(triangles):
     return int((count == 1).sum()), int((count > 2).sum())
 
 
+# --------------------------------------------------------------- intersection
+# A garment that passes through itself, or through the garment under it, is not
+# a fit, however well its vertices stand off the body. Both are triangle-pair
+# questions, so both are answered by one exact test: Moller's interval overlap
+# on the line where two triangle planes meet. Coplanar overlap returns False —
+# it needs a different test and does not occur here — and faces below
+# DEGENERATE_FACE_AREA_M2 are excluded and counted instead of tested, because
+# their normals are numerical noise.
+DEGENERATE_FACE_AREA_M2 = 1e-12
+INTERSECTION_TOLERANCE_M = 1e-9
+
+
+def face_normals(positions, triangles):
+    """Unit face normals and twice-area, for rejecting degenerate faces."""
+    p = positions[triangles]
+    normal = np.cross(p[:, 1] - p[:, 0], p[:, 2] - p[:, 0])
+    twice_area = np.linalg.norm(normal, axis=1)
+    safe = np.where(twice_area[:, None] > 0.0, twice_area[:, None], 1.0)
+    return normal / safe, twice_area
+
+
+def _triangles_intersect(a, b, normal_a, normal_b, tolerance_m=INTERSECTION_TOLERANCE_M):
+    """Exact test over paired triangle batches `a` and `b`, both (n, 3, 3)."""
+    offset_a = -np.einsum('ij,ij->i', normal_a, a[:, 0])
+    offset_b = -np.einsum('ij,ij->i', normal_b, b[:, 0])
+    # Signed distance of each triangle's corners to the other's plane.
+    to_a = np.einsum('ijk,ik->ij', b, normal_a) + offset_a[:, None]
+    to_b = np.einsum('ijk,ik->ij', a, normal_b) + offset_b[:, None]
+    live = ~((to_a > tolerance_m).all(1) | (to_a < -tolerance_m).all(1)
+             | (to_b > tolerance_m).all(1) | (to_b < -tolerance_m).all(1))
+    direction = np.cross(normal_a, normal_b)
+    length = np.linalg.norm(direction, axis=1)
+    live &= length > tolerance_m                      # parallel or coplanar planes
+    index = np.flatnonzero(live)
+    if not len(index):
+        return index
+    direction = direction[index] / length[index][:, None]
+
+    def span(triangle, distance):
+        """Where the triangle crosses the other plane, projected onto the line."""
+        axis = np.einsum('ijk,ik->ij', triangle, direction)
+        low = np.full(len(axis), np.inf)
+        high = np.full(len(axis), -np.inf)
+        found = np.zeros(len(axis), int)
+        for first, second in ((0, 1), (1, 2), (2, 0)):
+            da, db = distance[:, first], distance[:, second]
+            on = np.abs(da) <= tolerance_m
+            crosses = (da * db) < -(tolerance_m ** 2)
+            gap = np.where(crosses, da - db, 1.0)
+            cut = axis[:, first] + (axis[:, second] - axis[:, first]) * np.where(crosses, da / gap, 0.0)
+            point = np.where(on, axis[:, first], cut)
+            take = on | crosses
+            low = np.where(take, np.minimum(low, point), low)
+            high = np.where(take, np.maximum(high, point), high)
+            found += take
+        return low, high, found
+
+    low_a, high_a, found_a = span(a[index], to_b[index])
+    low_b, high_b, found_b = span(b[index], to_a[index])
+    overlap = ((found_a >= 2) & (found_b >= 2)
+               & (low_a <= high_b + tolerance_m) & (low_b <= high_a + tolerance_m))
+    return index[overlap]
+
+
+def _sweep_candidates(box_a, box_b, same):
+    """Candidate index pairs by sweep-and-prune on the widest axis, then a full
+    box test. Sweeping suits these meshes because one long authored edge makes a
+    triangle that would occupy a large share of any uniform grid."""
+    low_a, high_a = box_a
+    low_b, high_b = box_b
+    spread = np.concatenate([high_a, high_b]).max(0) - np.concatenate([low_a, low_b]).min(0)
+    axis = int(np.argmax(spread))
+    order_b = np.argsort(low_b[:, axis], kind='stable')
+    sorted_low_b = low_b[order_b, axis]
+    starts = np.searchsorted(sorted_low_b, low_a[:, axis] - (high_b[:, axis] - low_b[:, axis]).max(), 'left')
+    ends = np.searchsorted(sorted_low_b, high_a[:, axis], 'right')
+    left, right = [], []
+    for i in range(len(low_a)):
+        if ends[i] <= starts[i]:
+            continue
+        j = order_b[starts[i]:ends[i]]
+        if same:
+            j = j[j > i]
+            if not len(j):
+                continue
+        keep = ((low_a[i] <= high_b[j]) & (high_a[i] >= low_b[j])).all(1)
+        j = j[keep]
+        if len(j):
+            left.append(np.full(len(j), i))
+            right.append(j)
+    if not left:
+        return np.empty((0, 2), np.int64)
+    return np.column_stack([np.concatenate(left), np.concatenate(right)]).astype(np.int64)
+
+
+def _boxes(positions, triangles):
+    p = positions[triangles]
+    return p.min(1), p.max(1)
+
+
+def intersecting_face_pairs(positions_a, triangles_a, positions_b=None, triangles_b=None,
+                            *, batch=200_000):
+    """Face-pair indices where two garment surfaces cross, or where one crosses
+    itself when the second mesh is omitted. Self mode drops pairs that share a
+    vertex, which touch by construction rather than by intersecting."""
+    same = positions_b is None
+    if same:
+        positions_b, triangles_b = positions_a, triangles_a
+    normal_a, twice_a = face_normals(positions_a, triangles_a)
+    normal_b, twice_b = face_normals(positions_b, triangles_b)
+    good_a = twice_a > 2.0 * DEGENERATE_FACE_AREA_M2
+    good_b = twice_b > 2.0 * DEGENERATE_FACE_AREA_M2
+    pairs = _sweep_candidates(_boxes(positions_a, triangles_a), _boxes(positions_b, triangles_b), same)
+    if len(pairs):
+        pairs = pairs[good_a[pairs[:, 0]] & good_b[pairs[:, 1]]]
+    if len(pairs) and same:
+        shared = (triangles_a[pairs[:, 0]][:, :, None] == triangles_b[pairs[:, 1]][:, None, :]).any((1, 2))
+        pairs = pairs[~shared]
+    hits = []
+    for start in range(0, len(pairs), batch):
+        chunk = pairs[start:start + batch]
+        keep = _triangles_intersect(positions_a[triangles_a[chunk[:, 0]]],
+                                    positions_b[triangles_b[chunk[:, 1]]],
+                                    normal_a[chunk[:, 0]], normal_b[chunk[:, 1]])
+        if len(keep):
+            hits.append(chunk[keep])
+    found = np.vstack(hits) if hits else np.empty((0, 2), np.int64)
+    return found, int((~good_a).sum()), int((~good_b).sum())
+
+
+def intersection_report(positions, triangles, positions_b=None, triangles_b=None):
+    """Receipt form of `intersecting_face_pairs`: counts, not index tables."""
+    pairs, degenerate_a, degenerate_b = intersecting_face_pairs(
+        positions, triangles, positions_b, triangles_b)
+    faces = len(triangles) if positions_b is None else len(triangles) + len(triangles_b)
+    # In self mode both columns index the same face table, so the faces caught up
+    # in a crossing are the distinct entries of the pair table as a whole; across
+    # two garments each column counts against its own mesh.
+    involved = (int(len(np.unique(pairs))) if positions_b is None
+                else int(len(np.unique(pairs[:, 0])) + len(np.unique(pairs[:, 1]))))
+    return {
+        'intersecting_face_pairs': int(len(pairs)),
+        'faces': int(faces),
+        'faces_involved': involved if len(pairs) else 0,
+        'degenerate_faces_excluded': degenerate_a + (0 if positions_b is None else degenerate_b),
+        'test': 'Moller triangle-triangle interval overlap, exact; coplanar overlap is not tested and '
+                'faces below 1e-12 m^2 are excluded rather than tested',
+    }
+
+
 def orient_outward(positions, triangles):
     """Flip face components whose winding points at their own component axis."""
     _, label = face_components(len(positions), triangles)
