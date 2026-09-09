@@ -82,7 +82,7 @@ export function transportState({
  * is another. A run that failed, or that ran without the canonical body, is not
  * a body recording and is not offered.
  */
-export function recordingCatalog({ canonical = null, scenarios = null } = {}) {
+export function recordingCatalog({ canonical = null, scenarios = null, segmentBound = null } = {}) {
   const out = [];
   if (canonical?.available) {
     out.push({
@@ -100,6 +100,19 @@ export function recordingCatalog({ canonical = null, scenarios = null } = {}) {
       label: `Scenario ${run.id}`,
       detail: Number.isFinite(frames) ? `${frames} computed frames` : "Completed canonical run",
       url: `/api/body/trajectory?view=display&run=${encodeURIComponent(run.id)}`,
+    });
+  }
+  // Segment-bound replays. These are not native runs -- a joint trajectory
+  // pushed through the anatomy by one rigid transform per OpenSim segment --
+  // so they are labelled as replays and say what they do not carry.
+  for (const entry of segmentBound?.trajectories || []) {
+    if (!entry?.id || !Number.isFinite(entry.frames) || entry.frames <= 0) continue;
+    out.push({
+      id: `segment-bound:${entry.id}`,
+      label: entry.label || `Segment-bound ${entry.id}`,
+      detail: `${entry.frames} replayed frames · ${entry.entities} anatomical `
+        + `surfaces · kinematic replay, no physiology`,
+      url: `/api/body/segment-bound/${encodeURIComponent(entry.id)}`,
     });
   }
   return out;

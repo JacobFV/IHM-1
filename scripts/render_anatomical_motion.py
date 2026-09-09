@@ -680,9 +680,11 @@ def overlay(rb, image, width, height, title, binding, rows, drawn, kept_area,
     lines = [
         f"t = {t:6.2f} s   phase {frame.get('phase','-')}   "
         f"swing {frame.get('swing_side','-')}",
-        f"{drawn} anatomical surfaces drawn of {bound} bound "
-        f"({kept_area/max(total_area,1e-9)*100:.0f}% of the selected surface area)"
-        + ("  +  skin, continuous linear blend" if skin else ""),
+        (f"{drawn} anatomical surfaces drawn of {bound} bound "
+         f"({kept_area/max(total_area,1e-9)*100:.0f}% of the selected surface "
+         f"area)" if drawn else "skin surface only; the other "
+         f"{bound} bound surfaces are inside it and not drawn")
+        + ("  +  skin, continuous linear blend" if skin and drawn else ""),
         f"22 OpenSim segments  ·  registration residual "
         f"{fit['segment_centroid_residual_rms_m']*1000:.0f} mm RMS  ·  "
         f"cross-specimen, not measurement error",

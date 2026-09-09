@@ -85,3 +85,22 @@ test('the header names the open recording and nothing else', () => {
  assert.equal(broken.detail, 'Canonical trajectory is stale; rematerialize the native run');
  assert.doesNotMatch(broken.detail, /40 computed frames/);
 });
+
+test('a segment-bound replay is offered, and is not passed off as a native run', () => {
+ const entries = recordingCatalog({
+  canonical: {available: true, detail: '1500 computed frames'},
+  segmentBound: {trajectories: [
+   {id: 'gait-best', label: 'Segment-bound · gait best', frames: 150, entities: 3995},
+   {id: 'empty', frames: 0, entities: 3995},
+  ]},
+ });
+ assert.equal(entries.length, 2);
+ const replay = entries[1];
+ assert.equal(replay.id, 'segment-bound:gait-best');
+ assert.equal(replay.url, '/api/body/segment-bound/gait-best');
+ // The catalog must never let a kinematic replay read as the body's own physics.
+ assert.match(replay.detail, /kinematic replay, no physiology/);
+ assert.match(replay.detail, /3995 anatomical surfaces/);
+ // A trajectory with no frames is not a recording and is not offered.
+ assert.ok(!entries.some((e) => e.id === 'segment-bound:empty'));
+});

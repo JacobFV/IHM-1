@@ -597,10 +597,12 @@ $("open-recording").onclick = async () => {
   if (!open) return;
   menu.replaceChildren(el("p", "note", "Reading what has been computed…"));
   const scenarios = await api("/api/scenarios").catch(() => null);
+  const segmentBound = await api("/api/body/segment-bound").catch(() => null);
   const entries = recordingCatalog({
     canonical: { available: !bodyError, detail: bodyTrajectory
       ? `${bodyTrajectory.frames.length} computed frames` : "The materialized native run for this body." },
     scenarios,
+    segmentBound,
   });
   menu.replaceChildren();
   if (!entries.length) {

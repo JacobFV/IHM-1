@@ -243,6 +243,21 @@ def create_server(root=None,port=8765,host='127.0.0.1'):
                     native=read_native(spectra['native_directory'])
                     if spectra.get('native_summary_sha256')!=native['input_hashes']['summary.json'] or any(native['input_hashes'][key]!=value for key,value in spectra['source_files'].items()):return self._error('Native spectra inputs changed; rematerialize',409)
                     return self._send(spectra)
+                if path=='/api/body/segment-bound':
+                    # Joint trajectories replayed on the anatomy through
+                    # data/derived/anatomy-segment-binding.  These are NOT
+                    # native canonical runs: no physiology, no internal state,
+                    # every entity moves rigidly with one OpenSim segment.
+                    # They are listed separately for exactly that reason.
+                    from ihm.app.segment_bound import list_segment_bound
+                    return self._send(list_segment_bound(root))
+                if path.startswith('/api/body/segment-bound/'):
+                    from ihm.app.segment_bound import read_segment_bound
+                    ident=path.removeprefix('/api/body/segment-bound/')
+                    if not SAFE_ID.fullmatch(ident):return self._error('Invalid segment-bound trajectory ID')
+                    payload=read_segment_bound(root,ident)
+                    if payload is None:return self._error('Unknown segment-bound trajectory',404)
+                    return self._send(payload)
                 if path=='/api/body/trajectory':
                     run=query.get('run',[None])[0]
                     if run:
