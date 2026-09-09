@@ -578,8 +578,12 @@ input[type="range"]:disabled::-moz-range-thumb { background: var(--faint); }
    dead: there is no glow, no dash animation and no minimum "visible" weight
    beyond a hairline that exists only so a measured-zero edge is still clickable.
    See ring.js. */
+/* The ring's layers span the whole viewport so a label can sit anywhere on the
+   ellipse, which means only the leaves may take a click. `#ring-host > *` used
+   to grant it wholesale, and being id-specificity it beat every
+   `pointer-events: none` below -- an invisible full-screen sheet then ate every
+   click meant for the left column. Nothing here re-enables a container. */
 #ring-host { position: absolute; inset: 0; z-index: 5; pointer-events: none; }
-#ring-host > * { pointer-events: auto; }
 .ring-leaders {
   position: absolute; inset: 0; width: 100%; height: 100%;
   pointer-events: none; overflow: visible;
@@ -623,7 +627,8 @@ input[type="range"]:disabled::-moz-range-thumb { background: var(--faint); }
   display: flex; flex-direction: column; align-items: flex-start; gap: 5px;
   width: min(420px, 40%); pointer-events: none;
 }
-.ring-systems { display: flex; flex-wrap: wrap; gap: 3px; pointer-events: auto; }
+.ring-systems { display: flex; flex-wrap: wrap; gap: 3px; }
+.ring-systems button { pointer-events: auto; }
 .ring-systems button {
   padding: 3px 8px; font-size: 11px; color: var(--dim);
   background: var(--ground); border: 1px solid var(--line);
