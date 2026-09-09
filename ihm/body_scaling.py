@@ -128,6 +128,19 @@ PRIMITIVES: dict[str, dict] = {
     'gravity': dict(
         exponent=0, kind='world', unit='m/s2',
         basis='A property of the world, not of the body.'),
+    'authored_damping_time': dict(
+        exponent=0, kind='authored', unit='s',
+        basis=('The damping coefficient carried beside a ligament stiffness is an '
+               'authored fraction with units of seconds, not a measured tissue '
+               'property -- the same status ihm/native/model_scaling.py gives the '
+               'Hunt-Crossley contact parameters, and it is held for the same '
+               'reason: nothing in this repository fixes its scaling. Under '
+               'gravitational dynamic similarity a characteristic time would go '
+               'as s**0.5 (equal Froude number, which is why a taller person '
+               'walks at a lower cadence); ALLOMETRY records that, and this '
+               'scaler does not apply it, because rescaling time would change '
+               'the meaning of every declared time constant in the body at '
+               'once.')),
 }
 
 
@@ -189,9 +202,24 @@ QUANTITIES: dict[str, dict] = {
 
     # -- passive tissue -----------------------------------------------------
     'ligament_stiffness': dict(formula={'elastic_modulus': 1, 'area': 1, 'length': -1},
-                               note='k = E A / L for a linear axial element; the '
-                                    'cross-section grows faster than the length, so a '
-                                    'bigger ligament is stiffer in N/m'),
+                               note='k = E A / L for a linear axial element, in N/m; '
+                                    'the cross-section grows faster than the length, so '
+                                    'a bigger ligament is stiffer in N per metre'),
+    'ligament_stiffness_per_strain': dict(formula={'elastic_modulus': 1, 'area': 1},
+                                          note='E*A, in NEWTONS -- what a '
+                                               'Blankevoort1991Ligament calls its '
+                                               'stiffness, because its extension '
+                                               'variable is a dimensionless strain '
+                                               'rather than a length. It is therefore '
+                                               'a force and must scale like one, and '
+                                               'the table checks that it does. Reading '
+                                               'it as the N/m entry above would be off '
+                                               'by a whole factor of s.'),
+    'ligament_damping': dict(formula={'ligament_stiffness_per_strain': 1,
+                                      'authored_damping_time': 1},
+                             note='N s per unit strain. The damping is an authored '
+                                  'fraction of the stiffness with units of seconds, '
+                                  'not a measured tissue property'),
     'ligament_force_at_strain': dict(formula={'ligament_stiffness': 1, 'length': 1},
                                      note='k x (strain x L): strain is dimensionless, '
                                           'so force goes as s**2 like every other force'),
@@ -406,6 +434,26 @@ ALLOMETRY = (
                  "brain's afferent channel count invariant under body size."),
          consequence='At 2.03 m, afferent channels per m2 of skin fall by 21.6%.',
          disposition='Applied, deliberately.'),
+    dict(quantity='authored_damping_time',
+         isotropic_exponent=0.0,
+         measured_exponent=0.5,
+         evidence='published_prior_not_measured_here',
+         source='gravitational dynamic similarity: equal Froude number '
+                'v**2/(g L) makes a characteristic time go as sqrt(L/g)',
+         detail=('This scaler rescales lengths and holds time. Two bodies of '
+                 'different size moving dynamically alike under the same gravity '
+                 'do NOT share a clock: the natural period goes as s**0.5, which '
+                 'is why a taller person walks at a lower cadence at the same '
+                 'dimensionless speed. 6.3% at 2.03 m.'),
+         consequence=('Every declared time constant -- damping coefficients, '
+                      'receptor and activation tau, the integrator step -- is the '
+                      "source subject's. A scaled body is dynamically similar in "
+                      'geometry and not in time.'),
+         disposition=('NOT applied, deliberately. Rescaling time would change the '
+                      'meaning of every time constant in the body at once, '
+                      'including the conduction delays, which are already correct '
+                      'for a different reason -- they come from a length and a '
+                      'velocity, not from a clock.')),
     dict(quantity='passive_joint_stop_moment',
          isotropic_exponent=3.0,
          measured_exponent=None,
@@ -497,7 +545,15 @@ def check_table():
              'passive tissue force and an active muscle force must not diverge'),
             ('weight', 'mass', 'g is a property of the world'),
             ('reflex_latency', 'conduction_delay',
-             'a reflex latency is two route lengths at fixed velocities')):
+             'a reflex latency is two route lengths at fixed velocities'),
+            ('ligament_stiffness_per_strain', 'max_isometric_force',
+             'a Blankevoort ligament stiffness is in NEWTONS, because its '
+             'extension variable is a dimensionless strain. It is a force and '
+             'must scale like every other force in the body; reading it as the '
+             'N/m spring constant instead would be wrong by a whole factor of s'),
+            ('ligament_damping', 'max_isometric_force',
+             'the damping coefficient is authored in seconds and held, so the '
+             'damping follows its stiffness exactly')):
         check('self-consistency: %s == %s' % (a, b), exponent(a), exponent(b), why)
 
     # 4. Every primitive is used by at least one quantity, and every primitive
@@ -517,6 +573,12 @@ def check_table():
     #    isotropic exponent they claim to contradict is the one actually used.
     for entry in ALLOMETRY:
         name = entry['quantity']
+        if name in PRIMITIVES:
+            check('allometry baseline: ' + name, float(PRIMITIVES[name]['exponent']),
+                  float(entry['isotropic_exponent']),
+                  'an allometry entry on a PRIMITIVE contradicts the primitive '
+                  'exponent itself')
+            continue
         if name not in QUANTITIES and name not in ('brain_volume', 'passive_joint_stop_moment'):
             raise ScalingError('ALLOMETRY names unknown quantity %r' % (name,))
         if name in QUANTITIES:
