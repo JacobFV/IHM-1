@@ -185,6 +185,26 @@ def create_server(root=None,port=8765,host='127.0.0.1'):
                     return self._send(self.server.embodied.command(path.rsplit('/',1)[1],'snapshot'))
                 if re.fullmatch(r'/api/scene/sessions/[a-f0-9]{32}',path):
                     return self._send(self.server.scenes.current(path.rsplit('/',1)[1]))
+                # The ring's structure and its magnitudes. The graph is derived
+                # from the declarations and cached against their mtimes; the
+                # state is per-tick and says plainly when it has no live body.
+                if path=='/api/brain/graph':
+                    from ihm.app.brain_graph import brain_graph
+                    file=root/'data/derived/canonical/peripheral.json';stamp=file.stat().st_mtime_ns
+                    with self.server.manifest_lock:
+                        if getattr(self.server,'brain_graph_stamp',None)!=stamp:
+                            self.server.brain_graph_data=brain_graph(root)
+                            self.server.brain_graph_stamp=stamp
+                        graph=self.server.brain_graph_data
+                    return self._send(graph)
+                if path=='/api/brain/state':
+                    from ihm.app.brain_graph import brain_state
+                    session=query.get('session',[None])[0];frame=None
+                    if session:
+                        if not re.fullmatch(r'[a-f0-9]{32}',session):return self._error('Invalid session ID')
+                        try:frame=self.server.embodied.command(session,'snapshot')
+                        except ValueError:frame=None
+                    return self._send(brain_state(frame))
                 if path=='/api/manifest':return self._send(self.server.manifest()[0])
                 if path=='/api/body':
                     from ihm.assembly.body import CanonicalBody
@@ -194,6 +214,11 @@ def create_server(root=None,port=8765,host='127.0.0.1'):
                 if path=='/api/body/materializations':
                     from ihm.app.materializations import materialization_tiers
                     return self._send(materialization_tiers(root,self.server.manifest()[0]))
+                if path=='/api/brain/prompt':
+                    # GET describes the six paths; the decode itself is the POST.
+                    from ihm.app.brain_prompt import describe_handle
+                    body,status=describe_handle(root)
+                    return self._send(body,status)
                 if path.startswith('/api/body/experiments/'):
                     from ihm.app.experiments import read_experiment
                     return self._send(read_experiment(root,path.removeprefix('/api/body/experiments/')))
@@ -330,12 +355,19 @@ def create_server(root=None,port=8765,host='127.0.0.1'):
             if not self._authorized(post=True):return self._error('Only local workbench requests are accepted',403)
             scene_request=self.path=='/api/scene/sessions' or re.fullmatch(r'/api/scene/sessions/[a-f0-9]{32}/(step|insert|close)',self.path)
             embodied_request=self.path=='/api/embodied/sessions' or re.fullmatch(r'/api/embodied/sessions/[a-f0-9]{32}/(step|close|intakes)',self.path)
-            if self.path not in ('/api/scenarios','/api/body/scenarios','/api/body/microvascular-patch') and not scene_request and not embodied_request:return self._error('Endpoint not found',404)
+            if self.path not in ('/api/scenarios','/api/body/scenarios','/api/body/microvascular-patch','/api/brain/prompt') and not scene_request and not embodied_request:return self._error('Endpoint not found',404)
             if self.headers.get('Content-Type','').split(';')[0]!='application/json':return self._error('Expected application/json',415)
             try:
+                # the brain prompt carries a base64 image or audio clip, which does
+                # not fit the workbench's 32 KB control-message budget.
+                cap=4194304 if self.path=='/api/brain/prompt' else 32768
                 length=int(self.headers.get('Content-Length','0'))
-                if not 0<length<=32768:raise ValueError('JSON request must be 1–32768 bytes')
+                if not 0<length<=cap:raise ValueError(f'JSON request must be 1–{cap} bytes')
                 data=json.loads(self.rfile.read(length),parse_constant=lambda v:(_ for _ in ()).throw(ValueError('Nonfinite JSON number')))
+                if self.path=='/api/brain/prompt':
+                    from ihm.app.brain_prompt import handle
+                    body,status=handle(root,data)
+                    return self._send(body,status)
                 if self.path=='/api/body/microvascular-patch':
                     from ihm.app.microvascular_patch import MicrovascularPatchService,PatchRequestError
                     with self.server.microvascular_lock:
