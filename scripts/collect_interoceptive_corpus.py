@@ -117,10 +117,22 @@ def main() -> None:
     X = np.concatenate(X); Y = np.concatenate(Y)
     T = np.concatenate(T); SEQ = np.concatenate(SEQ)
 
-    # contiguous split WITHIN each sequence, with a guard band.  splitting
-    # across sequences instead would put whole protocols on one side, which is a
-    # different and harder question -- worth asking, but not the same one, and
-    # mixing the two is how a result stops meaning anything.
+    # TWO splits, both written down, because they ask different questions and
+    # one of them is ill-posed for one of the targets.
+    #
+    # *time*: contiguous within each sequence, with a guard band.  the
+    # convention every other corpus here uses, and the right one when the target
+    # is a fast quantity.
+    #
+    # *protocol*: whole sequences held out.  THIS IS THE DEFAULT, and the reason
+    # is measured rather than stylistic.  `endurance_h` drifts on the scale of
+    # the whole run, so a contiguous time split leaves the held-out window in a
+    # 1.6 h band at the top of a 27 h range -- and a model accurate to 1.1 h
+    # absolute, which is 2.8% of the quantity, then scores skill -2.07 against
+    # the training mean.  Both of those numbers are correct and reporting either
+    # alone is the wrong-population error this project has made six times.  A
+    # protocol split gives the held-out set the full range, so variance
+    # explained means what it says.
     is_train = np.zeros(len(X), bool)
     is_test = np.zeros(len(X), bool)
     for s in meta_seq:
@@ -132,6 +144,21 @@ def main() -> None:
         is_train[idx[:cut - guard]] = True
         is_test[idx[cut + guard:]] = True
 
+    # the held-out protocols.  chosen so the test set spans the target range
+    # rather than a slice of it: `meal_exercise` carries the exercise bout that
+    # drives endurance from 41 h down to 35 and the lactate that drives the
+    # splanchnic nociceptive channels, and the six-hour hydration run carries
+    # the slow bladder filling that no one-hour protocol reaches.  the training
+    # set still contains a meal and an exercise bout separately, so what is
+    # actually held out is their combination and a different sample cadence.
+    HELD_OUT = {("exertion_v3", "meal_exercise"), ("six_hour_v4", "hydration")}
+    held_idx = {s["index"] for s in meta_seq
+                if (s["run"], s["protocol"]) in HELD_OUT}
+    if len(held_idx) != len(HELD_OUT):
+        raise SystemExit(f"held-out protocols {HELD_OUT} not all present")
+    is_test_protocol = np.isin(SEQ, list(held_idx))
+    is_train_protocol = ~is_test_protocol
+
     # a channel that never moves anywhere in the corpus is reported, not dropped.
     dead = [k for j, k in enumerate(keys_sorted) if X[:, j].std() == 0.0]
 
@@ -139,11 +166,15 @@ def main() -> None:
     # basis fitted on the TRAIN split only.  standardised first, because the
     # channels differ in max rate by 3x and an unstandardised PCA would report
     # the loudest channel rather than the dominant pattern.
-    mu = X[is_train].mean(0)
-    sd = X[is_train].std(0)
+    # fitted on the PROTOCOL train split, which is the default split, so that
+    # the basis never sees a frame from a held-out protocol.  it is a subset of
+    # neither time split, so this is the conservative choice for both.
+    fit_on = is_train_protocol
+    mu = X[fit_on].mean(0)
+    sd = X[fit_on].std(0)
     sd_safe = np.where(sd > 0, sd, 1.0)
     Z = (X - mu) / sd_safe
-    u, s, vt = np.linalg.svd(Z[is_train] - Z[is_train].mean(0), full_matrices=False)
+    u, s, vt = np.linalg.svd(Z[fit_on] - Z[fit_on].mean(0), full_matrices=False)
     basis = vt[:a.sensation_dim].astype(np.float32)          # (dim, n_channels)
     var_explained = (s[:a.sensation_dim] ** 2 / (s ** 2).sum()).tolist()
     S = (Z @ basis.T).astype(np.float32)
@@ -155,6 +186,8 @@ def main() -> None:
     np.save(out / "sequence.npy", SEQ)
     np.save(out / "is_train.npy", is_train)
     np.save(out / "is_test.npy", is_test)
+    np.save(out / "is_train_protocol.npy", is_train_protocol)
+    np.save(out / "is_test_protocol.npy", is_test_protocol)
 
     meta = {
         "schema": "ihm.intero-corpus.v1",
@@ -168,7 +201,17 @@ def main() -> None:
         "sensation_standardize_mean": mu.tolist(),
         "sensation_standardize_sd": sd.tolist(),
         "sensation_variance_explained": var_explained,
-        "sensation_basis_fitted_on": "train split only",
+        "sensation_basis_fitted_on": "protocol train split only",
+        "held_out_protocols": sorted(f"{r}/{p}" for r, p in HELD_OUT),
+        "n_train_protocol": int(is_train_protocol.sum()),
+        "n_test_protocol": int(is_test_protocol.sum()),
+        "default_split": "protocol",
+        "split_note":
+            "two splits are written.  `protocol` holds out whole recorded runs "
+            "and is the default; `time` is contiguous within each sequence with "
+            "a guard band.  the time split is ill-posed for endurance_h, whose "
+            "held-out window is a 1.6 h band at the top of a 27 h range, so a "
+            "model accurate to 2.8% scores skill -2.07 against the mean there.",
         "sequences": meta_seq,
         "n": int(len(X)),
         "n_train": int(is_train.sum()),
@@ -201,8 +244,17 @@ def main() -> None:
 
     print(f"\n{len(X)} frames, {len(keys_sorted)} channels, "
           f"{len(SCALAR_NAMES)} scalars, sensation dim {a.sensation_dim}")
-    print(f"  train {is_train.sum()}  test {is_test.sum()}  "
+    print(f"  time split:     train {is_train.sum()}  test {is_test.sum()}  "
           f"(guard band discards {len(X) - is_train.sum() - is_test.sum()})")
+    print(f"  protocol split: train {is_train_protocol.sum()}  "
+          f"test {is_test_protocol.sum()}  "
+          f"(held out {', '.join(sorted(r + '/' + p for r, p in HELD_OUT))})")
+    for j, s_ in enumerate(SCALAR_NAMES):
+        print(f"    {s_:14s} protocol-train range "
+              f"{Y[is_train_protocol, j].min():9.4f}-"
+              f"{Y[is_train_protocol, j].max():9.4f}   test "
+              f"{Y[is_test_protocol, j].min():9.4f}-"
+              f"{Y[is_test_protocol, j].max():9.4f}")
     print(f"  afferent variance (per channel, corpus)  "
           f"min {X.var(0).min():.4f}  max {X.var(0).max():.4f}")
     print(f"  sensation variance explained: "

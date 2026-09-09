@@ -140,7 +140,7 @@ def build_peripheral_coverage(root, registration=DEFAULT_REGISTRATION, *, contro
         ('cutaneous_to_cortex', 'Regional rapid/slow IBM touch exists separately; signed donor response has no identified conversion to cortical Hz and is not a whole-body receptor census.'),
         ('non_ankle_reflexes', 'No spinal reflex primitives for the other 84 registered effectors.'),
         ('cranial_and_special_senses', 'No audited visual, auditory, vestibular, olfactory, gustatory, ocular, facial or bulbar peripheral routes.'),
-        ('visceral_and_autonomic', 'Native systemic autonomic ownership is separate; no audited IBM visceral afferent or autonomic efferent wiring.'),
+        ('visceral_and_autonomic', 'Visceral AFFERENCE now exists: ihm/assembly/interoception.py transduces 15 channels from native systemic state onto the vagus and the splanchnics, and IBM-1 routes them with fibre-class-resolved delays. It is not audited against measured receptor recordings, the receptor laws are authored anatomical priors, and the channels are not BodyPeripheral ports so they carry no delay queue on this side. AUTONOMIC EFFERENT wiring is still absent entirely: nothing here drives the preganglionic or postganglionic classes those same trunks declare, so the loop is one-way.'),
         ('absent_effectors', 'Hand/finger, neck, facial, respiratory and independent scapular muscle effectors are not added by this 92-muscle catalog.'),
         ('autonomous_motor_policy', 'No identified recruitment, calibrated descending policy or autonomous walking controller.')]
     report = {'schema': 'ihm.peripheral-coverage.v1', 'plant_model_path': manifest['model_path'],
