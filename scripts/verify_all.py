@@ -22,6 +22,7 @@ commands += [[sys.executable,'scripts/'+name] for name in ['verify_clothing.py',
 commands += [[sys.executable,'scripts/'+name] for name in ['verify_native_environment_evidence.py','verify_garment_contact_viewer.py','verify_systemic_native_evidence.py','verify_penile_constitutive.py']]
 commands += [[sys.executable,'scripts/verify_penile_volume.py']]
 commands += [[sys.executable,'scripts/verify_muscle_dimensions.py']]
+commands += [[sys.executable,'scripts/verify_dermatome_patches.py']]
 if args.native:
  commands += [[sys.executable,'scripts/'+name] for name in ['verify_native_session.py','verify_native_locomotion.py','verify_native_scone.py','verify_native_gi_integrity.py','verify_native_renal_integrity.py','verify_native_dry_gi.py','verify_native_energy_integrity.py','verify_native_depletion_integrity.py']]
 if args.plan:

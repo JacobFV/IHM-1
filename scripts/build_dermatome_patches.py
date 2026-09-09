@@ -63,23 +63,34 @@ TERRITORIES = ROOT / "data/research/engineered_skin_territories/materialization.
 #: exist in peripheral.json's nerves, which the build asserts; a trunk that is
 #: declared in one repo and absent from the other is exactly the disconnect this
 #: work is closing, so it must fail loudly rather than route into nothing.
+DORSAL_RAMUS_NAME = "dorsal_ramus"
+
 DERMATOME_TRUNK = {
     "c2": "lesser_occipital", "c3": "transverse_cervical", "c4": "supraclavicular",
     "c5": "axillary", "c6": "musculocutaneous", "c7": "median", "c8": "ulnar",
-    "t1": "medial_cutaneous_forearm", "t2": "medial_cutaneous_arm",
+    "t1": "medial_cutaneous_forearm",
+    # T2 reaches the axilla and medial arm as the intercostobrachial nerve, which
+    # is a branch of the SECOND INTERCOSTAL nerve.  It joins the medial cutaneous
+    # nerve of the arm, but that nerve is C8-T1 and naming it here would claim
+    # that a C8-T1 trunk carries a T2 dermatome.  IBM's root cross-check caught
+    # exactly that.
+    "t2": "intercostal",
     **{f"t{i}": "intercostal" for i in range(3, 12)},
     "t12": "subcostal",
     "l1": "iliohypogastric", "l2": "lateral_femoral_cutaneous",
     "l3": "femoral", "l4": "saphenous", "l5": "superficial_fibular",
     "s1": "sural", "s2": "posterior_femoral_cutaneous",
-    "s3": "pudendal", "s4": "pudendal", "s5": "pudendal",
+    "s3": "pudendal", "s4": "pudendal",
+    # the pudendal nerve is S2-S4.  Perianal and coccygeal skin is S5 and is
+    # supplied by the anococcygeal nerves off the dorsal rami, not by pudendal.
+    "s5": DORSAL_RAMUS_NAME,
     # the trigeminal divisions: a real trunk, and deliberately NOT a spinal root
     "v1": "trigeminal", "v2": "trigeminal", "v3": "trigeminal",
 }
 #: dorsal rami supply the paravertebral strip and the deep back.  the ventral
 #: ramus names above do not cover it, and using `intercostal` there would assert
 #: that the back of the trunk is supplied by the nerve that supplies the front.
-DORSAL_RAMUS = "dorsal_ramus"
+DORSAL_RAMUS = DORSAL_RAMUS_NAME
 
 RELAY_OF_ROOT = {"c": "cervical", "t": "thoracic", "l": "lumbar", "s": "sacral",
                  "v": "cranial"}
