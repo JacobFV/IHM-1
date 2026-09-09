@@ -114,6 +114,13 @@ CLASSES = (
     ("adipose", r"fat pad|adipose"),
     ("skin", r"\bskin\b"),
 )
+# Names that carry a tissue token and are not that tissue.  The same exclusion
+# `scripts/audit_joint_substrate.py` uses, plus the role guard: `tensor fasciae
+# latae` is a MUSCLE whose name contains `fascia`, and a lymph node named after
+# the ligament it sits on is a lymph node.  Both were in the first run of this
+# script and both are wrong for the same reason.
+NOT_TISSUE = r"tensor fasciae|tensor of fascia lata|node of |lymph"
+NOT_TISSUE_ROLES = ("muscle", "lymph_node_group", "nerve", "vascular", "soft_organ")
 # Classes whose mechanics is a tension element between two bones.  Everything
 # else is assessed, not instantiated.
 TENSILE = ("ligament", "joint_capsule")
@@ -201,8 +208,10 @@ def git_sha():
         return "git-unknown"
 
 
-def tissue_class(name):
+def tissue_class(name, role):
     lowered = name.lower()
+    if role in NOT_TISSUE_ROLES or re.search(NOT_TISSUE, lowered):
+        return None
     for label, pattern in CLASSES:
         if re.search(pattern, lowered):
             return label
@@ -331,7 +340,7 @@ def main():
     counts = {}
     print("voting...", flush=True)
     for n, entity in enumerate(entities):
-        label = tissue_class(entity["name"])
+        label = tissue_class(entity["name"], entity["role"])
         if label is None:
             continue
         counts[label] = counts.get(label, 0) + 1
