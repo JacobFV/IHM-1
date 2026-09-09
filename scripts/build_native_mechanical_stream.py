@@ -16,7 +16,12 @@ def build(instance_mass_variant=None):
     mass_header=ROOT/'scripts/native_local_mass_port.h';(out/mass_header.name).write_bytes(mass_header.read_bytes())
     limiter=shutil.which('prlimit')
     if not limiter:raise RuntimeError('prlimit required for bounded compilation')
-    runtime=ROOT/'data/runtime/opensim';flags=['-std=c++20','-O0','-DSWIG_PYTHON']
+    runtime=ROOT/'data/runtime/opensim';# -O2, not -O0.  The engine integrates the plant, so the optimisation level is
+    # a wall-clock property of every rollout, not a build detail: the published
+    # build was compiled by hand at -O2 while this script still said -O0, and a
+    # rebuild from this script would silently have made every simulation several
+    # times slower than the one the results were measured on.
+    flags=['-std=c++20','-O2','-DSWIG_PYTHON']
     for p in [runtime/'install/opensim/include',runtime/'install/opensim/include/OpenSim',runtime/'install/simbody/include/simbody']:flags+=['-isystem',str(p)]
     previous=shlex.split((runtime/'dynamics-adapter/build/CMakeFiles/native_opensim_dynamics.dir/link.txt').read_text())
     libraries=[v for v in previous if v.endswith('.so') or '.so.' in v or v.startswith('-Wl,') or v.startswith('-l')]

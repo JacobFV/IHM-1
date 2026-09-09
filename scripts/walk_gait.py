@@ -55,6 +55,64 @@ TARGET_MASS_KG = 77.6122029
 DT = 0.01
 WORK = ROOT / 'data/derived/gait-work'
 
+# ------------------------------------------------------------------- arm hold
+# The source model declares CoordinateActuator torque ports for the lumbar and
+# for both arms (shoulder flexion/adduction/rotation, elbow, forearm pronation)
+# and, until the native engine grew a port for them, NO controller was connected,
+# so their controls were identically zero for the whole run.  The arm chain was a
+# passive rag doll on a walking body.  Measured entering the advance that stalls
+# the engine: pro_sup_r at 11.0 rad/s -- a coordinate the source passive force set
+# does not damp at all -- and arm26_BIClong_l at 3.05 m/s of fibre velocity
+# against a 1.28 m/s maximum contraction velocity.  Outside the force-velocity
+# curve's domain the Simbody error controller collapses its step, and one 10 ms
+# advance costs minutes.
+#
+# These are torque actuators, not muscles.  They are declared scaffolding of the
+# same status as the engine's inertia-inscribed fall-support spheres: the model
+# has no shoulder musculature to innervate, so nothing here can be reported as
+# muscle-driven motion.  Gains are sized to each segment's own inertia for an
+# undamped natural frequency near 20 rad/s at critical damping, so a command
+# updated at 100 Hz stays well inside the stable region: a single shared gain
+# would be 380 rad/s on forearm pronation and would make the stiffness worse
+# than the flailing.
+ARM_PORT = {'arm_flex': 'shoulder_flex', 'arm_add': 'shoulder_add',
+            'arm_rot': 'shoulder_rot', 'elbow_flex': 'elbow_flex',
+            'pro_sup': 'pro_sup'}
+ARM_HOLD_GAINS = {                     # coordinate stem: (kp N.m/rad, kd N.m.s/rad)
+    'arm_flex':   (140.0, 14.0),       # whole arm about the shoulder, ~0.35 kg.m2
+    'arm_add':    (140.0, 14.0),
+    'arm_rot':    (8.0, 0.8),          # humerus about its own long axis, ~0.02
+    'elbow_flex': (20.0, 2.0),         # forearm + hand about the elbow, ~0.05
+    'pro_sup':    (0.6, 0.06),         # radius + hand about the forearm axis, ~0.0015
+}
+COORDINATE_ACTUATOR_OPTIMAL_FORCE_NM = 50.0   # every port in the source model
+
+
+def arm_hold_targets(pose):
+    """Hold each arm coordinate where the registered initial pose puts it."""
+    targets = {}
+    for stem in ARM_PORT:
+        for side in 'rl':
+            name = stem + '_' + side
+            targets[name] = float(pose.get(name, 0.0))
+    return targets
+
+
+def arm_hold_commands(state, targets):
+    """Critically damped PD on the declared arm torque ports, in [-1, 1]."""
+    out = {}
+    coords = state['coordinates']
+    for stem, port in ARM_PORT.items():
+        kp, kd = ARM_HOLD_GAINS[stem]
+        for side in 'rl':
+            name = stem + '_' + side
+            c = coords[name]
+            torque = kp * (targets[name] - c['value']) - kd * c['speed']
+            out[port + '_' + side] = float(np.clip(
+                torque / COORDINATE_ACTUATOR_OPTIMAL_FORCE_NM, -1.0, 1.0))
+    return out
+
+
 # ---------------------------------------------------------------- muscle groups
 GROUPS = {
     'hipflex':  ('iliacus', 'psoas', 'recfem', 'sart', 'tfl'),
@@ -88,12 +146,12 @@ BOUNDS = {
     'a_swing_abd':  (0.00, 0.35),   # swing hip ABduction -> wider step, bigger base, rad
     'a_list':       (0.00, 0.25),   # pelvis roll toward the stance foot, rad
     'a_bend':       (-0.35, 0.35),  # lumbar bending, signed toward the stance side, rad
-    'a_stance_hipext': (0.00, 0.50),# stance hip extension -> forward propulsion, rad
+    'a_stance_hipext': (0.00, 1.00),# stance hip extension -> forward propulsion, rad
     'a_tilt':       (-0.20, 0.15),  # pelvis tilt reference offset, rad
     'b_hipflex':    (0.00, 1.00),   # swing hip flexor excitation bias
     'b_dorsi':      (0.00, 0.80),   # swing dorsiflexor bias
     'b_kneeflex':   (0.00, 0.80),   # swing knee flexor bias (foot clearance)
-    'b_kneeext':    (0.00, 0.80),   # swing knee extensor bias during reach (extend to land)
+    'b_kneeext':    (0.00, 1.50),   # swing knee extensor bias during reach (extend to land)
     'b_push':       (0.00, 1.00),   # stance/trailing plantarflexor bias at push-off
     'b_vasti':      (-0.40, 0.40),  # stance knee extensor bias (negative = let it flex)
     'b_abduct':     (0.00, 1.00),   # stance hip abductor bias (frontal-plane support)
@@ -135,7 +193,7 @@ FREE = ('v_forward', 't_ds', 't_swing', 't_reach_max', 'a_hip', 'a_knee',
         'a_push', 'a_push_ds', 'a_stance_hipext',
         # landing geometry: what the second step has to land into.
         'a_hip_land', 'a_knee_land', 'a_ankle_land', 'a_ankle',
-        'b_kneeext', 'b_vasti', 'tau', 'load_off',
+        'b_kneeext', 'b_vasti', 'tau', 'load_off', 'a_bend',
         'q_tx_speed')
 
 # Deliberately timid: with max|K| = 156, large offsets and biases saturate the
@@ -662,13 +720,14 @@ def diverged(state, tx0, tz0):
 
 
 def rollout(params, policy, horizon_s=5.0, record=False, work_dir=None, wall_budget_s=300.0,
-            max_steps=None, single_support=False):
+            max_steps=None, single_support=False, arm_hold=True):
     """Integrate the plant under the controller.  Returns a report dict."""
     params = clamp_params(params)
     out = Path(work_dir or (WORK / ('run-' + uuid.uuid4().hex)))
     if out.exists():
         shutil.rmtree(out)
     pose = json.loads((BUNDLE / 'initial_pose.json').read_text())
+    arm_targets = arm_hold_targets(pose)
     controller = GaitController(policy, params, max_steps=max_steps)
     if single_support:
         controller.single_support = load_single_support(policy)
@@ -726,7 +785,10 @@ def rollout(params, policy, horizon_s=5.0, record=False, work_dir=None, wall_bud
             if time.time() - started_wall > wall_budget_s:
                 stop_reason, t_end = 'wall_budget', t_s
                 break
-            state = native.advance(DT, actuation=dict(zip(policy.muscle_names, map(float, u))))
+            state = native.advance(
+                DT, actuation=dict(zip(policy.muscle_names, map(float, u))),
+                coordinate_actuation=(arm_hold_commands(state, arm_targets)
+                                      if arm_hold else None))
             t_end = state['time_s']
     except Exception as exc:  # native rejection, timeout, integrator blow-up
         failure = type(exc).__name__ + ': ' + str(exc)[:200]
@@ -789,6 +851,11 @@ def rollout(params, policy, horizon_s=5.0, record=False, work_dir=None, wall_bud
         'com_height_range_m': None if tx0 is None else [com_h_min, com_h_max],
         'com_height_excursion_m': None if tx0 is None else com_h_max - com_h_min,
         'max_clipped_muscles': clipped_max,
+        'arm_hold': ({'ports': sorted(ARM_PORT[k] + '_' + s for k in ARM_PORT for s in 'rl'),
+                      'gains_nm_per_rad_and_nms_per_rad': ARM_HOLD_GAINS,
+                      'basis': ('declared source CoordinateActuator torque ports held at the '
+                                'registered initial arm pose; torque actuators, not muscles')}
+                     if arm_hold else None),
         'commanded_forward_velocity_m_s': params['v_forward'],
         'achieved_mean_forward_velocity_m_s': (
             None if tx0 is None or t_end <= 0 else tx_max / t_end),
@@ -957,10 +1024,11 @@ def search(generations, population, horizon, workers, sigma0, out_path, seed=0, 
 
 
 # ----------------------------------------------------------------------- main
-def write_best(params, policy, horizon, destination):
+def write_best(params, policy, horizon, destination, arm_hold=True):
     destination.mkdir(parents=True, exist_ok=True)
     work = WORK / ('best-' + uuid.uuid4().hex)
-    report, frames = rollout(params, policy, horizon_s=horizon, record=True, work_dir=work)
+    report, frames = rollout(params, policy, horizon_s=horizon, record=True, work_dir=work,
+                             arm_hold=arm_hold, wall_budget_s=1e9)
     trajectory = {
         'schema': 'ihm.gait-trajectory.v1',
         'dt_s': DT,
@@ -1008,6 +1076,8 @@ def main():
     ap.add_argument('--params', help='JSON file with a parameter dict (or a search output)')
     ap.add_argument('--search-out', default='data/derived/gait-search/search.json')
     ap.add_argument('--out', default='data/derived/gait-best')
+    ap.add_argument('--no-arm-hold', action='store_true',
+                    help='leave the declared arm torque ports at zero, as before')
     a = ap.parse_args()
 
     WORK.mkdir(parents=True, exist_ok=True)
@@ -1029,9 +1099,11 @@ def main():
         return
     policy = Policy()
     if a.mode == 'best':
-        report = write_best(params, policy, a.horizon, ROOT / a.out)
+        report = write_best(params, policy, a.horizon, ROOT / a.out,
+                            arm_hold=not a.no_arm_hold)
     else:
-        report, _ = rollout(params, policy, horizon_s=a.horizon)
+        report, _ = rollout(params, policy, horizon_s=a.horizon,
+                            arm_hold=not a.no_arm_hold, wall_budget_s=1e9)
     printable = {k: v for k, v in report.items() if k not in ('params', 'phase_events')}
     print(json.dumps(printable, indent=2))
 

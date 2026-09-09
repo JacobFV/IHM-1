@@ -39,7 +39,7 @@ public:
   for(int i=0;i<(int)socket.getNumConnectees();i++){const auto& a=socket.getConnectee(i);a.addInControls(SimTK::Vector(1,values.at(a.getName())),controls);}
  }
 };
-struct Saved {SimTK::State state;std::vector<Load> loads;std::map<std::string,double> excitations;double work,positive_work,metabolic_energy,signed_work,heat_energy;ihm_mass_port::Ledger mass_port;};
+struct Saved {SimTK::State state;std::vector<Load> loads;std::map<std::string,double> excitations,torques;double work,positive_work,metabolic_energy,signed_work,heat_energy;ihm_mass_port::Ledger mass_port;};
 int main(int argc,char** argv){try{
  if(argc!=5)throw std::runtime_error("source_dir output_dir environment(free|supine|upright) target_mass required");
  fs::path source=argv[1],out=argv[2];std::string environment=argv[3];
@@ -60,7 +60,22 @@ int main(int argc,char** argv){try{
   auto* thelen=dynamic_cast<const Thelen2003Muscle*>(&m);
   excitation->values[m.getName()]=millard?millard->getDefaultActivation():thelen?thelen->getDefaultActivation():.01;
  }
- model.addController(excitation);auto* external=new PortForces;external->setName("external_material_point_forces");model.addForce(external);
+ model.addController(excitation);
+ // The source model declares CoordinateActuator torque ports for the lumbar and
+ // for both arms (shoulder x3, elbow, forearm pronation), and until now NO
+ // controller was connected to them, so their controls were identically zero for
+ // the whole run.  The arm chain was therefore a passive rag doll: measured, it
+ // reached 11.0 rad/s on pro_sup_r -- a coordinate the source passive force set
+ // does not damp at all -- and dragged arm26_BIClong_l to 3.05 m/s of fiber
+ // velocity against a 1.28 m/s maximum contraction velocity.  Outside the
+ // force-velocity curve's domain the error controller collapses its step, which
+ // is what stalls one 10 ms advance for minutes.  These ports are torque
+ // actuators, NOT muscles: they are engineering drive on declared actuators, and
+ // are reported separately from `muscles` so nothing can count them as muscle.
+ auto* torque=new ExcitationPorts;torque->setName("declared_coordinate_actuator_ports");
+ for(const auto& a:model.getComponentList<CoordinateActuator>()){torque->addActuator(a);torque->values[a.getName()]=0;}
+ if(!torque->values.empty())model.addController(torque);
+ auto* external=new PortForces;external->setName("external_material_point_forces");model.addForce(external);
  IHMNativeMuscleMetabolism metabolism(model);
  model.finalizeConnections();auto initial=model.initSystem();model.realizePosition(initial);
  ForceSet contact_templates((source/"subject_walk_scaled_ContactForceSet.xml").string());
@@ -176,6 +191,12 @@ int main(int argc,char** argv){try{
    if(!first)o<<',';first=false;str(o,m.getName());o<<":{\"path_length_m\":";num(o,m.getLength(state));o<<",\"fiber_length_m\":";num(o,m.getFiberLength(state));o<<",\"fiber_velocity_m_s\":";num(o,m.getFiberVelocity(state));
    o<<",\"optimal_fiber_length_m\":";num(o,m.getOptimalFiberLength());o<<",\"tendon_force_n\":";num(o,m.getTendonForce(state));o<<",\"max_isometric_force_n\":";num(o,m.getMaxIsometricForce());
    o<<",\"activation\":";num(o,m.getActivation(state));o<<",\"excitation\":";num(o,m.getExcitation(state));o<<",\"muscle_type\":";str(o,m.getConcreteClassName());o<<",\"metabolic_power_w\":";num(o,metabolic.muscles.at(m.getName()).metabolic_w);o<<",\"metabolic_roundoff_tolerance_w\":";num(o,metabolic.muscles.at(m.getName()).roundoff_tolerance_w);o<<",\"metabolic_analysis_mass_kg\":";num(o,metabolic.muscles.at(m.getName()).analysis_mass_kg);o<<",\"sensor_basis\":\"native muscle states; retained source80 fitted paths or explicitly registered added geometry paths\"}";
+  }o<<"},\"coordinate_actuators\":{";first=true;
+  for(const auto& a:model.getComponentList<CoordinateActuator>()){
+   if(!first)o<<',';first=false;str(o,a.getName());o<<":{\"coordinate\":";str(o,a.getCoordinate()->getName());
+   o<<",\"command\":";num(o,torque->values.at(a.getName()));o<<",\"optimal_force_n_m\":";num(o,a.getOptimalForce());
+   o<<",\"torque_n_m\":";num(o,torque->values.at(a.getName())*a.getOptimalForce());
+   o<<",\"basis\":\"declared source CoordinateActuator driven by an explicit engineering torque port; not a muscle\"}";
   }o<<"},\"coordinates\":{";first=true;
   for(const auto& c:model.getComponentList<Coordinate>()){
    if(!first)o<<',';first=false;str(o,c.getName());o<<":{\"value\":";num(o,c.getValue(state));o<<",\"speed\":";num(o,c.getSpeedValue(state));o<<",\"unit\":";str(o,c.getMotionType()==Coordinate::Rotational?"rad":"m");o<<'}';
@@ -221,7 +242,7 @@ int main(int argc,char** argv){try{
  };
  emit("initialized");std::string line;
  while(std::getline(std::cin,line)){
-  Saved before{state,external->loads,excitation->values,work,positive_work,metabolic_energy,signed_work,heat_energy,mass_port};
+  Saved before{state,external->loads,excitation->values,torque->values,work,positive_work,metabolic_energy,signed_work,heat_energy,mass_port};
   try{
    std::istringstream in(line);std::string command;in>>command;
    if(command=="close")break;
@@ -245,7 +266,7 @@ int main(int argc,char** argv){try{
    }
    if(command=="observe"){emit("observed");continue;}
    if(command=="checkpoint"){std::string key;in>>key;if(key.empty()||checkpoints.size()>=64||checkpoints.count(key))throw std::runtime_error("invalid checkpoint id/capacity");checkpoints.emplace(key,before);std::cout<<"@IHM {\"kind\":\"checkpointed\"}"<<std::endl;continue;}
-   if(command=="restore"){std::string key;in>>key;const auto& old=checkpoints.at(key);state=old.state;external->loads=old.loads;excitation->values=old.excitations;work=old.work;positive_work=old.positive_work;metabolic_energy=old.metabolic_energy;signed_work=old.signed_work;heat_energy=old.heat_energy;mass_port=old.mass_port;model.markControlsAsInvalid(state);state.invalidateAllCacheAtOrAbove(SimTK::Stage::Instance);emit("restored");continue;}
+   if(command=="restore"){std::string key;in>>key;const auto& old=checkpoints.at(key);state=old.state;external->loads=old.loads;excitation->values=old.excitations;torque->values=old.torques;work=old.work;positive_work=old.positive_work;metabolic_energy=old.metabolic_energy;signed_work=old.signed_work;heat_energy=old.heat_energy;mass_port=old.mass_port;model.markControlsAsInvalid(state);state.invalidateAllCacheAtOrAbove(SimTK::Stage::Instance);emit("restored");continue;}
    if(command=="drop"){std::string key;in>>key;if(!checkpoints.erase(key))throw std::runtime_error("unknown checkpoint");std::cout<<"@IHM {\"kind\":\"dropped\"}"<<std::endl;continue;}
    if(command=="evaluate_static_pose"){const auto payload=ihm_static_pose::evaluate(model,state,in,environment,!external->loads.empty(),support_plane,surface_foundation);std::cout<<"@IHM "<<payload<<std::endl;continue;}
    if(command!="advance")throw std::runtime_error("unknown command");double dt;int count;in>>dt>>count;if(!in||!std::isfinite(dt)||dt<=0||dt>.02||count<0||count>10000)throw std::runtime_error("invalid native step/force count");
@@ -253,7 +274,11 @@ int main(int argc,char** argv){try{
    for(int i=0;i<count;i++){std::string name;SimTK::Vec3 point,force;in>>name;for(int k=0;k<3;k++)in>>point[k];for(int k=0;k<3;k++)in>>force[k];if(!in||!point.isFinite()||!force.isFinite())throw std::runtime_error("invalid force port");const auto& body=model.getBodySet().get(name);external->loads.push_back({name,~body.getTransformInGround(state)*point,force});}
    in>>count;if(!in||count<0||count>1000)throw std::runtime_error("invalid excitation count");
    for(int i=0;i<count;i++){std::string name;double value;in>>name>>value;if(!in||!std::isfinite(value)||value<0||value>1||!excitation->values.count(name))throw std::runtime_error("invalid muscle excitation");excitation->values[name]=value;}
-   std::string extra;if(in>>extra)throw std::runtime_error("trailing command data");
+   if(in>>count){
+    if(count<0||count>1000)throw std::runtime_error("invalid coordinate actuation count");
+    for(int i=0;i<count;i++){std::string name;double value;in>>name>>value;if(!in||!std::isfinite(value)||value<-1||value>1||!torque->values.count(name))throw std::runtime_error("invalid coordinate actuation");torque->values[name]=value;}
+   }
+   in.clear();std::string extra;if(in>>extra)throw std::runtime_error("trailing command data");
    model.markControlsAsInvalid(state);state.invalidateAllCacheAtOrAbove(SimTK::Stage::Dynamics);model.realizeVelocity(state);double p0=external->power(state),active0=active_power();const auto metabolic0=metabolism.sample(state);
    Manager manager(model);manager.setIntegratorAccuracy(1e-7);manager.setIntegratorConstraintTolerance(1e-9);manager.setIntegratorMaximumStepSize(.0005);manager.setIntegratorInternalStepLimit(100000);manager.initialize(state);
    state=manager.integrate(state.getTime()+dt);model.realizeVelocity(state);work+=dt*.5*(p0+external->power(state));positive_work+=dt*.5*(active0+active_power());const auto metabolic1=metabolism.sample(state);
@@ -261,7 +286,7 @@ int main(int argc,char** argv){try{
    metabolic_energy+=dt*.5*(metabolic0.total_muscle_metabolic_w+metabolic1.total_muscle_metabolic_w);
    signed_work+=dt*.5*(metabolic0.active_fiber_work_w+metabolic1.active_fiber_work_w);
    heat_energy=metabolic_energy-signed_work;emit("advanced");
-  }catch(const std::exception& error){state=before.state;external->loads=before.loads;excitation->values=before.excitations;work=before.work;positive_work=before.positive_work;metabolic_energy=before.metabolic_energy;signed_work=before.signed_work;heat_energy=before.heat_energy;mass_port=before.mass_port;state.invalidateAllCacheAtOrAbove(SimTK::Stage::Instance);model.markControlsAsInvalid(state);std::ostringstream o;o<<"{\"error\":";str(o,error.what());o<<'}';std::cout<<"@IHM "<<o.str()<<std::endl;}
+  }catch(const std::exception& error){state=before.state;external->loads=before.loads;excitation->values=before.excitations;torque->values=before.torques;work=before.work;positive_work=before.positive_work;metabolic_energy=before.metabolic_energy;signed_work=before.signed_work;heat_energy=before.heat_energy;mass_port=before.mass_port;state.invalidateAllCacheAtOrAbove(SimTK::Stage::Instance);model.markControlsAsInvalid(state);std::ostringstream o;o<<"{\"error\":";str(o,error.what());o<<'}';std::cout<<"@IHM "<<o.str()<<std::endl;}
  }
  return 0;
 }catch(const std::exception& e){std::cerr<<"MECHANICAL_STREAM_ERROR="<<e.what()<<std::endl;return 2;}}

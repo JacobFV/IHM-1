@@ -5,6 +5,14 @@ import numpy as np
 from .instance_mass import variant_identity,pointer_directory
 from ..assembly.snapshot_data import clone_snapshot_data
 
+# Wall-clock deadline for one native response. A single ``advance`` is an
+# error-controlled Simbody integration whose cost is not bounded by dt: when the
+# plant is stiff the controller collapses the step and the engine can spend
+# minutes inside one 10 ms interval. The deadline is therefore a diagnostic
+# knob, not a correctness parameter -- raising it converts a fast failure into a
+# slow one and nothing else.
+RESPONSE_TIMEOUT_S=float(os.environ.get('IHM_NATIVE_RESPONSE_TIMEOUT_S','120'))
+
 SOURCE_FILES=('subject_walk_scaled.osim','subject_walk_scaled_ExpressionBasedCoordinateForceSet.xml','subject_walk_scaled_FunctionBasedPathSet.xml','subject_walk_scaled_ContactForceSet.xml','subject_walk_scaled_ContactGeometrySet.xml')
 def sha(path):return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 def finite(value):
@@ -127,7 +135,7 @@ class NativeMechanicalStream:
     def _read(self):
         while True:
             while b'\n' not in self._buffer:
-                if not self._selector.select(120):raise TimeoutError('Native mechanical stream response timed out')
+                if not self._selector.select(RESPONSE_TIMEOUT_S):raise TimeoutError('Native mechanical stream response timed out after '+str(RESPONSE_TIMEOUT_S)+'s')
                 block=os.read(self.process.stdout.fileno(),65536)
                 if not block:raise RuntimeError('Native mechanical stream terminated; see '+str(self.output/'engine.log'))
                 self._buffer+=block
@@ -171,7 +179,16 @@ class NativeMechanicalStream:
         # mutated in place, so a pickle round trip is an identical deep copy and
         # about four times cheaper than tree-walking deepcopy on this shape.
         with self.lock:return clone_snapshot_data(self.state)
-    def advance(self,dt_s,forces=(),actuation=None):
+    def advance(self,dt_s,forces=(),actuation=None,coordinate_actuation=None):
+        """Integrate one interval under muscle excitation and torque-port commands.
+
+        ``coordinate_actuation`` commands the source model's declared
+        CoordinateActuators (lumbar, and both arms) in [-1,1] of optimal force.
+        They are torque ports, not muscles, and are reported separately in
+        ``state['coordinate_actuators']`` so nothing can count them as muscle.
+        Omitting the argument leaves the previous commands in force; they start
+        at zero, which is exactly what the model did before the ports existed.
+        """
         dt=finite(dt_s)
         if not 0<dt<=.02:raise ValueError('Native mechanical step must be in (0,.02]s')
         commands=[]
@@ -183,6 +200,12 @@ class NativeMechanicalStream:
             if name not in self.state['muscles'] or not 0<=finite(value)<=1:raise ValueError('Unknown muscle excitation or out-of-range value')
         line=['advance',str(dt),str(len(forces)),*commands,str(len(activation))]
         for name,value in activation.items():line += [name,str(float(value))]
+        if coordinate_actuation is not None:
+            ports=self.state.get('coordinate_actuators',{})
+            for name,value in coordinate_actuation.items():
+                if name not in ports or not -1<=finite(value)<=1:raise ValueError('Unknown coordinate actuator or out-of-range command')
+            line += [str(len(coordinate_actuation))]
+            for name,value in coordinate_actuation.items():line += [name,str(float(value))]
         with self.lock:self.state=self._request(' '.join(line));return self.snapshot()
     def body_point(self,*,body,station_m):
         """Read current station position/velocity in native source ground frame."""
