@@ -112,13 +112,16 @@ PARAMETERS = (
                % (ANATOMY_REGISTRATION_SCALE,
                   MECHANICAL_STATURE_M * ANATOMY_REGISTRATION_SCALE,
                   ANATOMICAL_STATURE_M, 100 * STATURE_DISAGREEMENT)),
-        range_basis=('Engineering bounds, not a population interval. 1.40-2.05 m '
-                     'is roughly the 0.1st to 99.9th percentile of adult human '
-                     'stature, but no anthropometric table in this repository '
-                     'defines it and none is cited. What the bounds actually '
-                     'guard is the scaling itself: outside roughly 0.8x-1.15x '
-                     'the source subject the muscle path polynomials are being '
-                     'extrapolated far past the poses they were fitted on.'),
+        range_basis=('Measured, from NHANES 2017-2018 body measures over 4,883 '
+                     'adults aged 20-79 (scripts/index_anthropometry.py). The '
+                     'survey-weighted 0.5th-99.5th percentile of standing height '
+                     'is 1.437-1.929 m over both sexes, 1.560-1.955 m for men '
+                     'and 1.437-1.801 m for women. The declared bound is widened '
+                     'to 1.40-2.05 m and the widening is a modelling choice, not '
+                     'a measurement. The bound that actually bites is the '
+                     'scaling: beyond roughly 0.8x-1.15x the source subject the '
+                     'fitted path polynomials are being evaluated far outside the '
+                     'coordinate box they were fitted on.'),
         source=MECHANICAL_MODEL,
         consumers=('ihm.native.model_scaling.scale_model',
                    'scripts/materialize_stature_variant.py',
@@ -132,9 +135,12 @@ PARAMETERS = (
         basis=('Unattributed literal, replicated across 67 call sites in 58 files. See '
                'MECHANICAL_TARGET_MASS_KG for the four candidate derivations '
                'that were checked and rejected.'),
-        range_basis=('Engineering bounds. The native engine accepts any positive '
-                     'mass; these bounds only keep a typo from producing a body '
-                     'that silently integrates.'),
+        range_basis=('Measured. The same NHANES sample gives a survey-weighted '
+                     '0.5th-99.5th percentile weight of 45.1-164.5 kg over both '
+                     'sexes. The declared bound 35-160 kg is close to that and '
+                     'is not identical to it; the native engine itself accepts '
+                     'any positive mass, so what the bound buys is that a typo '
+                     'fails here rather than integrating.'),
         source=MECHANICAL_MODEL,
         consumers=('NativeMechanicalStream(target_mass_kg=...)',
                    'scripts/native_mechanical_stream.cpp line 52'),
@@ -165,15 +171,25 @@ PARAMETERS = (
         name='sex', unit='category', kind='enum',
         domain=('male',), default='male', status='declared',
         body='both',
-        basis=("The anatomical body is the BodyParts3D adult male atlas and the "
-               "mechanical body is a male Rajagopal subject. A search of all "
-               "~4,000 anatomical entities for penis, testis, prostate, uterus, "
-               "ovary, vagina, breast, mammary, labia and clitoris returns "
-               "nothing: the simulated body has ZERO sex-specific entities. The "
-               "domain of this parameter has one member for that reason and no "
-               "other."),
+        basis=("Measured by scripts/audit_sex_specific_anatomy.py. The body is "
+               "male, and specifically so: 32 of the 4,000 segment-bound "
+               "entities are male genital anatomy -- the three penile bodies, "
+               "both testes, epididymides, deferent ducts, seminal vesicles and "
+               "ejaculatory ducts, the prostate, and their vessels -- all bound "
+               "to the pelvis segment. Female-specific entities: 0 of 4,000 and "
+               "0 of 8,979 in the display atlas. Mammary gland, nipple and "
+               "areola: 0 in every set, in EITHER sex; what exists is Z-Anatomy's "
+               "'mammary region', a named patch of chest skin. The domain of "
+               "this parameter has one member for that reason."),
         range_basis=('Widening the domain requires new source geometry, not new '
-                     'code. docs/BODY_PARAMETERS.md sets out what specifically.'),
+                     'code: no catalogued source in this repository ships a '
+                     'female whole-body mesh. Separately, the proportional half '
+                     'of sexual dimorphism is measured -- see '
+                     'data/derived/anthropometry/nhanes-2017-2018/summary.json -- '
+                     'and cannot be applied either, because it is anisotropic '
+                     'and the fitted muscle path polynomials only admit an '
+                     'isotropic factor. docs/BODY_PARAMETERS.md carries both '
+                     'measurements.'),
         source=ANATOMICAL_PROFILE,
         consumers=(),
         limitation=("Writing sex='female' would change a string in a JSON file "
