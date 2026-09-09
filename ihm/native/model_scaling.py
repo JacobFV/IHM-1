@@ -334,8 +334,19 @@ def scale_model(model_bytes, scale, *, mass_scale=None, force_scale=None):
         node.text = repr(float(node.text) * force_scale)
         bump('max_isometric_force')
 
-    # 6. Residual/reserve torque actuators are moments: force x length.
-    for node in root.iter('optimal_force'):
+    # 6. Reserve actuators. All 13 in this model act on ROTATIONAL coordinates,
+    #    so their optimal_force is a moment and takes force x length. One acting
+    #    on a translational coordinate would be a force and must not take the
+    #    extra factor, so the type is checked rather than assumed.
+    for actuator in root.iter('CoordinateActuator'):
+        coordinate = (actuator.findtext('coordinate') or '').split('/')[-1]
+        if coordinate in _TRANSLATIONAL_COORDINATES:
+            raise ValueError(
+                'CoordinateActuator %s drives the translational coordinate %s; '
+                'its optimal_force is a force, not a moment, and the moment '
+                'scaling below would be wrong for it'
+                % (actuator.get('name'), coordinate))
+        node = actuator.find('optimal_force')
         node.text = repr(float(node.text) * force_scale * scale)
         bump('optimal_force')
 
