@@ -29,6 +29,7 @@
 #include <iostream>
 #include <array>
 #include <map>
+#include <set>
 #include <vector>
 #include <cmath>
 namespace fs=std::filesystem;
@@ -96,12 +97,61 @@ int main(int argc,char** argv){try{
  IHMNativeMuscleMetabolism metabolism(model);
  model.finalizeConnections();auto initial=model.initSystem();model.realizePosition(initial);
  ForceSet contact_templates((source/"subject_walk_scaled_ContactForceSet.xml").string());
+
+ // Optional REAL BONE contact geometry.  The `fall_proxy_<body>` spheres below
+ // are inscribed in the segment's INERTIA ellipsoid and centred on its mass
+ // centre -- a femur represented as a ball, which is the simplification the
+ // programme direction forbids.  When this file is present, the proxies for the
+ // bodies it names are replaced by those segments' own bone SURFACES: OpenSim
+ // ContactMesh over SimTK::ContactGeometry::TriangleMesh, carried by
+ // ElasticFoundationForce, which puts an independent spring at the centroid of
+ // every triangle.
+ //
+ // Nothing in that path takes a convex hull.  SimTK's HalfSpaceTriangleMesh
+ // collision walks the mesh's own OBB tree and returns the REAL faces below the
+ // plane, and the elastic foundation then evaluates each of those faces
+ // separately.  That matters here by measurement, not by principle: this body's
+ // rib cage encloses 4.3% of its own convex hull's volume and its surface runs
+ // 60 mm inside that hull.
+ //
+ // The meshes come from the model's OWN attached_geometry, expressed in the
+ // segment frame, with the subject scale baked into the written file by
+ // scripts/build_bone_contact_meshes.py -- ContactMesh has no scale property, so
+ // an unscaled bone would sit on a scaled subject and nothing would complain.
+ // No atlas registration is involved and none of its error is inherited.
+ struct BoneMesh {std::string body,element,file;long faces;};
+ std::vector<BoneMesh> bone_meshes;std::set<std::string> bone_bodies;std::map<std::string,BoneMesh> bone_force;
+ double bone_stiffness=0,bone_dissipation=0,bone_static=0,bone_dynamic=0,bone_viscous=0,bone_transition=0;
+ bool bone_replaces_source_feet=false;std::string bone_layer;
+ if(fs::exists(source/"segment_contact_meshes.txt")){
+  if(environment!="upright")throw std::runtime_error("bone contact meshes require the upright environment");
+  std::ifstream spec(source/"segment_contact_meshes.txt");std::string schema;int count=0,replace=0;
+  spec>>schema>>bone_layer>>count>>bone_stiffness>>bone_dissipation>>bone_static>>bone_dynamic>>bone_viscous>>bone_transition>>replace;
+  if(!spec||schema!="IHM_SEGMENT_CONTACT_MESHES_V1"||(bone_layer!="bone"&&bone_layer!="skin")||count<1||count>256||(replace!=0&&replace!=1))throw std::runtime_error("invalid bone contact mesh schema/count");
+  for(double value:{bone_stiffness,bone_dissipation,bone_static,bone_dynamic,bone_viscous,bone_transition})
+   if(!std::isfinite(value)||value<0)throw std::runtime_error("invalid bone contact material");
+  if(!(bone_stiffness>0)||!(bone_transition>0))throw std::runtime_error("bone contact needs positive stiffness and transition velocity");
+  bone_replaces_source_feet=replace==1;
+  for(int i=0;i<count;i++){
+   BoneMesh row;spec>>row.body>>row.element>>row.file>>row.faces;
+   if(!spec||row.faces<1||row.file.empty())throw std::runtime_error("invalid bone contact mesh record");
+   if(row.file[0]=='/'||row.file.find("..")!=std::string::npos)throw std::runtime_error("bone mesh path must be relative and contained");
+   if(!fs::exists(source/row.file))throw std::runtime_error("missing bone contact mesh: "+row.file);
+   model.getBodySet().get(row.body);
+   if(bone_force.count(row.element))throw std::runtime_error("duplicate bone contact element");
+   bone_meshes.push_back(row);bone_bodies.insert(row.body);
+  }
+  std::string extra;if(spec>>extra)throw std::runtime_error("trailing bone contact mesh data");
+ }
  ihm_surface::Foundation* surface_foundation=nullptr;
  double support_plane=0;std::map<std::string,double> proxy_radius;
  if(environment=="upright"){
   ContactGeometrySet geo((source/"subject_walk_scaled_ContactGeometrySet.xml").string());
   for(int i=0;i<geo.getSize();i++)model.addContactGeometry(geo.get(i).clone());
-  for(int i=0;i<contact_templates.getSize();i++)model.addComponent(contact_templates.get(i).clone());
+  // The source ContactForceSet is the 12 anatomically placed foot contacts.
+  // They are NOT inertia proxies, so they stay unless the caller has asked for
+  // the feet to be carried by bone meshes as well.
+  if(!bone_replaces_source_feet)for(int i=0;i<contact_templates.getSize();i++)model.addComponent(contact_templates.get(i).clone());
   // The walking source only supplies foot contact. A falling trunk previously
   // passed through the floor until pelvis_ty hit its -1 m coordinate clamp.
   // Give the other segments unilateral contact, without anchoring their pose.
@@ -112,12 +162,32 @@ int main(int argc,char** argv){try{
    // Talus has a tiny placeholder mass/inertia, not a geometric ellipsoid;
    // source foot contacts already represent the articulated foot assembly.
    if(b.getName().find("talus_")==0||b.getName().find("calcn_")==0||b.getName().find("toes_")==0)continue;
+   if(bone_bodies.count(b.getName()))continue;   // this segment contacts through its real bone surface
    const auto moments=b.getInertia().getMoments();double radius2=1e10;
    for(int k=0;k<3;k++)radius2=std::min(radius2,5*(moments[(k+1)%3]+moments[(k+2)%3]-moments[k])/(2*b.getMass()));
    if(!(radius2>0))throw std::runtime_error("source inertia cannot support whole-body contact radius");
    auto* sphere=new ContactSphere(std::sqrt(radius2),b.getMassCenter(),b);sphere->setName("fall_proxy_"+b.getName());model.addContactGeometry(sphere);
    auto* force=dynamic_cast<SmoothSphereHalfSpaceForce*>(contact_templates.get(0).clone());
    force->setName("fall_support_"+b.getName());force->connectSocket_sphere(*sphere);force->connectSocket_half_space(floor);model.addComponent(force);
+  }
+  // ONE ElasticFoundationForce per (bone mesh, floor) pair, never one force over
+  // all of them: an OpenSim contact set tests every pair inside it, so a shared
+  // set would also run mesh-against-mesh between neighbouring segments, which is
+  // both the expensive TriangleMeshTriangleMesh algorithm and an invented
+  // bone-on-bone force at every joint the source model lets overlap.
+  for(const auto& row:bone_meshes){
+   // ABSOLUTE path.  ContactMesh's constructor opens the file against the
+   // PROCESS cwd, while its later reload opens it against the model's own
+   // directory; the engine runs with cwd set to its output directory, so a
+   // relative path fails at construction and would only have worked by
+   // accident anywhere.  The relative form is kept for the report.
+   auto* mesh=new ContactMesh(fs::absolute(source/row.file).string(),SimTK::Vec3(0),SimTK::Vec3(0),model.getBodySet().get(row.body),row.element);
+   model.addContactGeometry(mesh);
+   auto* parameters=new ElasticFoundationForce::ContactParameters(bone_stiffness,bone_dissipation,bone_static,bone_dynamic,bone_viscous);
+   parameters->addGeometry(row.element);parameters->addGeometry("floor");
+   auto* force=new ElasticFoundationForce(parameters);force->setName("mesh_support_"+row.element);
+   force->setTransitionVelocity(bone_transition);model.addForce(force);
+   bone_force.emplace(force->getName(),row);
   }
  }else if(environment=="supine" && fs::exists(source/"supine_surface_foundation.txt")){
   surface_foundation=new ihm_surface::Foundation;surface_foundation->setName("retained_skin_surface_foundation");
@@ -279,7 +349,7 @@ int main(int argc,char** argv){try{
   o<<",\"metabolic_reference\":{\"M0_w\":";num(o,reference.total_muscle_metabolic_w);o<<",\"W0_w\":";num(o,reference.active_fiber_work_w);o<<",\"H0_w\":";num(o,reference.total_muscle_metabolic_w-reference.active_fiber_work_w);o<<'}';
   o<<",\"constraint_position_error\":";num(o,state.getQErr().norm());o<<",\"constraint_velocity_error\":";num(o,state.getUErr().norm());
   o<<",\"original_source_mass_kg\":";num(o,original_mass);o<<",\"mass_scale\":";num(o,mass_scale);
-  o<<",\"contact_model\":";str(o,surface_foundation?"retained_skin_foundation":environment=="upright"?"source_feet_and_inertia_inscribed_body_spheres":"source_sphere_proxies");
+  o<<",\"contact_model\":";str(o,surface_foundation?std::string("retained_skin_foundation"):environment!="upright"?std::string("source_sphere_proxies"):bone_meshes.empty()?std::string("source_feet_and_inertia_inscribed_body_spheres"):bone_replaces_source_feet?("real_"+bone_layer+"_meshes_elastic_foundation"):("source_feet_and_real_"+bone_layer+"_meshes_elastic_foundation"));o<<",\"segment_contact_meshes\":"<<bone_meshes.size();if(!bone_meshes.empty()){o<<",\"segment_contact_mesh_layer\":";str(o,bone_layer);}
   o<<",\"support_plane_source_x_m\":";num(o,support_plane);bool first=true;
   std::ostringstream bodies;bodies<<'{';first=true;
   SimTK::Vector_<SimTK::SpatialVec> reactions;model.getMatterSubsystem().calcMobilizerReactionForces(state,reactions);
@@ -313,6 +383,20 @@ int main(int argc,char** argv){try{
    o<<"{\"name\":";str(o,f.getName());o<<",\"body_frame\":";str(o,sphere.getFrame().getName());o<<",\"force_n\":";vec(o,wrench[1]);o<<",\"moment_nm\":";vec(o,wrench[0]);
    o<<",\"paired_force_residual_n\":";vec(o,wrench[1]+f.getHalfSpaceForce(state)[1]);o<<",\"center_m\":";vec(o,center);o<<",\"radius_m\":";num(o,sphere.getRadius());o<<'}';
    auto n=sphere.getFrame().getName();if(n=="calcn_r"||n=="toes_r")foot_r+=wrench[1];if(n=="calcn_l"||n=="toes_l")foot_l+=wrench[1];
+  }
+  for(const auto& f:model.getComponentList<ElasticFoundationForce>()){
+   const auto& row=bone_force.at(f.getName());const auto values=f.getRecordValues(state);
+   // values are [force on the bone's body, torque, force on the floor's body,
+   // torque], in the order the two geometries were added to the parameter set.
+   SimTK::Vec3 on_body(values[0],values[1],values[2]);total+=on_body;
+   if(!first)o<<',';first=false;
+   o<<"{\"name\":";str(o,f.getName());o<<",\"body_frame\":";str(o,row.body);
+   o<<",\"geometry_type\":";str(o,bone_layer+"_mesh_elastic_foundation");o<<",\"mesh_file\":";str(o,row.file);
+   o<<",\"mesh_faces\":"<<row.faces;o<<",\"force_n\":";vec(o,on_body);
+   o<<",\"moment_nm\":";vec(o,SimTK::Vec3(values[3],values[4],values[5]));
+   o<<",\"paired_force_residual_n\":";vec(o,on_body+SimTK::Vec3(values[6],values[7],values[8]));o<<'}';
+   if(row.body=="calcn_r"||row.body=="toes_r")foot_r+=on_body;
+   if(row.body=="calcn_l"||row.body=="toes_l")foot_l+=on_body;
   }
   if(surface_foundation){
    const auto surface=surface_foundation->sample(state);total+=surface.force;

@@ -41,7 +41,7 @@ class NativeMechanicalStream:
     its fidelity as an end, and never report what it did as what the body did.
     See docs/ACTUATION_STAGES.md.
     """
-    def __init__(self,root,output,*,environment='supine',target_mass_kg,augmented_registration=None,surface_contact_manifest=None,surface_sensor_indices=(),bed_material=None,instance_mass_variant=None,initial_pose=None,coordinate_limits=None,scene_objects=None,scene_contact_material=None):
+    def __init__(self,root,output,*,environment='supine',target_mass_kg,augmented_registration=None,surface_contact_manifest=None,surface_sensor_indices=(),bed_material=None,instance_mass_variant=None,initial_pose=None,coordinate_limits=None,scene_objects=None,scene_contact_material=None,segment_contact_meshes=None,segment_contact_material=None,segment_contact_replaces_source_feet=False):
         self.root=Path(root).resolve();self.output=Path(output).resolve()
         if self.output.exists() or not self.output.is_relative_to(self.root):raise ValueError('Fresh owned native output directory required')
         if environment not in ('free','supine','upright') or finite(target_mass_kg)<=0:raise ValueError('Invalid native environment or mass')
@@ -145,6 +145,57 @@ class NativeMechanicalStream:
                                   material['static_friction'],material['dynamic_friction'],material['viscous_friction'],
                                   material['transition_velocity_m_s']]))+'\n'
                 +''.join(' '.join(map(str,[r['id'],r['radius_m'],r['mass_kg'],*r['position_m']]))+'\n' for r in objects))
+        # Real segment SURFACES as contact geometry, in place of the upright
+        # environment's inertia-inscribed COM spheres.  The bundle is built by
+        # scripts/build_segment_contact_meshes.py and states which LAYER it is:
+        # `bone` is the skeleton, and is a collider against other bones and its
+        # own soft tissue; `skin` is what actually meets the floor.  The
+        # distinction is carried into the native emit so a report can never say
+        # "the body stood on its skin" about a run that stood on its femurs.
+        meshes=None
+        if segment_contact_meshes is not None:
+            if environment!='upright':raise ValueError('Segment contact meshes require the upright environment')
+            bundle=(self.root/segment_contact_meshes).resolve()
+            if not bundle.is_relative_to(self.root):raise ValueError('Owned segment contact mesh bundle required')
+            meshes=json.loads((bundle/'manifest.json').read_text())
+            if meshes.get('schema')!='ihm.segment-contact-meshes.v1':raise ValueError('Unknown segment contact mesh schema')
+            if meshes.get('layer') not in ('bone','skin'):raise ValueError('Segment contact mesh bundle must declare a bone or skin layer')
+            # The elastic foundation's own documented reading of its stiffness is
+            # k=(1-p)E/((1+p)(1-2p)h) for a uniform elastic LAYER of thickness h
+            # over a rigid substrate.  That is the soft tissue between the
+            # segment and the world; the caller states E, p and h, and the
+            # stiffness is derived from them rather than typed in as a number
+            # with no units attached to anything.
+            material=dict(youngs_modulus_pa=100000.,poissons_ratio=.45,layer_thickness_m=.01,
+                          dissipation_s_m=2.,static_friction=.8,dynamic_friction=.7,viscous_friction=.5,
+                          transition_velocity_m_s=.05)
+            if segment_contact_material is not None:
+                if set(segment_contact_material)-set(material):raise ValueError('Unknown segment contact material field')
+                material.update({k:finite(v) for k,v in segment_contact_material.items()})
+            if material['layer_thickness_m']<=0 or material['youngs_modulus_pa']<=0 or material['transition_velocity_m_s']<=0:raise ValueError('Invalid segment contact layer')
+            if not 0<=material['poissons_ratio']<.5:raise ValueError('Poisson ratio must lie in [0,0.5)')
+            if any(material[k]<0 for k in ('dissipation_s_m','static_friction','dynamic_friction','viscous_friction')):raise ValueError('Invalid segment contact friction')
+            p_=material['poissons_ratio']
+            material['stiffness_pa_per_m']=(1-p_)*material['youngs_modulus_pa']/((1+p_)*(1-2*p_)*material['layer_thickness_m'])
+            self.segment_contact_material=material
+            target=source/'contact_geometry';target.mkdir()
+            rows=[]
+            for record in meshes['records']:
+                name=Path(record['mesh_file']).name
+                if name!=record['mesh_file'] or not re.fullmatch(r'[A-Za-z0-9_.]+',name):raise ValueError('Invalid segment contact mesh file name')
+                data=(bundle/'meshes'/name).read_bytes()
+                if hashlib.sha256(data).hexdigest()!=record['written_sha256']:raise ValueError('Segment contact mesh changed while copying: '+name)
+                (target/name).write_bytes(data)
+                rows.append((record['body'],record['element'],'contact_geometry/'+name,record['scaled']['faces']))
+            if not rows:raise ValueError('Segment contact mesh bundle is empty')
+            (source/'segment_contact_meshes.txt').write_text(
+                ' '.join(map(str,['IHM_SEGMENT_CONTACT_MESHES_V1',meshes['layer'],len(rows),material['stiffness_pa_per_m'],
+                                  material['dissipation_s_m'],material['static_friction'],material['dynamic_friction'],
+                                  material['viscous_friction'],material['transition_velocity_m_s'],
+                                  1 if segment_contact_replaces_source_feet else 0]))+'\n'
+                +''.join(' '.join(map(str,row))+'\n' for row in rows))
+        elif segment_contact_material is not None or segment_contact_replaces_source_feet:
+            raise ValueError('Segment contact material/foot replacement requires a segment contact mesh bundle')
         pose=None
         if initial_pose is not None:
             if not isinstance(initial_pose,dict) or not initial_pose or any(not isinstance(name,str) or re.fullmatch(r'[A-Za-z0-9_]+',name) is None for name in initial_pose):raise ValueError('Initial pose requires a nonempty coordinate mapping')
@@ -154,6 +205,7 @@ class NativeMechanicalStream:
         if pose is not None:inputs['initial_pose.txt']=sha(source/'initial_pose.txt')
         if stops is not None:inputs['coordinate_limits.txt']=sha(source/'coordinate_limits.txt')
         if objects is not None:inputs['scene_objects.txt']=sha(source/'scene_objects.txt')
+        if meshes is not None:inputs['segment_contact_meshes.txt']=sha(source/'segment_contact_meshes.txt')
         overrides=self.source_overrides
         for name in SOURCE_FILES:
             if augmentation is not None and name=='subject_walk_scaled.osim':origin=self.root/augmentation['model_path']
@@ -186,6 +238,10 @@ class NativeMechanicalStream:
         execution={'schema':'ihm.native-mechanical-stream.v1','command':command,'engine_command':engine_command,'address_space_limit_bytes':4294967296,'source_sha256':inputs,'build':manifest,'target_mass_kg':target_mass_kg,
                    'scene_objects':objects,'scene_contact_material':None if objects is None else self.scene_contact_material,
                    'scene_object_contact_basis':'Free rigid spheres with SimTK sphere-sphere collision through OpenSim HuntCrossleyForce, one force per object/body-element pair so no object is tested against another object or against the body\'s own overlapping proxies. Contact material transferred from the source foot contact set; the body elements touched are engineering proxies, not an anatomical skin surface.',
+                   'segment_contact_meshes':None if meshes is None else {k:v for k,v in meshes.items() if k!='records'},
+                   'segment_contact_material':None if meshes is None else self.segment_contact_material,
+                   'segment_contact_replaces_source_feet':bool(meshes is not None and segment_contact_replaces_source_feet),
+                   'segment_contact_basis':'Real segment surfaces as OpenSim ContactMesh over SimTK::ContactGeometry::TriangleMesh, carried by ElasticFoundationForce -- an independent spring at the centroid of every triangle, over the faces SimTK\'s HalfSpaceTriangleMesh collision finds below the plane. No convex hull is taken anywhere on that path. The stiffness is derived from a declared Young modulus, Poisson ratio and layer thickness, which is the elastic foundation\'s own reading of what it represents: a uniform soft layer over a rigid substrate.',
                    'coordinate_limits':stops,'coordinate_limits_basis':'Joint stops at the coordinate ranges the source model already declares; nothing else in this plant enforces them. The LIMIT is the model\'s own -- the stiffness, damping and transition width are explicit engineering constants stated by the caller, not measured ligament properties.',
                    'initial_pose':pose,'initial_pose_basis':'Explicit source coordinate initialization after contact reference construction, before muscle equilibrium and energy reference; no ongoing pose constraint or equilibrium claim',
                    'instance_mass_variant':self.instance_mass_variant,'mass_reference_id':self.identity if self.instance_mass_variant is not None else None,'bed_material':bed,'surface_contact_manifest':surface_manifest,'augmented_registration':augmentation,'checkpoint_scope':'Complete in-process SimTK State including effective mass/inertia, excitation/load commands, work accumulators and local mass owner inventory/sequence/receipt; native process must remain alive. Call release(checkpoint) after accepted intervals.',
