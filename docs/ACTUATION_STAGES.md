@@ -12,7 +12,22 @@ The end state, stated first so nothing below is mistaken for it:
 > system, actuated by the dynamic elasticity of the muscles, which is determined
 > by the brain's outputs.**
 
-Everything else on this page is a route to that.
+**Contact with the world is never bone against world.** It is bone, mediated
+through the interlayering of soft bodies — fatty tissue, muscle, skin and the
+rest — and it is the skin that meets the floor. A bone mesh is a collider against
+*other bones and its own soft tissue*, not against the ground.
+
+**And the end state is not a later stage. It is to be fully implemented now.**
+The body must be selectable between two modes:
+
+| mode | meaning |
+|---|---|
+| **driven** | the body is posed from the crude scaffold. Fast, and what generates training corpora. |
+| **fully present participant** | the body is dynamically simulated in its own right: muscles actuate, soft tissue deforms and mediates contact, the skeleton moves because muscles pulled it. |
+
+Both exist, and the caller chooses. The stages below describe how work is
+sequenced and what the scaffold is *for* — they do not license shipping only the
+scaffold and calling the participant mode future work.
 
 ---
 
@@ -59,11 +74,12 @@ Letting the brain drive the low-res body may earn its place as a curriculum
 stage: a lower-dimensional control problem to solve before the real one. Optional,
 and justified only by whether it helps the transfer.
 
-### 3. Gradually — the scaffold is thrown away
+### 3. The scaffold's jobs move to the real body
 
-Not replaced in one step. Progressively, as each of its jobs is taken over by the
-real body: contact first (real bone meshes rather than inertia-inscribed spheres
-at segment centres of mass), then actuation.
+Not because the participant mode arrives later — it is to be built now — but
+because each job the scaffold still holds is a place the real body is not yet
+sovereign. Contact first, then actuation. When a job has moved, the scaffold
+keeps it only as the `driven` mode's fast path.
 
 ### 4. The end state
 
@@ -75,10 +91,17 @@ elasticity is what does the work.
 
 ## What this means for decisions you are about to make
 
-**Do not give the anatomical body its own 3,816-body dynamics.** That is not what
-stage 3 means and it is the wrong trade. The crude body's 22 segments *are* the
-bones — the `femur_r` segment is the femur — so the route is to keep the degrees
-of freedom crude while making the **shape** real.
+**The participant mode needs the real body to be dynamic, and that is the point.**
+Earlier guidance here said not to give the anatomical body its own dynamics; that
+was written when the end state was mistaken for a later stage, and it is
+withdrawn. What remains true is that the `driven` mode must stay cheap — it is
+the corpus generator — so the two modes are different code paths over the same
+anatomy, not one compromise between them.
+
+**Contact belongs to skin, not bone.** A design that puts the ground collider on
+a bone mesh has skipped the fat, muscle and skin that actually meet the floor.
+The 21,381-point skin contact quadrature and `surface_contact_manifest` already
+exist and are the right place to start.
 
 **Do not optimise the scaffold's fidelity as an end.** Making the 22-segment
 body's gait beautiful is not progress toward a brain controlling real muscles.
