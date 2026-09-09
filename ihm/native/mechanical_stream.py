@@ -27,7 +27,21 @@ class NativeCommandRejected(ValueError):
     """Native command explicitly rejected after transactional rollback."""
 
 class NativeMechanicalStream:
-    def __init__(self,root,output,*,environment='supine',target_mass_kg,augmented_registration=None,surface_contact_manifest=None,surface_sensor_indices=(),bed_material=None,instance_mass_variant=None,initial_pose=None,coordinate_limits=None):
+    """The crude 22-segment plant. THIS IS THE SCAFFOLD, NOT THE BODY.
+
+    22 rigid bodies, 80 muscles, 33 coordinates -- what the engine actually
+    integrates, and the only thing that touches the world.  The real body of
+    3,816 anatomical entities is posed KINEMATICALLY from these segments via
+    `data/derived/anatomy-segment-binding/` and feels nothing itself.
+
+    The crude body has always been a scaffold with a planned disposal; its jobs
+    move to the real body in stages, contact before actuation.  The end state is
+    the brain driving individual muscles whose contractions move the skeleton.
+    Make this good enough to generate honest load and afference; do not optimise
+    its fidelity as an end, and never report what it did as what the body did.
+    See docs/ACTUATION_STAGES.md.
+    """
+    def __init__(self,root,output,*,environment='supine',target_mass_kg,augmented_registration=None,surface_contact_manifest=None,surface_sensor_indices=(),bed_material=None,instance_mass_variant=None,initial_pose=None,coordinate_limits=None,scene_objects=None,scene_contact_material=None):
         self.root=Path(root).resolve();self.output=Path(output).resolve()
         if self.output.exists() or not self.output.is_relative_to(self.root):raise ValueError('Fresh owned native output directory required')
         if environment not in ('free','supine','upright') or finite(target_mass_kg)<=0:raise ValueError('Invalid native environment or mass')
@@ -110,6 +124,27 @@ class NativeMechanicalStream:
             if not stops or len({r['coordinate'] for r in stops})!=len(stops):raise ValueError('Nonempty unique coordinate limits required')
             (source/'coordinate_limits.txt').write_text('IHM_COORDINATE_LIMITS_V1 '+str(len(stops))+'\n'+''.join(
                 ' '.join([r['coordinate'],*(str(r[k]) for k in ('lower_rad','upper_rad','stiffness_nm_per_rad','damping_nm_s_per_rad','transition_rad'))])+'\n' for r in stops))
+        objects=None
+        if scene_objects is not None:
+            material=dict(stiffness_pa=1000000.,dissipation_s_m=2.,static_friction=.8,dynamic_friction=.8,viscous_friction=.5,transition_velocity_m_s=.2)
+            if scene_contact_material is not None:
+                if set(scene_contact_material)-set(material):raise ValueError('Unknown scene contact material field')
+                material.update({k:finite(v) for k,v in scene_contact_material.items()})
+            if any(material[k]<0 for k in material) or material['stiffness_pa']<=0 or material['transition_velocity_m_s']<=0:raise ValueError('Invalid scene contact material')
+            objects=[]
+            for item in scene_objects:
+                if set(item)!={'id','radius_m','mass_kg','position_m'}:raise ValueError('Scene object requires id/radius_m/mass_kg/position_m')
+                if not isinstance(item['id'],str) or re.fullmatch(r'[A-Za-z0-9_]+',item['id']) is None:raise ValueError('Invalid scene object id')
+                row=dict(id=item['id'],radius_m=finite(item['radius_m']),mass_kg=finite(item['mass_kg']),position_m=list(vec(item['position_m'])))
+                if row['radius_m']<=0 or row['mass_kg']<=0:raise ValueError('Scene object needs positive radius and mass')
+                objects.append(row)
+            if not objects or len(objects)>8 or len({r['id'] for r in objects})!=len(objects):raise ValueError('One to eight uniquely named scene objects required')
+            self.scene_contact_material=material
+            (source/'scene_objects.txt').write_text(
+                ' '.join(map(str,['IHM_SCENE_OBJECTS_V1',len(objects),material['stiffness_pa'],material['dissipation_s_m'],
+                                  material['static_friction'],material['dynamic_friction'],material['viscous_friction'],
+                                  material['transition_velocity_m_s']]))+'\n'
+                +''.join(' '.join(map(str,[r['id'],r['radius_m'],r['mass_kg'],*r['position_m']]))+'\n' for r in objects))
         pose=None
         if initial_pose is not None:
             if not isinstance(initial_pose,dict) or not initial_pose or any(not isinstance(name,str) or re.fullmatch(r'[A-Za-z0-9_]+',name) is None for name in initial_pose):raise ValueError('Initial pose requires a nonempty coordinate mapping')
@@ -118,6 +153,7 @@ class NativeMechanicalStream:
         original=self.root/'data/raw/mechanics/opensim-core/OpenSim/Examples/Moco/example3DWalking';inputs={}
         if pose is not None:inputs['initial_pose.txt']=sha(source/'initial_pose.txt')
         if stops is not None:inputs['coordinate_limits.txt']=sha(source/'coordinate_limits.txt')
+        if objects is not None:inputs['scene_objects.txt']=sha(source/'scene_objects.txt')
         overrides=self.source_overrides
         for name in SOURCE_FILES:
             if augmentation is not None and name=='subject_walk_scaled.osim':origin=self.root/augmentation['model_path']
@@ -148,6 +184,8 @@ class NativeMechanicalStream:
         command=[limiter,'--as=4294967296','--','nice','-n','10',*engine_command]
         self.lock=threading.RLock();self.closed=False;self.tokens=set();self.log=(self.output/'engine.log').open('w')
         execution={'schema':'ihm.native-mechanical-stream.v1','command':command,'engine_command':engine_command,'address_space_limit_bytes':4294967296,'source_sha256':inputs,'build':manifest,'target_mass_kg':target_mass_kg,
+                   'scene_objects':objects,'scene_contact_material':None if objects is None else self.scene_contact_material,
+                   'scene_object_contact_basis':'Free rigid spheres with SimTK sphere-sphere collision through OpenSim HuntCrossleyForce, one force per object/body-element pair so no object is tested against another object or against the body\'s own overlapping proxies. Contact material transferred from the source foot contact set; the body elements touched are engineering proxies, not an anatomical skin surface.',
                    'coordinate_limits':stops,'coordinate_limits_basis':'Joint stops at the coordinate ranges the source model already declares; nothing else in this plant enforces them. The LIMIT is the model\'s own -- the stiffness, damping and transition width are explicit engineering constants stated by the caller, not measured ligament properties.',
                    'initial_pose':pose,'initial_pose_basis':'Explicit source coordinate initialization after contact reference construction, before muscle equilibrium and energy reference; no ongoing pose constraint or equilibrium claim',
                    'instance_mass_variant':self.instance_mass_variant,'mass_reference_id':self.identity if self.instance_mass_variant is not None else None,'bed_material':bed,'surface_contact_manifest':surface_manifest,'augmented_registration':augmentation,'checkpoint_scope':'Complete in-process SimTK State including effective mass/inertia, excitation/load commands, work accumulators and local mass owner inventory/sequence/receipt; native process must remain alive. Call release(checkpoint) after accepted intervals.',

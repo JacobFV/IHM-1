@@ -1,3 +1,19 @@
+// THIS IS THE SCAFFOLD, NOT THE BODY.
+//
+// 22 rigid bodies, 80 muscles, 33 coordinates.  It is what the engine actually
+// integrates and it is the only thing that touches the world; the real body --
+// 3,816 anatomical entities -- is posed KINEMATICALLY from these segments
+// through data/derived/anatomy-segment-binding/ and feels nothing itself.
+//
+// The crude body has always been a scaffold with a planned disposal.  Its jobs
+// are handed to the real body in stages: contact first (real, potentially
+// concave bone meshes in place of the inertia-inscribed spheres below), then
+// actuation.  The end state is the brain driving individual muscles whose
+// contractions move the skeleton, in a coupled rigid and soft body system.
+//
+// So: make this good enough to generate honest load and afference.  Do NOT
+// optimise its fidelity as an end, and do not report what it did as what the
+// body did.  docs/ACTUATION_STAGES.md is the full plan.
 // Continuing native articulated plant. Source muscles, joints and inertia remain
 // native; canonical geometry is registered by the Python materializer.
 #include <OpenSim/OpenSim.h>
@@ -11,6 +27,7 @@
 #include <sstream>
 #include <iomanip>
 #include <iostream>
+#include <array>
 #include <map>
 #include <vector>
 #include <cmath>
@@ -155,6 +172,68 @@ int main(int argc,char** argv){try{
   }
   std::string extra;if(limits>>extra)throw std::runtime_error("trailing coordinate limit data");
  }
+ // Optional scene objects: free rigid spheres the BODY can touch, not only the
+ // ground.  The environment catalogue's own not_selectable list says
+ // "body_object_contact: No engine solves it", because the interactive scene
+ // integrates its ball in Python against a half space and never against the
+ // body.  Nothing new is needed to solve it here: SimTK ships
+ // CollisionDetectionAlgorithm::SphereSphere and OpenSim::HuntCrossleyForce
+ // exposes it over named ContactGeometry, and the body already carries 28
+ // ContactSphere elements over 20 bodies in this environment.
+ //
+ // One HuntCrossleyForce per (object, body element) PAIR, never one force over
+ // all of them: a single contact set would also test the body's own elements
+ // against each other, and those interpenetrate permanently by construction --
+ // the torso proxy has a 0.258 m radius and its centre sits about 0.3 m from the
+ // pelvis proxy's 0.095 m, so one shared set would invent a large permanent
+ // self-contact force.  Pairing confines every test to object-against-body.
+ std::vector<std::string> scene_object_ids;
+ std::vector<std::array<std::string,3>> scene_pairs;   // force, object, body element
+ if(fs::exists(source/"scene_objects.txt")){
+  if(environment!="upright")throw std::runtime_error("scene objects require the upright environment");
+  std::ifstream objects(source/"scene_objects.txt");std::string schema;int count;
+  double stiffness,dissipation,static_friction,dynamic_friction,viscous_friction,transition;
+  objects>>schema>>count>>stiffness>>dissipation>>static_friction>>dynamic_friction>>viscous_friction>>transition;
+  if(!objects||schema!="IHM_SCENE_OBJECTS_V1"||count<1||count>8)throw std::runtime_error("invalid scene object schema/count");
+  for(double value:{stiffness,dissipation,static_friction,dynamic_friction,viscous_friction,transition})
+   if(!std::isfinite(value)||value<0)throw std::runtime_error("invalid scene contact material");
+  if(!(stiffness>0)||!(transition>0))throw std::runtime_error("scene contact needs positive stiffness and transition velocity");
+  auto& floor=dynamic_cast<ContactHalfSpace&>(model.updContactGeometrySet().get("floor"));
+  // Snapshot the body's geometry names BEFORE any object is added, so objects
+  // are never paired with each other: object-object contact stays out of scope.
+  std::vector<std::string> body_geometry;
+  for(int i=0;i<model.getContactGeometrySet().getSize();i++){
+   const auto& g=model.getContactGeometrySet().get(i);
+   if(dynamic_cast<const ContactSphere*>(&g))body_geometry.push_back(g.getName());
+  }
+  if(body_geometry.empty())throw std::runtime_error("scene objects need body contact geometry to touch");
+  for(int k=0;k<count;k++){
+   std::string id;double radius,mass;SimTK::Vec3 start;
+   objects>>id>>radius>>mass;for(int a=0;a<3;a++)objects>>start[a];
+   if(!objects||id.empty()||!(radius>0)||!(mass>0)||!start.isFinite())throw std::runtime_error("invalid scene object record");
+   if(id.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_")!=std::string::npos)throw std::runtime_error("invalid scene object id");
+   auto* object=new OpenSim::Body(id,mass,SimTK::Vec3(0),SimTK::Inertia::sphere(radius)*mass);
+   model.addBody(object);
+   auto* joint=new FreeJoint(id+"_free",model.getGround(),*object);
+   static const char* suffix[6]={"_rx","_ry","_rz","_tx","_ty","_tz"};
+   for(int c=0;c<6;c++){joint->upd_coordinates(c).setName(id+suffix[c]);joint->upd_coordinates(c).setDefaultValue(c<3?0.:start[c-3]);}
+   model.addJoint(joint);
+   auto* sphere=new ContactSphere(radius,SimTK::Vec3(0),*object);sphere->setName(id+"_sphere");model.addContactGeometry(sphere);
+   // Ground contact for the object uses the SAME transferred source foot law the
+   // rest of this environment uses, so the object is not on a different floor.
+   auto* ground=dynamic_cast<SmoothSphereHalfSpaceForce*>(contact_templates.get(0).clone());
+   ground->setName("scene_ground_"+id);ground->connectSocket_sphere(*sphere);ground->connectSocket_half_space(floor);model.addComponent(ground);
+   for(const auto& other:body_geometry){
+    auto* parameters=new HuntCrossleyForce::ContactParameters(stiffness,dissipation,static_friction,dynamic_friction,viscous_friction);
+    parameters->addGeometry(id+"_sphere");parameters->addGeometry(other);
+    auto* pair=new HuntCrossleyForce(parameters);pair->setName("scene_contact_"+id+"__"+other);
+    pair->setTransitionVelocity(transition);model.addForce(pair);
+    scene_pairs.push_back({pair->getName(),id,other});
+   }
+   scene_object_ids.push_back(id);
+  }
+  std::string extra;if(objects>>extra)throw std::runtime_error("trailing scene object data");
+ }
  model.finalizeConnections();SimTK::State state=model.initSystem();state.setTime(0);
  // Material registration belongs to the retained source pose. An optional
  // initialization must move that same body, not silently redefine its geometry.
@@ -263,6 +342,40 @@ int main(int argc,char** argv){try{
     o<<",\"point_source_m\":";vec(o,point.location);o<<",\"normal_source\":[-1,0,0],\"reaction_normal_source\":[1,0,0],\"force_n\":";vec(o,point.force);
     o<<",\"indentation_m\":";num(o,point.indentation);o<<",\"bed_indentation_m\":";num(o,point.bed_indentation);o<<",\"total_approach_m\":";num(o,point.total_approach);o<<",\"contact_area_m2\":";num(o,point.area);o<<'}';}
    o<<"]}";}
+  if(!scene_object_ids.empty()){
+   o<<",\"scene_objects\":[";bool object_first=true;
+   for(const auto& id:scene_object_ids){
+    if(!object_first)o<<',';object_first=false;
+    const auto& object=model.getBodySet().get(id);
+    auto velocity=object.getMobilizedBody().getBodyVelocity(state);
+    o<<"{\"id\":";str(o,id);o<<",\"position_source_m\":";vec(o,object.getTransformInGround(state).p());
+    o<<",\"velocity_source_m_s\":";vec(o,velocity[1]);o<<",\"angular_velocity_rad_s\":";vec(o,velocity[0]);
+    o<<",\"mass_kg\":";num(o,object.getMass());
+    SimTK::Vec3 body_total(0);int touching=0;
+    std::ostringstream touches;touches<<'[';bool touch_first=true;
+    for(const auto& entry:scene_pairs){
+     if(entry[1]!=id)continue;
+     const auto& force=model.getComponent<HuntCrossleyForce>("/forceset/"+entry[0]);
+     const auto values=force.getRecordValues(state);
+     SimTK::Vec3 on_object(values[0],values[1],values[2]);
+     if(on_object.norm()<=1e-9)continue;
+     body_total+=on_object;++touching;
+     if(!touch_first)touches<<',';touch_first=false;
+     touches<<"{\"body_element\":";str(touches,entry[2]);
+     touches<<",\"body_frame\":";str(touches,model.getContactGeometrySet().get(entry[2]).getFrame().getName());
+     touches<<",\"force_on_object_n\":";vec(touches,on_object);
+     touches<<",\"force_on_body_n\":";vec(touches,SimTK::Vec3(values[6],values[7],values[8]));
+     touches<<",\"magnitude_n\":";num(touches,on_object.norm());touches<<'}';
+    }
+    touches<<']';
+    o<<",\"body_contacts\":"<<touches.str();
+    o<<",\"body_contact_elements_touching\":"<<touching;
+    o<<",\"body_contact_force_n\":";vec(o,body_total);
+    o<<",\"body_contact_magnitude_n\":";num(o,body_total.norm());
+    o<<",\"contact_basis\":\"SimTK sphere-sphere collision through OpenSim HuntCrossleyForce, one force per object/body-element pair; ground contact uses the transferred source foot law\"}";
+   }
+   o<<']';
+  }
   o<<",\"contact_force_n\":";vec(o,total);o<<",\"momentum_balance_residual_n\":";vec(o,model.getTotalMass(state)*(model.calcMassCenterAcceleration(state)-model.getGravity())-total-ext);
   int axis=environment=="supine"?0:1;o<<",\"foot_contact_force_n\":{\"r\":";num(o,std::max(0.,foot_r[axis]));o<<",\"l\":";num(o,std::max(0.,foot_l[axis]));o<<"},\"environment\":";str(o,environment);o<<'}';
   std::cout<<"@IHM "<<o.str()<<std::endl;
