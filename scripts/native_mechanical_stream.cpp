@@ -271,10 +271,15 @@ int main(int argc,char** argv){try{
   auto& floor=dynamic_cast<ContactHalfSpace&>(model.updContactGeometrySet().get("floor"));
   // Snapshot the body's geometry names BEFORE any object is added, so objects
   // are never paired with each other: object-object contact stays out of scope.
+  // Spheres AND meshes: SimTK carries SphereTriangleMesh as well as SphereSphere,
+  // so an object touches whatever the body is currently wearing -- the
+  // inertia-inscribed proxies, or the real segment meshes where those are loaded.
+  // The half space is excluded because the object reaches the ground through the
+  // transferred source foot law below, not through this pairing.
   std::vector<std::string> body_geometry;
   for(int i=0;i<model.getContactGeometrySet().getSize();i++){
    const auto& g=model.getContactGeometrySet().get(i);
-   if(dynamic_cast<const ContactSphere*>(&g))body_geometry.push_back(g.getName());
+   if(dynamic_cast<const ContactSphere*>(&g)||dynamic_cast<const ContactMesh*>(&g))body_geometry.push_back(g.getName());
   }
   if(body_geometry.empty())throw std::runtime_error("scene objects need body contact geometry to touch");
   for(int k=0;k<count;k++){
