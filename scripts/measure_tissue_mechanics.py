@@ -74,7 +74,17 @@ WEIGHT_N = TARGET_MASS_KG * 9.81
 # Quapp and Weiss 1998, the same publication the modulus comes from: human MCL
 # ultimate strain 17.1 +/- 1.5%.
 ULTIMATE_STRAIN = 0.171
-PRONE_POSE = {"pelvis_tilt": -1.5708, "pelvis_ty": 0.25}
+# Drop configurations for the excursion experiment.  More than one, because a
+# single trajectory is a single trajectory: the excursion is deterministic, so
+# repeating it proves nothing, but running the SAME arms from different initial
+# conditions is what says the ordering is a property of the force set rather
+# than of one drop.  `prone` is the seed the withdrawn 973 mm crawl came from.
+DROPS = {
+    "prone": {"pelvis_tilt": -1.5708, "pelvis_ty": 0.25},
+    "prone_high": {"pelvis_tilt": -1.4, "pelvis_ty": 0.45},
+    "prone_rolled": {"pelvis_tilt": -1.5708, "pelvis_list": 0.35, "pelvis_ty": 0.30},
+}
+PRONE_POSE = DROPS["prone"]
 
 
 def load_module(name, path):
@@ -189,27 +199,32 @@ def run_statics(arm, pose, steps, dt, work, spec_by_element):
         stream.close()
 
 
-def run_excursion(arm, seconds, dt, work, spec_by_element, excitation=0.02):
+def run_excursion(arm, seconds, dt, work, spec_by_element, excitation=0.02,
+                  drop="prone"):
     """Drop the body prone with nothing driving it, and see where it ends up.
 
     This is the configuration the withdrawn 973 mm crawl came from: the source
     model's `PassiveAnkleDamping` is literally `-0.1*qdot`, so an unloaded foot
     plantarflexes to 2.52 rad against a declared +/-0.873 and nothing objects.
     """
-    out = work / ("excursion-" + arm)
+    out = work / ("excursion-" + drop + "-" + arm)
     shutil.rmtree(out, ignore_errors=True)
-    stream = open_stream(out, PRONE_POSE, arm)
+    stream = open_stream(out, DROPS[drop], arm)
     try:
         state = stream.snapshot()
         muscles = sorted(state["muscles"])
         targets = {k: 0.0 for k in
                    [s + "_" + t for s in crawl.ARM_PORT for t in "rl"] + list(crawl.LUMBAR_PORT)}
         worst, culprit, track, costs = 0.0, None, [], []
+        frames = [dict(time_s=state["time_s"],
+                       joints={k: dict(v) for k, v in state["coordinates"].items()})]
         for i in range(int(round(seconds / dt))):
             mark = time.monotonic()
             state = stream.advance(dt, actuation={m: excitation for m in muscles},
                                    coordinate_actuation=crawl.limb_pd(state, targets))
             costs.append(time.monotonic() - mark)
+            frames.append(dict(time_s=state["time_s"],
+                               joints={k: dict(v) for k, v in state["coordinates"].items()}))
             excursion, name = crawl.worst_range_excursion(state)
             if excursion > worst:
                 worst, culprit = excursion, name
@@ -218,7 +233,7 @@ def run_excursion(arm, seconds, dt, work, spec_by_element, excitation=0.02):
                                   worst_excursion_rad=excursion, coordinate=name,
                                   pelvis_ty_m=state["coordinates"]["pelvis_ty"]["value"],
                                   kinetic_energy_j=state["kinetic_energy_j"]))
-        return dict(arm=arm, seconds=seconds, dt_s=dt,
+        return dict(arm=arm, drop=drop, seconds=seconds, dt_s=dt,
                     worst_range_excursion_rad=worst,
                     worst_range_excursion_deg=math.degrees(worst),
                     worst_range_coordinate=culprit,
@@ -226,9 +241,25 @@ def run_excursion(arm, seconds, dt, work, spec_by_element, excitation=0.02):
                     coordinates_outside_range=_outside(state),
                     track=track,
                     cost=dict(advances=len(costs), median_s=statistics.median(costs),
-                              worst_s=max(costs), total_wall_s=sum(costs)))
+                              worst_s=max(costs), total_wall_s=sum(costs)),
+                    trajectory_path=_emit_trajectory(work, drop, arm, dt, frames))
     finally:
         stream.close()
+
+
+def _emit_trajectory(work, drop, arm, dt, frames):
+    """The coordinate trace, in the format render_anatomical_motion.py reads.
+
+    So the excursion is not only a number: the real anatomy can be posed from it
+    and the joint going out of range can be seen going out of range.
+    """
+    path = work / ("trajectory-%s-%s.json" % (drop, arm))
+    path.write_text(json.dumps(dict(
+        schema="ihm.native-trajectory.v1", dt_s=dt,
+        basis="prone drop under the tissue-mechanics excursion measurement; nothing is driving "
+              "the body but its own passive elements and a PD hold on the declared torque ports",
+        arm=arm, drop=drop, frames=frames)) + "\n")
+    return str(path.relative_to(ROOT))
 
 
 def _outside(state):
@@ -291,6 +322,7 @@ def main():
     parser.add_argument("--excursion-seconds", type=float, default=2.0)
     parser.add_argument("--arm", action="append", default=[])
     parser.add_argument("--skip-excursion", action="store_true")
+    parser.add_argument("--drop", action="append", default=[])
     parser.add_argument("--work", default="data/derived/tissue-mechanics")
     parser.add_argument("--out", required=True)
     args = parser.parse_args()
@@ -317,16 +349,18 @@ def main():
         print(json.dumps({k: v for k, v in row.items() if k in ("cost", "failed")}, indent=2),
               flush=True)
     if not args.skip_excursion:
-        for arm in selected:
-            print("== excursion " + arm, flush=True)
-            try:
-                row = run_excursion(arm, args.excursion_seconds, args.dt, work, spec_by_element)
-            except Exception as error:
-                row = dict(arm=arm, failed=repr(error))
-            excursion.append(row)
-            print(json.dumps({k: v for k, v in row.items()
-                              if k in ("worst_range_excursion_deg", "worst_range_coordinate",
-                                       "cost", "failed")}, indent=2), flush=True)
+        for drop in (args.drop or list(DROPS)):
+            for arm in selected:
+                print("== excursion %s %s" % (drop, arm), flush=True)
+                try:
+                    row = run_excursion(arm, args.excursion_seconds, args.dt, work,
+                                        spec_by_element, drop=drop)
+                except Exception as error:
+                    row = dict(arm=arm, drop=drop, failed=repr(error))
+                excursion.append(row)
+                print(json.dumps({k: v for k, v in row.items()
+                                  if k in ("drop", "worst_range_excursion_deg",
+                                           "worst_range_coordinate", "failed")}), flush=True)
 
     # The cross-implementation gate needs one state that carries ligaments.
     gate_out = work / "gate"
@@ -342,7 +376,7 @@ def main():
     out.write_text(json.dumps(dict(
         schema="ihm.tissue-mechanics-measurement.v1",
         pose="data/models/engineering_stance_v1/initial_pose.json",
-        prone_pose=PRONE_POSE, registration=REGISTRATION, tissue_bundle=TISSUE,
+        drops=DROPS, registration=REGISTRATION, tissue_bundle=TISSUE,
         target_mass_kg=TARGET_MASS_KG, weight_n=WEIGHT_N,
         steps=args.steps, dt_s=args.dt, excursion_seconds=args.excursion_seconds,
         work=str(work.relative_to(ROOT)),

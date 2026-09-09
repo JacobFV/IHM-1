@@ -311,20 +311,22 @@ three negative controls, six published lengths at 0.70–1.04x, three published
 Blankevoort stiffnesses at 0.44–2.03x, and two independent implementations of the
 path length agreeing to 3.3e-16 m.
 
-What that buys is measured, and it is two opposite things. **The derived set as
-a whole makes the plant worse**: on a 2 s prone drop the worst excursion past the
-model's declared ranges goes 17.4 deg bare, 5.3 deg with the stops, and **32.8
-deg with all 105 ligaments**. The reason is measured per coordinate — a real
-cruciate is near-isometric because it wraps and its femoral footprint sits near
-the flexion axis, while a straight line between two attachment centroids sits
-22 mm off that axis, so the derived ACL reads **77% strain at 90 deg of knee
-flexion** against a 17.1% ultimate.
+What that buys is measured on three different prone drops, because one drop is
+one drop. **The derived set as a whole makes the plant worse on all three**: the
+worst excursion past the model's declared ranges goes 17.4/30.7/30.3 deg bare to
+32.8/35.3/32.9 deg with all 105 ligaments. The reason is measured per
+coordinate — a real cruciate is near-isometric because it wraps and its femoral
+footprint sits near the flexion axis, while a straight line between two
+attachment centroids sits 22 mm off that axis, so the derived ACL reads **77%
+strain at 90 deg of knee flexion** against a 17.1% ultimate.
 
-**But the 66 elements that never pass ultimate strain inside a spanned joint's
-own declared range hold the plant to 6.08 deg with NO joint stops present** —
-against 5.30 deg for the 30 N.m/rad engineering stops, and 4.05 deg with both.
-That is the joint stop's job done by tension elements whose stiffness came from
-the body's own declared ligament modulus and whose attachments came from the
-structures' own surfaces, rather than from a stated constant. The 51 that fail
-the check are the cruciates, the collaterals and the ankle ligaments, and what
-they need is a wrap surface per joint.
+**The 66 elements that never pass ultimate strain inside a spanned joint's own
+declared range are never worse than the bare plant, and added to the joint stops
+they improve every drop**: 5.30/6.62/5.96 deg becomes 4.05/6.39/5.35, mean 5.96
+to 5.27. They do **not** replace the stops — on `prone` alone they hold 6.08 deg
+with no stops at all, but on `prone_high` the same 66 give 30.47 deg against a
+bare 30.69, which is no restraint. The 51 that fail the check are the cruciates,
+the collaterals and the ankle ligaments, and what they need is a wrap surface per
+joint.
+
+`docs/TISSUE_MECHANICS.md` is the full account.

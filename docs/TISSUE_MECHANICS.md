@@ -5,11 +5,13 @@ capsules, menisci, discs, cartilage, bursae, fascia, retinacula, adipose — eve
 one of them with real mesh geometry, and the plant carried force elements for
 **none** of them. They existed as geometry and not as mechanics.
 
-**117 of them now carry force**, and **66 of those hold the plant inside its own
-declared joint ranges better than the engineering joint stops they replace** —
-6.08° of worst excursion against the stops' 5.30° and a bare plant's 17.43°, with
-no stops present at all. The other 51 make the plant worse, for a reason that is
-measured rather than guessed.
+**117 of them now carry force.** What that buys, measured on three different
+drops rather than one: the derived set as a whole makes the plant **worse**, and
+the 66 elements that survive a kinematic check make it **no worse and sometimes
+much better, but not reliably so**. Added to the joint stops they improve the
+worst excursion past the model's declared ranges on every drop tested, by 4–24%.
+They do **not** replace those stops, and the first version of this file said they
+did on the strength of one trajectory — the withdrawal is below and is the point.
 
 This file records that, and — the part that matters most — **the specific reason
 each remaining class cannot be closed on this plant**, because they are blocked
@@ -174,43 +176,56 @@ advance was 1.04 s against a 0.073 s median in the same run.
 
 ---
 
-## The gate the brief set — it fails on the full set and passes on the filtered one
+## The gate the brief set — and the claim it took three drops to get right
 
 > *with ligaments carrying load, the joint stops should become less necessary —
 > measure the range excursion with ligaments and without, on the same trajectory*
 
-2.0 s prone drop, nothing driving, the same seed configuration the withdrawn
-973 mm crawl came from. Worst excursion past the model's **own declared**
-coordinate ranges:
+2.0 s prone drop, nothing driving but a PD hold on the declared torque ports.
+Worst excursion past the model's **own declared** coordinate ranges. Three
+different initial conditions, because a rollout is deterministic and repeating it
+proves nothing, but running the same arms from different drops is what says an
+ordering is a property of the force set rather than of one drop.
 
-| arm | elements | worst excursion | coordinate |
-|---|---:|---:|---|
-| `bare` | 0 | 17.43° | hip_rotation_l |
-| `stops` at 30 N·m/rad — today's plant | 0 | 5.30° | hip_rotation_l |
-| `ligaments` | 105 | **32.78°** | hip_rotation_r |
-| `ligaments_capsules` | 117 | 34.22° | hip_rotation_r |
-| `stops_ligaments` | 105 | 10.63° | hip_rotation_l |
-| `stops_ligaments_capsules` | 117 | 11.69° | hip_rotation_l |
-| **`admissible`, no stops at all** | 66 | **6.08°** | hip_rotation_l |
-| **`stops_admissible`** | 66 | **4.05°** | hip_rotation_l |
+| arm | elements | `prone` | `prone_high` | `prone_rolled` | mean |
+|---|---:|---:|---:|---:|---:|
+| `bare` | 0 | 17.43° | 30.69° | 30.27° | 26.13° |
+| `stops` at 30 N·m/rad — today's plant | 0 | 5.30° | 6.62° | 5.96° | **5.96°** |
+| `ligaments` | 105 | 32.78° | 35.33° | 32.88° | 33.66° |
+| `ligaments_capsules` | 117 | 34.22° | — | — | — |
+| `stops_ligaments` | 105 | 10.63° | — | — | — |
+| `admissible` | 66 | 6.08° | 30.47° | 18.50° | 18.35° |
+| `stops_admissible` | 66 | **4.05°** | **6.39°** | **5.35°** | **5.27°** |
 
-Two results, and they are opposite.
+Three results, and the middle one is a withdrawal.
 
-**The derived set as a whole makes the plant worse.** 105 ligaments roughly
-double the excursion, 17.4° → 32.8°, and adding them to the stops takes 5.3° to
-10.6°. Said plainly because it is the result.
+**1. The derived set as a whole makes the plant worse, on every drop.** 105
+ligaments take 17.4° → 32.8°, 30.7° → 35.3°, 30.3° → 32.9°. Adding them to the
+stops takes 5.3° → 10.6°. Consistent in sign three times out of three.
 
-**The kinematically admissible 66, with no joint stops at all, hold the plant to
-6.08°** — within a degree of what the 30 N·m/rad engineering stops achieve, and
-achieved by 66 tension elements whose stiffness came from the body's own declared
-ligament modulus and whose attachments came from the structures' own surfaces
-rather than from a stated constant. Both together give **4.05°**, better than
-either. And at the end of that run **no element is past ultimate strain**: max
-strain 0.136, 20 of 66 loaded, 781 N of total tension.
+**2. The kinematically admissible 66 do NOT replace the joint stops.** On the
+`prone` drop they hold 6.08° with no stops at all, against the stops' 5.30° and a
+bare plant's 17.43°, and *this file's first version reported that as ligaments
+replacing the stated engineering constant.* It does not survive a second drop:
+on `prone_high` the same 66 give **30.47° against a bare plant's 30.69°** — no
+restraint at all — and on `prone_rolled` 18.50° against 30.27°, a real but partial
+one. **The 6.08° was a lucky draw**, which is the failure mode
+`docs/LOG.md` in IBM-1 records over and over; one trajectory is one trajectory
+even when nothing in it is random.
 
-So the brief's gate is answered: *ligaments can carry what the joint stops are
-standing in for, but only the ones whose attachment geometry survives a
-kinematic check, and that is 66 of 117.*
+What survives is weaker and true: **the admissible set is never worse than the
+bare plant on any drop**, where the unfiltered set is always worse. The filter
+buys safety, not restraint.
+
+**3. Added to the stops, the admissible set helps on every drop.** 5.30 → 4.05,
+6.62 → 6.39, 5.96 → 5.35. Between 4% and 24%, mean 5.96° → 5.27°, and the sign is
+the same three times out of three. That is the defensible positive: the body's
+own tissue, with attachments from its own surfaces and stiffness from its own
+declared modulus, takes a little of the load off a stated engineering constant.
+It does not take it over.
+
+And at the end of the `prone` admissible run **no element is past ultimate
+strain**: max strain 0.136, 20 of 66 loaded, 781 N of total tension.
 
 ### Why the other 51 make it worse
 
@@ -259,16 +274,13 @@ elements, because the stance pose differs from the reference in `arm_rot_r` by
 time. Two coordinates together can be worse than either alone. That is stated in
 the script and is what happened.
 
-**The single-coordinate moment sweep understates the filtered set.** Measured
-about one coordinate with everything else at the reference pose, the admissible
-66 make ≤ 2.2 N·m outside the declared range at every coordinate except the
-metatarsophalangeal joints, and six coordinates have no admissible element
-spanning them at all — which reads as a set that can do nothing. In the prone
-rollout the same 66 hold the plant better than the joint stops, because the
-rollout is far from the reference pose in several coordinates at once and the
-elements load there. The two measurements do not disagree; the sweep is a
-one-dimensional slice of a 33-dimensional restraint, and quoting it alone would
-have been the "compared against the wrong thing" error again.
+**The single-coordinate moment sweep and the rollouts do not disagree, and both
+are one-sided.** Measured about one coordinate with everything else at the
+reference pose, the admissible 66 make ≤ 2.2 N·m outside the declared range at
+every coordinate except the metatarsophalangeal joints, and six coordinates have
+no admissible element spanning them at all — a set that on that slice can do
+almost nothing. Three drops later that is the better predictor of the mean
+behaviour (18.35° against a bare 26.13°) than the one drop where they held.
 
 ### One thing that only became visible because something carried load
 
@@ -283,9 +295,13 @@ had ever asked them to agree.
 ### How to switch them on
 
 `NativeMechanicalStream(..., tissue_ligaments='data/derived/tissue-force-elements-v1',
-tissue_ligament_admissible_only=True)`. The flag is not defaulted on: the bundle
-carries all 117 elements and which subset a run wants is the caller's statement,
-not a silent default. **Every measurement above says to pass it.**
+tissue_ligament_admissible_only=True)`, **with the joint stops still installed**.
+The flag is not defaulted on: the bundle carries all 117 elements and which
+subset a run wants is the caller's statement, not a silent default. Every
+measurement above says to pass it, and every measurement above says not to drop
+the stops.
+
+---
 
 ## Cartilage, menisci and discs: a DATA gap, not a mechanics gap
 
@@ -426,11 +442,12 @@ measured:
 | **joint capsule (inadmissible)** | 3 of 12 | same. |
 
 And the part that *is* now mechanics: **105 ligaments and 12 joint capsules
-carry tension between two rigid bodies, and the 66 of them that stay within their
-own failure strain across a spanned joint's whole declared range hold the plant
-to 6.08° past its declared ranges with no joint stops at all** — against 5.30°
-for the 30 N·m/rad engineering stops and 17.43° for a bare plant. Running both
-gives 4.05°.
+carry tension between two rigid bodies.** The 66 that stay within their own
+failure strain across a spanned joint's declared range are never worse than the
+bare plant on any of three drops, and added to the joint stops they improve the
+worst excursion on all three — 5.96° mean to 5.27°. They do not replace the
+stops; a first reading that said they did came from one drop and is withdrawn
+above.
 
 ---
 
@@ -438,10 +455,11 @@ gives 4.05°.
 
 1. **A wrap surface per scaffold joint**, fitted from the bone geometry, so a
    ligament path bends where a real one does. This is the single change that
-   would turn the 48 inadmissible ligaments from wrong into useful, and those 48
-   are the cruciates, the collaterals and the ankle ligaments — the ones that
-   carry a real joint's restraint. The admissible 66 already do the stops' job;
-   these would be the ones that do a knee's.
+   would turn the 51 inadmissible elements from wrong into useful, and those 51
+   are the cruciates, the collaterals and the ankle ligaments — precisely the
+   ones that carry a real joint's restraint. The 66 that survive the filter
+   survive it largely because they barely change length with the joint, which is
+   the same thing as saying they have little to restrain.
 2. **Articular cartilage geometry.** Acquisition, not modelling. Until it exists
    there is no articular surface to make physical, and the knee is the only joint
    with intra-articular geometry to start from.
