@@ -441,3 +441,44 @@ def scale_catalog(catalog, scale, force_scale):
                 for point in entry['path_points']]
         out.append(entry)
     return out
+
+
+def path_point_polyline_lengths(model_path, pose=None):
+    """Straight-line length through each muscle's declared path points, in ground.
+
+    This is deliberately a *different* quantity from the fitted polynomial
+    length, computed from a *different* part of the XML: the ``PathPoint``
+    locations in the model's own ``GeometryPath``, placed by the same forward
+    kinematics as the stature measurement.  It ignores wrapping, so it
+    underestimates the true path wherever a ``PathWrap`` is active, and it is
+    useless as an absolute check.
+
+    Its use is the ratio.  ``polynomial_length / polyline_length`` is a number
+    per muscle that depends on both files, and under a correct isotropic scale
+    it must not move at all -- numerator and denominator both scale.  If either
+    file were scaled and the other were not, this ratio moves by exactly the
+    scale factor, and it moves whichever of the two was missed.  That is the
+    check the fitted-path gate on its own cannot make, because the fitted path
+    set and the model can be scaled consistently with each other and still both
+    be wrong together.
+    """
+    root = ET.parse(model_path).getroot()
+    pose = pose or default_pose_frames(model_path)
+    lengths = {}
+    for force in root.iter('ForceSet'):
+        for muscle in force.find('objects'):
+            points = muscle.find('GeometryPath/PathPointSet/objects')
+            if points is None:
+                continue
+            world = []
+            for point in points:
+                body = point.findtext('socket_parent_frame').split('/')[-1]
+                origin, frame = pose[body]
+                world.append(origin + frame @ _vec3(point.findtext('location')))
+            if len(world) < 2:
+                raise ValueError('Muscle %s has fewer than two path points' % muscle.get('name'))
+            lengths[muscle.get('name')] = float(
+                sum(np.linalg.norm(b - a) for a, b in zip(world, world[1:])))
+    if not lengths:
+        raise ValueError('No muscle geometry paths found')
+    return lengths

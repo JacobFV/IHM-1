@@ -38,7 +38,7 @@ class NativeMechanicalStream:
         if manifest.get('instance_mass_variant')!=self.instance_mass_variant:raise ValueError('Native adapter/instance mass variant binding mismatch')
         for path,digest in manifest['files'].items():
             if sha(self.root/path)!=digest:raise ValueError('Stale native mechanical build: '+path)
-        augmentation=None;augmentation_bytes=None;self.muscle_catalog=None
+        augmentation=None;augmentation_bytes=None;self.muscle_catalog=None;self.source_overrides={}
         if augmented_registration is not None:
             record_path=(self.root/augmented_registration).resolve()
             if not record_path.is_relative_to(self.root):raise ValueError('Augmented registration must be owned')
@@ -52,6 +52,25 @@ class NativeMechanicalStream:
             catalog_bytes=(self.root/augmentation['catalog_path']).read_bytes()
             if hashlib.sha256(catalog_bytes).hexdigest()!=augmentation['catalog_sha256']:raise ValueError('Augmented catalog changed while copying')
             self.muscle_catalog=json.loads(catalog_bytes)
+            # A registration may replace source files other than the model. The
+            # only reason this exists is geometric scaling, and the guard below
+            # is the whole point of it: the muscle paths this engine runs on are
+            # NOT the model's own GeometryPath point sets. They are 80 fitted
+            # polynomials in subject_walk_scaled_FunctionBasedPathSet.xml, which
+            # replacePathsWithFunctionBasedPaths substitutes in after the model
+            # is loaded. A scaled model with the source path set is a body whose
+            # skeleton was resized and whose muscles were not, and nothing in the
+            # native engine would complain -- it would integrate, and every
+            # musculotendon length in the lower limb would be wrong.
+            overrides=augmentation.get('source_overrides') or {}
+            if not isinstance(overrides,dict) or set(overrides)-set(SOURCE_FILES[1:]):raise ValueError('Source overrides must name non-model native source files')
+            for name,record in overrides.items():
+                relative=Path(record['path'])
+                if relative.is_absolute() or '..' in relative.parts or sha(self.root/relative)!=record['sha256']:raise ValueError('Overridden source identity mismatch: '+name)
+            geometric_scale=augmentation.get('geometric_scale')
+            if geometric_scale is not None and finite(geometric_scale)!=1.0 and 'subject_walk_scaled_FunctionBasedPathSet.xml' not in overrides:
+                raise ValueError('A geometrically scaled model must supply a scaled FunctionBasedPathSet')
+            self.source_overrides=overrides
         self.surface_sensor_identity={}
         surface_manifest=None;surface_bytes=None;surface_input=None
         if surface_contact_manifest is not None:
@@ -86,8 +105,12 @@ class NativeMechanicalStream:
             (source/'initial_pose.txt').write_text('IHM_INITIAL_POSE_V1 '+str(len(pose))+'\n'+''.join(name+' '+str(value)+'\n' for name,value in pose.items()))
         original=self.root/'data/raw/mechanics/opensim-core/OpenSim/Examples/Moco/example3DWalking';inputs={}
         if pose is not None:inputs['initial_pose.txt']=sha(source/'initial_pose.txt')
+        overrides=self.source_overrides
         for name in SOURCE_FILES:
-            data=((self.root/augmentation['model_path']) if augmentation is not None and name=='subject_walk_scaled.osim' else original/name).read_bytes();(source/name).write_bytes(data);inputs[name]=hashlib.sha256(data).hexdigest()
+            if augmentation is not None and name=='subject_walk_scaled.osim':origin=self.root/augmentation['model_path']
+            elif name in overrides:origin=self.root/overrides[name]['path']
+            else:origin=original/name
+            data=origin.read_bytes();(source/name).write_bytes(data);inputs[name]=hashlib.sha256(data).hexdigest()
         if augmentation is not None:
             (source/'augmentation_registration.json').write_bytes(augmentation_bytes)
             (source/'augmentation_catalog.json').write_bytes(catalog_bytes)
