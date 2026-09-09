@@ -89,6 +89,44 @@ elasticity is what does the work.
 
 ---
 
+## How the brain learns to drive it
+
+The point of all of the above, stated so the body work is not mistaken for an end
+in itself: **watching the IBM-1 brain control a real naked human body as it learns
+to pick itself up.** "Pick itself up" is the first concrete milestone — it needs
+no locomotion, it is reachable from prone, and it is unambiguous on video.
+
+The learning shifts in two phases:
+
+**Supervised, from the scaffold.** The low-resolution OpenSim model supplies pose
+trajectories; those become forced motion on the real body; the afference they
+produce is the training signal. This is what `scripts/collect_pose_corpus.py`
+(68 motions, 17,622 frames) exists for, and it is why the scaffold earns its
+keep.
+
+**Then pain-guided reinforcement learning and self-supervised prediction, on the
+real body.** Control is learned from consequence rather than demonstration.
+
+### What pain-guided RL requires that does not exist yet
+
+A reward signal grounded in nociception, and **there is no nociceptor
+transduction component**. `ibm/interoception.py` says so in its own text: the
+splanchnic high-threshold channels are bound to `transduction.baroreceptor` and
+merely *tagged* nociceptive in the row, because `transduction.nociceptor` is
+declared on the field but has no viscera-supported component. Adding
+`transduction.visceral_nociceptor` is named there as the fix and is not made.
+
+What does exist to build on: `adelta` and `c` are declared fibre classes with
+resolved conduction velocities, and **48 of 72 nerve trunks carry one or both** —
+so the pathway for fast and slow pain is declared even though the receptor is
+not. Cutaneous nociception has the same shape: 1,326 skin patches are innervated
+and located, and nothing yet transduces damage at them.
+
+So pain-guided RL is blocked on a receptor, not on a pathway. That is a small,
+well-specified gap and it is on the critical path for the stated plan.
+
+---
+
 ## What this means for decisions you are about to make
 
 **The participant mode needs the real body to be dynamic, and that is the point.**
