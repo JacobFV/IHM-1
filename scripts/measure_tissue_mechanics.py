@@ -90,12 +90,19 @@ render = load_module("render_body_3d", ROOT / "scripts/render_body_3d.py")
 # The force sets under test.  `stops` is what the plant does today; `ligament`
 # and `joint_capsule` are the derived tissue classes.
 ARMS = {
-    "bare": dict(stops=False, classes=None),
-    "stops": dict(stops=True, classes=None),
-    "ligaments": dict(stops=False, classes=["ligament"]),
-    "ligaments_capsules": dict(stops=False, classes=["ligament", "joint_capsule"]),
-    "stops_ligaments": dict(stops=True, classes=["ligament"]),
-    "stops_ligaments_capsules": dict(stops=True, classes=["ligament", "joint_capsule"]),
+    "bare": dict(stops=False, classes=None, admissible=False),
+    "stops": dict(stops=True, classes=None, admissible=False),
+    "ligaments": dict(stops=False, classes=["ligament"], admissible=False),
+    "ligaments_capsules": dict(stops=False, classes=["ligament", "joint_capsule"], admissible=False),
+    "stops_ligaments": dict(stops=True, classes=["ligament"], admissible=False),
+    "stops_ligaments_capsules": dict(stops=True, classes=["ligament", "joint_capsule"],
+                                     admissible=False),
+    # The same elements, filtered to the ones that never pass ligament ultimate
+    # strain inside the declared range of a joint they span.  An element that
+    # does is an attachment in the wrong place, and 51 of the 117 are: the
+    # derived ACL reads 77% strain at 90 degrees of knee flexion.
+    "admissible": dict(stops=False, classes=["ligament", "joint_capsule"], admissible=True),
+    "stops_admissible": dict(stops=True, classes=["ligament", "joint_capsule"], admissible=True),
 }
 
 
@@ -106,7 +113,8 @@ def open_stream(out, pose, arm):
         initial_pose=pose, augmented_registration=REGISTRATION,
         coordinate_limits=crawl.joint_stops() if spec["stops"] else None,
         tissue_ligaments=None if spec["classes"] is None else TISSUE,
-        tissue_ligament_classes=spec["classes"])
+        tissue_ligament_classes=spec["classes"],
+        tissue_ligament_admissible_only=spec["admissible"])
 
 
 def ligament_summary(state, spec_by_element):

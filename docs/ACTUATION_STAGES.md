@@ -160,6 +160,8 @@ the single easiest thing to misreport.
 - segment binding — `data/derived/anatomy-segment-binding/`, `docs/ANATOMY_SEGMENT_BINDING.md`
 - pose corpora — `scripts/collect_pose_corpus.py`, `scripts/collect_forced_gait_corpus.py`
 - the plant and its contact geometry — `scripts/native_mechanical_stream.cpp`
+- tissue as force elements, and the three different reasons the rest is blocked —
+  `docs/TISSUE_MECHANICS.md`, `scripts/build_tissue_force_elements.py`
 - innervation, so the brain reaches muscle and skin only through nerves —
   `scripts/measure_innervation_coverage.py` in IBM-1
 - the standing direction and its corrections — `docs/DIRECTION.md` in IBM-1

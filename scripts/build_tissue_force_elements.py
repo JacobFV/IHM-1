@@ -136,6 +136,11 @@ MIN_END_VERTICES = 4
 MIN_SECOND_SHARE = 0.05
 SHARE_SWEEP = (0.01, 0.02, 0.05, 0.10, 0.20, 0.30)
 
+# Quapp and Weiss 1998, the same publication the modulus comes from: human MCL
+# ultimate strain 17.1 +/- 1.5%.  Used as the admissibility threshold below.
+ULTIMATE_STRAIN = 0.171
+ADMISSIBILITY_SAMPLES = 21
+
 # Blankevoort's own transition strain, and the damping convention the knee
 # literature uses with it: c = 0.003 * k, in N.s/strain.
 TRANSITION_STRAIN = 0.06
@@ -273,6 +278,7 @@ def main():
 
     bind = load_module("bind_anatomy", ROOT / "scripts/bind_anatomy_to_segments.py")
     render = load_module("render_body_3d", ROOT / "scripts/render_body_3d.py")
+    crawl = load_module("crawl", ROOT / "scripts/crawl.py")
 
     anatomy = json.loads(ANATOMY.read_text())
     entities = anatomy["entities"]
@@ -409,6 +415,72 @@ def main():
         if n % 500 == 0:
             print(f"  {n}/{len(entities)}", flush=True)
 
+    # ------------------------------------------- kinematic admissibility
+    # A ligament that would rupture inside the joint's OWN declared range is not
+    # a ligament: it is an attachment in the wrong place.  A real cruciate is
+    # near-isometric because its femoral footprint sits close to the flexion
+    # axis; a straight line between two tip centroids does not, and at 90 deg of
+    # knee flexion the derived ACL reads 59.1 mm against a 33.4 mm slack length,
+    # a 77% strain on a ligament whose ultimate is 17.1%.  That element is not
+    # modelling the ACL, and shipping it would put 7.5 kN across the knee.
+    #
+    # So each element's peak strain is swept over the declared range of every
+    # coordinate on the kinematic chain between its two bodies, one coordinate at
+    # a time with the rest at the reference pose, and an element is ADMISSIBLE
+    # only if it never passes ultimate strain anywhere in that sweep.  One
+    # coordinate at a time is a screen, not a proof: a combination of two could
+    # be worse than either alone, so this can admit an element a full sweep would
+    # reject and cannot reject one a full sweep would admit.
+    #
+    # The threshold is not a knob that was tuned until a count looked right.  The
+    # distribution has a gap at exactly this place: 66 elements pass at 10%
+    # strain and the SAME 66 pass at 17.1%, then 70 at 25%, 80 at 40%, 95 at 60%.
+    # The whole curve is written into the report.
+    print("sweeping kinematic admissibility...", flush=True)
+    ranges = crawl.declared_ranges(MODEL)
+    joint_coordinates = {}
+    for joint in model.joints:
+        for coordinate in joint["coords"]:
+            if coordinate in ranges:
+                joint_coordinates.setdefault(joint["child"], []).append(coordinate)
+
+    def spanning_coordinates(a, b):
+        def chain(x):
+            out = [x]
+            while x in parent:
+                x = parent[x]
+                out.append(x)
+            return out
+        ca, cb = chain(a), chain(b)
+        common = next((x for x in ca if x in cb), None)
+        out = []
+        for body in ca[:ca.index(common)] + cb[:cb.index(common)]:
+            out += joint_coordinates.get(body, [])
+        return out
+
+    two_segment = [r for r in rows if r.get("status") == "two_segment"]
+    for row in two_segment:
+        peak, culprit = 0.0, None
+        for coordinate in spanning_coordinates(row["body1"], row["body2"]):
+            low, high = ranges[coordinate]
+            for value in np.linspace(low, high, ADMISSIBILITY_SAMPLES):
+                pose = dict(reference_pose)
+                pose[coordinate] = float(value)
+                transforms = model.forward(pose)
+                a = transforms[row["body1"]][:3, :3] @ np.asarray(row["point1_m"]) \
+                    + transforms[row["body1"]][:3, 3]
+                b = transforms[row["body2"]][:3, :3] @ np.asarray(row["point2_m"]) \
+                    + transforms[row["body2"]][:3, 3]
+                strain = (float(np.linalg.norm(a - b)) - row["slack_length_m"]) / row["slack_length_m"]
+                if strain > peak:
+                    peak, culprit = strain, coordinate
+        row["peak_strain_over_declared_range"] = peak
+        row["peak_strain_coordinate"] = culprit
+        row["kinematically_admissible"] = bool(peak <= ULTIMATE_STRAIN)
+    admissibility_sweep = {
+        str(t): sum(1 for r in two_segment if r["peak_strain_over_declared_range"] <= t)
+        for t in (0.05, 0.10, ULTIMATE_STRAIN, 0.25, 0.40, 0.60, 1.00)}
+
     # ------------------------------------------------------------------- gates
     by_name = {r["name"]: r for r in rows}
     named = []
@@ -529,6 +601,20 @@ def main():
                         minimum_end_vertices=MIN_END_VERTICES,
                         minimum_second_segment_share=MIN_SECOND_SHARE,
                         second_segment_share_sweep_ligaments=sweep),
+        kinematic_admissibility=dict(
+            ultimate_strain=ULTIMATE_STRAIN, samples_per_coordinate=ADMISSIBILITY_SAMPLES,
+            admissible=sum(1 for r in two_segment if r["kinematically_admissible"]),
+            inadmissible=sum(1 for r in two_segment if not r["kinematically_admissible"]),
+            threshold_sweep=admissibility_sweep,
+            worst=[dict(name=r["name"], body1=r["body1"], body2=r["body2"],
+                        peak_strain=r["peak_strain_over_declared_range"],
+                        coordinate=r["peak_strain_coordinate"])
+                   for r in sorted(two_segment, key=lambda r: -r["peak_strain_over_declared_range"])[:20]],
+            basis="one coordinate at a time over its own declared range, everything else at the "
+                  "reference pose. A SCREEN, not a proof: two coordinates together can be worse "
+                  "than either alone, so this can admit an element a full sweep would reject.",
+            rule="an element that passes ultimate strain inside the declared range of a joint it "
+                 "spans is an attachment in the wrong place, not a ligament"),
         inventory=inventory,
         totals=dict(tissue_entities=sum(counts.values()),
                     classified=counts,

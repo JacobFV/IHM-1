@@ -88,6 +88,9 @@ def main():
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--out", required=True)
     parser.add_argument("--samples", type=int, default=SAMPLES)
+    parser.add_argument("--admissible-only", action="store_true",
+                        help="keep only the elements that never pass ligament ultimate strain "
+                             "inside the declared range of a joint they span")
     args = parser.parse_args()
     started = time.time()
 
@@ -95,6 +98,8 @@ def main():
     render = load_module("render_body_3d", ROOT / "scripts/render_body_3d.py")
     model = render.OsimModel(BUNDLE / "model.osim")
     elements = json.loads((TISSUE / "ligaments.json").read_text())["elements"]
+    if args.admissible_only:
+        elements = [r for r in elements if r.get("kinematically_admissible")]
     for row in elements:
         row["_p1"] = np.asarray(row["point1_m"], float)
         row["_p2"] = np.asarray(row["point2_m"], float)
@@ -165,7 +170,7 @@ def main():
         schema="ihm.ligament-moment-measurement.v1",
         generated_utc=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         wall_s=time.time() - started,
-        elements=len(elements), joint_stop=stop,
+        elements=len(elements), admissible_only=bool(args.admissible_only), joint_stop=stop,
         held_pose="the binding's reference pose, with one coordinate swept",
         finite_difference_step_rad=STEP_RAD, margin_rad=MARGIN_RAD,
         coordinates_with_no_ligament_spanning_them=silent,

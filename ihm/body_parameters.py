@@ -79,6 +79,38 @@ ANATOMICAL_MASS_KG = 70.7713
 #: atlas (``scripts/bind_anatomy_to_segments.py``; ``docs/ANATOMY_SEGMENT_BINDING.md``).
 ANATOMY_REGISTRATION_SCALE = 0.963
 
+#: Where the sex-stratified proportions come from.  Written by
+#: ``scripts/index_anthropometry.py``; survey-weighted over 4,883 NHANES
+#: 2017-2018 adults aged 20-79, with the weighting checked against the published
+#: CDC/NCHS means (175.4 against 175.3 cm for men, 161.3 against 161.3 for
+#: women).  ``assert_measured_defaults`` recomputes every ratio below from it.
+ANTHROPOMETRY_SUMMARY = 'data/derived/anthropometry/nhanes-2017-2018/summary.json'
+
+#: Female/male ratios.  Each is a ratio of survey-weighted means, so it says how
+#: this SUBJECT would be re-proportioned, not that a population mean replaces
+#: the subject.  ``d`` beside each is the weighted standardised difference: a
+#: large absolute difference can be a small difference in shape and the ratios
+#: are where that shows.
+FEMALE_OVER_MALE = {
+    'stature':          0.9199420560444753,   # d = 1.98, the dominant term
+    'mass':             0.8515774154511445,   # d = 0.62
+    'hip_over_stature': 1.1264611737929469,   # d = -0.91, what stature cannot carry
+    'upper_leg_over_stature': 0.97447397046321,   # d = 0.44
+    'upper_arm_over_stature': 0.9937527178769803,  # d = 0.14, under 1%
+    'waist_over_hip':   0.9194355202181121,   # d = 1.07, soft tissue only
+}
+
+#: Bodies scaled by ``leg_segment_scale``.  Isotropic per segment, and that is a
+#: decision with a reason: ``walker_knee_r`` takes its three translation
+#: functions in a frame rotated by (-1.64, 1.45, 1.57) rad inside ``femur_r``,
+#: so a LONG-AXIS-ONLY femur scale has no componentwise meaning there and
+#: ``ihm.native.anisotropic_scaling`` refuses it.  A uniform per-segment factor
+#: is exact regardless of frame orientation.  It shortens the leg and slims it
+#: together, which is a modelling choice, not a measurement.
+LEG_SEGMENT_BODIES = ('femur_r', 'femur_l', 'tibia_r', 'tibia_l', 'patella_r',
+                      'patella_l', 'talus_r', 'talus_l', 'calcn_r', 'calcn_l',
+                      'toes_r', 'toes_l')
+
 
 def _rel(x, y):
     return abs(x - y) / y
@@ -168,8 +200,95 @@ PARAMETERS = (
         derived=(),
     ),
     dict(
+        name='pelvis_width_scale', unit='dimensionless', kind='continuous',
+        range=(0.85, 1.20), default=1.0, status='implemented',
+        body='mechanical',
+        basis=('Medio-lateral (model z) factor on the pelvis body alone. It moves '
+               'the pelvis mass centre, its wrap objects, the muscle path points '
+               'and markers attached to it, and the parent offset frames of the '
+               'hip, back and ground_pelvis joints -- so the hip joint centres '
+               'separate and the femurs are the same femurs at a wider stance. '
+               'Measured effect on the body: hip joint separation goes as the '
+               'factor exactly, segment mass fractions shift, and 50 of the 80 '
+               'fitted muscle paths change length while 30 do not. That last '
+               'fact is the whole reason this parameter needed the refitter: no '
+               'single polynomial coefficient factor can represent it.'),
+        range_basis=('Engineering bounds around the measured span. The female/male '
+                     'ratio of hip circumference over stature is %.4f (d = -0.91), '
+                     'the largest shape difference in the NHANES sample after '
+                     'size itself.' % FEMALE_OVER_MALE['hip_over_stature']),
+        source=MECHANICAL_MODEL,
+        consumers=('ihm.native.anisotropic_scaling.scale_model_anisotropic',
+                   'scripts/materialize_proportional_variant.py'),
+        derived=(),
+        limitation=(
+            'CORRESPONDENCE. NHANES measures hip CIRCUMFERENCE at the maximum '
+            'protrusion of the buttocks; this parameter is a SKELETAL '
+            'medio-lateral factor. Using the circumference ratio as the bone '
+            'factor assumes soft tissue and bone scale together in that '
+            'direction, and they do not have to. Bi-iliac breadth -- the '
+            'measurement that would settle it -- is carried by no catalogued '
+            'source in this repository, in either sex. The number is therefore '
+            'an ESTIMATE with a stated derivation, and the parameter is a '
+            'geometric knob that accepts any value.'),
+    ),
+    dict(
+        name='shoulder_width_scale', unit='dimensionless', kind='continuous',
+        range=(0.85, 1.20), default=1.0, status='implemented',
+        body='mechanical',
+        basis=('Medio-lateral (model z) factor on the torso body alone, which '
+               'separates the acromial joint centres and so sets shoulder '
+               'breadth against pelvic breadth. Measured effect: acromial '
+               'separation goes as the factor exactly and the '
+               'shoulder-over-hip breadth ratio follows.'),
+        range_basis='Engineering bounds.',
+        source=MECHANICAL_MODEL,
+        consumers=('ihm.native.anisotropic_scaling.scale_model_anisotropic',
+                   'scripts/materialize_proportional_variant.py'),
+        derived=(),
+        limitation=(
+            'NO MEASURED SEX VALUE EXISTS HERE. BMX_J carries standing height, '
+            'weight, upper leg length, upper arm length, arm, waist and hip '
+            'circumference -- and no biacromial or bideltoid breadth. Every sex '
+            'preset in this schema therefore leaves this parameter at 1.0, and '
+            'that is a gap rather than a finding: shoulder:hip is one of the '
+            'most visible dimorphic proportions and this repository cannot '
+            'quantify it. ANSUR II carries biacromial breadth by sex and is not '
+            'catalogued here.'),
+    ),
+    dict(
+        name='leg_segment_scale', unit='dimensionless', kind='continuous',
+        range=(0.85, 1.20), default=1.0, status='implemented',
+        body='mechanical',
+        basis=('Uniform factor on each lower-limb segment -- femur, tibia, '
+               'patella, talus, calcaneus, toes, both sides -- applied before '
+               'the global stature factor, so it changes leg length RELATIVE to '
+               'the trunk. Measured effect: femur and tibia lengths go as the '
+               'factor, and after the stature correction the leg-over-stature '
+               'ratio moves while stature itself does not.'),
+        range_basis=('The measured target is the female/male ratio of upper leg '
+                     'length over stature, %.5f (d = 0.44): women\'s thighs are '
+                     '2.6%% shorter relative to stature. That is a small effect '
+                     'and it is reported as small.'
+                     % FEMALE_OVER_MALE['upper_leg_over_stature']),
+        source=MECHANICAL_MODEL,
+        consumers=('ihm.native.anisotropic_scaling.scale_model_anisotropic',
+                   'scripts/materialize_proportional_variant.py'),
+        derived=(),
+        limitation=(
+            'ISOTROPIC PER SEGMENT, so it slims the leg as it shortens it. A '
+            'long-axis-only femur scale is refused by '
+            'ihm.native.anisotropic_scaling: walker_knee_r takes its '
+            'roll-glide translations in a frame rotated by (-1.64, 1.45, 1.57) '
+            'rad inside femur_r, where componentwise scaling has no meaning. '
+            'Separately, NHANES BMXLEG is inguinal crease to proximal tibia and '
+            'is NOT the OpenSim hip-centre-to-knee-centre length; the ratio is '
+            'transferred between them without a measured correspondence.'),
+    ),
+    dict(
         name='sex', unit='category', kind='enum',
-        domain=('male',), default='male', status='declared',
+        domain=('male', 'female'), default='male',
+        status='implemented (proportions only; anatomy unchanged)',
         body='both',
         basis=("Measured by scripts/audit_sex_specific_anatomy.py. The body is "
                "male, and specifically so: 32 of the 4,000 segment-bound "
@@ -179,22 +298,28 @@ PARAMETERS = (
                "to the pelvis segment. Female-specific entities: 0 of 4,000 and "
                "0 of 8,979 in the display atlas. Mammary gland, nipple and "
                "areola: 0 in every set, in EITHER sex; what exists is Z-Anatomy's "
-               "'mammary region', a named patch of chest skin. The domain of "
-               "this parameter has one member for that reason."),
-        range_basis=('Widening the domain requires new source geometry, not new '
-                     'code: no catalogued source in this repository ships a '
-                     'female whole-body mesh. Separately, the proportional half '
-                     'of sexual dimorphism is measured -- see '
-                     'data/derived/anthropometry/nhanes-2017-2018/summary.json -- '
-                     'and cannot be applied either, because it is anisotropic '
-                     'and the fitted muscle path polynomials only admit an '
-                     'isotropic factor. docs/BODY_PARAMETERS.md carries both '
-                     'measurements.'),
+               "'mammary region', a named patch of chest skin. NONE OF THAT IS "
+               "CHANGED BY THIS PARAMETER, in either direction."),
+        range_basis=(
+            "sex='female' now sets four measured PROPORTIONS -- stature, mass, "
+            'pelvis_width_scale and leg_segment_scale -- each the female/male '
+            'ratio of survey-weighted NHANES means applied to THIS subject, and '
+            'each of which changes the running mechanical body in a way that is '
+            'measured and gated (scripts/verify_body_proportions.py). It stopped '
+            'raising when it started changing something. What it does NOT change '
+            'is anatomy: there is still no female-specific entity, no mammary '
+            'gland in either sex, and the male genital tract is still present '
+            'and still bound to the pelvis. A female body needs new source '
+            'geometry, and docs/BODY_PARAMETERS.md carries the acquisition path.'),
         source=ANATOMICAL_PROFILE,
-        consumers=(),
-        limitation=("Writing sex='female' would change a string in a JSON file "
-                    'and nothing else. The schema refuses the value rather than '
-                    'accepting it and quietly meaning nothing.'),
+        consumers=('resolve() -> parameters/derived/sex_realisation',
+                   'scripts/materialize_proportional_variant.py'),
+        limitation=(
+            "sex='female' produces MALE ANATOMY AT FEMALE-TYPICAL PROPORTIONS. "
+            'It is not a female body and must never be reported as one. Every '
+            'resolved record carries a sex_realisation block naming exactly '
+            'which quantities moved and which did not, so a caller that logs '
+            'the record cannot quote the label without the caveat.'),
     ),
     dict(
         name='age_years', unit='year', kind='continuous',
@@ -267,6 +392,12 @@ def resolve(request=None):
         raise BodyParameterError('Unknown body parameters: ' + ', '.join(sorted(unknown)))
 
     resolved, explicit = {}, sorted(request)
+    sex = request.get('sex', BY_NAME['sex']['default'])
+    if sex not in BY_NAME['sex']['domain']:
+        raise BodyParameterError('sex=%r is outside the declared domain %r. %s'
+                                 % (sex, BY_NAME['sex']['domain'],
+                                    BY_NAME['sex'].get('limitation', '')))
+    presets = sex_presets(sex)
     for spec in PARAMETERS:
         name = spec['name']
         if spec['kind'] == 'enum':
@@ -279,7 +410,11 @@ def resolve(request=None):
         elif name == 'muscle_force_scale':
             continue                      # depends on stature_scale; filled below
         else:
-            resolved[name] = _check_continuous(spec, request.get(name, spec['default']))
+            # An explicit request always wins; the sex preset only supplies a
+            # default, so a caller can ask for a female-proportioned body at a
+            # stature of their choosing without the preset silently overriding it.
+            fallback = presets.get(name, spec['default'])
+            resolved[name] = _check_continuous(spec, request.get(name, fallback))
 
     stature_scale = resolved['stature_m'] / MECHANICAL_STATURE_M
     resolved['muscle_force_scale'] = (
@@ -291,10 +426,21 @@ def resolve(request=None):
         'mass_scale': resolved['mass_kg'] / MECHANICAL_SOURCE_MASS_KG,
         'bmi_kg_m2': resolved['mass_kg'] / resolved['stature_m'] ** 2,
         'muscle_force_scale': resolved['muscle_force_scale'],
+        'anisotropic_factors': anisotropic_factors(resolved),
+        'sex_realisation': sex_realisation(sex, resolved, presets),
     }
     limitations = [spec['limitation'] for spec in PARAMETERS
                    if spec.get('limitation') and (spec['name'] in request
                                                   or spec['status'] != 'declared')]
+    if derived['anisotropic_factors']:
+        limitations.append(
+            'This request is ANISOTROPIC: %d bodies carry per-axis factors. The '
+            'fitted muscle path polynomials CANNOT be carried across it by a '
+            'coefficient scale -- 50 of 80 paths move and 30 do not -- so the '
+            'variant must be built by scripts/materialize_proportional_variant.py, '
+            'which refits them, and a coefficient-scaled path set beside an '
+            'anisotropic model is a body whose muscles belong to a different '
+            'skeleton.' % len(derived['anisotropic_factors']))
     limitations.append(
         'stature_m and mass_kg are INDEPENDENT knobs. Nothing constrains the '
         'implied BMI (%.1f kg/m2 here) and no population joint distribution is '

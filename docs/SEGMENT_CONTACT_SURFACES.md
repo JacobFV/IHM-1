@@ -287,31 +287,39 @@ indirectly true of the running plant.
 with a tendon slack length and a series-elastic curve. There is no tendon
 geometry and no tendon attachment distinct from the muscle's.
 
-**Ligaments are a gap, and the shape of the gap is specific.**
+**Ligaments were a gap. 117 of them are now force elements, and the gap that
+remains is a different one.** The full account is `docs/TISSUE_MECHANICS.md`;
+what belongs here is the correction to what this file used to say.
 
-* The anatomy carries **328 ligament entities**, every one of them with
-  `reference_geometry` — real meshes — bound across all 22 segments (torso 63,
-  hand 36 per side, calcn 29 per side, pelvis 20, tibia 19/18, …).
-* The plant carries **zero** ligament force elements. `ForceSet` is 80
-  `Millard2012EquilibriumMuscle`, 18 `Thelen2003Muscle`, 13 `CoordinateActuator`.
-  No `Ligament`, no `BushingForce`, no `ExpressionBasedBushingForce`.
-* What stands in for them is the opt-in `CoordinateLimitForce` joint stops, whose
-  *limits* are the model's own declared coordinate ranges but whose stiffness,
-  damping and transition width are stated engineering constants — 30 N·m/rad in
-  `crawl.py` — and not measured ligament properties.
+* The anatomy carries **300 ligament entities** and **36 joint capsules**, every
+  one with `reference_geometry`, bound across all 22 segments.
+* The plant now carries **105 ligaments and 12 joint capsules** as
+  `Blankevoort1991Ligament` force elements, derived by
+  `scripts/build_tissue_force_elements.py`. Standing weight is unchanged at
+  761.3757 N and the momentum balance stays at its relative floor, because these
+  are internal forces.
+* The remaining 195 ligaments are **one-segment**: the two bones they join are
+  the same rigid body on this scaffold — 59 in `torso`, 29 per hand, 21 per
+  `calcn`. That is the scaffold reporting its own resolution, not a derivation
+  failure, and the sacrotuberous, sacrospinous and inguinal ligaments coming out
+  one-segment is one of the gates.
 
-The reason the anatomy cannot supply attachment sites as it stands is structural,
-not a matter of effort: **the binding assigns each whole entity to exactly one
-segment**, by nearest-bone-group vertex vote, and a ligament by definition spans
-two bones. 123 of the 328 have a *runner-up* segment different from the one they
-were assigned, which is the binding itself reporting that they straddle a joint.
-Median assignment coherence over the ligaments is 0.68, against 1.0 for an entity
-wholly inside one segment.
+This file previously said the two attachment ends "could be constructed ... but
+that is a construction, and nothing in the repo would validate it." The
+construction was made and it does have gates: 30/30 named bone pairs including
+three negative controls, six published lengths at 0.70–1.04x, three published
+Blankevoort stiffnesses at 0.44–2.03x, and two independent implementations of the
+path length agreeing to 3.3e-16 m.
 
-So the two attachment ends could be **constructed** — split each ligament mesh's
-vertices by which segment they vote for, take a centroid per side, and there is
-your origin and insertion — but that is a construction, and nothing in the repo
-would validate it. What exists is 328 ligament surfaces and a one-segment
-binding; what would have to be authored is the two-ended attachment, the
-stiffness and the slack length, per ligament. Stating that plainly is the
-deliverable here, not a number.
+What that did NOT buy is the thing the joint stops are standing in for. On a 2 s
+prone drop the worst excursion past the model's declared ranges goes 17.4 deg
+bare, 5.3 deg with the stops, and **32.8 deg with the ligaments** — they roughly
+double it. The reason is measured per coordinate: a real cruciate is
+near-isometric because it wraps and its femoral footprint sits near the flexion
+axis, while a straight line between two attachment centroids sits 22 mm off that
+axis, so the derived ACL reads **77% strain at 90 deg of knee flexion** against a
+17.1% ultimate. 66 of the 117 elements never pass ultimate strain inside the
+declared range, and that admissible subset makes under 2.2 N.m at almost every
+coordinate. **A derived ligament on this scaffold either has a large moment arm
+and is wrong, or is right and has no moment arm.** The missing machinery is a
+wrap surface per joint.

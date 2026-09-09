@@ -41,7 +41,7 @@ class NativeMechanicalStream:
     its fidelity as an end, and never report what it did as what the body did.
     See docs/ACTUATION_STAGES.md.
     """
-    def __init__(self,root,output,*,environment='supine',target_mass_kg,augmented_registration=None,surface_contact_manifest=None,surface_sensor_indices=(),bed_material=None,instance_mass_variant=None,initial_pose=None,coordinate_limits=None,scene_objects=None,scene_contact_material=None,segment_contact_meshes=None,segment_contact_material=None,segment_contact_replaces_source_feet=False,tissue_ligaments=None,tissue_ligament_classes=None,tissue_ligament_stiffness_scale=1.0):
+    def __init__(self,root,output,*,environment='supine',target_mass_kg,augmented_registration=None,surface_contact_manifest=None,surface_sensor_indices=(),bed_material=None,instance_mass_variant=None,initial_pose=None,coordinate_limits=None,scene_objects=None,scene_contact_material=None,segment_contact_meshes=None,segment_contact_material=None,segment_contact_replaces_source_feet=False,tissue_ligaments=None,tissue_ligament_classes=None,tissue_ligament_stiffness_scale=1.0,tissue_ligament_admissible_only=False):
         self.root=Path(root).resolve();self.output=Path(output).resolve()
         if self.output.exists() or not self.output.is_relative_to(self.root):raise ValueError('Fresh owned native output directory required')
         if environment not in ('free','supine','upright') or finite(target_mass_kg)<=0:raise ValueError('Invalid native environment or mass')
@@ -217,6 +217,13 @@ class NativeMechanicalStream:
             ligaments=[]
             for row in record['elements']:
                 if classes is not None and row['tissue_class'] not in classes:continue
+                # A structure that passes ligament ultimate strain inside the
+                # DECLARED range of a joint it spans is an attachment in the
+                # wrong place, not a ligament: the derived ACL reads 77% strain
+                # at 90 degrees of knee flexion against a 17.1% ultimate,
+                # because a real cruciate is near-isometric and a straight line
+                # between two tip centroids is not.
+                if tissue_ligament_admissible_only and not row.get('kinematically_admissible'):continue
                 if re.fullmatch(r'[A-Za-z0-9_]+',row['element']) is None:raise ValueError('Invalid tissue ligament element name')
                 if row['body1']==row['body2']:raise ValueError('A ligament must span two different bodies')
                 ligaments.append(dict(element=row['element'],tissue_class=row['tissue_class'],
@@ -235,8 +242,8 @@ class NativeMechanicalStream:
                 ' '.join(map(str,[r['element'],r['tissue_class'],r['body1'],*r['point1_m'],r['body2'],*r['point2_m'],
                                   r['linear_stiffness_n'],r['slack_length_m'],r['transition_strain'],
                                   r['damping_n_s_per_strain']]))+'\n' for r in ligaments))
-        elif tissue_ligament_classes is not None:
-            raise ValueError('Tissue ligament class selection requires a tissue force element bundle')
+        elif tissue_ligament_classes is not None or tissue_ligament_admissible_only:
+            raise ValueError('Tissue ligament selection requires a tissue force element bundle')
         pose=None
         if initial_pose is not None:
             if not isinstance(initial_pose,dict) or not initial_pose or any(not isinstance(name,str) or re.fullmatch(r'[A-Za-z0-9_]+',name) is None for name in initial_pose):raise ValueError('Initial pose requires a nonempty coordinate mapping')
@@ -286,6 +293,7 @@ class NativeMechanicalStream:
                    'segment_contact_basis':'Real segment surfaces as OpenSim ContactMesh over SimTK::ContactGeometry::TriangleMesh, carried by ElasticFoundationForce -- an independent spring at the centroid of every triangle, over the faces SimTK\'s HalfSpaceTriangleMesh collision finds below the plane. No convex hull is taken anywhere on that path. The stiffness is derived from a declared Young modulus, Poisson ratio and layer thickness, which is the elastic foundation\'s own reading of what it represents: a uniform soft layer over a rigid substrate.',
                    'tissue_ligaments':ligaments,'tissue_ligament_bundle':None if ligaments is None else str(tissue_ligaments),
                    'tissue_ligament_stiffness_scale':None if ligaments is None else float(tissue_ligament_stiffness_scale),
+                   'tissue_ligament_admissible_only':bool(ligaments is not None and tissue_ligament_admissible_only),
                    'tissue_ligament_basis':'Blankevoort1991Ligament force elements over two-ended attachments derived from each structure\'s OWN surface by scripts/build_tissue_force_elements.py: the anatomy binding assigns an entity to one segment, but its per-vertex nearest-bone-group vote partitions the surface between two, and each side\'s tip centroid is an attachment site. Slack length is the separation at the binding\'s reference pose; linear stiffness is E*A with E the body\'s own declared ligament along-fibre modulus and A the structure\'s own tissue volume over its own derived length. A CONSTRUCTION from mesh geometry and a published cadaver modulus, not measured insertion footprints and not a subject-specific ligament property. These forces are internal to the model: they can change how the plant moves and cannot change its momentum balance.',
                    'coordinate_limits':stops,'coordinate_limits_basis':'Joint stops at the coordinate ranges the source model already declares; nothing else in this plant enforces them. The LIMIT is the model\'s own -- the stiffness, damping and transition width are explicit engineering constants stated by the caller, not measured ligament properties.',
                    'initial_pose':pose,'initial_pose_basis':'Explicit source coordinate initialization after contact reference construction, before muscle equilibrium and energy reference; no ongoing pose constraint or equilibrium claim',
