@@ -413,3 +413,304 @@ anatomy including a complete genital tract, no breast of either sex, one
 implemented isotropic size parameter with five gates, seven measured proportional
 sex differences that cannot yet be applied, and no female-specific geometry
 anywhere.*
+
+---
+
+# 5. Where the parametrization reaches now: the whole body
+
+Sections 1–4 describe a knob that scaled **the scaffold**. Ask for a tall person
+and you got a tall 22-segment skeleton posing a fixed-size anatomy: 4,000
+entities, 1.7805 m² of skin, 146 nerve routes and every organ, vessel and
+ligament at the source subject's size. This section is that closed, and what
+closing it measured.
+
+    .venv/bin/python scripts/materialize_body_variant.py --stature-m 2.03
+
+builds the scaffold and the body together and runs **48 gates** across five
+stages, refusing to leave a variant on disk if one fails. At the identity
+`--scale 1.0` it runs 52 and every quantity comes back **exactly**, not to a
+tolerance.
+
+## 5.1 No exponent is typed
+
+`ihm/body_scaling.py`. The failure mode this file exists to prevent is an
+exponent chosen because it looks about right. Areas go as `s²` and everyone
+knows it; what gets got wrong are the mixed quantities. Is a ligament stiffness
+`s`? `s²`? Invariant? A conduction delay? A receptor density? Typing any of them
+is guessing, and a guess that is right cannot be told from a guess that is wrong.
+
+So every exponent is **computed from a dimensional formula**, and the only
+hand-written numbers are the primitives — each either 1 (a length) or 0 (a
+material property). `exponent('ligament_stiffness')` returns 1 because `E·A/L`
+expands to `0 + 2 − 1`.
+
+**The primitives, which are the whole argument:**
+
+| primitive | exp | why |
+|---|---:|---|
+| `length` | 1 | the isotropic factor itself — a modelling assumption, see 5.6 |
+| `angle`, `fraction` | 0 | a uniform scale is conformal; a ratio is a ratio |
+| `count` | 0 | a taller person has the same 31 spinal roots and the same 206 bones. **Every density derived from a count therefore carries a negative exponent** |
+| `density` | 0 | composition. The anatomical 70.7713 kg is composed at per-constituent densities, which are properties of fat and bone, not of the specimen |
+| `elastic_modulus` | 0 | 332.2 MPa (Quapp & Weiss 1998) is a property of collagen |
+| `specific_tension` | 0 | cross-bridge density per unit myofilament area — molecular |
+| `conduction_velocity` | 0 | **the load-bearing one.** Axon diameter and internodal myelin length are cellular dimensions |
+| `viscosity`, `regulated_pressure`, `gravity` | 0 | blood composition; a baroreflex set-point; the world |
+| `authored_damping_time` | 0 | an authored ratio in seconds, not a measured property. Held, and flagged — see 5.6 |
+
+**Every exponent used anywhere, and its formula:**
+
+| quantity | formula | exp |
+|---|---|---:|
+| length, centroid, moment arm, fibre length, tendon slack, route length | `length` | **1** |
+| area, PCSA, patch area | `length²` | **2** |
+| volume | `length³` | **3** |
+| mass, weight, muscle mass | `density · volume` | **3** |
+| inertia | `mass · length²` | **5** |
+| max isometric force | `specific_tension · PCSA` | **2** |
+| muscle volume | `PCSA · fibre_length` | **3** |
+| joint moment | `force · moment_arm` | **3** |
+| **conduction delay** | `route_length / conduction_velocity` | **1** |
+| ligament stiffness (N/m) | `E · A / L` | **1** |
+| ligament stiffness per strain (N) | `E · A` | **2** |
+| ligament damping | `stiffness_per_strain · damping_time` | **2** |
+| strain, stress, normalised fibre length, pennation, joint range | dimensionless | **0** |
+| receptor density | `count / area` | **−2** |
+| self-weight stress | `weight / area` | **+1** |
+| strength-to-weight | `force / weight` | **−1** |
+| vascular resistance | `viscosity · L / r⁴` | **−3** |
+| volumetric flow | `pressure / resistance` | **3** |
+| BMI | `mass / length²` | **1** |
+| surface-to-volume | `area / volume` | **−1** |
+
+The table checks itself three ways and will not load otherwise: against answers
+fixed **outside** it (`mass = 3` and `inertia = 5` are `model_scaling.py`'s own
+literals; `max_isometric_force = 2` is `body_parameters.py`'s default), against
+**itself** where two formulas describe one quantity (`PCSA · fibre_length` must
+come out at the same exponent as `length³`, and it only does if PCSA is really
+an area), and structurally (every primitive used, every primitive 0 or 1).
+
+## 5.2 The gate that matters: a taller body has a slower periphery
+
+Conduction velocity is invariant. Route length is anatomy. So the delay is a
+length divided by a constant, and **every conduction delay in the body lengthens
+in exact proportion to stature**. At 2.03 m against 1.7973 m that is +12.95% on
+all 1,743 recorded delays:
+
+| route | length | v | delay | at 2.03 m |
+|---|---:|---:|---:|---:|
+| vagal C fibre | 507.8 mm | 1 m/s | 507.84 ms | **573.60 ms** |
+| optic, magnocellular | 65.7 mm | 20 m/s | 3.28 ms | 3.71 ms |
+| optic, parvocellular | 65.7 mm | 12 m/s | 5.47 ms | 6.18 ms |
+| optic, koniocellular | 65.7 mm | 6 m/s | 10.95 ms | 12.36 ms |
+| greater splanchnic C | 168.4 mm | 1 m/s | 168.36 ms | 190.16 ms |
+| median A-beta | 610.0 mm | 55 m/s | 11.09 ms | 12.53 ms |
+| sciatic Ia | 200.8 mm | 100 m/s | 2.01 ms | 2.27 ms |
+
+The three retinal populations ride **one** optic nerve, so their spread is a
+delay too and separates in proportion: 7.66 ms → 8.65 ms. All seven are named in
+advance in `HEADLINE` so the report cannot be read as whatever came out.
+
+This is the consequence that says the parametrization reached the body.
+`docs/MILESTONES.md` records that lumping peripheral delays costs as much as
+deleting an entire fibre group, so delays are load-bearing for the brain and a
+body of a different size genuinely has a different periphery.
+
+**Central and synaptic delays deliberately do not scale.** They are peripheral
+route lengths in neither name nor fact, and nothing here fixes their scaling.
+They are in the table as explicit nulls, so that forgetting them and excluding
+them do not look alike. A whole reflex latency is therefore *not* 12.95% longer;
+only its peripheral part is.
+
+## 5.3 What scales, and what does not
+
+**Scales, all of it gated:**
+
+- **4,000 anatomical entities** — centroid, bounds, surface area (`s²`), volume
+  (`s³`), the `connections[].distance_m` on 3,996 of them, the three skin
+  layers' `shell.thickness_m` and depth intervals, and the segment binding's
+  centroids and registration translation. Meshes are **not** rewritten; the
+  variant carries a uniform-scale transform, exactly as the OpenSim model
+  carries `scale_factors` rather than resized geometry.
+- **146 nerve routes, 249 muscle bindings, 16 receptor patches, 20 relays** —
+  positions, route lengths, anchors, and 1,743 delays.
+- **1,326 skin patches** — position, area (`s²`), afferent route length, and the
+  area budget the bisection rule uses.
+- **98 actuators** — optimal fibre length, tendon slack, max isometric force, and
+  the derived PCSA, muscle volume and muscle mass.
+- **117 ligament force elements** — attachment points, slack length,
+  cross-section, `E·A` stiffness, damping, volumes and areas.
+
+**Deliberately does not scale, and why:**
+
+| held | reason |
+|---|---|
+| all 17 fibre-class conduction velocities | cellular dimensions. This is the invariant the headline result *is* |
+| specific tension, tissue density, elastic moduli | material and molecular properties |
+| every strain, angle, fraction and normalised length | dimensionless |
+| ligament `peak_strain_over_declared_range` | a strain — so a taller body strains its ligaments exactly as much over the same joint range, and the elements flagged `kinematically_admissible: false` stay flagged at every stature. Scaling neither rescues one nor breaks one |
+| **patch count**, held at 1,326 | a decision, defended in 5.4 |
+| central and synaptic delays, membrane time constants | not peripheral route lengths |
+| receptor gains (Hz/Pa, Hz/°C) | transduction properties of the ending |
+| `provenance.source_to_canonical` | provenance of a *file*, not a body quantity. Folding the stature scale into it would make the record of where the bytes came from untrue |
+| the passive joint stops, Hunt–Crossley contact parameters | the same gaps `model_scaling.py` already records; inherited unchanged |
+
+**Is anything's absolute size fixed by chemistry?** Measured rather than assumed.
+The smallest extent in the atlas is **0.685 mm** (nuchal ligament), **34×** the
+largest size-invariant cellular dimension (myelinated axon 1–20 µm, erythrocyte
+~8 µm, capillary lumen ~4 µm, sarcomere ~2.7 µm). **Zero of 4,000** entities are
+within an order of magnitude of it. So the chemistry-fixed constraints act
+*below* this atlas' resolution and appear in this body as invariant **properties**
+— conduction velocity, specific tension, density, modulus — which is exactly
+where the exceptions in 5.1 live. An entity that did need the exception would be
+expressible: placement and size exponents are carried separately per entity for
+that reason. None needs it.
+
+## 5.4 The patch count is a choice, and it is made explicitly
+
+`build_dermatome_patches.py` bisects until each patch is under an area budget.
+Re-run that on a bigger body with the budget unchanged and you get about `s²`
+as many patches — **1,692** at 2.03 m. Scale the budget as `s²` and you get the
+same **1,326**, larger. Both are readings of the same script and they are
+different bodies.
+
+**Chosen: count fixed, area `s²`, receptor density `s⁻²` — 744.8 → 583.8
+patches/m², a 21.6% fall.**
+
+1. A patch is an **afferent channel**, not a square centimetre. Each carries a
+   nerve, a relay and a cortical target, and IBM-1 consumes them as a fixed input
+   set. A count that followed body size would change the dimension of the brain's
+   sensory input with stature — a 1.4 m and a 2.0 m body could not run the same
+   trained model — and the parameter would stop being a property of the body and
+   become one of the interface.
+2. The anatomy agrees: a taller person has the same 31 spinal nerve pairs and the
+   same 32 dermatomes.
+3. Real receptor counts do not follow body size — tactile acuity is better on
+   smaller fingers because Merkel-cell density is higher on them. Innervation is
+   laid down as a roughly fixed count and spread over whatever surface grows.
+
+`--count-follows-area` reports the other answer in the same run, so this reads as
+a decision rather than as the only thing the code could do.
+
+**What it is not a claim about.** `dermatomes.json` already records that this
+density is two-tier by *area*, not by measured receptor density, and that real
+fingertip innervation exceeds trunk innervation by an order of magnitude.
+Holding the count preserves that limitation exactly. **The density that falls as
+`s⁻²` was never a measured density.**
+
+## 5.5 The finding: the engine divides the scaling straight back out
+
+`scripts/native_mechanical_stream.cpp` line 69:
+
+    double mass_scale = target_mass / original_mass;
+
+and every body mass is multiplied by it. So the plant weighs **whatever
+`target_mass_kg` it was handed**, and the `s³` that
+`materialize_stature_variant.py` applies to the 22 body masses is annihilated.
+
+Ask for 2.03 m and pass the standing `target_mass_kg = 77.6122029` — the literal
+in 58 files — and you get a 2.03 m skeleton weighing 77.61 kg. **A person 13%
+taller and not one gram heavier.** Every gate on the mechanical side passes while
+it happens, because the mass scaling was applied correctly and the annihilation
+is downstream in the engine.
+
+The scaled model carries 122.869 kg before the engine touches it. A caller who
+wants the geometric-similarity mass must pass **111.835 kg**; the NHANES
+population says **99.424 kg** (5.6). Neither is the default.
+
+Measured statically, from the scaled `.osim` and the engine's own formula.
+**The standing-weight-equals-m·g and 1e-14 momentum-residual gates need a running
+plant, and no native run has ever been accepted on a scaled body on either side**
+— `native_acceptance_complete` is `false` in every variant this repository has
+written — so they are named open here rather than reported as passed.
+
+## 5.6 Geometric similarity is false, and by how much
+
+`scripts/measure_stature_allometry.py`. The isotropic assumption makes a testable
+prediction about a population, and `BMX_J.parquet` — already on disk, already
+read by `index_anthropometry.py` for percentiles — can answer it.
+
+Survey-weighted over 4,822 adults aged 20–79:
+
+| | measured exponent | isometry says | z |
+|---|---:|---:|---:|
+| mass ~ stature^b, men | 2.372 | 3.00 | −4.4 |
+| mass ~ stature^b, women | 1.721 | 3.00 | −7.5 |
+| **mass ~ stature^b, pooled** | **2.034 ± 0.083** | **3.00** | **−11.6** |
+| BMI ~ stature^b, pooled | 0.034 | 1.00 | −11.7 |
+
+The pooled slope lies *between* the two within-sex slopes, so it is not the
+artefact that pooling two groups with different means can manufacture; and the
+weighted mean heights land on the published CDC values to 0.1 cm, so it is not a
+weighting error. BMI being flat in stature agrees with this repository's own
+already-measured male/female BMI difference of d = −0.03.
+
+**Reported, not applied.** `mass_kg` is an independent knob and this scaler does
+not move it; the number exists so a caller who takes the `s³` default takes it
+knowingly. At 1.40 m the default is 21% too light; at 2.05 m, 13.6% too heavy.
+
+`ihm/body_scaling.py ALLOMETRY` carries six such entries, each with the size of
+the error and a disposition:
+
+| where isotropy is wrong | isotropic | truth | applied? |
+|---|---:|---|---|
+| mass vs stature | `s³` | `s^2.034`, measured here | no — reported |
+| BMI vs stature | `s¹` | `s^0.034`, measured here | no — the falsification |
+| vascular flow | `s³` | Kleiber `s^2.25`; **9.6% over-perfused at 2.03 m**, because Poiseuille's `r⁴` beats the length and resistance falls as `s⁻³` | no — no vessel radii are rewritten and no flow model reparameterised |
+| brain volume | `s³` | far shallower; **no catalogued source here measures it**, so no exponent is asserted. At 2.03 m the brain is 1.44×, which is very probably too big | no — flagged as known-wrong, not unexamined |
+| characteristic time | `s⁰` | `s^0.5` under equal Froude number — why a taller person walks at a lower cadence. 6.3% at 2.03 m | no — rescaling time would change the meaning of every time constant in the body at once |
+| passive joint stops | `s³` | unknown; authored range-of-motion limits, not measured tissue | no — the same gap `model_scaling.py` already records |
+
+Two consequences that are *not* errors but fall out of the algebra and are worth
+saying out loud: **self-weight stress rises as `s`** (+12.9% at 2.03 m) and
+**strength-to-weight falls as `s⁻¹`** (−11.5%). That is what geometric similarity
+means, it is the classical reason large animals are not scaled-up small ones, and
+it bears directly on whether a tall body can pick itself up.
+
+## 5.7 The gates, and the ones that would not have caught it
+
+Every stage carries an **independent arm** — a check that reads a different
+artifact through a different code path, because a gate that only checks your own
+writes cannot see a consistent mistake.
+
+| stage | the independent arm |
+|---|---|
+| anatomy | scale the **vertices** of the gzipped triangle meshes `anatomy.json` only points at, and re-integrate. A sum of cross products and a divergence-theorem volume over scaled coordinates are not "the record times a power of `s`" |
+| nerves | rebuild all 411 route lengths from geometry by the method each route declares — and for the 249 muscle bindings the endpoint is an **entity centroid out of `anatomy.json`**, a different artifact from a different script. All 411 reproduce their declared length exactly at the base, which is what entitles the recomputation to be believed at the scaled one |
+| skin | the 1,326 patch areas must sum to the exterior area integrated over 109,183 **scaled** triangles selected by the recorded exterior id list — 109,183 triangles that have never heard of a patch |
+| muscle | mechanical muscle volume (PCSA × fibre length, mechanics catalog) over anatomical muscle volume (mesh-integrated, `anatomy.json`). They disagree 5.56× at the base — 98 actuators are not 568 muscles — and the disagreement must be invariant |
+| ligaments | stiffness ÷ cross-section must recover **332.2 MPa** from a *third* file. A modulus is a material property and must come back at the same number on a body of any size |
+
+**Seven sabotage arms, all caught, and what did not catch them is the point.**
+
+| sabotage | caught by | passed anyway |
+|---|---|---|
+| area given the length exponent | mesh integration, `V = A·t` | centroids, distances, the two-body stature agreement, composed mass |
+| volume given the area exponent | mesh integration, `V = A·t` | the same four |
+| skin thickness left unscaled | `V = A·t`, leaf completeness | everything else |
+| patch area given the length exponent | patch-sum-vs-mesh, coverage, budget fraction | the count gate and the route gate |
+| conduction velocities scaled too | delay arithmetic, the table | **every geometry arm** |
+| routes scaled, body left alone | **only** the geometry arm, by 55.8% | **every delay gate, perfectly** |
+| max isometric force given the volume exponent | **only** the check against `KNOWN_ANSWERS` | PCSA, muscle volume and specific tension all still agree with each other — they were derived from the one mistaken formula |
+| Blankevoort stiffness read as N/m | **only** the 332.2 MPa known answer | every other ligament gate |
+
+The last three are the lesson. A scaling table can be **self-consistently
+wrong**, and every check derived from it will agree with every other one. Only a
+comparison against something fixed elsewhere — another module's literal, another
+file's published constant, another artifact's geometry — can see it.
+
+And the `max(0.03, …)` floor in the route method is not homogeneous, so whether
+it ever bites is measured rather than hoped: the shortest route is 58.1 mm, the
+floor activates below `s = 0.517`, and the bottom of the declared stature range
+is `s = 0.779`.
+
+## 5.8 What this still is not
+
+Isotropic. One factor everywhere. It changes how **big** the subject is and not
+what **shape** it is: every segment length ratio, mass fraction and radius of
+gyration is exactly the source subject's at every stature, and section 3's
+account of why anisotropic proportions need the fitted paths *refitted* rather
+than rescaled is unchanged. The meshes are carried by a transform rather than
+rewritten. And no native run has been accepted on a scaled body.
+
+What has changed is that the parametrization no longer stops at the scaffold.
