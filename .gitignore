@@ -19,3 +19,7 @@ artifacts/
 # need to live in two repos.  IBM-1's own rule is that weights are never
 # committed; this keeps that true on both sides of the join.
 /data/models/*/kernel.pt
+
+# forced-gait corpus payloads (regenerable; the script is the artifact)
+/data/derived/forced-gait-corpus/
+/data/derived/forced-gait-smoke/
