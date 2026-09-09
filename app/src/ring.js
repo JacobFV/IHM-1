@@ -167,7 +167,7 @@ export function mountRing(host, { project, onSystem, panelHost } = {}) {
   (panelHost || host).append(panel);
 
   let graph = null, state = null, system = null, selected = null, items = [];
-  let width = 0, height = 0, visible = true;
+  let width = 0, height = 0, visible = true, lastAnchor = null;
 
   function setVisible(on) {
     visible = !!on;
@@ -299,7 +299,22 @@ export function mountRing(host, { project, onSystem, panelHost } = {}) {
       items[i].y = y;
       items[i].side = side;
     });
+    // Where each leader leaves its label, measured once here. The boxes only
+    // move when this runs; the camera moves every frame. Re-measuring 26 labels
+    // per tick forced a layout ten times a second while 2,229 geometries were
+    // still streaming in, for a line whose near end had not moved.
+    const hostBox = host.getBoundingClientRect?.();
+    for (const entry of items) {
+      const box = entry.button.getBoundingClientRect?.();
+      if (!box || !hostBox || !box.width) { entry.x0 = entry.x; entry.y0 = entry.y; continue; }
+      entry.y0 = box.top - hostBox.top + box.height / 2;
+      entry.x0 = entry.side === "l" ? box.right - hostBox.left + 4
+        : entry.side === "r" ? box.left - hostBox.left - 4
+        : box.left - hostBox.left + box.width / 2;
+    }
+    lastAnchor = null;
     drawLeaders();
+    paintSelection();
   }
 
   function anchor() {
@@ -313,25 +328,29 @@ export function mountRing(host, { project, onSystem, panelHost } = {}) {
   }
 
   function drawLeaders() {
-    if (!width || !height) return;
-    lines.setAttribute("viewBox", `0 0 ${width} ${height}`);
+    if (!width || !height || !items.length) return;
     const [ax, ay] = anchor();
+    // A settled camera still drifts by fractions of a pixel under damping.
+    // Rewriting 26 path strings for that is work nobody can see.
+    if (lastAnchor && Math.abs(ax - lastAnchor[0]) < 0.5 && Math.abs(ay - lastAnchor[1]) < 0.5) return;
+    lastAnchor = [ax, ay];
+    lines.setAttribute("viewBox", `0 0 ${width} ${height}`);
     for (const entry of items) {
-      const { button, leader, item } = entry;
-      const dim = selected && selected !== item.key;
-      leader.style.opacity = dim ? "0.12" : "";
-      button.classList.toggle("is-dim", !!dim);
-      button.classList.toggle("is-active", selected === item.key);
-      const box = button.getBoundingClientRect?.();
-      const hostBox = host.getBoundingClientRect?.();
-      let x0 = entry.x, y0 = entry.y;
-      if (box && hostBox && box.width) {
-        y0 = box.top - hostBox.top + box.height / 2;
-        x0 = entry.side === "l" ? box.right - hostBox.left + 4 : box.left - hostBox.left - 4;
-        if (entry.side === "c") x0 = box.left - hostBox.left + box.width / 2;
-      }
+      const { leader } = entry;
+      const x0 = entry.x0 ?? entry.x, y0 = entry.y0 ?? entry.y;
       const mx = (x0 + ax) / 2, my = (y0 + ay) / 2;
       leader.setAttribute("d", `M${x0.toFixed(1)},${y0.toFixed(1)} Q${mx.toFixed(1)},${y0.toFixed(1)} ${ax.toFixed(1)},${ay.toFixed(1)}`);
+    }
+  }
+
+  // Dimming is a selection change, not a camera change, so it is its own pass
+  // and does not ride along on the per-frame one.
+  function paintSelection() {
+    for (const entry of items) {
+      const dim = selected && selected !== entry.item.key;
+      entry.leader.style.opacity = dim ? "0.12" : "";
+      entry.button.classList.toggle("is-dim", !!dim);
+      entry.button.classList.toggle("is-active", selected === entry.item.key);
     }
   }
 
@@ -433,7 +452,7 @@ export function mountRing(host, { project, onSystem, panelHost } = {}) {
     selected = key;
     for (const entry of items)
       entry.button.setAttribute("aria-pressed", String(selected === entry.item.key));
-    drawLeaders();
+    paintSelection();
     drawPanel();
   }
 
