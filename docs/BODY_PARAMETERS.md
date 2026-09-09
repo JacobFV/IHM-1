@@ -585,9 +585,11 @@ patches/m², a 21.6% fall.**
    become one of the interface.
 2. The anatomy agrees: a taller person has the same 31 spinal nerve pairs and the
    same 32 dermatomes.
-3. Real receptor counts do not follow body size — tactile acuity is better on
-   smaller fingers because Merkel-cell density is higher on them. Innervation is
-   laid down as a roughly fixed count and spread over whatever surface grows.
+3. Real receptor counts appear not to follow body size — tactile acuity is
+   reported to be better on smaller fingers because Merkel-cell density is higher
+   on them, innervation being laid down as a roughly fixed count and spread over
+   whatever surface grows. **A published prior, not measured here and not
+   catalogued in this repository**, and the weaker of the two substantive reasons.
 
 `--count-follows-area` reports the other answer in the same run, so this reads as
 a decision rather than as the only thing the code could do.

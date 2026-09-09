@@ -30,12 +30,14 @@ falls as s**-2.**  Three reasons, in the order they actually decide it:
    person has the same 31 spinal nerve pairs and the same 32 dermatomes, and
    `docs/MILESTONES.md` counts 29 of 30 dermatome levels reached.
 
-2. *Real receptor counts do not follow body size.*  Tactile spatial acuity is
-   better on smaller fingers, and the reason is that Merkel-cell density is
-   higher on them -- the innervation is laid down as a roughly fixed count and
-   spread over whatever surface the person grows.  Holding the count and
-   letting density fall is the reading that matches that; scaling the count is
-   the reading that contradicts it.
+2. *Real receptor counts do not appear to follow body size.*  A published
+   prior, not measured here and not catalogued in this repository: tactile
+   spatial acuity is better on smaller fingers, and the reported reason is that
+   Merkel-cell density is higher on them -- innervation laid down as a roughly
+   fixed count and spread over whatever surface the person grows.  Holding the
+   count and letting density fall is the reading that matches that; scaling the
+   count is the reading that contradicts it.  It is the weakest of the two
+   substantive reasons and would not decide this on its own.
 
 3. *The alternative is available and is not lost.*  `--count-follows-area`
    reports what the other choice would give, in the same run, so the decision
@@ -157,10 +159,12 @@ def build(root, scale):
             'model and the parameter would become a property of the interface.',
             'The anatomy agrees: a taller person has the same 31 spinal nerve pairs '
             'and the same 32 dermatomes. Nothing about being tall adds a root.',
-            'Real receptor counts do not follow body size. Tactile spatial acuity '
-            'is better on smaller fingers because Merkel-cell density is higher on '
-            'them -- innervation is laid down as a roughly fixed count and spread '
-            'over whatever surface the person grows.'],
+            'A PUBLISHED PRIOR, not measured here and not catalogued in this '
+            'repository, and the weaker of the two substantive reasons: tactile '
+            'spatial acuity is '
+            'reported to be better on smaller fingers because Merkel-cell density '
+            'is higher on them -- innervation laid down as a roughly fixed count '
+            'and spread over whatever surface the person grows.'],
         not_a_claim=(
             'This does not make the layout right. dermatomes.json already records '
             'that patch density here is two-tier by AREA and not by measured '
