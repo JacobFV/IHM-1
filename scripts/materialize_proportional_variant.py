@@ -133,26 +133,47 @@ def _measure_bytes(model_bytes):
         scratch.unlink(missing_ok=True)
 
 
-def per_muscle_fibre_scale(base_model, variant_model, base_pathset, variant_pathset):
+def per_muscle_fibre_scale(base_model, variant_model, work):
     """OpenSim's own rule: fibre and tendon lengths follow the muscle's own path.
 
     ``Muscle::extendPostScale`` scales ``optimal_fiber_length`` and
     ``tendon_slack_length`` by the ratio of the scaled to the unscaled
     musculotendon length.  Under an isotropic change that ratio is one number;
-    under a shape change it is 80 different numbers, and using a single one
+    under a shape change it is 98 different numbers, and using a single one
     would put every muscle but at most one on the wrong operating point of its
     force-length curve.
-    """
-    def pose(path):
-        return {c.get('name'): float(c.findtext('default_value'))
-                for c in ET.parse(path).getroot().iter('Coordinate')}
 
-    before, after = FittedMomentArms(base_pathset), FittedMomentArms(variant_pathset)
-    pose_before, pose_after = pose(base_model), pose(variant_model)
-    shared = set(before.paths) & set(after.paths)
-    return {name: (after.length_and_moment_arms(name, pose_after)[0]
-                   / before.length_and_moment_arms(name, pose_before)[0])
-            for name in shared}
+    Measured from each model's own ``GeometryPath`` at its own default pose --
+    the real path with its wrap objects, not a polynomial approximation of it --
+    so every muscle gets a factor, including the 18 the shipped 80-path set
+    never covered.
+    """
+    def at_default(model, name):
+        table = work / (name + '_pose.sto')
+        default_pose_table(model, table)
+        series = pf.sample(model, table, work / (name + '_pose.csv'),
+                           log=work / (name + '_pose.log'))
+        return {key[0].rsplit('/', 1)[-1]: values[0]
+                for key, values in series.items() if key[1] == 'length'}
+
+    before = at_default(base_model, 'fibre_base')
+    after = at_default(variant_model, 'fibre_variant')
+    shared = sorted(set(before) & set(after))
+    if not shared:
+        raise ValueError('No muscle is present in both models')
+    return {name: after[name] / before[name] for name in shared}
+
+
+def default_pose_table(model_path, destination):
+    """A one-row coordinate trajectory at a model's declared default pose."""
+    root = ET.parse(model_path).getroot()
+    labels, values = ['time'], [0.0]
+    for joint in root.find('.//JointSet/objects'):
+        for coordinate in joint.iter('Coordinate'):
+            labels.append('/jointset/%s/%s/value' % (joint.get('name'), coordinate.get('name')))
+            values.append(float(coordinate.findtext('default_value')))
+    pf.write_sto(destination, labels, [values])
+    return len(labels) - 1
 
 
 def scale_catalog_per_muscle(catalog, fibre_scale, global_scale, force_scale):
@@ -243,8 +264,7 @@ def materialize(output, request, *, threads=6, keep_work=False):
                            requested, catalog, work, threads)
 
     fibre_scale = per_muscle_fibre_scale(
-        ROOT / registration['model_path'], model_path,
-        ROOT / RAW / PATHSET, output / PATHSET)
+        ROOT / registration['model_path'], model_path, work)
     scaled_catalog, without_paths = scale_catalog_per_muscle(
         catalog, fibre_scale, raw['leg'] * global_scale, force_scale)
     (output / 'catalog.json').write_text(json.dumps(scaled_catalog, indent=2) + '\n')
@@ -282,6 +302,17 @@ def materialize(output, request, *, threads=6, keep_work=False):
         contact_spheres_scaled=spheres,
         fitted_paths=len(FittedMomentArms(output / PATHSET).paths),
         muscles_without_a_refitted_path=without_paths,
+        paths_the_shipped_set_never_covered=sorted(
+            set(FittedMomentArms(output / PATHSET).paths)
+            - set(FittedMomentArms(ROOT / RAW / PATHSET).paths)),
+        fitted_path_coverage_note=(
+            'The refit covers every PathActuator in the model, which is 98 here '
+            'against the shipped set\'s 80. That is a change with two sides: the '
+            '18 arm and trunk muscles the shipped set omitted now have fitted '
+            'moment arms, so JointPosturalController can actuate them, AND they '
+            'lose their explicit GeometryPath in the engine, which is the '
+            'geometry a retinaculum or a fascia would need to constrain. Stated '
+            'rather than chosen silently.'),
         per_muscle_fibre_scale=fibre_scale,
         gates=gates,
         gate_evidence=evidence,
