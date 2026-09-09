@@ -1,0 +1,24 @@
+{
+  "id": "female-breast-shape-model",
+  "reference": "https://arxiv.org/abs/2107.13463",
+  "modality": "three-dimensional statistical shape model",
+  "role": "candidate PARAMETRIC breast geometry, as opposed to one fixed mesh",
+  "access": "arXiv record reachable from this sandbox (HTTP 200); the model artifact itself has not been located or licence-checked here",
+  "status": "catalogued_not_acquired",
+  "ingested": false,
+  "raw_path": null,
+  "derived_manifest": null,
+  "independent_subject": false,
+  "physiological_dynamic_calibration": false,
+  "verified_here": {
+    "method": "reachability only",
+    "arxiv_abstract_page_http_status": 200,
+    "content_not_read": true
+  },
+  "claims_as_relayed_and_unverified": [
+    "open-access 3D statistical shape model of the female breast",
+    "built from 110 scans"
+  ],
+  "why_it_is_the_most_interesting_of_the_three": "It is the only candidate that is a PARAMETRIC family rather than one subject. The objective here is a parametrized body; a shape model gives breast geometry a mean and a set of modes, which is the same kind of object as stature_m and pelvis_breadth_ratio rather than a mesh bolted on. It would also make the honest label easier to hold: a sampled shape is explicitly authored from a measured distribution, not a scan of a person.",
+  "limitations": "A shape model of a surface is not anatomy. It carries no mammary gland, no lobule, no lactiferous duct, no nipple and no areola as separate entities, so it would populate the same single envelope TotalSegmentator's 'breast' label would, with better parametric control and no internal structure. Any mesh produced from it is AUTHORED, never measured, and must carry a card saying which distribution it was drawn from."
+}

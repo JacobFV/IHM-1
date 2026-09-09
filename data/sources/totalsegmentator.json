@@ -1,0 +1,46 @@
+{
+  "id": "totalsegmentator",
+  "reference": "https://github.com/wasserth/TotalSegmentator",
+  "dataset_reference": "https://doi.org/10.5281/zenodo.10047292",
+  "paper": "https://doi.org/10.1148/ryai.230024",
+  "modality": "whole-body CT segmentation model and its training corpus",
+  "role": "candidate source of FEMALE-SUBJECT organ geometry, which no catalogued source in this repository currently provides",
+  "access": "tool Apache-2.0 (pip install TotalSegmentator); dataset CC-BY-4.0 on Zenodo; several SUBTASKS require a licence key and are not Apache-2.0",
+  "status": "catalogued_not_acquired",
+  "ingested": false,
+  "raw_path": null,
+  "derived_manifest": null,
+  "independent_subject": true,
+  "physiological_dynamic_calibration": false,
+  "verified_here": {
+    "method": "totalsegmentator/map_to_binary.py fetched from the repository at raw.githubusercontent.com and parsed; README task/licence split read from the same commit",
+    "total_task_classes": 117,
+    "breasts_subtask_exists": true,
+    "breasts_subtask_classes": ["breast"],
+    "breasts_subtask_licence": "Apache-2.0 (listed under 'Openly available for any usage')",
+    "prostate_in_total_task": true,
+    "female_reproductive_classes_anywhere_in_the_class_map": 0,
+    "female_terms_searched": ["uterus", "ovary", "ovaries", "vagina", "cervix", "endometrium", "fallopian"]
+  },
+  "not_verified_here": {
+    "reason": "zenodo.org is unreachable from this sandbox (HTTP 504 through the egress proxy on both the record page and the API); huggingface.co, api.github.com and pypi.org all return 200, so this is host-specific",
+    "claims_left_unchecked": [
+      "1,228 CT subjects in the released dataset",
+      "503 of 1,220 subjects female (41.2%)",
+      "meta.csv carries a sex column",
+      "the dataset files are CC-BY-4.0"
+    ]
+  },
+  "what_it_would_actually_contribute": [
+    "ONE female-specific structure: 'breast', as a single undifferentiated soft-tissue label. Not left and right, and no mammary gland, nipple, areola, lobule or lactiferous duct. The body currently has none of these in EITHER sex, so this closes the envelope and none of the internal structure.",
+    "NOTHING toward female internal or external genitalia. The class map has no uterus, ovary, vagina or cervix, so the uterine.* and placental.* field groups stay at 0 supporting entities.",
+    "Sex-neutral organ geometry from female subjects, which is a different and weaker claim than female-specific anatomy: a liver from a female donor is a liver.",
+    "A prostate, which this body already has."
+  ],
+  "integration_cost_before_it_is_usable": [
+    "Label volumes are NIfTI, not meshes; marching cubes then decimation then a watertightness gate.",
+    "Registration into this body is the problem that has already failed once here for skin: neither existing skin map encloses the bones (0.273 and 0.445 of bone vertices inside their own skin). Another subject's organ needs per-segment transformation and a known-answer containment test, not a self-computed residual.",
+    "A segmentation of a clinical CT is not a curated anatomical atlas. Any assembled body would be composited from subjects who are not each other and are not the Rajagopal subject the skeleton is scaled from, and must say so."
+  ],
+  "limitations": "The tool is a segmentation model, so what it yields is one subject's organ boundaries as an algorithm drew them, carrying that algorithm's error. A card written against it must name the CT subject, not the model."
+}

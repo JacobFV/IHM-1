@@ -1,0 +1,26 @@
+{
+  "id": "ut-endomri",
+  "reference": "https://zenodo.org/records/13749613",
+  "modality": "pelvic MRI with structural segmentation labels",
+  "role": "candidate source of UTERUS and OVARY geometry, of which this repository has zero entities",
+  "access": "Zenodo, reported CC-BY",
+  "status": "catalogued_not_acquired",
+  "ingested": false,
+  "raw_path": null,
+  "derived_manifest": null,
+  "independent_subject": true,
+  "physiological_dynamic_calibration": false,
+  "verified_here": {
+    "method": "none",
+    "reason": "zenodo.org is unreachable from this sandbox: HTTP 504 through the egress proxy on both /records/ and /api/records/, while huggingface.co, api.github.com and pypi.org return 200. Nothing on this card has been checked against the archive."
+  },
+  "claims_as_relayed_and_unverified": [
+    "UTHealth Endometriosis MRI Dataset",
+    "51 patients with T2 and T1 fat-suppressed sequences plus structural labels",
+    "a second single-centre set of 81 subjects with multiple pelvic structures",
+    "uterus and ovary segmentations for all subjects",
+    "CC-BY licence"
+  ],
+  "the_caution_that_belongs_on_the_face_of_this_card": "It is an ENDOMETRIOSIS cohort. Endometriosis distorts pelvic anatomy -- adhesions, endometriomas, adenomyosis, altered uterine position and ovarian morphology -- so these uteri and ovaries are not a typical-anatomy reference and must never be presented as one. Using them would mean a body whose uterus came from a patient selected for uterine pathology.",
+  "limitations": "MRI segmentation of a clinical cohort, not a curated atlas. Different subject from the body's skeleton, from its skin, and from whatever supplies the breast."
+}

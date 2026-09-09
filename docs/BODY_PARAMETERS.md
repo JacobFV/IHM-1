@@ -17,7 +17,16 @@ numbers, exactly what is missing.
     scripts/verify_stature_scaling.py             gate it, including on purpose broken
     scripts/audit_sex_specific_anatomy.py         what sex anatomy exists, measured
     scripts/index_anthropometry.py                sex-stratified proportions from NHANES
-    scripts/measure_anisotropic_pelvis_error.py   why proportions are not a knob
+    scripts/measure_anisotropic_pelvis_error.py   why a coefficient scale cannot carry them
+    scripts/native_polynomial_path_fit.cpp        drive OpenSim's PolynomialPathFitter
+    scripts/build_native_path_fitter.py           build it against the local install
+    ihm/native/path_refitting.py                  run it, read it back, compare
+    ihm/native/anisotropic_scaling.py             per-body, per-axis geometry
+    ihm/native/body_measurements.py               measure shape, not only size
+    scripts/verify_path_refitting.py              five gates on the refitter
+    scripts/materialize_proportional_variant.py   build a re-proportioned body
+    scripts/audit_hormone_axis_anatomy.py         which hormone fields have an organ
+    scripts/audit_hair_sex_dependence.py          what a female hair field would need
 
 `data/derived/` is gitignored throughout. The scripts are the artifacts.
 
@@ -37,7 +46,10 @@ Seven parameters, and the status field is the load-bearing part:
 | `mass_kg` | kg | 35 – 160 | **surfaced**; was already a knob |
 | `muscle_force_scale` | – | 0.25 – 4.0 | **implemented**; defaults to `stature_scale²` |
 | `environment` | – | free / supine / upright | surfaced; scenario, not body |
-| `sex` | – | **{male}** | **declared**; reaches nothing |
+| `pelvis_breadth_ratio` | – | 0.85 – 1.20 | **implemented**; hip separation over stature |
+| `shoulder_breadth_ratio` | – | 0.85 – 1.20 | **implemented**; acromial separation over stature. **No measured sex value exists** |
+| `leg_length_ratio` | – | 0.85 – 1.20 | **implemented**; (femur+tibia) over stature |
+| `sex` | – | **{male, female}** | **implemented — proportions only, anatomy unchanged** |
 | `age_years` | y | 18 – 90 | declared; reaches nothing |
 | `body_fat_fraction` | – | 0.05 – 0.50 | declared; reaches nothing |
 
@@ -47,9 +59,18 @@ written down and reaches the running body through nothing at all, and the
 schema says which of the three every parameter is rather than presenting a flat
 list in which they look alike.
 
-`sex` has a domain of one member and `resolve({'sex': 'female'})` raises. That
-is deliberate. Accepting the value would change a string in a JSON file and
-nothing else.
+`resolve({'sex': 'female'})` used to raise, and the raise was right: accepting
+the value would have changed a string in a JSON file and nothing else. It stopped
+raising when it stopped meaning nothing. It now sets four measured proportions --
+stature, mass, pelvic breadth over stature, leg length over stature -- and each
+one changes the running mechanical body by an amount that is gated. Its status
+string carries the parenthesis in full: **implemented (proportions only; anatomy
+unchanged)**, and every resolved record carries a `sex_realisation` block naming
+what moved and what did not, so the label cannot be quoted without the caveat.
+
+What did not move: the anatomical entity set. Still 0 female-specific entities,
+still 0 mammary glands in either sex, and the male genital tract still bound to
+the pelvis.
 
 ### What surfacing found
 
@@ -305,25 +326,151 @@ and limb-to-trunk proportion differs by under 3%.
 The size term is exactly what `stature_m` already carries. The pelvic term is what
 it cannot.
 
-### Why the pelvic term is not a knob
+### The pelvic term is a knob now, and here is what it cost
 
-`measure_anisotropic_pelvis_error.py`. Widen the pelvis medio-laterally by the
-measured female/male hip-over-stature ratio **1.1265**, hold everything else, and
-measure how far each muscle's path length moves:
+`measure_anisotropic_pelvis_error.py` measured the reason it was not one. Widen
+the pelvis medio-laterally by the measured female/male hip-over-stature ratio
+**1.1265**, hold everything else:
 
-- **56 of 98** paths change; **42 do not**;
+- **56 of 98** paths change; **42 do not** (50 of 80 on the example model);
 - among those that change the span is **0.01% to 6.23%** — `addmagProx` 6.2%,
   piriformis 4.8%, `addbrev` 4.0%, `glmax3` 2.0%, and nothing below the knee.
 
-A polynomial coefficient scale admits **one** factor. Any single factor is wrong
-for every muscle but at most one. Anisotropic proportions therefore need the
-fitted paths **refitted**, not rescaled — and refitting means OpenSim's
-`PolynomialPathFitter`, sampling the real `GeometryPath` with its wrap objects
-over the coordinate ranges. The OpenSim Python bindings are not installed here,
-and the native adapter that is built exposes the stream protocol, not the fitter.
+A polynomial coefficient scale admits **one** factor, so any single factor is
+wrong for every muscle but at most one. That conclusion stands. What was wrong
+was the next sentence: *"refitting means OpenSim's `PolynomialPathFitter` … the
+OpenSim Python bindings are not installed here."*
 
-That is the honest boundary of stage 2, and it was found by measurement rather
-than assumed.
+**They are not, and they were never the only route.**
+`data/runtime/opensim/install/opensim/lib/libosimActuators.so` — built by
+`scripts/build_native_opensim.py`, present since the engine was built — exports
+**97 `PolynomialPathFitter` symbols**. The fitter was not missing. It was
+undriven. `scripts/native_polynomial_path_fit.cpp` is 300 lines and links against
+the install that was already there.
+
+#### What the refit is worth, against the file the engine actually runs
+
+`verify_path_refitting.py`, five arms, all passing. Measured on **27 held-out
+frames** of the reference trajectory against the model's own `GeometryPath`s
+with their wrap objects, never against the fitter's own printed RMS — that is a
+training error, measured on the samples it fitted.
+
+| | path length RMS | moment arm RMS |
+|---|---|---|
+| refit of the unchanged model | **3.01e-4 m** | 3.55e-3 m |
+| the **shipped** `FunctionBasedPathSet` | **5.02e-3 m** | 3.64e-3 m |
+
+The engine runs the shipped set. A refit of the same model is **16.7× closer** to
+the muscle paths that model declares.
+
+#### Two things the gate design had to stop assuming
+
+**The fitter is not deterministic.**
+`LatinHypercubeDesign::computeRandomHypercube` seeds `std::mt19937` from
+`std::random_device` on every call. Two refits of the same model differ by
+**3.12e-5 m** RMS. So the shipped coefficients cannot be reproduced bit for bit
+by anyone, including whoever produced them, and a gate demanding it would be
+testing the wrong property. That run-to-run spread is the **noise floor**, and
+nothing measured on a refit means anything unless it clears it.
+
+**The shipped set is not the reference.** The polyline arm — fitted polynomial
+length against a straight-line walk of the model's own `PathPoint` locations,
+computed in Python by forward kinematics over the `.osim` — was first written to
+demand that a refit not move that ratio away from the *shipped* set's. That
+quietly made the shipped set correct by definition. Scored against the
+`GeometryPath` truth instead: the refit's worst drift is **0.81%** (`gaslat_l`),
+the shipped set's is **5.07%** (`ehl_r`).
+
+#### The arm whose answer was fixed in advance
+
+Scale the model **1.10× isotropically**. Path length is homogeneous of degree one
+in the geometry at fixed pose, so the true lengths must be exactly 1.10×. They
+are, to **1.4e-7 m** — and that residual is the constraint assembler, not the
+scaling: this model carries four `CoordinateCouplerConstraint`s and the worst
+muscle is `gaslat_l`, which crosses the coupled walker knee. (That `scale_model`
+is exact is established without a solver by `verify_stature_scaling.py`, whose
+identity arm reproduces every path length to relative error 0.0 from the XML.)
+Then refit the scaled body from scratch: it lands on 1.10× the base refit at
+**1.74× the noise floor**. Analytic route and numerical route share no code.
+
+#### The arm that had to fail
+
+A refit of the **wide-pelvis** body, scored against the **original** body's
+truth: **72× the noise floor**. The same refit against its own body: 3.05e-4 m.
+A gate that has never been seen to fail is not a gate.
+
+### Proportions, and what they measurably do
+
+`materialize_proportional_variant.py --sex female`. Seven gates, all passing,
+measured on the artifact that was written:
+
+| quantity | change | target |
+|---|---|---|
+| hip separation / stature | **+12.6461%** | +12.6461% (error 1e-13) |
+| leg length / stature | **−2.5526%** | −2.5526% (error 1e-13) |
+| shoulder breadth / stature | 0.0000% | 1.0 — **no measured value exists** |
+| stature | −8.0058% | exact by construction |
+| total mass | −19.97% | — |
+| pelvis segment mass fraction | +10.5% | — |
+| hip adduction to keep the stance | **+0.2253°** | — |
+
+**Order of operations, and it is not cosmetic.** Every proportional parameter is
+defined *relative to stature*, because that is how the anthropometry measures it.
+So the shape factors go on first, the shaped body is **measured**, the fixed
+point is solved on that measurement, and one isotropic factor then lands stature
+exactly. The legs are 48% of stature, so shortening them shortens the very
+denominator the request was written against: assuming the raw factor equals the
+ratio is wrong by **1.2%**, which is half the size of the effect being asked for.
+The solver converges to 1e-13 in 38 iterations and 3.4 s.
+
+**The Q-angle claim that was not made.** A wider pelvis does **not** tilt the
+femur at the default pose — it translates the whole leg laterally, and femoral
+obliquity is unchanged at 0.264°. What moves is where the foot lands. The honest
+consequence is the hip adduction that would put it back: **+0.225°**. The model
+carries no ASIS marker and no tibial tuberosity, so it cannot measure a clinical
+Q-angle, and `body_measurements.py` names the quantity `femoral_obliquity_deg`
+for that reason.
+
+#### Two measurements that say the refit was not optional
+
+The variant's true muscle paths sit **7.78e-3 m RMS** from the isotropically
+scaled source subject's — **250× the noise floor** — and that scaled subject is
+exactly what a coefficient scale of the shipped polynomials would have produced.
+
+And the per-muscle fibre-length factor, taken by OpenSim's own
+`Muscle::extendPostScale` rule from each muscle's own `GeometryPath`, spans
+**0.8888 to 0.9737** across the 98 muscles. One number is wrong for 97 of them.
+
+#### A side effect worth stating rather than discovering
+
+The refit covers **all 98** `PathActuator`s; the shipped set covers 80. The 18 it
+adds are the `arm26` and `gait2392` trunk muscles, which have never had fitted
+moment arms — so `JointPosturalController` can now actuate them. It also removes
+their explicit `GeometryPath` in the engine, which is the geometry a retinaculum
+or a fascia would need to constrain. Both are in the registration.
+
+#### What is still an assumption
+
+- **Wrap objects.** Every wrap in this model is a rotated `WrapCylinder`, and a
+  rotated cylinder under an anisotropic scale is an elliptic cylinder, which
+  OpenSim cannot express. The default policy scales length by the stretch along
+  the cylinder's own axis and radius by the geometric mean of the two principal
+  stretches perpendicular to it — cross-sectional area preserved, exact under
+  isotropy. `translate_only` is the alternative and the per-wrap factors are
+  written into every variant.
+- **`leg_length_ratio` is isotropic per segment**, so it slims the leg as it
+  shortens it. A long-axis-only femur scale is *refused*: `walker_knee_r` takes
+  its roll-glide translations in a frame rotated by (−1.64, 1.45, 1.57) rad
+  inside `femur_r`, where componentwise scaling has no meaning.
+- **The correspondence problem is not solved, it is declared.** NHANES measures
+  hip *circumference* at the buttocks; `pelvis_breadth_ratio` is a *skeletal*
+  medio-lateral factor. Using one as the other assumes soft tissue and bone scale
+  together in that direction. Bi-iliac breadth is measured by no catalogued
+  source, in either sex. And `BMXLEG` is inguinal crease to proximal tibia, not
+  the OpenSim hip-centre-to-knee-centre length.
+- **No native run has been accepted on any of it.** `native_acceptance_complete`
+  is `false`. Every number above is measured on XML and on OpenSim's own path
+  evaluator, not on a simulation.
 
 ### The hormone cluster
 
@@ -352,6 +499,35 @@ Separately, `ihm/fields/systems.py` declares a symbolic scaffold with
 group. These are prior centre/spread placeholders in the ontology with **no
 anatomical entity to attach to** — `uterine` on a body with no uterus.
 
+#### The absence is measured now, not described
+
+`audit_hormone_axis_anatomy.py` counts the entities that would carry each
+declared field, over the 4,000 segment-bound set:
+
+| field group | supporting entities | with a computed volume |
+|---|---|---|
+| `reproductive.*` | **11**, all bound to `pelvis`, all male | 3 |
+| `uterine.*` | **0** | — |
+| `placental.*` | **0** | — |
+
+Two of those rows belong on `docs/DISCONNECTS.md`: they are declared models with
+no running object behind them, and until this audit they looked in the inventory
+exactly like the rows that do have one.
+
+**The audit's known-answer check failed, and the failure is the useful part.**
+The gonad meshes measure **6.7 and 6.8 mL** each against a 12–30 mL adult
+clinical reference range, and the prostate mesh is **11.6 mL** against a typical
+adult 15–25 mL. Both measurable reproductive organs in this atlas are small by
+about the same factor — a property of a single-donor atlas whose skin extent is
+1.7195 m and whose organ volumes have never been calibrated against a population.
+Any hormone axis scaled by gonadal volume would inherit it, which is why the
+number is reported *before* anything is scaled by it.
+
+It also means the one coupling this body could support — a testosterone axis
+attached to a real testis — would be attached to a testis half the expected size.
+That is a data problem, not a modelling one, and it is now on the record instead
+of waiting to be discovered downstream.
+
 ### Hair
 
 `ihm/assembly/hair_fields.py` partitions 244 Terminologia Anatomica surface
@@ -368,51 +544,102 @@ model testosterone anyway.
 
 So the structure for a sex-dependent hair distribution exists and is well shaped:
 the seven fields that would move are already identified and separated from the
-fourteen that would not. What is missing is measured female values for them. The
-evidence file carries sex-stratified cohort data where the sources have it — and
-it also records that the beard density in this male body is **transferred from
-female cheek vellus hair**, because that is what the retrieved source measured.
+fourteen that would not.
+
+**But the missing piece is not the androgen variable.** `audit_hair_sex_dependence.py`
+reads the built evidence and finds the parameter that sexual dimorphism in body
+hair actually runs through already present on every field:
+`shaft_bearing_fraction`, the fraction of counted follicles that produce a
+visible shaft. The evidence file's own note says why — follicle *number* is
+roughly sex-invariant (seago1985 measured no sex difference on thigh or upper
+arm); what differs is how many of those follicles make a terminal hair.
+
+Of the seven androgen-dependent fields:
+
+- **six** (axillary, chest, abdomen, back, pubic, perineal) set that fraction to
+  **1.0** at tier `assumed`;
+- **one** (beard) declares it **unmeasured** and leaves the mass absent rather
+  than inventing it;
+- **none** have a measured value.
+
+A fraction of 1.0 — every counted follicle bears a shaft — is specifically an
+**adult male** assumption, and it is not labelled as one anywhere in the field
+record. The beard's refusal is not an inconsistency but the correct call: its
+density is transferred from *female cheek vellus* hair, where assuming a terminal
+shaft per follicle would be badly wrong.
+
+So wiring an androgen signal into these fields today would drive a quantity whose
+male value is itself an assumption. What would close it is **seven numbers**, and
+the standard female body-hair instrument, Ferriman–Gallwey scoring, is *ordinal*
+and does not supply a fraction. Until they exist, `sex` reaching hair would move
+a rendered surface and no measured quantity — which is the state `sex` was
+raising over in the first place.
 
 ## 4. What was delivered, and what a female body would take
 
-**Delivered.** One declared schema with provenance and consumers for seven
-parameters. Stature as a working, gated, geometrically consistent knob, together
-with the mechanism that makes a mis-scaled body a hard failure instead of a
-silent one. A measured account of what sex anatomy this body has. Measured
-sex-stratified proportions from data that was already on disk. A measured reason
-why those proportions cannot be applied to the current geometry.
+**Delivered.** One declared schema with provenance and consumers for ten
+parameters. Stature as a working, gated, geometrically consistent knob, with the
+mechanism that makes a mis-scaled body a hard failure instead of a silent one. A
+measured account of what sex anatomy this body has. Measured sex-stratified
+proportions from data that was already on disk.
 
-**Not delivered, and not attempted.** A female body. Nothing here is labelled
-female, because nothing here would be entitled to the label.
+And, since: **a working path refitter with five gates**, which was the item this
+document called the smallest on the blocker list and mislocated — it needed a
+driver, not an installation. Three anisotropic proportional parameters that
+change the body by amounts measured against a refit noise floor. `sex` as a
+parameter that stopped raising because it stopped meaning nothing.
 
-What it would take, in order of what blocks what:
+**Still not delivered.** A female body. Nothing here is labelled female, because
+nothing here would be entitled to the label. `--sex female` produces **male
+anatomy at female-typical proportions** and the registration says so in those
+words.
 
-1. **A female whole-body mesh source.** Nothing catalogued has one. This gates
-   internal genitalia, external genitalia and breast, all of which are *additional
-   entities* and none of which can be produced by transforming male ones. The
-   Visible Human Project female dataset is the obvious candidate and is not
-   catalogued; whether its licence permits redistribution of derived meshes has
-   not been checked here.
-2. **A path refitting tool.** Anisotropic segment scaling — the pelvis, the
-   shoulder:hip ratio, Q-angle — is measurable but unusable until the fitted path
-   polynomials can be regenerated. This needs OpenSim in the environment. It is
-   the smallest piece of work on this list and it unblocks every proportional
-   parameter, for both sexes, including the ones that have nothing to do with sex.
-3. **An anthropometric correspondence.** NHANES `BMXLEG` is inguinal crease to
-   proximal tibia and `BMXARML` is acromion to olecranon. Neither is an OpenSim
-   segment length, and substituting one for the other without a stated
-   correspondence is exactly the class of error `docs/LOG.md` catalogues.
-   Bi-iliac breadth, pelvic inlet shape and Q-angle are measured by **no**
-   catalogued source, in either sex.
-4. **A gonadal axis attached to a gonad.** The implemented hormone model is a
-   female cycle model on a male body, coupled to nothing.
-5. **Measured female values for the seven androgen-dependent hair fields.**
+What it would take, in order of what blocks what. Item 2 is struck because it is
+done; the others have moved.
+
+1. **A female whole-body mesh source.** Still the gate on internal genitalia,
+   external genitalia and breast, all of which are *additional entities* and none
+   of which can be produced by transforming male ones. Three candidates are now
+   catalogued (`data/sources/totalsegmentator.json`, `ut-endomri.json`,
+   `female-breast-shape-model.json`) and none is acquired. What was **verified
+   here**, by parsing TotalSegmentator's own `map_to_binary.py`: 117 classes in
+   the Apache-2.0 `total` task, a `breasts` subtask that is also Apache-2.0 and
+   contains exactly **one** class, `breast` — not left and right, no gland, no
+   nipple, no areola, no duct — and **zero** female reproductive classes anywhere
+   in the class map. It closes the breast *envelope* and nothing inside it, and
+   contributes nothing to `uterine.*` or `placental.*`. What could **not** be
+   verified: everything on Zenodo, which returns HTTP 504 through this sandbox's
+   egress proxy while GitHub, PyPI and HuggingFace return 200 — so the
+   1,228-subject and 503-female claims are relayed and marked unchecked, and the
+   UT-EndoMRI card is entirely unverified. That card also carries, on its face,
+   that it is an **endometriosis cohort**: uteri selected for uterine pathology.
+2. ~~**A path refitting tool.**~~ **Done.** `libosimActuators.so` already
+   exported 97 `PolynomialPathFitter` symbols; what was missing was 300 lines of
+   driver. A refit of the unchanged model is 16.7× closer to the model's own
+   `GeometryPath`s than the file the engine currently runs.
+3. **An anthropometric correspondence.** Unchanged as a *measurement* gap, and
+   now explicit as a *declaration*: `pelvis_breadth_ratio` carries, in its own
+   schema entry, that NHANES measures hip circumference at the buttocks while the
+   parameter is a skeletal factor. Bi-iliac breadth, pelvic inlet shape and
+   biacromial breadth are measured by **no** catalogued source, in either sex —
+   which is why `shoulder_breadth_ratio` is 1.0 in every sex preset. ANSUR II has
+   biacromial breadth by sex and is not catalogued here.
+4. **A gonadal axis attached to a gonad.** The absence is now measured rather
+   than described (11 supporting entities, all male; 0 uterine; 0 placental), and
+   the audit turned up a second problem in front of the first: the testis meshes
+   are 6.7 mL against a 12–30 mL reference.
+5. **Seven measured female `shaft_bearing_fraction` values.** Sharper than
+   "measured female values for the hair fields": the parameter exists on every
+   field already, six of the seven androgen-dependent ones assume 1.0, and 1.0 is
+   an adult male assumption that is not labelled as one.
 
 An honest summary of the current state, for anything that quotes it: *male
-anatomy including a complete genital tract, no breast of either sex, one
-implemented isotropic size parameter with five gates, seven measured proportional
-sex differences that cannot yet be applied, and no female-specific geometry
-anywhere.*
+anatomy including a complete genital tract and no breast of either sex; one
+implemented isotropic size parameter and three implemented anisotropic
+proportional parameters, gated against a measured refit noise floor; a path
+refitter that beats the shipped path set by 16.7× on the model's own muscles; a
+`sex` parameter that moves four measured proportions and zero anatomical
+entities; and no female-specific geometry anywhere.*
 
 ---
 

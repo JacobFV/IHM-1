@@ -23,6 +23,9 @@ STATUS_NOTE = {
     'surfaced': 'already a runtime knob; this schema only names and bounds it',
     'implemented': 'made a knob by this work',
     'declared': 'written down, and reaching the running body through nothing',
+    'implemented (proportions only; anatomy unchanged)':
+        'made a knob by this work, and the parenthesis is the honest half: it '
+        'moves measured PROPORTIONS and changes no anatomical entity',
 }
 
 
@@ -104,7 +107,26 @@ def main():
         print('    %-22s %s' % (name, value))
     print('  derived')
     for name, value in resolved['derived'].items():
-        print('    %-22s %.9g' % (name, value))
+        if isinstance(value, (int, float)):
+            print('    %-22s %.9g' % (name, value))
+    factors = resolved['derived'].get('anisotropic_factors') or {}
+    if factors:
+        print('  anisotropic per-body factors (fx, fy, fz in the body\'s own frame)')
+        for body, triple in sorted(factors.items()):
+            print('    %-22s %.6f %.6f %.6f' % (body, *triple))
+    realisation = resolved['derived'].get('sex_realisation') or {}
+    if realisation.get('what_changed'):
+        print('  what sex=%s changed' % realisation['sex'])
+        for name, row in realisation['what_changed'].items():
+            print('    %-22s %-14.9g -> %-14.9g (x%.6f)'
+                  % (name, row['from'], row['to'], row['ratio']))
+    if realisation:
+        print('  what it did NOT change')
+        for key, note in realisation['what_did_not_change'].items():
+            if isinstance(note, dict):
+                note = note['note']
+            print('    %-22s %s' % (key, wrap(note, 60, 27)))
+        print('  honest summary: %s' % realisation['honest_summary'])
     print('  limitations of this resolution')
     for note in resolved['limitations']:
         print('    - %s' % wrap(note, 70, 6))
