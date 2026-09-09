@@ -31,8 +31,9 @@ What is real here and what is not:
   the capping invents are reported per segment rather than absorbed.
 """
 from pathlib import Path
-import argparse,gzip,hashlib,json,sys
+import argparse,gzip,hashlib,importlib.util,json,sys
 import numpy as np
+import xml.etree.ElementTree as ET
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
 sys.path.insert(0,str(ROOT/'scripts'))
@@ -45,6 +46,86 @@ BINDING='data/derived/canonical/continuous_surface_binding.json.gz'
 EVIDENCE='data/research/engineered_skin_territories/materialization.json'
 
 def sha(path):return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+def binding_registration():
+    """The OTHER canonical->source map this repo carries, and the pose it was fitted at.
+
+    `CanonicalRegistration.global_map` is an unweighted proper-rigid fit of 22
+    approximate COM / bone-envelope-centre correspondences with NO SCALE, and it
+    reports its own residual as 123.4 mm RMS.  `bind_anatomy_to_segments.py`
+    solved a different problem -- the 33 model coordinates AND one similarity,
+    jointly, against 22 bone-group centroids and their principal axes -- and got
+    scale 0.96303 with a much smaller residual.  Because the POSE was free in
+    that fit, the atlas matches the model only at `reference_pose_rad`, so the
+    segment frames have to be taken there and not at the zero pose.
+
+    These two maps are not the same map.  Choosing between them is the whole
+    difference between skin that touches the floor and skin that hovers 96 mm
+    above it, so the choice is explicit and the gate below decides it.
+    """
+    binding=json.loads((ROOT/'data/derived/anatomy-segment-binding/binding.json').read_text())
+    similarity=np.asarray(binding['similarity_atlas_from_opensim_ground'],dtype=float)
+    spec=importlib.util.spec_from_file_location('_render_body_3d',ROOT/'scripts/render_body_3d.py')
+    module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+    model=module.OsimModel(ROOT/'data/models/engineering_stance_v1/model.osim')
+    rest=model.forward(binding['reference_pose_rad'])
+    return np.linalg.inv(similarity),{name:np.asarray(value,dtype=float) for name,value in rest.items()},binding
+
+def bone_clouds():
+    """Every body's own bone-mesh vertices, in the body frame, scale baked in.
+
+    The gate a registration has to pass is the one whose answer everybody knows:
+    **a body's bones are inside its skin.**  These are the points to test.
+    """
+    from ihm.spatial.vtk import surface as read_surface
+    geometry=ROOT/'data/raw/anatomy/opensim-models/source/Geometry'
+    root=ET.parse(ROOT/'data/models/engineering_stance_v1/model.osim').getroot().find('Model')
+    out={}
+    for body in root.iter('Body'):
+        parts=[]
+        for mesh in body.iter('Mesh'):
+            factors=np.fromstring(mesh.findtext('scale_factors'),sep=' ')
+            points,_=read_surface(geometry/mesh.findtext('mesh_file'))
+            parts.append(points*factors)
+        if parts:out[body.get('name')]=np.concatenate(parts)
+    return out
+
+def enclosure(skin_vertices,skin_faces,bone_points,samples=1500,seed=0):
+    """Share of a segment's bone vertices that lie inside its skin surface.
+
+    Moller-Trumbore ray parity against the skin's own triangles, written out
+    rather than called, because trimesh's own `contains` needs an rtree that is
+    not installed here and silently raises.  Two rays per point in opposite
+    directions; a point counts as inside only if BOTH give an odd crossing
+    count, which throws away the grazing hits that a single ray gets wrong.
+
+    A correct registration prints ~1.0 and a wrong one prints ~0.  That is what
+    makes this a gate rather than a diagnostic: a body's bones are inside its
+    skin, and no argument about registration quality survives a 0.
+    """
+    generator=np.random.default_rng(seed)
+    points=np.asarray(bone_points,dtype=float)
+    if len(points)>samples:points=points[generator.choice(len(points),samples,replace=False)]
+    triangles=np.asarray(skin_vertices,dtype=float)[np.asarray(skin_faces)]
+    a=triangles[:,0];edge1=triangles[:,1]-a;edge2=triangles[:,2]-a
+    direction=generator.normal(size=3);direction/=np.linalg.norm(direction)
+    counts=[]
+    for sign in (1.,-1.):
+        d=sign*direction
+        pvec=np.cross(d,edge2);det=(edge1*pvec).sum(axis=1)
+        parallel=np.abs(det)<1e-14;inverse=np.where(parallel,0.,1./np.where(parallel,1.,det))
+        hits=np.zeros(len(points),dtype=np.int64)
+        for start in range(0,len(points),256):
+            block=points[start:start+256]
+            tvec=block[:,None,:]-a[None,:,:]
+            u=(tvec*pvec[None,:,:]).sum(axis=2)*inverse[None,:]
+            qvec=np.cross(tvec,edge1[None,:,:])
+            v=(qvec*d).sum(axis=2)*inverse[None,:]
+            t=(qvec*edge2[None,:,:]).sum(axis=2)*inverse[None,:]
+            ok=(~parallel[None,:])&(u>=0)&(v>=0)&(u+v<=1)&(t>1e-9)
+            hits[start:start+256]=ok.sum(axis=1)
+        counts.append(hits%2==1)
+    return float(np.mean(counts[0]&counts[1]))
 
 def skin_layers(mechanics,surface_area):
     """The declared skin layers, so the foundation's E, p and h are measured.
@@ -71,7 +152,7 @@ def skin_layers(mechanics,surface_area):
                 layer_thickness_m=total,stiffness_pa_per_m=stiffness,
                 stiffness_basis='k=(1-p)E/((1+p)(1-2p)h) -- the elastic foundation\'s own law for a uniform elastic layer of thickness h over a rigid substrate, with E, p and h taken from the declared skin layers.')
 
-def build(out_dir,reference_path,minimum_faces):
+def build(out_dir,reference_path,minimum_faces,registration_choice):
     out_dir=Path(out_dir).resolve();meshes=out_dir/'meshes';meshes.mkdir(parents=True,exist_ok=True)
     mechanics=json.loads((ROOT/'data/derived/canonical/mechanics.json').read_text())
     skin=next(e for e in mechanics['entities'] if e['role']=='skin')
@@ -84,10 +165,24 @@ def build(out_dir,reference_path,minimum_faces):
     # other 99 components are interior surfaces of the same acquired body.
     evidence=json.loads((ROOT/EVIDENCE).read_text())
     exterior=np.asarray(evidence['contact_eligible_triangle_ids'],dtype=np.int64)
-    reference=json.loads((ROOT/reference_path).read_text())
-    registration=CanonicalRegistration(mechanics,reference)
-    transform=np.linalg.inv(registration.global_map)
+    if registration_choice=='binding':
+        transform,frames,binding=binding_registration()
+        registration_report=dict(choice='binding',
+            map='inverse of binding.json similarity_atlas_from_opensim_ground',
+            scale=binding['registration']['scale'],method=binding['registration']['method'],
+            pose='binding.json reference_pose_rad (the pose the similarity was jointly fitted at)')
+    else:
+        reference=json.loads((ROOT/reference_path).read_text())
+        registration=CanonicalRegistration(mechanics,reference)
+        transform=np.linalg.inv(registration.global_map)
+        frames={name:np.asarray(value['transform_ground'],dtype=float) for name,value in reference['bodies'].items()}
+        registration_report=dict(choice='canonical',map='inverse of CanonicalRegistration.global_map',
+            scale=1.0,method=registration.global_fit['basis'],
+            rms_landmark_residual_m=registration.global_fit['rms_landmark_residual_m'],
+            maximum_landmark_residual_m=registration.global_fit['maximum_landmark_residual_m'],
+            pose=str(reference_path)+' t=0 body transforms')
     source=canonical@transform[:3,:3].T+transform[:3,3]
+    bones=bone_clouds()
     binding=json.loads(gzip.decompress((ROOT/BINDING).read_bytes()))
     segments=[s['id'] for s in binding['segments']]
     weights=np.asarray(binding['weights'],dtype=np.float32)
@@ -103,7 +198,7 @@ def build(out_dir,reference_path,minimum_faces):
             continue
         used,inverse=np.unique(faces[selected],return_inverse=True)
         piece_faces=inverse.reshape(-1,3)
-        world=np.linalg.inv(np.asarray(reference['bodies'][segment]['transform_ground']))
+        world=np.linalg.inv(frames[segment])
         local=source[used]@world[:3,:3].T+world[:3,3]
         cut=measure(local,piece_faces)
         reason=simtk_precondition(local,piece_faces);capped=False;cap_area=0.
@@ -119,6 +214,9 @@ def build(out_dir,reference_path,minimum_faces):
                                      faces=int(len(piece_faces)),cut=cut,admitted=False));continue
             local,piece_faces,capped=fixed_vertices,fixed_faces,True
         closed=measure(local,piece_faces)
+        bone=bones.get(segment)
+        contained=None if bone is None else enclosure(local,piece_faces,bone)
+        bone_offset=None if bone is None else float(local[:,1].min()-bone[:,1].min())
         target=meshes/('skin_'+segment+'.obj')
         with target.open('w') as handle:
             handle.write('# skin_'+segment+' from '+skin['id']+' exterior component, segment-local\n')
@@ -129,6 +227,8 @@ def build(out_dir,reference_path,minimum_faces):
                             source_geometry=str(mesh_path.relative_to(ROOT)),source_sha256=sha(mesh_path),
                             scale_factors=[1.,1.,1.],simtk_precondition_repaired=capped,
                             exterior_triangles=int(len(selected)),
+                            bone_vertices_inside_skin=contained,
+                            skin_minus_bone_minimum_y_m=bone_offset,
                             cut_surface_area_m2=cut['surface_area_m2'],
                             capped_surface_area_m2=closed['surface_area_m2'],
                             capped_area_added_m2=closed['surface_area_m2']-cut['surface_area_m2'],
@@ -156,6 +256,10 @@ def build(out_dir,reference_path,minimum_faces):
                 capped_area_added_m2=sum(r['capped_area_added_m2'] for r in records),
                 skin_material=material,
                 partition='continuous_surface_binding graph-diffused skinning weights; a triangle goes to the argmax of its three vertices\' mean weight. Hard partition of a continuous surface: every segment boundary is a seam the real body does not have.',
+                registration=registration_report,
+                bone_vertices_inside_skin=float(np.mean([r['bone_vertices_inside_skin'] for r in records if r['bone_vertices_inside_skin'] is not None])) if any(r['bone_vertices_inside_skin'] is not None for r in records) else None,
+                segments_enclosing_their_bone=sum(1 for r in records if (r['bone_vertices_inside_skin'] or 0)>=.99),
+                enclosure_gate='Share of a segment\'s own bone-mesh vertices lying inside its skin surface. A body\'s bones are inside its skin, so a correct registration prints ~1.0 and a wrong one prints ~0.',
                 reference_pose=str(reference_path),
                 reference_pose_basis='Segment-local stations are taken through the reference run\'s t=0 body transforms, which are the model\'s zero-coordinate neutral pose (only pelvis_ty is nonzero). The supine environment rotates GRAVITY, not the body, so the same transforms serve upright.',
                 basis='Canonical exterior skin surface cut per segment and capped so SimTK will accept it. The skin is carried RIGIDLY by its segment: no in-plane stretch, no sliding, no deformable continuum anywhere in this engine. The only compliance is the elastic foundation\'s normal layer.',
@@ -169,6 +273,7 @@ if __name__=='__main__':
     parser.add_argument('--out',required=True)
     parser.add_argument('--reference',default=DEFAULT_REFERENCE)
     parser.add_argument('--minimum-faces',type=int,default=64)
+    parser.add_argument('--registration',choices=('canonical','binding'),default='binding')
     args=parser.parse_args()
-    report=build(args.out,args.reference,args.minimum_faces)
+    report=build(args.out,args.reference,args.minimum_faces,args.registration)
     print(json.dumps({k:v for k,v in report.items() if k not in ('records','controls')},indent=2))

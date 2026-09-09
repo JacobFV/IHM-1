@@ -4,8 +4,8 @@ The upright plant's non-foot contact is `fall_proxy_<body>`: one sphere per
 segment whose radius is inscribed in that segment's **inertia ellipsoid** and
 whose centre is its mass centre. A femur represented as a ball. This file
 records what replacing that costs, what the solver does with a concave surface,
-and — the part that matters most — **why skin-mediated ground contact cannot be
-switched on yet, with the number that says so.**
+and — the part that matters most — **what it takes for the SKIN to be the thing
+that meets the floor, which is where contact actually happens.**
 
 Everything here is from `scripts/build_segment_contact_meshes.py`,
 `scripts/build_skin_contact_meshes.py` and
@@ -86,15 +86,20 @@ integration; its cost is not bounded by dt.
 | `mesh_all` — every segment on bone, source feet gone | 68 | 35,754 | 206 N, falling | −191 mm | 0.223 | 1.060 |
 | `skin` — every segment on skin, source feet gone | 20 | 111,986 | 302 N, falling | −190 mm | 1.341 | 5.036 |
 
+The two skin rows are on the **worse** of the two registrations below, where the
+skin never reaches the floor; they are here for the geometry-cost point and the
+working numbers are in *Skin-mediated ground contact, on the better map*.
+
 **761.38 N is m·g to the last digit** (77.6122029 × 9.81), and the
 momentum-balance residual `m(a_com − g) − contact − external` stays at 1e-14 in
 every arm. That residual is the gate that says the new forces are *summed*
 correctly rather than merely printed; a contact term bookkept wrong shows up
 there and nowhere else.
 
-**Mesh contact geometry is free until it touches.** `skin_carried` holds 112,000
-triangles — 4× the bone bundle, 4000× the sphere count — and costs 0.058 s
-against the baseline's 0.058 s. The OBB broad phase prunes every mesh that is
+**Mesh contact geometry is nearly free until it touches.** `skin_carried` holds
+112,000 triangles — 4× the bone bundle, 4000× the sphere count — and costs
+0.058 s against the baseline's 0.058 s when nothing is near the plane, 0.079 s
+on the registration where the toes do reach it. The OBB broad phase prunes every mesh that is
 not near the plane. Cost scales with faces **in contact**, not faces carried.
 The 0.223 s and 1.341 s rows are not the price of the geometry; they are the
 price of a plant that is collapsing, and should not be quoted as a mesh-contact
@@ -117,7 +122,7 @@ plantar soft tissue. Taking it away is not a smaller simplification than a
 sphere — it is a different one. Contact with the world is skin, over fat and
 muscle, over bone.
 
-## The skin exists, is cut per segment, and is 96 mm too high
+## The skin, cut per segment — and the registration that decides whether it touches
 
 `scripts/build_skin_contact_meshes.py` cuts the canonical exterior skin —
 109,183 triangles, 1.7805 m² — into one closed surface per segment:
@@ -125,9 +130,8 @@ muscle, over bone.
 * partitioned by the repo's own `continuous_surface_binding`, a graph-diffused
   skinning weight per skin vertex per segment; a triangle goes to the argmax of
   its three vertices' mean weight;
-* mapped into each segment's own frame through the reference run's t=0 body
-  transforms (the supine environment rotates **gravity**, not the body, so those
-  are the neutral standing transforms);
+* mapped into each segment's own frame through a canonical→source map and that
+  map's own reference pose;
 * **capped**, because cutting an open surface leaves open pieces and SimTK
   refuses them. `trimesh.fill_holes` closes between 0 and 16 triangles on these
   cuts and leaves the loop open, so the caps are built explicitly: chain the
@@ -140,38 +144,56 @@ The caps are invented surface and are reported as such: 1.0946 m² of cap on
 1.7793 m² of real skin, concentrated at the waist (pelvis 0.243 m², torso
 0.229 m²) where two segments meet and nothing outside the body can reach.
 
-And then the arm fails, for a reason that is nothing to do with contact:
+### The gate: a body's bones are inside its skin
 
-> **The sole of the foot sits 96 mm above the floor, and 84–95 mm above the foot
-> bone inside the same segment frame.**
+That sentence has an answer everybody knows, so it is the gate. `enclosure()`
+ray-parity-tests every segment's own OpenSim bone-mesh vertices against its skin
+piece (Möller–Trumbore written out, because trimesh's `contains` needs an rtree
+this environment does not have). Controls: points at radius 0.05 inside a
+0.1 m icosphere print **1.0**, points at radius 0.5 print **0.0**.
 
-Per segment, skin minimum minus bone minimum along the segment's own y:
+**This repo carries two different canonical↔skeleton registrations and they are
+not the same map.**
 
-| segment | skin−bone (mm) | skin/bone centroid gap (mm) |
+| | `CanonicalRegistration.global_map` | `binding.json` similarity |
+|---|---|---|
+| fit | unweighted proper-rigid, 22 approximate COM / bone-envelope-centre pairs | 33 model coordinates **and** one similarity, jointly, on 22 bone-group centroids plus principal axes |
+| scale | none | 0.96303 |
+| self-reported residual | **123.4 mm RMS**, 352.8 mm max | 24.7 mm RMS on bone-group centroids |
+| used by | the supine skin foundation | the anatomy→segment binding |
+| **bone vertices inside their own skin** | **0.273** | **0.445** |
+| segments enclosing their own bone (≥0.99) | **0 / 20** | **0 / 20** |
+
+Per segment, skin minimum minus bone minimum along the segment's own y — a
+positive number means the skin is *above* the bone, which is not a thing a body
+can do:
+
+| segment | canonical map | binding map |
 |---|---:|---:|
-| toes_l / toes_r | +94.6 / +93.8 | 107 / 105 |
-| calcn_l / calcn_r | +84.0 / +83.5 | 111 / 112 |
-| tibia_l / tibia_r | +72.5 / +69.8 | 90 / 96 |
-| hand_l / hand_r | +58.6 / +56.7 | 100 / 101 |
-| pelvis | −141.1 | 78 |
-| torso | −165.3 | 92 |
+| toes_l | **+94.6 mm** | −9.5 mm |
+| calcn_l | **+84.0 mm** | +20.1 mm |
+| tibia_l | **+101.3 mm** | +42.3 mm |
+| hand_l | **+58.6 mm** | −18.1 mm |
+| femur_l | +4.2 mm | −39.9 mm |
+| torso | −37.2 mm | −73.1 mm |
+| pelvis | −79.5 mm | −117.0 mm |
 
-The toe **skin** runs from +0.083 m to +0.164 m in the segment frame while the
-toe **bone** runs from −0.011 m to +0.009 m. The skin is entirely above the
-bone, which is not a thing a body can do.
+Under the map the supine foundation uses, the sole of the foot sits **96 mm above
+the floor** and 84–95 mm above the foot bone inside the same segment frame: the
+toe skin runs +0.083 to +0.164 m while the toe bone runs −0.011 to +0.009 m, so
+the skin is entirely above the bone. Under the binding map the foot skin comes
+down onto the floor and contact works.
 
-The cause is in the registration's own report and needs no inference.
-`CanonicalRegistration.global_fit` says:
-
-> *"Unweighted proper-rigid least-squares fit of 22 approximate source
-> COM / canonical bone-envelope center correspondences; no scale fit"*,
-> `rms_landmark_residual_m` **0.1234**, `maximum_landmark_residual_m` **0.3528**.
-
-**123 mm RMS.** The canonical skin is not registered to this skeleton well enough
-to touch a floor whose height is fixed by the model.
+**Neither map passes the gate.** The better one leaves 55% of the skeleton
+outside its own skin. That is not a global-fit problem any more — the anatomical
+body and the Rajagopal skeleton are different subjects, and one rigid similarity
+cannot make a different person's bones fit inside this person's skin. The fix
+is per-segment geometric transformation of the anatomy, which is exactly the
+"bones and muscles taken from the source to become geometrically parametrized,
+transformed entities" that `docs/DIRECTION.md` already asks for.
 
 **Why nothing caught this before.** The supine surface foundation is built
-through the same map, and it sets its support plane to *the skin's own minimum*
+through the worse map, and it sets its support plane to *the skin's own minimum*
 — `plane = min source-x of the eligible faces`. The floor follows the skin, so
 the error is invisible there by construction. Upright, the floor is at y = 0
 because the model says so, and the same error becomes a 96 mm hover.
@@ -179,10 +201,28 @@ because the model says so, and the same error becomes a 96 mm hover.
 39 mm, femurs 88–89 mm, tibias 112 mm above the reference plane" — as a property
 of the geometry rather than of the registration.
 
-**This is the blocker for skin-mediated contact, and it is separable.** The map
-to fix is one 4×4; `binding.json` carries a second, *scaled* similarity
-(`scale = 0.96303`) fitted differently, and the two are not the same map. Which
-one is right, or whether either is, is a measurement nobody has made.
+### Skin-mediated ground contact, on the better map
+
+25 advances of 10 ms from the stance pose, skin bundle built on the binding
+registration, layer stiffness from the body's own declared skin.
+
+| arm | loaded elements | vertical contact force | pelvis_ty drift | s / advance median | worst |
+|---|---:|---:|---:|---:|---:|
+| `skin_carried` — skin present, source foot spheres still doing the work | 14 | 761.81 N | +0.1 mm | 0.079 | 0.249 |
+| `skin` — source foot spheres removed, the body stands on its skin | 4 | 1019 N, oscillating | −55 mm | 0.528 | 1.396 |
+
+It works, and it is not yet right:
+
+* the plantar skin is **not level** with the floor. The toe skin starts 8.5 mm
+  *below* it while the heel is above, so the body rocks forward and 431 N per
+  side arrives through the toes against 79 N through the heel. Under the source
+  spheres the same pose loads midfoot 80 N, heel 74 N, rearfoot 69 N.
+* it overshoots weight by 34% and is still oscillating at 0.25 s.
+* it costs 9× the sphere baseline **while in contact**, and 1.4× while merely
+  carried.
+
+Both faults are downstream of the same 55%: a skeleton that does not fit inside
+its skin cannot put that skin flat on the floor.
 
 ## What this engine can and cannot express
 
