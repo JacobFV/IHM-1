@@ -54,7 +54,7 @@ _ap = argparse.ArgumentParser()
 _ap.add_argument("--rotation", choices=("free", "global", "no-twist"), default="free")
 _ap.add_argument("--out", type=Path, default=None)
 ARGS = _ap.parse_args()
-if ARGS.out is not None: OUT = ARGS.out
+if ARGS.out is not None: OUT = ARGS.out.resolve()   # provenance paths are taken relative to ROOT
 OUT.mkdir(parents=True, exist_ok=True)
 N_FIT, N_FIT_TORSO, N_EVAL, TRIM, ITERS, TOL = 8000, 20000, 8000, 0.10, 400, 1e-12
 
