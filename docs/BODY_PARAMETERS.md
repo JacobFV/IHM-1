@@ -860,8 +860,17 @@ done; the others have moved.
    result and recorded as such: merge raters across RELEASED grids in world space; accept an
    off-release uterus label only where an on-grid uterus label of the same subject confirms it
    at Dice >= 0.406 (the committed criterion, applied per pair); never recover an off-release
-   ovary. It recovers five uteri (D1-001, D1-008, D1-009, D1-017; D1-034), 87 -> 92; 19 D1
-   subjects stay without one because nothing can confirm their labels. Not yet built. The sternum
+   ovary. It was first predicted to recover five uteri; it recovers **four** (D1-001, D1-008,
+   D1-009, D1-017), **87 -> 91**. The fifth, D1-034, was my counting error: the prediction took
+   a pair where BOTH labels lie off the release, which anchors nothing to a released image, and
+   the extractor applies the rule correctly. Built as `extract_ut_endomri.py --route world`
+   (`data/derived/ut-endomri-organs-v2-world`). Gates: the strict route through the patched code
+   reproduces the committed strict manifest exactly; subjects whose accepted raters are unchanged
+   keep their volume to within 5.9e-8 relative (the exact-equality version of that gate FAILED on
+   8 subjects, all float noise from two header sources agreeing only to the affine tolerance).
+   **D1-004 is ambiguous:** its raters outline 116 mL against 649 and 680 mL; the strict route's
+   two-rater intersection gave 89 mL and the world route's majority of three gives 609 -- with two
+   raters, one outlier collapses the intersection to the smaller outline. The sternum
    (gate d1) is untouched by any breast correction; that is the skin-envelope problem.
 2. ~~**A path refitting tool.**~~ **Done.** `libosimActuators.so` already
    exported 97 `PolynomialPathFitter` symbols; what was missing was 300 lines of

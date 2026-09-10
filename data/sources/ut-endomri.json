@@ -178,12 +178,18 @@
         "D1-009",
         "D1-017"
       ],
-      "by_verified_off_release_label": [
-        "D1-034"
-      ],
-      "still_without_uterus_D1": 19,
-      "uterus_meshes": "87 -> 92"
+      "by_verified_off_release_label": [],
+      "still_without_uterus_D1": 20,
+      "uterus_meshes": "87 -> 91"
     },
-    "built": false
+    "built": true,
+    "built_output": "data/derived/ut-endomri-organs-v2-world (extract_ut_endomri.py --route world)",
+    "corrections": [
+      "the recovery was first predicted as five uteri, 87 -> 92, including D1-034. that prediction was WRONG: it counted a pair from the check's 'one off the release' category, which also covers pairs where BOTH labels are off the release. D1-034's two uterus labels are both off the release (400x400x59 and 420x420x70 against released images 800x712x47 and 760x618x72), so nothing anchors either to a released image. the extractor applies the rule correctly: four uteri, 87 -> 91",
+      "the check's 'one off the release' category is mislabelled -- it includes both-off pairs; those still compare two DIFFERENT series in world space, so the world-frame verdict stands"
+    ],
+    "ambiguous": {
+      "D1-004": "raters outline 116.0 mL (r2) against 649.4 (r1) and 679.7 mL (r3); the strict route's two-rater intersection gave 89 mL, the world route's majority of three gives 609 mL. with two raters, one outlier collapses the intersection to the smaller outline"
+    }
   }
 }
