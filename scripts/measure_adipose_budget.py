@@ -24,6 +24,39 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from ihm.assembly.tissue_materials import density, tissue_class
 
+def plan(mech, prof, area):
+    """The hypodermis thickness that would make the geometry carry the declared fat fraction.
+
+    The layer's volume is area x thickness, so thickening it raises the fat mass AND the total,
+    and one thickness solves f = fat/(other + fat). Both are pre-ledger (unscaled) masses, so the
+    answer does not depend on the uniform scale -- which then falls, because less of the declared
+    total has to be made up by inflating everything else.
+    """
+    alloc = mech["mass_allocation"]; unscaled = alloc["unscaled_proxy_mass_kg"]
+    hypo = next(e for e in mech["entities"] if e["name"] == "hypodermis")
+    rho = 950.0
+    fat_now = hypo["volume_m3"] * rho
+    other = unscaled - fat_now
+    f = prof["body_fat_fraction"]
+    t = f * other / (area * rho * (1 - f))
+    new_unscaled = other + area * t * rho
+    print(f"\nPLAN (not built): a hypodermis of {1e3*t:.2f} mm over {area:.4f} m2 carries "
+          f"{area*t*rho:.3f} kg of fat, {100*f:.0f}% of {new_unscaled:.3f} kg unscaled")
+    print(f"  the ledger's uniform scale would fall {alloc['uniform_scale']:.4f} -> "
+          f"{prof['mass_kg']/new_unscaled:.4f}, i.e. {100*(alloc['uniform_scale']-1):.1f}% -> "
+          f"{100*(prof['mass_kg']/new_unscaled-1):.1f}% of inflation over sourced tissue density")
+    d = np.load(ROOT / "data/derived/soft-tissue-depth-v1/depth.npz")["depth_m"]
+    total_layer = t + 0.0001 + 0.0015
+    now_layer = 0.0066
+    print(f"  the three layers would be {1e3*total_layer:.1f} mm against this body's measured "
+          f"{1e3*np.median(d):.1f} mm median skin-to-bone/muscle depth: "
+          f"{'FITS' if total_layer <= np.median(d) else 'DOES NOT FIT'} at the median")
+    print(f"  but a scalar layer does not fit LOCALLY: it already exceeds the measured depth over "
+          f"{100*(d < now_layer).mean():.1f}% of the skin at {1e3*now_layer:.1f} mm, and would over "
+          f"{100*(d < total_layer).mean():.1f}% at {1e3*total_layer:.1f} mm (sternum 6.6, scalp 7.4 mm). "
+          f"A layer that thick is only anatomical if it varies.")
+    return t, prof["mass_kg"] / new_unscaled
+
 def main():
     mech = json.loads((ROOT / "data/derived/canonical/mechanics.json").read_text())
     prof = json.loads((ROOT / "data/derived/canonical/profile.json").read_text())
@@ -117,5 +150,6 @@ def where_it_would_go(mech, fat, declared, scale):
           "hypodermis is declared thinner than this body's own surfaces measure, with room for the fat the ledger has "
           "no geometry for -- and that the same declared layer is the contact model's thickness "
           "(docs/SEGMENT_CONTACT_SURFACES.md), so the mass gap and the contact gap are the same declaration.")
+    plan(mech, json.loads((ROOT / "data/derived/canonical/profile.json").read_text()), area)
 
 if __name__ == "__main__": main()

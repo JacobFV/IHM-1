@@ -455,6 +455,32 @@ What it establishes is that the hypodermis is declared thinner than this body's 
 measure, with room for the fat the ledger cannot place; and since that same declared layer is the
 contact model's thickness, the mass gap and the contact gap are one declaration, not two problems.
 
+**What it would take, and why the schema cannot express it** (`--` the plan section of the same
+script, computed from the ledger, nothing built). The layer's volume is area x thickness, so
+thickening it raises the fat AND the total, and one thickness solves the declared fraction:
+**8.10 mm** of hypodermis carries 13.702 kg, 21% of 65.249 kg unscaled. The ledger's uniform
+inflation would then fall **1.1794 -> 1.0846**, 17.9% -> 8.5%, because less of the declared total
+must be made up by making everything else denser. Three layers at 9.7 mm still sit under the
+11.0 mm median depth.
+
+**But a scalar layer is not anatomical at that thickness.** Against this body's own per-point
+depth map, a uniform layer already exceeds the local depth over **18.8%** of the skin at its
+declared 6.6 mm, and would over **41.8%** at 9.7 mm -- the sternum measures 6.6 mm and the scalp
+7.4. A hypodermis that carries the declared fat has to VARY, and `shell.thickness_m` is one
+number per entity. So this is a schema change (a thickness field over the skin), not a parameter
+change, and it is the same field the contact layer wants for its per-patch stiffness.
+
+**Gates, fixed now, for whenever that layer is built:**
+1. the ledger still totals **70.7713 kg**, its declared target;
+2. adipose / total = **0.2100 +/- 0.0005**, the profile's declared fraction;
+3. the uniform scale falls to **1.0846 +/- 0.002** -- predicted here, before any build, and it
+   follows from the fat volume alone, so it holds for any layer carrying 13.702 kg;
+4. the layer nowhere exceeds the local measured depth: **0%** of skin points, against 18.8% today;
+5. every non-skin-layer entity's volume is unchanged, and their masses move only through the
+   scale;
+6. the contact model reads that same per-patch thickness, so `k = E/h` and the layer map stop
+   being two declarations of one quantity.
+
 That matters mechanically and not only cosmetically.
 `docs/SEGMENT_CONTACT_SURFACES.md` measured that the declared skin alone cannot
 hold the body up — 761 N over ~0.02 m² of plantar skin at 1.72 MPa/m needs
