@@ -497,6 +497,48 @@ the two intra-articular hip structures get WORSE (ligament of head of femur 0.73
 1.1, and 14 of the 51 cross joints not measured here (wrist, radio-ulnar,
 iliolumbar, MTP).
 
+### Per-segment registration, and the control that says it is not an artefact
+
+`scripts/fit_segment_registration.py` fits one similarity per segment and carries
+each ligament END through its own bone's map. On the 51 elements v1 rejects:
+
+| registration | admissible of 51 | median peak strain |
+|---|---:|---:|
+| global map (v1) | 0 | 0.521 |
+| one translation per joint | 19 of 37 covered | 0.170 |
+| per segment, free rotation | 30 | 0.122 |
+| **per segment, twist removed** | **29** | **0.136** |
+| per segment, rotation held at the global map's | 28 | 0.143 |
+
+(gates a-d pass in every mode; gate c reproduces the stored v1 strains to 7.8e-15.)
+
+The free fit's rotations are suspect on the long bones -- femur 19.8 deg relative
+to the global map of which 19.8 is twist about its own axis, radius 32-36 deg,
+all spin -- because point-to-point ICP cannot determine an elongated bone's spin,
+and a spin moves a ligament's attachment round the bone. **The controls say the
+rescue does not ride on it**: removing the twist costs one element and holding
+the rotation fixed entirely costs two. What rescues these ligaments is each bone's
+per-segment position and scale, i.e. putting the joints where the scaffold's are.
+
+`tissue-force-elements-v2` is built with
+`--registration per-segment --segment-registration .../anatomy-segment-registration-rot-no-twist/registration.json`
+(gate: `--registration global` reproduces v1's `ligaments.json` exactly):
+
+| | v1 | v2 |
+|---|---:|---:|
+| tensile elements admissible, of 117 | 66 | **95** |
+| gained / lost | | 29 / **0** |
+| cruciates | 0 / 4 | **4 / 4**, peak 0.143 |
+| collaterals | | **16 / 16**, peak 0.123 |
+
+Still failing in v2: the anterior talofibulars, the ligament of the head of the
+femur, the transverse ligament of the knee, the iliolumbars, and wrist and midfoot
+elements that cross joints this scaffold does not have. Those are the ones a wrap
+surface or a new joint has to answer, and they are now a short list.
+
+**v2 is not yet the plant's.** v1 was judged on three drops against the joint
+stops; v2 has to be judged the same way before it replaces it.
+
 ## What would move this next, in order
 
 1. **Per-segment registration of the atlas onto the scaffold**, before any wrap

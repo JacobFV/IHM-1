@@ -283,6 +283,14 @@ def main():
     # per segment takes those 51 from 0 admissible to 30 (every cruciate and every
     # collateral).  It does not fix everything: 21 still fail, and two get worse.
     parser.add_argument("--registration", choices=("global", "per-segment"), default="global")
+    # which per-segment fit.  The FREE fit carries twists about each long bone's own axis
+    # that point-to-point ICP cannot determine (femur 19.8 deg, radius 32-36).  The
+    # no-twist fit removes them and keeps the determined swing; on the 51 elements v1
+    # rejects it rescues 29 against the free fit's 30 and a rotation-held fit's 28, so the
+    # rescue is carried by joint alignment, not by the twists.  Prefer no-twist.
+    parser.add_argument("--segment-registration", type=Path, default=None,
+                        help="registration.json from scripts/fit_segment_registration.py "
+                             "(default: the free fit in data/derived/anatomy-segment-registration)")
     args = parser.parse_args()
     started = time.time()
 
@@ -323,7 +331,8 @@ def main():
 
     segment_map, segment_scale = {}, {}
     if args.registration == "per-segment":
-        fitted = json.loads(SEGMENT_REGISTRATION.read_text())
+        registration_path = (args.segment_registration or SEGMENT_REGISTRATION).resolve()
+        fitted = json.loads(registration_path.read_text())
         if fitted["reference_pose_rad"] != reference_pose:
             raise ValueError("per-segment registration was fitted at a different pose than binding.json's")
         for name, entry in fitted["segments"].items():
@@ -658,9 +667,12 @@ def main():
               "list has no mechanics.")
     manifest["registration"] = dict(
         choice=args.registration,
-        source=(str(SEGMENT_REGISTRATION.relative_to(ROOT)) if args.registration == "per-segment"
-                else "binding.json similarity_atlas_from_opensim_ground"),
-        sha256=(sha256(SEGMENT_REGISTRATION) if args.registration == "per-segment" else sha256(BINDING)))
+        source=(str((args.segment_registration or SEGMENT_REGISTRATION).resolve().relative_to(ROOT))
+                if args.registration == "per-segment" else "binding.json similarity_atlas_from_opensim_ground"),
+        rotation_mode=(json.loads((args.segment_registration or SEGMENT_REGISTRATION).read_text()).get("rotation_mode", "free")
+                       if args.registration == "per-segment" else None),
+        sha256=(sha256(args.segment_registration or SEGMENT_REGISTRATION) if args.registration == "per-segment"
+                else sha256(BINDING)))
     (out / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
 
     print()
