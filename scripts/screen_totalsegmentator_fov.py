@@ -36,22 +36,34 @@ def main():
     ap.add_argument("--min-inplane-mm", type=float, default=420.0)
     ap.add_argument("--min-si-mm", type=float, default=450.0)
     ap.add_argument("--exclude", nargs="*", default=["s0897", "s0790", "s1157", "s1067"])
+    ap.add_argument("--want", type=int, default=None,
+                    help="stop once this many candidates pass, taking them in the selection's order")
     a = ap.parse_args()
     cd = F.central_directory()["members"]
     cands = json.loads((F.OUT / "coverage_selection.json").read_text())["candidates"]
-    kept, rows = [], []
-    for sid in cands:
-        if sid in a.exclude: continue
-        try: dims, pix = header(cd, sid)
-        except Exception as e: print(f"  {sid}: header unreadable ({e})"); continue
+    kept, rows, unreadable = [], [], []
+    def screen(sid):
+        dims, pix = header(cd, sid)
         ext = [d * p for d, p in zip(dims, pix)]
         ok = min(ext[0], ext[1]) >= a.min_inplane_mm and ext[2] >= a.min_si_mm
         rows.append(dict(subject=sid, dims=dims, spacing_mm=pix, extent_mm=ext, passes=ok))
         print(f"  {sid}: {ext[0]:.0f} x {ext[1]:.0f} x {ext[2]:.0f} mm  {'KEEP' if ok else '-'}", flush=True)
         if ok: kept.append(sid)
+    for sid in cands:
+        if sid in a.exclude: continue
+        if a.want is not None and len(kept) >= a.want: break
+        try: screen(sid)
+        except Exception as e: print(f"  {sid}: header unreadable ({e}) -- retried in a second pass", flush=True); unreadable.append(sid)
+    # a server timeout is NOT a field-of-view failure: the first version dropped these silently
+    still = []
+    for sid in unreadable:
+        if a.want is not None and len(kept) >= a.want: still.append(sid); continue
+        try: screen(sid)
+        except Exception as e: print(f"  {sid}: still unreadable ({e})", flush=True); still.append(sid)
+    unreadable = still
     out = F.OUT / "fov_selection.json"
     out.write_text(json.dumps(dict(rule=f"coverage candidates with in-plane >= {a.min_inplane_mm} mm and SI >= {a.min_si_mm} mm",
-                                   screened=rows, candidates=kept), indent=2) + "\n")
+                                   screened=rows, unreadable=unreadable, candidates=kept), indent=2) + "\n")
     print(f"{len(kept)} of {len(rows)} screened pass; wrote {out.relative_to(ROOT)}")
 
 if __name__ == "__main__": main()

@@ -9,7 +9,7 @@ the integrity gate, with an answer this script never computes itself.
 licence: CC-BY-4.0 (Zenodo record 10047292).  cite Wasserthal et al., Radiology: AI
 2023, doi 10.1148/ryai.230024.  data lands under data/raw/ (gitignored).
 """
-import argparse, csv, hashlib, io, json, struct, zlib, urllib.request
+import argparse, csv, hashlib, io, json, struct, time, zlib, urllib.request
 from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 URL = "https://zenodo.org/records/10047292/files/Totalsegmentator_dataset_v201.zip?download=1"
@@ -30,7 +30,11 @@ def rng(a, b):
                 return r.read(), int(r.headers["Content-Range"].split("/")[1])
         except (OSError, TimeoutError) as e:
             if attempt == 4: raise
-            print(f"  retry {attempt+1}: {e}", flush=True)
+            # BACK OFF. zenodo answers bursts of range requests with HTTP 504; the first
+            # version retried immediately into the same gateway and lost subjects to it.
+            wait = min(270, 10 * 3 ** attempt)
+            print(f"  retry {attempt+1} in {wait}s: {e}", flush=True)
+            time.sleep(wait)
 
 def central_directory():
     cache = OUT / "central_directory.json"
