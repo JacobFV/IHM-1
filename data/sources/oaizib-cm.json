@@ -4,10 +4,21 @@
   "modality": "knee MRI (Osteoarthritis Initiative) with segmentation masks",
   "role": "candidate source of ARTICULAR CARTILAGE geometry, of which this body has none (51 cartilage entities, none articular -- docs/TISSUE_MECHANICS.md)",
   "access": "HuggingFace, not gated; declared licence cc-by-nc-4.0; citing the CartiMorph paper (doi:10.1016/j.media.2023.103035) and the OAIZIB paper is compulsory per the card",
-  "status": "catalogued_verified_acquiring_labels",
+  "status": "labels_acquired_verified",
   "verified_here": {
     "method": "HuggingFace API and dataset README, 2026-09-10",
-    "subjects": 507,
+    "subjects": {
+      "KL_grade": {
+        "0": 103,
+        "1": 58,
+        "2": 108,
+        "3": 139,
+        "4": 73,
+        "missing": 26
+      },
+      "age": "45-79, median ~61",
+      "BMI": "median ~29"
+    },
     "bytes_total": 12650000000,
     "labels": {
       "1": "femur",
@@ -17,7 +28,19 @@
       "5": "lateral tibial cartilage"
     },
     "also": "CLAIR-Knee-103R template atlas with a 20-ROI articular cartilage atlas",
-    "not_present": "patellar cartilage; any joint but the knee"
+    "not_present": "patellar cartilage; any joint but the knee",
+    "licence_file": "info/license: 'Data and code are released under CC-BY-NC 4.0'",
+    "layout": "one integer-labelled NIfTI per knee, 160x384x384 at 0.7x0.365x0.365 mm, RAS; femur cut at the top of the volume, tibia at the bottom, cartilage whole",
+    "knee_side": "all 507 are RIGHT knees (info/kneeSideInfo.csv, no header row; KneeSide = 1 in both spreadsheets) -- the known answer for the which-knee gate",
+    "gender_coding": {
+      "codes": {
+        "1": "male",
+        "2": "female"
+      },
+      "documented_by_dataset": false,
+      "established_from_anatomy": "code 1: 262 knees, tibial-plateau width 82.2 +/- 4.5 mm, cartilage 22.3 +/- 3.8 mL; code 2: 245 knees, 72.4 +/- 3.5 mm, 16.6 +/- 2.4 mL. code 1 is 13.5% wider and carries 33.9% more cartilage; both measures agree, ~2.4 SD apart on width. matches the OAI convention (1 = male), which was recalled and NOT relied on"
+    },
+    "note": "case 454's image was flagged corrupted and replaced upstream (15 Feb 2025); the labels are used here, not the images"
   },
   "basis_for_use": "the programme owner confirmed on 2026-09-10 that this programme is non-commercial scientific research (recorded for UT-EndoMRI); CC-BY-NC-4.0's condition is non-commercial use",
   "not_verified_here": [
@@ -25,5 +48,27 @@
     "the Osteoarthritis Initiative's own data-use terms for its MRI"
   ],
   "plan": "labels only (femur, tibia for bone-to-bone registration onto this body's knee; cartilage for geometry); the images are not needed",
-  "in_git": false
+  "in_git": false,
+  "acquisition": {
+    "date": "2026-09-10",
+    "files": {
+      "labelsTr.zip": [
+        57538129,
+        "6d202f6cd2905723d59e33510f2f49716a83b11aabc71fa71aa84b17aa978ddd"
+      ],
+      "labelsTs.zip": [
+        14122969,
+        "72a81672e6af56a1ecff4dbf3ef66c127497288ff8eefe7ac0124994d9623c6d"
+      ],
+      "info.zip": [
+        51680,
+        "bb2007ba6ea67f49c35d14ffd0ed3dfe003a756ce953d89ba658166afb66b05e"
+      ]
+    },
+    "sha256_verified_against": "the HuggingFace LFS sha256 for each file",
+    "path": "data/raw/anatomy/oaizib-cm/",
+    "in_git": false,
+    "images_not_taken": "the 12 GB of images are not needed: labels carry the bones for registration and the cartilage"
+  },
+  "selection_rule": "KL grade 0 only (no radiographic osteoarthritis), fixed before any registration: male (code 1) knees for this body, female (code 2) knees for a female variant"
 }
