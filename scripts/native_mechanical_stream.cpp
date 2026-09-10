@@ -119,22 +119,29 @@ int main(int argc,char** argv){try{
  // scripts/build_bone_contact_meshes.py -- ContactMesh has no scale property, so
  // an unscaled bone would sit on a scaled subject and nothing would complain.
  // No atlas registration is involved and none of its error is inherited.
- struct BoneMesh {std::string body,element,file;long faces;};
+ struct BoneMesh {std::string body,element,file;long faces;double stiffness=0;};
  std::vector<BoneMesh> bone_meshes;std::set<std::string> bone_bodies;std::map<std::string,BoneMesh> bone_force;
  double bone_stiffness=0,bone_dissipation=0,bone_static=0,bone_dynamic=0,bone_viscous=0,bone_transition=0;
  bool bone_replaces_source_feet=false;std::string bone_layer;
  if(fs::exists(source/"segment_contact_meshes.txt")){
   if(environment!="upright")throw std::runtime_error("bone contact meshes require the upright environment");
   std::ifstream spec(source/"segment_contact_meshes.txt");std::string schema;int count=0,replace=0;
-  spec>>schema>>bone_layer>>count>>bone_stiffness>>bone_dissipation>>bone_static>>bone_dynamic>>bone_viscous>>bone_transition>>replace;
-  if(!spec||schema!="IHM_SEGMENT_CONTACT_MESHES_V1"||(bone_layer!="bone"&&bone_layer!="skin")||count<1||count>256||(replace!=0&&replace!=1))throw std::runtime_error("invalid bone contact mesh schema/count");
+  // V1: one stiffness in the header for every mesh.  V2: the stiffness is the last field of
+  // every row, because each segment carries its own soft-tissue depth and modulus.
+  spec>>schema>>bone_layer>>count;
+  const bool per_row=schema=="IHM_SEGMENT_CONTACT_MESHES_V2";
+  if(!per_row)spec>>bone_stiffness;
+  spec>>bone_dissipation>>bone_static>>bone_dynamic>>bone_viscous>>bone_transition>>replace;
+  if(!spec||(schema!="IHM_SEGMENT_CONTACT_MESHES_V1"&&!per_row)||(bone_layer!="bone"&&bone_layer!="skin")||count<1||count>256||(replace!=0&&replace!=1))throw std::runtime_error("invalid bone contact mesh schema/count");
   for(double value:{bone_stiffness,bone_dissipation,bone_static,bone_dynamic,bone_viscous,bone_transition})
    if(!std::isfinite(value)||value<0)throw std::runtime_error("invalid bone contact material");
-  if(!(bone_stiffness>0)||!(bone_transition>0))throw std::runtime_error("bone contact needs positive stiffness and transition velocity");
+  if((!per_row&&!(bone_stiffness>0))||!(bone_transition>0))throw std::runtime_error("bone contact needs positive stiffness and transition velocity");
   bone_replaces_source_feet=replace==1;
   for(int i=0;i<count;i++){
    BoneMesh row;spec>>row.body>>row.element>>row.file>>row.faces;
+   if(per_row)spec>>row.stiffness;else row.stiffness=bone_stiffness;
    if(!spec||row.faces<1||row.file.empty())throw std::runtime_error("invalid bone contact mesh record");
+   if(!std::isfinite(row.stiffness)||!(row.stiffness>0))throw std::runtime_error("invalid per-mesh contact stiffness");
    if(row.file[0]=='/'||row.file.find("..")!=std::string::npos)throw std::runtime_error("bone mesh path must be relative and contained");
    if(!fs::exists(source/row.file))throw std::runtime_error("missing bone contact mesh: "+row.file);
    model.getBodySet().get(row.body);
@@ -183,7 +190,7 @@ int main(int argc,char** argv){try{
    // accident anywhere.  The relative form is kept for the report.
    auto* mesh=new ContactMesh(fs::absolute(source/row.file).string(),SimTK::Vec3(0),SimTK::Vec3(0),model.getBodySet().get(row.body),row.element);
    model.addContactGeometry(mesh);
-   auto* parameters=new ElasticFoundationForce::ContactParameters(bone_stiffness,bone_dissipation,bone_static,bone_dynamic,bone_viscous);
+   auto* parameters=new ElasticFoundationForce::ContactParameters(row.stiffness,bone_dissipation,bone_static,bone_dynamic,bone_viscous);
    parameters->addGeometry(row.element);parameters->addGeometry("floor");
    auto* force=new ElasticFoundationForce(parameters);force->setName("mesh_support_"+row.element);
    force->setTransitionVelocity(bone_transition);model.addForce(force);
@@ -443,7 +450,7 @@ int main(int argc,char** argv){try{
    if(!first)o<<',';first=false;
    o<<"{\"name\":";str(o,f.getName());o<<",\"body_frame\":";str(o,row.body);
    o<<",\"geometry_type\":";str(o,bone_layer+"_mesh_elastic_foundation");o<<",\"mesh_file\":";str(o,row.file);
-   o<<",\"mesh_faces\":"<<row.faces;o<<",\"force_n\":";vec(o,on_body);
+   o<<",\"mesh_faces\":"<<row.faces;o<<",\"foundation_stiffness_pa_per_m\":";num(o,row.stiffness);o<<",\"force_n\":";vec(o,on_body);
    o<<",\"moment_nm\":";vec(o,SimTK::Vec3(values[3],values[4],values[5]));
    o<<",\"paired_force_residual_n\":";vec(o,on_body+SimTK::Vec3(values[6],values[7],values[8]));o<<'}';
    if(row.body=="calcn_r"||row.body=="toes_r")foot_r+=on_body;

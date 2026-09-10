@@ -580,3 +580,44 @@ of an 18.5 mm layer.
 Reported, not gated: vertical contact force against weight (the pose is not an equilibrium), the
 declared-layer `skin` arm beside it (-55 mm, oscillating, in the stance table above), cost. The
 three prone drops follow the stance with gates 1 and 2 unchanged.
+
+### Result: FAIL, on the toes (2026-09-10)
+
+The engine now carries a stiffness per contact mesh (`IHM_SEGMENT_CONTACT_MESHES_V2`: the
+stiffness is the last field of every row; V1 bundles read as before), the layer map is
+`scripts/apply_soft_tissue_layer_map.py` into `data/derived/segment-contact-meshes/skin-layer-map-v1`,
+and the gates are computed by `scripts/score_skin_layer_map.py`. Stance, 50 x 10 ms, source foot
+spheres removed, both arms in one run:
+
+| | declared layer (E 3 kPa, h 6.6 mm) | per-segment layer map |
+|---|---:|---:|
+| 1 momentum, worst residual | 7.6e-13 N | **6.8e-13 N, PASS** |
+| toes worst compression (L/R) | 22.1 / 22.0 mm = 3.35 h | 12.0 / 12.0 mm = **1.56 h, FAIL** |
+| heel worst compression (L/R) | 14.8 / 15.0 mm = 2.24 h | 6.0 / 6.3 mm = 0.32 / 0.34 h |
+| 2 never bone | FAIL | **FAIL** |
+| 3 heel strain <= 0.73 | FAIL | **PASS** |
+| final vertical contact vs weight 761.4 N | 769.9 N | 777.4 N |
+
+The verdict is FAIL, by the gate as fixed. The heel is where the in vivo modulus was sourced and
+it behaves like a heel: a third of its layer at standing, against more than twice under the
+declared skin. The toes are the segment the pre-registration said the rule would make soft.
+
+What the failure is made of, measured after the verdict and reported, not used to rescore:
+
+* **The pose starts inside the floor.** The lowest toes skin vertex is 8.5 mm below the floor at
+  t = 0, before any load: 110% of the toes' 7.7 mm layer. The engineering stance pose was solved
+  for the source foot spheres, not for this skin, so the never-bone gate on the toes fails at the
+  first sample whatever the stiffness.
+* **The load sits on the toes.** At the end the toes carry 353 N each and the heels 29-43 N: 93%
+  of body weight on the forefoot. Quiet standing puts roughly half on the heel. The same pose
+  fact: the toes skin hangs lower than the heel skin in this registration.
+* **The plantar patch is not the segment median.** Taking only the lowest 5-10 mm of each
+  segment's skin, the heel reads 14.8-16.5 mm -- the in vivo pad is 16.0 (Teng) and
+  14.85 +/- 2.81 mm (Yang), so the plantar band reproduces the known answer better than the 18.5 mm
+  whole-segment median does. The toes' plantar band is 6.6-6.8 mm over the phalanges and flexor
+  digitorum brevis, slightly under their 7.7 mm median. Heel strain at the plantar h would be
+  0.42, still inside gate 3.
+
+**Next, and it is a new pre-registration, not a rescore of this one:** a stance pose solved
+against the skin (no vertex below the floor at t = 0), and an in vivo modulus for the plantar
+forefoot pad, before the stance is run again. The drops wait for the stance to pass.

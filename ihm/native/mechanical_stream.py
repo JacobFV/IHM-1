@@ -177,14 +177,28 @@ class NativeMechanicalStream:
             material=dict(youngs_modulus_pa=100000.,poissons_ratio=.45,layer_thickness_m=.01,
                           dissipation_s_m=2.,static_friction=.8,dynamic_friction=.7,viscous_friction=.5,
                           transition_velocity_m_s=.05)
+            # A bundle may instead carry a per-segment layer map (scripts/apply_soft_tissue_layer_map.py):
+            # every record its own measured depth and in vivo modulus.  Then it covers every record
+            # or none, and a caller-side E, p or h would silently override it, so that is refused.
+            per_record=bool(meshes['records']) and 'layer' in meshes['records'][0]
+            if any(('layer' in r)!=per_record for r in meshes['records']):raise ValueError('Segment contact layer map must cover every record or none')
             if segment_contact_material is not None:
                 if set(segment_contact_material)-set(material):raise ValueError('Unknown segment contact material field')
+                if per_record and set(segment_contact_material)&{'youngs_modulus_pa','poissons_ratio','layer_thickness_m'}:raise ValueError('Bundle carries a per-segment layer map; a caller E, p or h would override it')
                 material.update({k:finite(v) for k,v in segment_contact_material.items()})
             if material['layer_thickness_m']<=0 or material['youngs_modulus_pa']<=0 or material['transition_velocity_m_s']<=0:raise ValueError('Invalid segment contact layer')
             if not 0<=material['poissons_ratio']<.5:raise ValueError('Poisson ratio must lie in [0,0.5)')
             if any(material[k]<0 for k in ('dissipation_s_m','static_friction','dynamic_friction','viscous_friction')):raise ValueError('Invalid segment contact friction')
             p_=material['poissons_ratio']
-            material['stiffness_pa_per_m']=(1-p_)*material['youngs_modulus_pa']/((1+p_)*(1-2*p_)*material['layer_thickness_m'])
+            if per_record:
+                # The uniform E, p and h are not the plant's under a layer map; drop them so no
+                # report can quote them as what the body stood on.
+                for k in ('youngs_modulus_pa','poissons_ratio','layer_thickness_m'):material.pop(k)
+                material['stiffness_pa_per_m']={r['element']:finite(r['layer']['stiffness_pa_per_m']) for r in meshes['records']}
+                if any(not v>0 for v in material['stiffness_pa_per_m'].values()):raise ValueError('Invalid per-segment contact stiffness')
+                material['layer_map']=meshes.get('layer_map',{}).get('rule')
+            else:
+                material['stiffness_pa_per_m']=(1-p_)*material['youngs_modulus_pa']/((1+p_)*(1-2*p_)*material['layer_thickness_m'])
             self.segment_contact_material=material
             target=source/'contact_geometry';target.mkdir()
             rows=[]
@@ -194,10 +208,13 @@ class NativeMechanicalStream:
                 data=(bundle/'meshes'/name).read_bytes()
                 if hashlib.sha256(data).hexdigest()!=record['written_sha256']:raise ValueError('Segment contact mesh changed while copying: '+name)
                 (target/name).write_bytes(data)
-                rows.append((record['body'],record['element'],'contact_geometry/'+name,record['scaled']['faces']))
+                row=(record['body'],record['element'],'contact_geometry/'+name,record['scaled']['faces'])
+                rows.append(row+(material['stiffness_pa_per_m'][record['element']],) if per_record else row)
             if not rows:raise ValueError('Segment contact mesh bundle is empty')
+            # V2 moves the stiffness from the header onto every row.
+            header=['IHM_SEGMENT_CONTACT_MESHES_V2',meshes['layer'],len(rows)] if per_record else ['IHM_SEGMENT_CONTACT_MESHES_V1',meshes['layer'],len(rows),material['stiffness_pa_per_m']]
             (source/'segment_contact_meshes.txt').write_text(
-                ' '.join(map(str,['IHM_SEGMENT_CONTACT_MESHES_V1',meshes['layer'],len(rows),material['stiffness_pa_per_m'],
+                ' '.join(map(str,[*header,
                                   material['dissipation_s_m'],material['static_friction'],material['dynamic_friction'],
                                   material['viscous_friction'],material['transition_velocity_m_s'],
                                   1 if segment_contact_replaces_source_feet else 0]))+'\n'

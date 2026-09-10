@@ -29,7 +29,7 @@ Gates, in the sense the log means -- against cases whose answer is known:
   error-controlled Simbody integration whose cost is not bounded by dt.
 """
 from pathlib import Path
-import argparse,json,math,statistics,sys,time
+import argparse,functools,json,math,statistics,sys,time
 import numpy as np
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
@@ -39,6 +39,7 @@ REGISTRATION='data/models/engineering_stance_v1/registration.json'
 TARGET_MASS_KG=77.6122029
 FLOOR_Y_M=0.
 
+@functools.lru_cache(maxsize=None)
 def read_obj(path):
     rows=[l.split()[1:4] for l in Path(path).read_text().splitlines() if l.startswith('v ')]
     return np.asarray(rows,dtype=float)
@@ -97,10 +98,19 @@ def run(arm,bundle,replace_feet,steps,dt,work,pose,stops,material=None):
             report['initial']['lowest_mesh_vertex_element']=min(low,key=low.get)
         costs=[]
         state=initial
+        # Per step, not only start and end: the never-bone gate is on the WORST compression of
+        # each patch over the run, and the momentum gate on the worst residual.
+        compression={};residual=float(np.linalg.norm(initial['momentum_balance_residual_n']))
         for _ in range(steps):
             mark=time.monotonic()
             state=stream.advance(dt)
             costs.append(time.monotonic()-mark)
+            residual=max(residual,float(np.linalg.norm(state['momentum_balance_residual_n'])))
+            if bundle is not None:
+                for element,low in lowest_points(state,bundle).items():
+                    compression[element]=max(compression.get(element,0.),FLOOR_Y_M-low)
+        report['max_momentum_balance_residual_norm_n']=residual
+        if bundle is not None:report['max_compression_m']=compression
         report['final']=summarise(state)
         if bundle is not None:
             low=lowest_points(state,bundle)
@@ -148,7 +158,10 @@ if __name__=='__main__':
           # The skin never reaches the floor in this pose, so this arm is the
           # cost of CARRYING the geometry, separated from the cost of a plant
           # that is collapsing -- two things the `skin` arm's number mixes.
-          'skin_carried':(skin_bundle,False,skin_material)}
+          'skin_carried':(skin_bundle,False,skin_material),
+          # Each patch its own measured depth and in vivo modulus (apply_soft_tissue_layer_map.py).
+          # The bundle carries the layer, so no material is passed and none can override it.
+          'skin_layer_map':(ROOT/'data/derived/segment-contact-meshes/skin-layer-map-v1',True,None)}
     selected=args.arm or [n for n in arms if n!='skin']
     reports=[]
     for name in selected:
