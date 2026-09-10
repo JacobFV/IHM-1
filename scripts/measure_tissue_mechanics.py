@@ -64,12 +64,13 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
+from ihm.body_parameters import MECHANICAL_TARGET_MASS_KG
 from ihm.native.mechanical_stream import NativeMechanicalStream  # noqa: E402
 
 BUNDLE = ROOT / "data/models/engineering_stance_v1"
 REGISTRATION = "data/models/engineering_stance_v1/registration.json"
 TISSUE = "data/derived/tissue-force-elements-v1"
-TARGET_MASS_KG = 77.6122029
+TARGET_MASS_KG = MECHANICAL_TARGET_MASS_KG
 WEIGHT_N = TARGET_MASS_KG * 9.81
 # Quapp and Weiss 1998, the same publication the modulus comes from: human MCL
 # ultimate strain 17.1 +/- 1.5%.

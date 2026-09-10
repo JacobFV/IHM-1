@@ -190,10 +190,10 @@ PARAMETERS = (
         name='mass_kg', unit='kg', kind='continuous',
         range=(35.0, 160.0), default=MECHANICAL_TARGET_MASS_KG, status='surfaced',
         body='mechanical',
-        basis=('Unattributed literal. 38 call sites in 35 files now read '
-               'MECHANICAL_TARGET_MASS_KG; 29 in 23 files still repeat 77.6122029 '
-               '(2026-09-10: those whose first use precedes any ihm import, or '
-               'whose line also holds a string, were left for hand edits). See '
+        basis=('Unattributed literal. 45 call sites in 41 files now read '
+               'MECHANICAL_TARGET_MASS_KG; 22 lines in 18 files still carry 77.6122029 '
+               '(2026-09-10: docstrings and recorded text, which keep the number, and '
+               'call sites where ihm is not importable before first use). See '
                'MECHANICAL_TARGET_MASS_KG for the four candidate derivations '
                'that were checked and rejected.'),
         range_basis=('Measured. The same NHANES sample gives a survey-weighted '

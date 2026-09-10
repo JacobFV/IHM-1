@@ -3,6 +3,7 @@
 import argparse,hashlib,json,sys,time,xml.etree.ElementTree as ET
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT))
+from ihm.body_parameters import MECHANICAL_TARGET_MASS_KG
 import numpy as np
 from scipy.linalg import solve_discrete_are,expm
 
@@ -61,7 +62,7 @@ def main():
  (retained/'manifest.json').write_bytes((bundle/'manifest.json').read_bytes())
  for phase,path in [('baseline',required[0]),('target',required[1])]:
   d=data[phase];Ad,Bd=d['Ad'],d['Bd'];n,m=Bd.shape
-  assert (n,m)==(258,98) and float(d['dt_s'])==.01 and abs(float(d['target_mass_kg'])-77.6122029)<1e-9
+  assert (n,m)==(258,98) and float(d['dt_s'])==.01 and abs(float(d['target_mass_kg'])-MECHANICAL_TARGET_MASS_KG)<1e-9
   assert str(d['model_sha256'].item())==equivalence[phase+'_model_sha256']
   transition=expm(np.block([[d['A'],d['B']],[np.zeros((m,n+m))]])*.01)
   assert np.allclose(transition[:n,:n],Ad,atol=1e-12,rtol=1e-12) and np.allclose(transition[:n,n:],Bd,atol=1e-12,rtol=1e-12)

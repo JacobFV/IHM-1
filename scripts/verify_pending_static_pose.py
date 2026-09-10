@@ -2,6 +2,7 @@
 from pathlib import Path
 import argparse,hashlib,json,signal,sys,tempfile,time
 ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT))
+from ihm.body_parameters import MECHANICAL_TARGET_MASS_KG
 
 def run(path):
     from ihm.native.mechanical_stream import NativeMechanicalStream
@@ -12,7 +13,7 @@ def run(path):
         raise TimeoutError('Pending static replay exceeded15s')
     old=signal.signal(signal.SIGALRM,timeout);signal.setitimer(signal.ITIMER_REAL,15)
     try:
-        stream=NativeMechanicalStream(ROOT,output/'native',environment='supine',target_mass_kg=77.6122029,
+        stream=NativeMechanicalStream(ROOT,output/'native',environment='supine',target_mass_kg=MECHANICAL_TARGET_MASS_KG,
             augmented_registration='data/derived/mechanics/whole_body_arm26_v2/registration.json',
             surface_contact_manifest='data/derived/supine-surface-contact-exmzq9pq/manifest.json',bed_material='MM')
         before=stream.snapshot();q=pending['coordinates'];command=['evaluate_static_pose',str(len(q))]

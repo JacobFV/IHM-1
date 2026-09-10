@@ -3,6 +3,7 @@ from pathlib import Path
 import argparse,hashlib,json,signal,sys,tempfile,time,xml.etree.ElementTree as ET
 import numpy as np
 ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT))
+from ihm.body_parameters import MECHANICAL_TARGET_MASS_KG
 from frozen_static_stream import load,validate
 
 ASSEMBLY_ACCURACY=1e-10
@@ -45,7 +46,7 @@ def run(manifest,candidate_path,history_path):
         return observed
     old=signal.signal(signal.SIGALRM,deadline);signal.setitimer(signal.ITIMER_REAL,15)
     try:
-        stream=load(manifest)(ROOT,output/'native',environment='supine',target_mass_kg=77.6122029,
+        stream=load(manifest)(ROOT,output/'native',environment='supine',target_mass_kg=MECHANICAL_TARGET_MASS_KG,
             augmented_registration='data/derived/mechanics/whole_body_arm26_v2/registration.json',
             surface_contact_manifest='data/derived/supine-surface-contact-exmzq9pq/manifest.json',bed_material='MM')
         live_before=stream.snapshot();base=evaluate(requested,'fresh requested pose');samples=[]

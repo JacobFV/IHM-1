@@ -3,6 +3,7 @@ from pathlib import Path
 import argparse,json,signal,sys,tempfile,time
 import numpy as np
 ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT));sys.path.insert(0,str(ROOT/'scripts'))
+from ihm.body_parameters import MECHANICAL_TARGET_MASS_KG
 from solve_constrained_supine_pose import dynamic_metric
 
 
@@ -31,7 +32,7 @@ def native_fixture():
         raise TimeoutError('Native metric identity fixture wall cap')
     old=signal.signal(signal.SIGALRM,deadline);signal.setitimer(signal.ITIMER_REAL,15)
     try:
-        stream=NativeMechanicalStream(ROOT,parent/'native',environment='supine',target_mass_kg=77.6122029,
+        stream=NativeMechanicalStream(ROOT,parent/'native',environment='supine',target_mass_kg=MECHANICAL_TARGET_MASS_KG,
             augmented_registration='data/derived/mechanics/whole_body_arm26_v2/registration.json',
             surface_contact_manifest='data/derived/supine-surface-contact-exmzq9pq/manifest.json',bed_material='MM')
         before=stream.snapshot();seed=json.loads((ROOT/'data/derived/supported-rigid-seed-ljyewh9y/report.json').read_text())['best']['seed_coordinates']

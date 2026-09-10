@@ -4,6 +4,7 @@ import argparse,hashlib,json,signal,sys,tempfile,time
 import numpy as np
 from scipy.optimize import minimize,NonlinearConstraint,Bounds,least_squares
 ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT));sys.path.insert(0,str(ROOT/'scripts'))
+from ihm.body_parameters import MECHANICAL_TARGET_MASS_KG
 from build_supine_initial_state import analyze,recipe
 from static_pose_journal import PoseJournal,pose_key
 from bounded_static_root import interior_origin,local_step,StaticDomainRejection,backtracked_trial,constrained_local_step,balanced_backtracked_trial,recomputed_box_trial
@@ -127,7 +128,7 @@ def run(seed_path,material,resume_path=None,resume_cache=None,mode='constrained'
         return entry
     old=signal.signal(signal.SIGALRM,deadline);signal.setitimer(signal.ITIMER_REAL,60)
     try:
-        stream=NativeMechanicalStream(ROOT,output/'native',environment='supine',target_mass_kg=77.6122029,
+        stream=NativeMechanicalStream(ROOT,output/'native',environment='supine',target_mass_kg=MECHANICAL_TARGET_MASS_KG,
             augmented_registration='data/derived/mechanics/whole_body_arm26_v2/registration.json',surface_contact_manifest=manifest_path,bed_material=material)
         execution=json.loads((output/'native/execution.json').read_text())
         report['native_execution_basis']='live worktree validated stream' if frozen_stream is None else 'immutable archived compiled physics; current worktree native source is not used'
@@ -138,7 +139,7 @@ def run(seed_path,material,resume_path=None,resume_cache=None,mode='constrained'
             journal_sha256=hashlib.sha256((ROOT/'scripts/static_pose_journal.py').read_bytes()).hexdigest(),
             solver_sha256=hashlib.sha256((ROOT/'scripts/bounded_static_root.py').read_bytes()).hexdigest(),
             source_sha256=execution['source_sha256'],build_files=execution['build']['files'],
-            material=material,mass_kg=77.6122029,environment='supine',mode=('acceleration-root' if mode=='balanced-root' else mode),coordinate_order=names,
+            material=material,mass_kg=MECHANICAL_TARGET_MASS_KG,environment='supine',mode=('acceleration-root' if mode=='balanced-root' else mode),coordinate_order=names,
             held_gauges={n:seed[n] for n in gauges},bounds=bounds,
             surface_manifest_sha256=hashlib.sha256(manifest_path.read_bytes()).hexdigest())
         # JSON normalization keeps tuples/lists identical after disk round-trip.
