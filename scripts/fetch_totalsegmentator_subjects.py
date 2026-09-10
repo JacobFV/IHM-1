@@ -108,6 +108,11 @@ def main():
                     citation="Wasserthal et al., Radiology: Artificial Intelligence 2023, doi:10.1148/ryai.230024",
                     selection_rule=rule,
                     pool_size=len(pool), members=a.members, subjects={})
+    prior = OUT / "manifest.json"
+    if prior.exists():
+        # MERGE, never overwrite: a later fetch must not drop subjects an earlier one
+        # delivered (s0790, the first female torso to pass every gate, came from one)
+        manifest["subjects"] = json.loads(prior.read_text()).get("subjects", {})
     for r in chosen:
         sid = r["image_id"]; names = sorted(n for n in cd if n.startswith(sid + "/") and not n.endswith("/"))
         if a.members == "registration":
@@ -116,7 +121,7 @@ def main():
             names = sorted(keep)
         total = sum(cd[n]["size"] for n in names); print(f"{sid}: {len(names)} members, {total/1e6:.0f} MB", flush=True)
         files = {n: fetch(n, cd[n], OUT / n) for n in names}
-        manifest["subjects"][sid] = dict(meta=r, members=len(names), bytes=total, sha256=files)
+        manifest["subjects"][sid] = dict(meta=r, members=len(names), bytes=total, sha256=files, selection_rule=rule)
         print(f"  {sid}: all {len(names)} members pass the zip's CRC32", flush=True)
         (OUT / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
     print("done:", OUT / "manifest.json")
