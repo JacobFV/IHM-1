@@ -257,7 +257,9 @@ def main():
     say(f"GATE d2: this body's rib vertices inside a mapped breast -- left {in_breast['left']:.4f}, right {in_breast['right']:.4f} "
         f"(each <= {BREAST_RIB_MAX}) -> " + ("PASS" if ok_d2 else "FAIL"))
     if not (ok_d1 and ok_d2):
-        (OUT / "manifest.json").write_text(json.dumps(dict(stopped_at="gate d", containment=cont, rib_in_breast=in_breast), indent=2) + "\n")
+        # a run stopped at gate d still writes the fitted transforms: they are exactly
+        # what diagnosing the stop needs, and the first run discarded them
+        (OUT / "manifest.json").write_text(json.dumps(dict(stopped_at="gate d", centroid_fit_transform=Mc.tolist(), icp_refined_transform=Mr.tolist(), transform=M.tolist(), used=("icp_refined" if use_refined else "centroid_fit"), containment=cont, rib_in_breast=in_breast), indent=2) + "\n")
         sys.exit(1)
 
     # -------------------------------------------------------- e: the envelope
