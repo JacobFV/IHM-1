@@ -27,3 +27,6 @@ artifacts/
 
 # run logs (regenerable; the script and its receipt are the artifact)
 /logs/
+
+# isolated tool venvs (e.g. .venv-totalseg for TotalSegmentator), never committed
+.venv-*/
