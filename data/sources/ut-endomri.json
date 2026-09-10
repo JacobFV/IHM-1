@@ -4,10 +4,10 @@
   "modality": "pelvic MRI with structural segmentation labels",
   "role": "candidate source of UTERUS and OVARY geometry, of which this repository has zero entities",
   "access": "Zenodo record 13749613 carries NO licence field (license, rights and access_conditions all null). The terms are stated in the description's 'User Agreement': 'available for free use exclusively in non-commercial scientific research', and any publication must cite Liang et al., 'A Multi-Modal Pelvic MRI Dataset for Deep Learning-Based Pelvic Organ Segmentation in Endometriosis'. IRB: UTHealth CPHS protocol HSC-SBMI-22-0184.",
-  "status": "acquired_verified_not_yet_ingested",
-  "ingested": false,
+  "status": "ingested_strict_grid_route",
+  "ingested": true,
   "raw_path": "data/raw/anatomy/ut-endomri/UT-EndoMRI.zip",
-  "derived_manifest": null,
+  "derived_manifest": "data/derived/ut-endomri-organs-v1/manifest.json",
   "independent_subject": true,
   "physiological_dynamic_calibration": false,
   "verified_here": {
@@ -86,7 +86,8 @@
   "corrections": [
     "the relayed 'CC-BY licence' is WRONG: there is no licence on the record, and the stated terms are non-commercial scientific research only",
     "the second set holds 73 subjects in the archive, not the 82 the record's description states (and not the relayed 81); counted from the zip's central directory",
-    "uterus labels exist for 111 of 124 subjects and ovary labels for 101, not 'all subjects'"
+    "uterus labels exist for 111 of 124 subjects and ovary labels for 101, not 'all subjects'",
+    "an earlier commit (d52bbbb) said 'every label is on the T2 grid' from two subjects; across D1, 35 of 83 uterus rater labels, 24 of 67 ovary and 21 of 70 endometrioma labels lie on MRI series NOT in the release (e.g. D1-047's rater-3 uterus: 480x480x50 at 3.3 mm, no released image of that shape), and some subjects' raters sit on two DIFFERENT released grids (D1-001, D1-008, D1-009: T1FS and T2). no label is the same shape as an image with a small offset -- the tolerance was never the issue"
   ],
   "owner_decision": {
     "date": "2026-09-10",
@@ -104,5 +105,30 @@
     "md5": "7ace6e1b08efa10d0a1967073b0ba41c",
     "md5_verified_against": "the md5 Zenodo records for the file (REST API files[].checksum)",
     "in_git": false
+  },
+  "ingestion": {
+    "date": "2026-09-10",
+    "script": "scripts/extract_ut_endomri.py",
+    "route": "strict grid: every rater label must share exactly one released image's grid",
+    "subjects": 124,
+    "with_uterus_mesh": 87,
+    "with_ovary_label_kept": 78,
+    "uterus_volume_ml": {
+      "min": 29.1,
+      "median": 104.2,
+      "max": 765.7,
+      "note": "above a typical adult uterus (~40-80 mL); consistent with an endometriosis/adenomyosis cohort"
+    },
+    "ovary_pieces_per_subject": {
+      "0": 1,
+      "1": 64,
+      "2": 12,
+      "3": 1
+    },
+    "uterus_inter_rater_dice_D1": {
+      "pairs": 12,
+      "median": 0.785,
+      "min": 0.224
+    }
   }
 }

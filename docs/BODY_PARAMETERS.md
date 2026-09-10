@@ -831,7 +831,21 @@ done; the others have moved.
    recorded as the implementer's choice. What the gates cannot say: where the uterus sits
    WITHIN the ring, its orientation, or its relation to bladder and rectum -- this body has
    no female soft-tissue ground truth -- and one similarity onto a male bony pelvis absorbs
-   real size differences into its scale (D2-000: 0.929). The sternum
+   real size differences into its scale (D2-000: 0.929).
+
+   **The full extraction, and a claim it overturns.** `scripts/extract_ut_endomri.py` over all
+   124 subjects (strict-grid route): **87 with a uterus mesh**, 78 with an ovary label kept.
+   Uterus volume 29-766 mL, median 104 -- above a typical adult uterus, as a pathology cohort
+   predicts. Ovary pieces per subject: one in 64, two in 12 (surgical absence or one-sided
+   labelling; the data cannot say which). Uterus inter-rater Dice over the 12 surviving D1
+   pairs: median 0.785.
+   The earlier statement that "every label is on the T2 grid" came from two subjects and is
+   WRONG for the archive: across D1, 35 of 83 uterus rater labels (24 ovary, 21 endometrioma)
+   were drawn on MRI series that are not in the release, and some subjects' raters sit on two
+   different released grids. No label is the same shape as an image with a small offset, so
+   the tolerance was never the problem and the strict gate's exclusions are correct under
+   its rule. Whether those labels can be recovered in scanner world space is being tested
+   against a criterion fixed before any cross-grid pair was computed. The sternum
    (gate d1) is untouched by any breast correction; that is the skin-envelope problem.
 2. ~~**A path refitting tool.**~~ **Done.** `libosimActuators.so` already
    exported 97 `PolynomialPathFitter` symbols; what was missing was 300 lines of
