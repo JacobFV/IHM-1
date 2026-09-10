@@ -60,6 +60,32 @@ MECHANICAL_SOURCE_MASS_KG = 85.26984854173146
 #: guessed.
 MECHANICAL_TARGET_MASS_KG = 77.6122029
 
+#: Survey-weighted regression of log weight on log standing height, NHANES
+#: 2017-2018 BMX_J + DEMO_J, 4,822 adults aged 20-79, weighted by WTMEC2YR.
+#: Measured by ``scripts/measure_stature_allometry.py``; the full entry with its
+#: caveats lives in ``ihm.body_scaling.ALLOMETRY``.
+#:
+#: THIS IS NOT 3.  Geometric similarity says mass follows stature cubed, and the
+#: data rejects isometry at z = -11.6.  At stature 2.03 m the cubed answer is
+#: 111.9 kg and the measured answer is 99.2 kg -- 12.8% apart, and the cubed one
+#: is wrong in the direction that makes a tall body too heavy to move.
+#:
+#: Applied, as of this commit, as the DEFAULT for ``mass_kg`` when a caller asks
+#: for a stature and does not name a mass.  Before that, ``mass_kg`` defaulted to
+#: the literal above no matter what stature was requested, so asking for a 2.03 m
+#: body got a 2.03 m skeleton that still weighed 77.6 kg -- the stature scaling
+#: was divided straight back out of the mass, and the body's density rose by 39%
+#: without anything saying so.  ``mass_kg`` remains an independent knob: an
+#: explicit request still wins, which is what lets a caller build a heavy short
+#: body or a light tall one on purpose.
+MASS_STATURE_EXPONENT = 2.034
+
+#: The same regression fitted within sex: 2.372 for men, 1.721 for women.  The
+#: pooled slope lies BETWEEN them, so it is not an artefact of mixing two groups
+#: with different means, and using the within-sex slope is the more faithful
+#: answer to "if I ask for a taller woman, what should she weigh".
+MASS_STATURE_EXPONENT_BY_SEX = {'male': 2.372, 'female': 1.721}
+
 #: Vertical distance, at the model's default pose, from the plane of the
 #: AddBiomechanics ``*Ground`` virtual markers to the ``Head`` marker.  Measured
 #: by ``ihm.native.model_scaling.head_marker_height_m``; see that function for
@@ -514,8 +540,8 @@ def resolve(request=None):
                     '%s=%r is outside the declared domain %r. %s'
                     % (name, value, spec['domain'], spec.get('limitation', '')))
             resolved[name] = value
-        elif name == 'muscle_force_scale':
-            continue                      # depends on stature_scale; filled below
+        elif name in ('muscle_force_scale', 'mass_kg'):
+            continue                      # depend on stature_scale; filled below
         else:
             # An explicit request always wins; the sex preset only supplies a
             # default, so a caller can ask for a female-proportioned body at a
@@ -524,6 +550,21 @@ def resolve(request=None):
             resolved[name] = _check_continuous(spec, request.get(name, fallback))
 
     stature_scale = resolved['stature_m'] / MECHANICAL_STATURE_M
+
+    # MASS FOLLOWS STATURE, on the measured exponent, unless a caller names a
+    # mass.  The baseline pair is whatever this sex's preset declares -- for
+    # female that is a measured stature AND a measured mass, and the ratio
+    # between them must be preserved when neither is asked for -- so the scaling
+    # is taken relative to the preset's own stature, not to the male one.  A
+    # request that names neither reproduces the preset exactly (ratio 1.0).
+    base_stature = presets.get('stature_m', MECHANICAL_STATURE_M)
+    base_mass = presets.get('mass_kg', MECHANICAL_TARGET_MASS_KG)
+    mass_exponent = MASS_STATURE_EXPONENT_BY_SEX.get(sex, MASS_STATURE_EXPONENT)
+    resolved['mass_kg'] = _check_continuous(
+        BY_NAME['mass_kg'],
+        request['mass_kg'] if 'mass_kg' in request
+        else base_mass * (resolved['stature_m'] / base_stature) ** mass_exponent)
+
     resolved['muscle_force_scale'] = (
         _check_continuous(BY_NAME['muscle_force_scale'], request['muscle_force_scale'])
         if 'muscle_force_scale' in request else stature_scale ** 2)
@@ -531,6 +572,10 @@ def resolve(request=None):
     derived = {
         'stature_scale': stature_scale,
         'mass_scale': resolved['mass_kg'] / MECHANICAL_SOURCE_MASS_KG,
+        'mass_source': ('requested' if 'mass_kg' in request
+                        else 'derived from stature_m on the measured allometric '
+                             'exponent %.3f (%s)' % (mass_exponent, sex)),
+        'mass_stature_exponent': mass_exponent,
         'bmi_kg_m2': resolved['mass_kg'] / resolved['stature_m'] ** 2,
         'muscle_force_scale': resolved['muscle_force_scale'],
         'anisotropic_factors': anisotropic_factors(resolved),
@@ -550,10 +595,16 @@ def resolve(request=None):
             'anisotropic model is a body whose muscles belong to a different '
             'skeleton.' % len(derived['anisotropic_factors']))
     limitations.append(
-        'stature_m and mass_kg are INDEPENDENT knobs. Nothing constrains the '
-        'implied BMI (%.1f kg/m2 here) and no population joint distribution is '
-        'consulted, so an inconsistent pair is accepted without complaint.'
-        % derived['bmi_kg_m2'])
+        'mass_kg DEFAULTS to stature_m on the measured NHANES exponent %.3f, so '
+        'a stature-only request no longer silently keeps the 77.6 kg literal. '
+        'But an EXPLICIT mass still wins outright: nothing constrains the '
+        'implied BMI (%.1f kg/m2 here), no population joint distribution is '
+        'consulted, and an inconsistent pair is accepted without complaint. The '
+        'default is a population regression on 4,822 adults, which is a '
+        'between-person association confounded by adiposity -- it answers "what '
+        'does a person this tall weigh", NOT "what would THIS person weigh if '
+        'they were taller", and those are different questions.'
+        % (derived['mass_stature_exponent'], derived['bmi_kg_m2']))
     limitations.append(
         'The mechanical body and the anatomical body are different objects. '
         'They disagree by %.2f%% in stature and %.1f%% in mass; these '

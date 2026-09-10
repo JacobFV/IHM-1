@@ -370,10 +370,18 @@ ALLOMETRY = (
                  'for a 2.03 m person, what should they weigh".'),
          consequence=('At stature 2.03 m the geometric-similarity mass is 111.9 kg '
                       'and the population-exponent mass is 99.2 kg, 12.8% apart.'),
-         disposition=('NOT applied. mass_kg is an independent knob in '
-                      'ihm/body_parameters.py and this scaler does not move it; '
-                      'the number is reported so a caller who takes s**3 does so '
-                      'knowingly.')),
+         disposition=('APPLIED as the DEFAULT for mass_kg in '
+                      'ihm/body_parameters.py, on the WITHIN-SEX slope (2.372 '
+                      'male, 1.721 female) rather than the pooled 2.034, since '
+                      'the body being resolved has a declared sex. Previously '
+                      'not applied at all, which meant a stature-only request '
+                      'kept the 77.6 kg literal and the stature scaling was '
+                      'divided back out of the mass. mass_kg REMAINS an '
+                      'independent knob -- an explicit request still wins '
+                      'outright and is not checked against this curve -- so a '
+                      'caller who wants s**3, or any other pair, still gets it '
+                      'by naming the mass. This scaler itself still does not '
+                      'move mass; the parameter layer does.')),
     dict(quantity='bmi',
          isotropic_exponent=1.0,
          measured_exponent=0.034,

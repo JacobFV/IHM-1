@@ -88,16 +88,22 @@ def weight_arm(scaled_model, scale):
         finding=(
             'The scaled model carries %.3f kg. native_mechanical_stream.cpp line '
             '69 then multiplies every body mass by target_mass/original_mass, so '
-            'the plant weighs whatever target_mass_kg it was handed -- %.4f kg by '
-            'default, in 58 files -- and the s**%g applied to the model is divided '
-            'straight back out. A caller who wants a body of this stature to weigh '
-            'what geometric similarity says must pass target_mass_kg = %.3f kg; '
-            'what the NHANES population says is %.3f kg '
-            '(scripts/measure_stature_allometry.py). Neither is the default, and '
-            'the default is what every existing call site passes.'
-            % (scaled, MECHANICAL_TARGET_MASS_KG, bs.exponent('mass'),
-               consistent_target,
-               MECHANICAL_TARGET_MASS_KG * scale ** 2.034)),
+            'the plant weighs whatever target_mass_kg it was handed, and the '
+            's**%g applied to the model is divided straight back out. Geometric '
+            'similarity wants %.3f kg at this stature; the NHANES population '
+            'wants %.3f kg (scripts/measure_stature_allometry.py).\n\n'
+            'HALF FIXED. ihm.body_parameters.resolve now DERIVES mass_kg from '
+            'stature_m on the measured within-sex exponent unless a caller names '
+            'a mass, so a stature-only request no longer keeps the %.4f kg '
+            'literal. That closes the hole for every call site that takes its '
+            'mass from resolve(). It does NOT close it for the 55 call sites '
+            'that still pass a literal -- 30 pass 77.6122029 and 25 pass 70 -- '
+            'and those bodies still weigh a constant at every stature. Migrating '
+            'them is the remaining work, and it is a behaviour change on each, '
+            'so it is not done by search-and-replace.'
+            % (scaled, bs.exponent('mass'), consistent_target,
+               MECHANICAL_TARGET_MASS_KG * scale ** 2.034,
+               MECHANICAL_TARGET_MASS_KG)),
         open_gates=[
             'Standing weight equal to m*g on the running plant, and momentum '
             'residual below 1e-14, both need a native run. No native run has been '
