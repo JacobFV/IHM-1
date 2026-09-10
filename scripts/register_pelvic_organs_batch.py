@@ -21,14 +21,22 @@ OUT = ROOT / "data/derived/ut-endomri-registered-v1"
 PY = ROOT / ".venv-totalseg/bin/python"; TS = ROOT / ".venv-totalseg/bin/TotalSegmentator"
 
 def main():
-    subjects = json.loads((ORGANS / "manifest.json").read_text())["subjects"]
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--organs", type=Path, default=ORGANS, help="an extract_ut_endomri.py output directory")
+    ap.add_argument("--out", type=Path, default=OUT)
+    ap.add_argument("--subjects", nargs="*", default=None, help="only these subjects")
+    a = ap.parse_args()
+    organs_dir, out_dir = a.organs.resolve(), a.out.resolve()
+    subjects = json.loads((organs_dir / "manifest.json").read_text())["subjects"]
+    if a.subjects: subjects = {k: v for k, v in subjects.items() if k in set(a.subjects)}
     zf = zipfile.ZipFile(ZIP)
     members = {n.replace(" ", ""): n for n in zf.namelist() if "__MACOSX" not in n}
-    OUT.mkdir(parents=True, exist_ok=True); MR.mkdir(parents=True, exist_ok=True)
+    out_dir.mkdir(parents=True, exist_ok=True); MR.mkdir(parents=True, exist_ok=True)
     tally = {"registered": 0, "no uterus mesh": 0, "no image": 0, "total_mr failed": 0, "registration failed": 0}
     for sid, rec in sorted(subjects.items()):
         ut = rec.get("organs", {}).get("ut", {})
-        if not (ORGANS / sid / "uterus.obj").exists() or "grid" not in ut:
+        if not (organs_dir / sid / "uterus.obj").exists() or "grid" not in ut:
             tally["no uterus mesh"] += 1; continue
         grid = ut["grid"]
         key = next((k for k in members if re.search(rf"/{sid}_{grid}\.nii(\.gz)?$", k)), None)
@@ -43,7 +51,7 @@ def main():
             if r.returncode != 0 or not (seg / "hip_left.nii.gz").exists():
                 print(f"{sid}: total_mr failed ({r.returncode})", flush=True); tally["total_mr failed"] += 1; continue
         r = subprocess.run([str(PY), "-u", str(ROOT / "scripts/register_pelvic_organs.py"),
-                            "--case", sid, str(img), str(seg), str(ORGANS / sid), "--out", str(OUT)],
+                            "--case", sid, str(img), str(seg), str(organs_dir / sid), "--out", str(out_dir)],
                            capture_output=True, text=True)
         (d / "register.log").write_text(r.stdout + r.stderr)
         gates = [l for l in r.stdout.splitlines() if "GATE" in l or l.startswith(sid)]

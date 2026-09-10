@@ -206,6 +206,13 @@ def main():
     ok, ka = known_answer(body)
     report = dict(schema="ihm.ut-endomri-registered.v1", caveat=CAVEAT, known_answer=ka, subjects={})
     a.out.mkdir(parents=True, exist_ok=True)
+    # MANIFEST-MERGE. register_pelvic_organs_batch.py calls this once per subject into one output
+    # directory, and every call used to REWRITE manifest.json with only its own subjects -- after
+    # five subjects the shared manifest listed one. seed from what is already there, so both
+    # writes below keep every subject registered before this call.
+    prior = a.out / "manifest.json"
+    if prior.exists():
+        report["subjects"].update(json.loads(prior.read_text()).get("subjects", {}))
     if not ok:
         (a.out / "manifest.json").write_text(json.dumps(report, indent=2) + "\n"); sys.exit("known-answer gate failed; nothing registered")
     for sid, t2, seg, org in a.case:
