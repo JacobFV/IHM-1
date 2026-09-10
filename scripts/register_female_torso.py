@@ -52,6 +52,13 @@ SUBJECT = "s0790"
 SRC = ROOT / "data/derived/female-torso-totalsegmentator-v1" / SUBJECT
 RAW = ROOT / "data/raw/anatomy/totalsegmentator" / SUBJECT
 OUT = ROOT / "data/derived/female-torso-registered-v1"
+# which of this body's sternum parts enter the FIT correspondence. containment (gate d1)
+# always tests the whole sternum, so the gate's population never moves with the fit.
+# TotalSegmentator's 'sternum' label stops short of the xiphoid: mapped onto this body's
+# sternal axis it spans -66.5..+80.4 mm while this body's xiphoid lies at -91..-71 mm
+# (scripts/measure_sternum_correspondence.py), so the full union pairs a label with bone it
+# does not contain.
+FIT_STERNUM_PARTS = ["manubrium", "body of sternum", "xiphoid process"]
 ORD = ["first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth", "tenth", "eleventh", "twelfth"]
 TRIM, ITERS, TOL, SAMPLES_PER_BONE = 0.10, 300, 1e-10, 600
 LOBO_RATIO_MAX, CONTAIN_MIN, BREAST_RIB_MAX = 0.5, 0.95, 0.01
@@ -147,6 +154,14 @@ def mask_surface(path, affine_mm, step):
     return (v @ affine_mm[:3, :3].T + affine_mm[:3, 3]) / 1000.0, f.astype(np.int64)
 
 def main():
+    global OUT, FIT_STERNUM_PARTS
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--out", type=Path, default=None)
+    ap.add_argument("--fit-sternum-parts", default=",".join(FIT_STERNUM_PARTS))
+    a = ap.parse_args()
+    if a.out is not None: OUT = a.out.resolve()
+    FIT_STERNUM_PARTS = [x.strip() for x in a.fit_sternum_parts.split(",")]
     import nibabel as nib
     OUT.mkdir(parents=True, exist_ok=True)
     rng = np.random.default_rng(0)
@@ -175,7 +190,13 @@ def main():
             used_ids.append(cand[0]["id"]); parts.append(entity_mesh(cand[0]))
         off = np.cumsum([0] + [len(v) for v, _ in parts[:-1]])
         Vb = np.vstack([v for v, _ in parts]); Fb = np.vstack([f + o for (_, f), o in zip(parts, off)])
-        body_mesh[lab] = (Vb, Fb)
+        body_mesh[lab] = (Vb, Fb)                  # containment always sees the whole bone
+        if lab == "sternum" and FIT_STERNUM_PARTS != pairs["sternum"]:
+            keep = [pt for nm, pt in zip(pairs["sternum"], parts) if nm in FIT_STERNUM_PARTS]
+            if not keep: raise SystemExit(f"--fit-sternum-parts {FIT_STERNUM_PARTS} matches none of {pairs['sternum']}")
+            o2 = np.cumsum([0] + [len(v) for v, _ in keep[:-1]])
+            Vb = np.vstack([v for v, _ in keep]); Fb = np.vstack([f + o for (_, f), o in zip(keep, o2)])
+            say(f"sternum FIT correspondence uses {FIT_STERNUM_PARTS}; containment still tests all of {pairs['sternum']}")
         src_c.append(area_centroid(Vs, Fs)); dst_c.append(area_centroid(Vb, Fb))
         src_surf.append(sample(Vs, Fs, SAMPLES_PER_BONE, rng)); dst_surf.append(sample(Vb, Fb, SAMPLES_PER_BONE, rng))
     if len(used_ids) != len(set(used_ids)): raise SystemExit("an entity would enter the fit twice")
