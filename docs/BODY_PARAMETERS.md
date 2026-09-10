@@ -643,20 +643,47 @@ done; the others have moved.
 
 1. **A female whole-body mesh source.** Still the gate on internal genitalia,
    external genitalia and breast, all of which are *additional entities* and none
-   of which can be produced by transforming male ones. Three candidates are now
-   catalogued (`data/sources/totalsegmentator.json`, `ut-endomri.json`,
-   `female-breast-shape-model.json`) and none is acquired. What was **verified
-   here**, by parsing TotalSegmentator's own `map_to_binary.py`: 117 classes in
-   the Apache-2.0 `total` task, a `breasts` subtask that is also Apache-2.0 and
-   contains exactly **one** class, `breast` — not left and right, no gland, no
-   nipple, no areola, no duct — and **zero** female reproductive classes anywhere
-   in the class map. It closes the breast *envelope* and nothing inside it, and
-   contributes nothing to `uterine.*` or `placental.*`. What could **not** be
-   verified: everything on Zenodo, which returns HTTP 504 through this sandbox's
-   egress proxy while GitHub, PyPI and HuggingFace return 200 — so the
-   1,228-subject and 503-female claims are relayed and marked unchecked, and the
-   UT-EndoMRI card is entirely unverified. That card also carries, on its face,
-   that it is an **endometriosis cohort**: uteri selected for uterine pathology.
+   of which can be produced by transforming male ones. **Moved, as of 2026-09-10.**
+   zenodo.org answers from this machine (the HTTP 504 was the old sandbox's
+   egress proxy), so both catalogued cards were checked against the archive and
+   both were wrong in places:
+   * **TotalSegmentator** (record 10047292, v2.0.1, **CC-BY-4.0** verified, one
+     23.58 GB zip of 147,361 members). Its own `meta.csv`, read out of the zip by
+     HTTP Range without downloading it: 1,228 subjects, **510 female** (not the
+     relayed 503), 716 male, 2 blank. The breast is **not in the dataset**: the
+     archive holds the 117 total-task labels, and a breast has to be produced by
+     running the Apache-2.0 `breasts` subtask model on a female CT. The same CT's
+     Apache-2.0 `body` subtask gives a female **skin** envelope, which matters
+     because this body's skin is male too.
+   * **UT-EndoMRI** (record 13749613). The relayed "CC-BY" is **wrong**: the record
+     carries no licence field, and its User Agreement reads *"available for free
+     use exclusively in non-commercial scientific research"*. Whether this
+     programme qualifies is the **owner's** decision; until it is made nothing is
+     downloaded and no derived uterus or ovary mesh goes into a public repository.
+     It remains an endometriosis cohort, and the record says ovaries may be
+     deformed or surgically absent.
+
+   **Selection had to be by what the scan contains, not by the exam's name.** The
+   archive's `study_type` names the clinical exam and the member is a CROP: s1218,
+   "neck-thorax-abdomen-pelvis", is a 68 mm slab. `select_totalsegmentator_by_coverage.py`
+   uses the zip's central directory -- an empty label mask compresses to ~250 B --
+   to find subjects whose 24 ribs, sternum and clavicles are all in the scan (219
+   of 510 female; 71 of those without pathology), gated on a subject whose true
+   voxel counts are known. `screen_totalsegmentator_fov.py` then reads each CT's
+   field of view from its NIfTI header, because three of the first four failed on
+   it.
+
+   **One female torso passes every gate: s0790**, age 40, an 807 mm scan, 39 of 39
+   registration bones, breasts **610 / 551 mL**, chest whole, breast whole, its own
+   bones inside its own body mask, the breast inside the body (to one voxel -- the
+   gate was amended after s0790 failed the strict version at 0.9825, and every
+   subject's excess is a one-voxel rim) and off the ribs, laterality decided from
+   the data. The original gate set had PASSED a 68 mm slab with a 50 mL
+   cross-section for a breast; the coverage gates were added because of it, and a
+   negative control shows they refuse it. What this is and is not: one clinical
+   subject's anatomy as a segmentation model drew it, and "breast" is a single
+   soft-tissue label -- no gland, duct, nipple or areola. Registering it into this
+   body is the step in progress.
 2. ~~**A path refitting tool.**~~ **Done.** `libosimActuators.so` already
    exported 97 `PolynomialPathFitter` symbols; what was missing was 300 lines of
    driver. A refit of the unchanged model is 16.7× closer to the model's own
