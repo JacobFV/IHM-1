@@ -813,7 +813,25 @@ done; the others have moved.
    * **containment:** the mapped uterus lies inside this body's pelvic ring (the convex
      hull of the hip bones and sacrum), and overlaps no bone (<= 1% of its volume).
    Overlap with this male body's prostate, seminal vesicles and bladder is EXPECTED -- a
-   female pelvis variant does not exist yet -- and is reported, not judged. The sternum
+   female pelvis variant does not exist yet -- and is reported, not judged.
+
+   **Registered on the first two subjects; every gate passes** (`scripts/register_pelvic_organs.py`).
+   Known answer: this body's own bones, cut as a 160 mm scan would cut them (kept surface
+   hips 0.71-0.74, sacrum 0.91, femurs 0.22), moved by a known similarity, are recovered to
+   0.033 mm, 0.018 deg and 0.004% scale.
+
+   | subject | scale | one-way residual | laterality | uterus in pelvic ring | uterus in bone | reported only |
+   |---|---:|---:|---|---:|---:|---|
+   | D1-000 | 1.003 | 4.46 mm | pass | 1.000 | 0.000 | 1.4% inside this body's bladder |
+   | D2-000 | 0.929 | 3.36 mm | pass | 1.000 | 0.000 | none |
+
+   Both carry one ovary piece, inside the ring. **One threshold was not fixed in advance:**
+   the gate said "inside the pelvic ring" without a number; the implementer chose >= 0.99 of
+   the uterus surface. Both subjects read 1.000, so it decided nothing here, and it is
+   recorded as the implementer's choice. What the gates cannot say: where the uterus sits
+   WITHIN the ring, its orientation, or its relation to bladder and rectum -- this body has
+   no female soft-tissue ground truth -- and one similarity onto a male bony pelvis absorbs
+   real size differences into its scale (D2-000: 0.929). The sternum
    (gate d1) is untouched by any breast correction; that is the skin-envelope problem.
 2. ~~**A path refitting tool.**~~ **Done.** `libosimActuators.so` already
    exported 97 `PolynomialPathFitter` symbols; what was missing was 300 lines of
