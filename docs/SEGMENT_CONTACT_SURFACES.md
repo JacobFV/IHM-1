@@ -266,6 +266,39 @@ fails.** The consequences:
    it must be judged by the whole-skin gate**, or it will be tuned against a
    ceiling of 0.547 that no transformation can move.
 
+### The registration, measured without the partition
+
+`scripts/measure_skin_enclosure_whole.py` tests each segment's registered OpenSim
+bones against the WHOLE capped exterior skin, where no partition can intervene.
+The ceiling is the body's own anatomical bones against the same surface.
+
+| | own bones (ceiling) | canonical map | binding map |
+|---|---:|---:|---:|
+| **mean** | **0.997** | 0.416 | **0.888** |
+| segments >= 0.99 | 20 / 22 | 2 / 22 | 9 / 22 |
+
+The ceiling reads 0.997 (toes 0.966-0.968, everything else 1.000), so the skin
+does enclose its own skeleton and the metric is sound on this surface.
+
+**The binding map is far better than the per-segment gate said: 0.888, not
+0.445.** Femur, patella, radius, ulna and talus read 1.000 and tibia 0.99. What
+genuinely fails is concentrated and specific:
+
+| segment | binding map |
+|---|---:|
+| hand | 0.57-0.63 |
+| calcn | 0.75 |
+| toes | 0.78-0.80 |
+| humerus | 0.67-0.82 |
+| torso | 0.84 |
+| pelvis | 0.95 |
+
+That is the extremities and the shoulder girdle -- where a different specimen's
+proportions differ most -- and it is where per-segment registration is still
+needed. The canonical map reads 0.000 for every foot and hand segment, which is
+the 96 mm hover above, and should not be used for anything that touches the
+world.
+
 ### Skin-mediated ground contact, on the better map
 
 25 advances of 10 ms from the stance pose, skin bundle built on the binding

@@ -459,19 +459,62 @@ above.
 
 ---
 
+## The 51 are a REGISTRATION failure first, and a path failure second
+
+The section above blames the straight path and prescribes a wrap surface per
+joint. Two measurements say that was the wrong order.
+
+**Moving attachments does not fix them**
+(`scripts/measure_ligament_attachment_vs_path.py`, gate: recomputed tip peaks
+match the stored ones to 1.6e-14). Even the most isometric fibre inside each
+ligament's own footprint rescues only **13 of 51**, and only 4 of those are taut
+over more than a quarter of the joint's range, so almost all of the rescued ones
+restrain nothing.
+
+**Correcting the joint's registration does**
+(`scripts/measure_ligament_registration_probe.py`). The global atlas->scaffold
+similarity displaces the atlas's articular centres from the scaffold's by
+**20-26 mm** at knee, ankle and hip, measured by the same closest-approach rule on
+both skeletons (`scripts/measure_joint_centre_registration.py`; the same rule on
+the scaffold's own bones is the control). A cruciate is 33-37 mm long, so it was
+sweeping about a centre displaced by most of its own length. Translate each
+failing element rigidly by its joint's displacement and re-derive its attachments
+exactly as the builder does (gate: a zero translation reproduces the stored peaks
+to 7.8e-15):
+
+| | before | after one translation per joint |
+|---|---:|---:|
+| admissible, of the 37 crossing a measured joint | 0 | **19** |
+| peak strain fell | | 33 / 37 |
+| median peak strain | 0.579 | **0.170** |
+| anterior cruciate | 1.216 / 1.226 | **-0.022 / -0.033** |
+| posterior cruciate | 1.184 / 1.191 | 0.170 / 0.326 |
+| knee collaterals and capsules | 0.44-0.78 | **-0.02 to 0.00** |
+
+A translation is the crudest correction there is, and it is not uniformly right:
+the two intra-articular hip structures get WORSE (ligament of head of femur 0.73
+-> 1.15, transverse acetabular 0.26 -> 0.58), the anterior talofibulars stay at
+1.1, and 14 of the 51 cross joints not measured here (wrist, radio-ulnar,
+iliolumbar, MTP).
+
 ## What would move this next, in order
 
-1. **A wrap surface per scaffold joint**, fitted from the bone geometry, so a
+1. **Per-segment registration of the atlas onto the scaffold**, before any wrap
+   surface. One translation per joint already rescues 19 of 37 and brings both
+   cruciates inside their ultimate strain; a proper per-segment map is the same
+   fix the skin needs (`docs/SEGMENT_CONTACT_SURFACES.md`). Only what survives
+   THAT should be judged against the item below.
+2. **A wrap surface per scaffold joint**, fitted from the bone geometry, so a
    ligament path bends where a real one does. This is the single change that
    would turn the 51 inadmissible elements from wrong into useful, and those 51
    are the cruciates, the collaterals and the ankle ligaments — precisely the
    ones that carry a real joint's restraint. The 66 that survive the filter
    survive it largely because they barely change length with the joint, which is
    the same thing as saying they have little to restrain.
-2. **Articular cartilage geometry.** Acquisition, not modelling. Until it exists
+3. **Articular cartilage geometry.** Acquisition, not modelling. Until it exists
    there is no articular surface to make physical, and the knee is the only joint
    with intra-articular geometry to start from.
-3. **Reversing the path substitution for the ankle and knee muscles**, at a
+4. **Reversing the path substitution for the ankle and knee muscles**, at a
    measured wall-clock cost, so the six ankle retinacula have something to hold.
 4. **Regional subcutaneous depth**, which is simultaneously the adipose gap and
    the reason the declared skin cannot hold the body up.
