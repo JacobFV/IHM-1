@@ -1042,23 +1042,36 @@ done; the others have moved.
    lowest-quartile rule describes that; the honest limit is the one already named -- a convex
    hull of three bones is not the pelvic cavity.
 
-   **The batch at 78 of 87: 68 pass, 10 fail, in two disjoint modes.** No subject fails both.
+   **The batch, complete: 87 registered, 76 pass, 11 fail, in two disjoint modes.** No subject
+   fails both, and **no subject fails laterality** -- every one of the 87 maps its left hip to this
+   body's left hip. 37 of the archive's 124 subjects have no uterus mesh to register at all. The
+   manifest was completed to 87 by re-registering D1-000, D1-002, D1-003 and D1-004, whose records
+   (not their meshes) the pre-merge overwrite had destroyed; all four pass.
 
    | mode | subjects | what fails |
    |---|---|---|
-   | containment | D1-035, D1-039, D1-041, D2-061, D2-062, D2-072 | uterus surface outside the ring, 0.766-0.983 against >= 0.99 |
-   | bone overlap | D2-026, D2-042, D2-044, D2-048 | 1.8-23.4% of the uterus interior inside a bone -- **the sacrum in all four** -- against <= 1%, while the ring share is 0.998-1.000 |
+   | containment (6) | D1-035, D1-039, D1-041, D2-061, D2-062, D2-072 | uterus surface outside the ring, 0.766-0.983 against >= 0.99 |
+   | bone overlap (5) | D2-026, D2-042, D2-044, D2-048, D2-073 | 1.4-23.4% of the uterus interior inside a bone -- **the sacrum in every one** -- against <= 1%, while the ring share is 0.998-1.000 |
+
+   By sub-dataset: D1 3 of 27, D2 8 of 60 -- alike as rates, but every bone overlap is D2.
 
    The two modes point in OPPOSITE directions. Every containment failure leans forward: the part
    outside sits 29-45 mm anterior of its own centroid (D1-035 +35, D1-039 +38, D2-061 +29,
    D2-062 +45), out through the hull's front face. The sacrum cases lean back -- D2-044's small
    outside fraction is 25 mm POSTERIOR of its centroid.
 
-   **It is not fit quality.** The four sacrum cases fit like the cohort: scale 0.957-1.011,
-   trimmed residual 4.0-4.8 mm, against cohort means of 0.985 +/- 0.063 (D1, n=23) and
-   0.962 +/- 0.049 (D2, n=55) at ~4.3 mm. Failure rates by sub-dataset are also alike -- D1 3 of
-   23, D2 7 of 55 -- but **every bone overlap is D2**, and D1_MHS and D2_TCPW are different sites
-   with different rating protocols (three raters against one).
+   **It is not fit quality, and it is not size.** The five sacrum cases fit like the cohort:
+   scale 0.957-1.059, trimmed residual 4.0-4.8 mm, against cohort means of 0.985 +/- 0.063 (D1)
+   and 0.962 +/- 0.049 (D2) at ~4.3 mm; their uteri are 52.7-179.4 mL, ordinary ones. Failure
+   rates by sub-dataset are alike -- D1 3 of 27, D2 8 of 60 -- but **every bone overlap is D2**,
+   and D1_MHS and D2_TCPW are different sites with different rating protocols (three raters
+   against one).
+
+   Scored against the lowest-quartile proposal (`score_uterus_lowest_quartile.py`, known answer:
+   the full-surface ring share reproduced exactly for all 91 registered uteri, the 87 here plus
+   the 4 world-route ones): of the six containment failures it would pass four (D1-035, D1-041,
+   D2-061, D2-072) and still fail two (D1-039 at 0.9892, D2-062 at 0.9262), and it fails all five
+   sacrum cases through its bone criterion. It remains unadopted, for the reason D1-035 gave.
 
    Two candidate causes, and this batch does not separate them:
    * **the target pelvis is MALE** -- a male sacrum is narrower with a more prominent promontory,
@@ -1072,6 +1085,7 @@ done; the others have moved.
    **Where in the sacrum, and what it rules out.** This body's sacrum spans 144 mm. The overlapping
    interior points sit at the MIDDLE of it -- 49% of its height for D2-044 and D2-026 (10-90%:
    37-61%), 65% and 64% for D2-048 and D2-042 -- where 0% is the coccyx end and 100% the promontory.
+   (Four of the five measured; D2-073 registered after this was run and its location is not measured.)
    (Resampled independently of the registration's own count: 24.1% against its 23.4% for D2-044.)
    A male promontory in the way would put the overlap HIGH, at 90-100%. It is not there. Mid-sacrum,
    S2-S3, is exactly where the rectum and the cul-de-sac lie between uterus and bone, so these uteri
