@@ -5,10 +5,16 @@ because those segments own a strip or a patch of skin, not a closed region.  so
 test each segment's registered OpenSim bones against the WHOLE capped skin.
 ceiling: the body's own anatomical bones against the same whole skin, same frame.
 """
-import importlib.util, json, gzip, sys
+import argparse, importlib.util, json, gzip, sys
 import numpy as np
 from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]; sys.path.insert(0, str(ROOT))
+_ap = argparse.ArgumentParser()
+_ap.add_argument('--warp', type=Path, default=None,
+                 help='a scripts/skin_warp.py warp (.npz) whose base must be the binding map; the warped skin is '
+                      'measured beside the own-bones ceiling and the binding map. Without it the output is unchanged.')
+_ap.add_argument('--json', type=Path, default=None, help='with --warp: write the per-segment columns here')
+ARGS = _ap.parse_args()
 spec = importlib.util.spec_from_file_location('bscm', ROOT/'scripts/build_skin_contact_meshes.py')
 B = importlib.util.module_from_spec(spec); spec.loader.exec_module(B)
 mech = json.loads((ROOT/'data/derived/canonical/mechanics.json').read_text())
@@ -42,6 +48,31 @@ def placed(seg, frames): M = frames[seg]; return osim[seg] @ M[:3, :3].T + M[:3,
 skin_b, skin_c = skin_in(Tb), skin_in(Tc)
 
 segs = sorted(s for s in own if s in osim and s in frames_b and s in frames_c)
+if ARGS.warp is not None:
+    # the warped skin, beside the ceiling and the map it is built on.  Same capped surface, same
+    # frames, same enclosure() and samples: only the skin's vertex positions differ.
+    sys.path.insert(0, str(ROOT / 'scripts'))
+    from skin_warp import Warp
+    W = Warp.load(ARGS.warp)
+    if not np.array_equal(W.base, Tb): sys.exit('the warp\'s base is not the binding map; nothing measured')
+    skin_w = W.apply(sv)
+    print(f"warp {ARGS.warp}: {len(W.centres)} centres, max |displacement| at skin {1000*np.abs(skin_w-skin_b).max():.2f} mm")
+    print(f"\n{'segment':12s} {'own bones (ceiling)':>20s} {'binding map':>12s} {'warped':>8s}")
+    rows = []
+    for s in segs:
+        a = B.enclosure(sv, sf, own[s], samples=500)
+        b = B.enclosure(skin_b, sf, placed(s, frames_b), samples=500)
+        w = B.enclosure(skin_w, sf, placed(s, frames_b), samples=500)
+        rows.append((a, b, w)); print(f"{s:12s} {a:20.3f} {b:12.3f} {w:8.3f}", flush=True)
+    r = np.array(rows)
+    print(f"\n{'mean':12s} {r[:,0].mean():20.3f} {r[:,1].mean():12.3f} {r[:,2].mean():8.3f}")
+    print(f"{'>= 0.99':12s} {int((r[:,0]>=.99).sum()):>17d}/{len(r)} {int((r[:,1]>=.99).sum()):>9d}/{len(r)} {int((r[:,2]>=.99).sum()):>5d}/{len(r)}")
+    if ARGS.json is not None:
+        ARGS.json.write_text(json.dumps(dict(warp=str(ARGS.warp), segments=segs,
+            own_bones_ceiling={s: x[0] for s, x in zip(segs, rows)}, binding_map={s: x[1] for s, x in zip(segs, rows)},
+            warped={s: x[2] for s, x in zip(segs, rows)},
+            mean=dict(own_bones_ceiling=float(r[:,0].mean()), binding_map=float(r[:,1].mean()), warped=float(r[:,2].mean()))), indent=2) + "\n")
+    sys.exit(0)
 print(f"\n{'segment':12s} {'own bones (ceiling)':>20s} {'canonical map':>14s} {'binding map':>12s}")
 rows = []
 for s in segs:

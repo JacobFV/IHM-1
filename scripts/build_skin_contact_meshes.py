@@ -152,7 +152,7 @@ def skin_layers(mechanics,surface_area):
                 layer_thickness_m=total,stiffness_pa_per_m=stiffness,
                 stiffness_basis='k=(1-p)E/((1+p)(1-2p)h) -- the elastic foundation\'s own law for a uniform elastic layer of thickness h over a rigid substrate, with E, p and h taken from the declared skin layers.')
 
-def build(out_dir,reference_path,minimum_faces,registration_choice):
+def build(out_dir,reference_path,minimum_faces,registration_choice,warp=None):
     out_dir=Path(out_dir).resolve();meshes=out_dir/'meshes';meshes.mkdir(parents=True,exist_ok=True)
     mechanics=json.loads((ROOT/'data/derived/canonical/mechanics.json').read_text())
     skin=next(e for e in mechanics['entities'] if e['role']=='skin')
@@ -181,7 +181,20 @@ def build(out_dir,reference_path,minimum_faces,registration_choice):
             rms_landmark_residual_m=registration.global_fit['rms_landmark_residual_m'],
             maximum_landmark_residual_m=registration.global_fit['maximum_landmark_residual_m'],
             pose=str(reference_path)+' t=0 body transforms')
-    source=canonical@transform[:3,:3].T+transform[:3,3]
+    if warp is None:
+        source=canonical@transform[:3,:3].T+transform[:3,3]
+    else:
+        # One smooth space warp (scripts/skin_warp.py) on top of the binding map, applied to the
+        # WHOLE skin before it is cut.  Its base must be exactly the map chosen above, so a zero
+        # displacement reproduces the unwarped bundle bit for bit.
+        from skin_warp import Warp
+        if registration_choice!='binding':raise ValueError('a skin warp is defined on the binding map only')
+        field=Warp.load(ROOT/warp)
+        if not np.array_equal(field.base,transform):raise ValueError('the warp\'s base is not the binding map')
+        source=field.apply(canonical)
+        registration_report['warp']=dict(path=str(warp),sha256=sha(ROOT/warp),centres=int(len(field.centres)),
+            form='W(x) = G x + d(G x), d a regularised 3D thin-plate spline (scripts/skin_warp.py); G the binding map above',
+            meta=field.meta)
     bones=bone_clouds()
     binding=json.loads(gzip.decompress((ROOT/BINDING).read_bytes()))
     segments=[s['id'] for s in binding['segments']]
@@ -274,6 +287,7 @@ if __name__=='__main__':
     parser.add_argument('--reference',default=DEFAULT_REFERENCE)
     parser.add_argument('--minimum-faces',type=int,default=64)
     parser.add_argument('--registration',choices=('canonical','binding'),default='binding')
+    parser.add_argument('--warp',default=None,help='a scripts/skin_warp.py warp (.npz, path relative to the repo) applied to the whole skin on top of the binding map before it is cut; default: none')
     args=parser.parse_args()
-    report=build(args.out,args.reference,args.minimum_faces,args.registration)
+    report=build(args.out,args.reference,args.minimum_faces,args.registration,args.warp)
     print(json.dumps({k:v for k,v in report.items() if k not in ('records','controls')},indent=2))

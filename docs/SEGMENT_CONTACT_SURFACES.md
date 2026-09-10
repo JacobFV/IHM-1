@@ -669,3 +669,34 @@ the joints. It can fold, which gate 4 is for.
 
 Reported, not gated: per-segment skin area change, the warp's bending energy, and the stance
 arm (layer map, this skin) scored by `score_skin_layer_map.py` with its three gates unchanged.
+
+#### The warp as fitted, before gates 2-4 were computed (2026-09-10)
+
+`scripts/fit_skin_warp.py --stage fit`; the warp itself is `scripts/skin_warp.py`. `W(x) = G x +
+d(G x)`: `G` is the binding similarity -- the exact map the 0.888 column is measured through --
+and `d` a regularised 3D thin-plate spline (kernel `-r`). Correspondences: 200 area-weighted
+samples per atlas bone group (torso 600, pelvis 300); source `G a`, target the exact nearest point
+ON the scaffold's bone mesh to the per-segment similarity's image `M_seg a`; the farthest 10% per
+segment dropped, the per-segment fit's own trim. 4,410 kept. They ask for 7-45 mm of displacement
+from the global map (median by segment; up to 80 mm at humerus_r).
+
+**Regularisation rule, fixed in the script before the fit ran and computed from the bone
+correspondences alone:** 5-fold cross-validation over `lambda in {0} U logspace(-8, 0, 17)`; take the
+LARGEST lambda whose held-out RMS is within 1% of the minimum. Minimum 4.570 mm (flat up to 1e-4);
+chosen **lambda = 1e-3**, 4.588 mm, not at the grid's edge. Fitted residual at the correspondences
+0.571 mm RMS; bending energy 8.69.
+
+Known-answer controls, all before any gate: `G` in `registration.json` equals the bundle's binding
+map bit for bit; zero displacement reproduces the binding map on all 102,467 skin vertices bit for
+bit; gate 1's instrument, replaying the per-segment fit's own evaluation samples, returns its
+stored RMS exactly (0.0 m difference, 22 segments); the nearest-point projector returns 2.5e-16 m
+for points on the mesh (a first, k-nearest-candidate version returned 0.13 mm and was replaced by
+an exact bounded search); the spline interpolates at lambda 0 (2e-15 m) and reproduces an affine
+field with zero bending; its Jacobian matches central differences to 1.8e-9. **Zero warp through
+the two gate instruments:** whole-skin enclosure reads **0.888** per segment identical to the
+binding column (ceiling **0.997**), and the bundle built through a zero warp is identical to
+`skin-binding` in every record -- calcn **+20.1 / +20.0 mm**, same mesh sha256s.
+
+**Gate 1: PASS, 22 / 22.** The warped bone group is at or under the per-segment similarity on 21
+segments (calcn 6.09 -> 5.37 / 6.00 -> 5.10 mm, torso 15.65 -> 11.28, humerus 5.38 -> 3.77); femur_l
+is 0.04 mm over it (3.92 vs 3.88), inside the 1 mm margin.
