@@ -521,3 +521,62 @@ soft over the shin (stiffness goes as 1/h). **Next, not done:** give each skin p
 depth instead of one h. That changes the plant's contact, so it has to be judged the way the
 tissue elements were -- the stance and the three drops -- before it replaces the single value.
 The per-point map is saved in `data/derived/soft-tissue-depth-v1/depth.npz`.
+
+### Depth alone would make it worse: the modulus is the missing half (pre-registered 2026-09-10, before any run)
+
+Per segment of the skin partition (a vertex belongs to its argmax binding weight), the median
+depth is: calcn 18.5/18.6 mm, toes 7.7, tibia 12.1/12.5, patella 18.4/19.2, femur 15.6/16.3,
+pelvis 23.4, torso 10.2, humerus 14.9/15.4, radius 9.4/10.2, ulna 11.9/11.6, hand 7.8/7.7.
+Known answer: the in vivo unloaded heel pad is 16.0 mm (median, 9.6-17.7; Teng 2022) and
+14.85 +/- 2.81 mm (Yang 2022); this body's heel reads 18.5 mm, slightly above, as a whole-
+segment median of nearest-structure distance should be (it includes the heel's sides).
+
+Substituting that h into the declared layer (E = 3 kPa) makes the feet SOFTER, not stiffer: k
+goes as 1/h, and 761 N on ~0.02 m2 of heel at 18.5 mm would need ~62 mm of compression. That
+is bone contact, by arithmetic, so the run is not worth making. The declared 3 kPa is a
+source_informed_prior shared by epidermis, dermis and hypodermis, not a loaded-tissue value.
+
+Loaded soft tissue is an order of magnitude stiffer, and it has been measured in vivo
+(`data/sources/in-vivo-soft-tissue-compression.json`):
+
+| site | apparent modulus | source |
+|---|---:|---|
+| heel pad, gait | 192.6 kPa (median; 130-266) | Teng et al. 2022, doi:10.1186/s12891-022-05197-w |
+| heel pad, gait, non-diabetic | 265.5 kPa (median; 155-306) | Yang et al. 2022, doi:10.3389/fendo.2022.894383 |
+| heel pad | up to 175 kPa | Gefen et al. 2001, as cited by Teng |
+| buttock fat, sitting | 39 kPa secant (18 kPa at 46%) | Linder-Ganz et al. 2007, doi:10.1016/j.jbiomech.2006.06.020 |
+
+The heel values are pressure over THICKNESS strain. Yang's own pair (144.8 kPa at 0.523
+strain) gives 277 kPa against their reported 265.5, so they are layer moduli and enter as
+`k = E/h` directly; the confined-layer factor `(1-v)/((1+v)(1-2v))` (3.8 at v = 0.45) would count
+the confinement twice.
+
+**The rule, fixed now:**
+
+* `h` per segment = that segment's measured median depth (above).
+* `E` for calcn = the median of the three in vivo heel values, **192.6 kPa**.
+* `E` for pelvis = the Linder-Ganz secant, **39 kPa**, labelled transferred (it is a peak
+  principal value from an FE model, weaker evidence than the heel).
+* `E` for every other segment = the same 39 kPa, labelled **unsourced for that site**. No in vivo
+  value was retrieved for the forefoot, knee, hand, forearm, elbow or trunk; the toes in
+  particular carry plantar pad, which is probably stiffer than fat, and this rule makes them soft.
+* `k = E/h`. Damping and friction unchanged. The foundation stays linear: both heel fits are
+  linear-elastic plus viscous, so it is linear inside the range they were fitted over.
+
+Standing arithmetic, as the expectation: 38 kPa on the heel at 192.6 kPa is ~20% strain, 3.2 mm
+of an 18.5 mm layer.
+
+**Gates, fixed before the engine carries per-segment stiffness:**
+
+1. **Momentum balance** (the plant's arithmetic identity): the maximum residual over the stance
+   run <= 1e-5 N, the bound `verify_native_fall_contact.py` uses. If this fails, the per-row
+   stiffness was bookkept wrong and nothing else is read.
+2. **Never bone** (the programme's requirement): on every contacting segment, the maximum
+   compression over the run (depth of its lowest skin vertex below the floor) is less than
+   that segment's `h`. One segment bottoming out is a FAIL.
+3. **Heel strain inside the in vivo range**: the calcn maximum compression over `h` <= 0.73, the
+   top of Teng's gait range. Standing should sit well under it.
+
+Reported, not gated: vertical contact force against weight (the pose is not an equilibrium), the
+declared-layer `skin` arm beside it (-55 mm, oscillating, in the stance table above), cost. The
+three prone drops follow the stance with gates 1 and 2 unchanged.

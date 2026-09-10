@@ -1,0 +1,49 @@
+{
+ "id": "in-vivo-soft-tissue-compression",
+ "role": "APPARENT compressive layer modulus of soft tissue under real load, in vivo -- the quantity a per-patch elastic foundation needs and the canonical skin layers do not carry (they declare E = 3000 Pa, a source_informed_prior over 0.5-30 kPa, identically for epidermis, dermis and hypodermis)",
+ "retrieved": "2026-09-10, from the publishers' abstracts and PMC full text",
+ "status": "values_transcribed_not_reanalysed",
+ "entries": [
+  {
+   "site": "heel pad (plantar, under the calcaneus)",
+   "citation": "Teng Z-L, Yang X-G, Geng X, et al. Effect of loading history on material properties of human heel pad: an in-vivo pilot investigation during gait. BMC Musculoskelet Disord 2022;23:254.",
+   "doi": "10.1186/s12891-022-05197-w",
+   "method": "in vivo, during gait; Kelvin-Voigt fit of pressure against thickness strain",
+   "values": {
+    "unloaded_thickness_mm": {"median": 15.99, "range": [9.60, 17.74]},
+    "peak_gait_strain": {"median": 0.685, "range": [0.67, 0.73]},
+    "elastic_modulus_kpa": {"median": 192.55, "range": [130.5, 266.4]},
+    "viscous_modulus_kpa_s": {"median": 43.9}
+   },
+   "also_cites": "Gefen et al. 2001, in vivo heel pad elastic modulus as high as 175 kPa, viscosity 22 kPa s"
+  },
+  {
+   "site": "heel pad (plantar, under the calcaneus)",
+   "citation": "Yang X-G, Teng Z-L, Zhang Z-M, et al. Comparison of material properties of heel pad between adults with and without type 2 diabetes history: an in-vivo investigation during gait. Front Endocrinol 2022;13:894383.",
+   "doi": "10.3389/fendo.2022.894383",
+   "method": "in vivo, during gait; modified Kelvin-Voigt fit; NON-diabetic group, n = 10 (20 legs), aged 59-72",
+   "values": {
+    "unloaded_thickness_mm": {"mean": 14.85, "sd": 2.81},
+    "peak_gait_strain": {"mean": 0.523, "sd": 0.1009},
+    "elastic_modulus_kpa": {"median": 265.5, "range": [154.79, 306.28]},
+    "peak_heel_pressure_kpa": {"mean": 144.8, "sd": 25.56}
+   },
+   "apparent_modulus_check": "144.8 kPa / 0.523 = 277 kPa against the reported 265.5 kPa (4% apart): the modulus is pressure over THICKNESS strain, i.e. a layer (apparent) modulus, so k = E/h and the confined-layer factor (1-v)/((1+v)(1-2v)) must NOT be applied on top"
+  },
+  {
+   "site": "buttock subcutaneous fat, under the ischial tuberosity, sitting",
+   "citation": "Linder-Ganz E, Shabshin N, Itzchak Y, Gefen A. Assessment of mechanical conditions in sub-dermal tissues during sitting: a combined experimental-MRI and finite element approach. J Biomech 2007;40(7):1443-1454.",
+   "doi": "10.1016/j.jbiomech.2006.06.020",
+   "method": "in vivo MRI, weight-bearing vs non-weight-bearing, subject-specific FE; n = 6 healthy",
+   "values": {
+    "fat_peak_principal_compressive_strain": {"mean": 0.46, "sd": 0.07},
+    "fat_peak_principal_compressive_stress_kpa": {"mean": 18, "sd": 4},
+    "gluteus_peak_strain": {"mean": 0.74, "sd": 0.07},
+    "gluteus_peak_stress_kpa": {"mean": 32, "sd": 9},
+    "interface_pressure_kpa": {"measured": [17, 4], "fe": [18, 3]}
+   },
+   "caveat": "peak PRINCIPAL values from an FE model driven by MRI displacements, not a layer pressure over a thickness strain; the secant 18/0.46 = 39 kPa is therefore a transferred apparent modulus, weaker evidence than the heel values"
+  }
+ ],
+ "not_found": "no in vivo apparent compressive modulus retrieved for the forefoot/toes, knee, hand, forearm, elbow, shoulder or trunk soft tissue"
+}
