@@ -883,7 +883,33 @@ done; the others have moved.
    cohort is full of. A lowest-quartile containment test would separate misplaced from enlarged;
    it is recorded as a proposal, to be applied to every subject and labelled post-hoc if
    adopted. The gate is unchanged, and the main batch still holds D1-041 (766 mL) and D1-045
-   (618 mL), predicted to fail it the same way. The sternum
+   (618 mL), predicted to fail it the same way.
+
+   **The proposal, applied to every registered uterus (post-hoc, 2026-09-10).**
+   `scripts/score_uterus_lowest_quartile.py` imports the registration's own bones, sampler and
+   ring. Known answer: it reproduces every manifest's `uterus_in_ring` exactly (18 of 18).
+   "Lowest" is along this body's own vertical (calcanei below the frontal bone: axis 1, +).
+   The test is lowest 25% of the surface >= 0.99 inside the ring, with bone <= 0.01. Volumes
+   below are in the registered frame, extracted x scale^3 (D1-017: 726.5 x 0.941^3 = 605 mL).
+
+   | subject | registered volume | as written | lowest 25% | lowest 10% | gate | proposal |
+   |---|---:|---:|---:|---:|---|---|
+   | 16 others | 46-219 mL | 1.0000 | 1.0000 | 1.0000 | PASS | PASS |
+   | D1-017 | 605.0 mL | 0.6881 | 1.0000 | 1.0000 | FAIL | PASS |
+   | **D1-035** | **142.5 mL** | **0.9830** | 1.0000 | 1.0000 | FAIL | PASS |
+
+   D1-017 is the case the proposal was built for. **D1-035 is the reason it is not adopted.** It
+   is an ordinary-sized uterus (about 133 mL extracted, near the cohort median of 104). It
+   misses the as-written threshold by 1.7% of its surface, which is the implementer's 0.99
+   rather than a number fixed in advance, and the proposal passes it too. So the proposal
+   separates "seated at the bottom" from "not seated", not enlarged from misplaced. It is more
+   permissive than its motivation, and a test like that is how a misregistration gets waved
+   through. **The gate as written stays the verdict for every subject.**
+
+   **Prediction, fixed now, before either is registered:** D1-041 (766 mL) and D1-045 (618 mL)
+   FAIL containment as written and PASS the lowest-quartile test, as D1-017 does. If either
+   fails the lowest-quartile test, it is misplaced, not merely enlarged, and it is reported as
+   such. The sternum
    (gate d1) is untouched by any breast correction; that is the skin-envelope problem.
 2. ~~**A path refitting tool.**~~ **Done.** `libosimActuators.so` already
    exported 97 `PolynomialPathFitter` symbols; what was missing was 300 lines of
