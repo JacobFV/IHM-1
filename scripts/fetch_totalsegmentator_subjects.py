@@ -9,10 +9,17 @@ the integrity gate, with an answer this script never computes itself.
 licence: CC-BY-4.0 (Zenodo record 10047292).  cite Wasserthal et al., Radiology: AI
 2023, doi 10.1148/ryai.230024.  data lands under data/raw/ (gitignored).
 """
-import argparse, csv, hashlib, io, json, struct, time, zlib, urllib.request
+import argparse, csv, hashlib, io, json, os, struct, time, zlib, urllib.request
 from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
-URL = "https://zenodo.org/records/10047292/files/Totalsegmentator_dataset_v201.zip?download=1"
+ZENODO_URL = "https://zenodo.org/records/10047292/files/Totalsegmentator_dataset_v201.zip?download=1"
+# TRANSPORT, not provenance. On 2026-09-10 zenodo's file backend answered every range request
+# with HTTP 504 at 30.5 s (six of six, /records and /api alike). A HuggingFace copy was checked
+# against the central directory cached from zenodo -- same size to the byte, all 147,361
+# members' CRC32, sizes and offsets identical (scripts/verify_totalsegmentator_mirror.py) -- so
+# it serves zenodo's bytes. Every member fetched is still checked against the zip's own CRC32.
+MIRROR_URL = "https://huggingface.co/datasets/HajihajihaJimmy/TotalSegmentator_v2/resolve/main/Totalsegmentator_dataset_v201.zip"
+URL = os.environ.get("TOTALSEG_URL", ZENODO_URL)
 OUT = ROOT / "data/raw/anatomy/totalsegmentator"
 # the members registration needs: the SAME 39 labels build_female_torso_from_totalsegmentator.py
 # registers by.  a subject carries 118 members; the breast and skin are produced by running
@@ -111,7 +118,7 @@ def main():
     manifest = dict(source="totalsegmentator", zenodo_record="10047292", version="2.0.1", licence="CC-BY-4.0",
                     citation="Wasserthal et al., Radiology: Artificial Intelligence 2023, doi:10.1148/ryai.230024",
                     selection_rule=rule,
-                    pool_size=len(pool), members=a.members, subjects={})
+                    pool_size=len(pool), members=a.members, transport=URL, subjects={})
     prior = OUT / "manifest.json"
     if prior.exists():
         # MERGE, never overwrite: a later fetch must not drop subjects an earlier one
