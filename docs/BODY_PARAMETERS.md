@@ -904,6 +904,26 @@ done; the others have moved.
    scalars must never reach FEBio's XML:** `{x!r}` writes `np.float64(-0.01)`, which FEBio reads as
    no displacement at all, silently.
 
+   **Seat it in two steps: place, then conform. Fixed 2026-09-10, before it runs.** 45 mm of
+   overlap is not tissue deformation, it is placement -- the breast is another woman's tissue where
+   a similarity registration put it, and a quasi-static solve pushing 45 mm of interpenetration out
+   is the wrong instrument for that. A surgeon seats an organ and then it conforms; so:
+   * **Step 1, rigid.** The rigid motion (translation and rotation, NO scale, so volume cannot
+     change) that minimises the sum of squared penetration depths of the base nodes measured along
+     their own outward normals, by L-BFGS over the six degrees of freedom from the registered pose.
+   * **Step 2, conform.** The sliding boundary condition exactly as judged above, from the placed
+     state.
+   * **The four per-breast gates are unchanged** -- (a) volume within 1% of the undeformed breast,
+     (b) every tet J > 0.2, (c) the two solvers within 5% of maximum displacement, (d) no flipped
+     base triangle -- and (a) stays meaningful because a rigid motion conserves volume exactly.
+   * **Reported per breast:** the rigid translation and rotation, and the penetration left after
+     step 1.
+   * **The check that keeps step 1 honest:** a breast needing more than **25 mm** of translation is
+     recorded as a REGISTRATION failure for that subject, not a seating -- at that point the
+     placement, not the tissue, is what is wrong, and the breast is reported unseated rather than
+     moved until it fits. Whether the sliding condition is right for a breast is what step 2 tests;
+     step 1 exists so that test is reachable, not to make it pass.
+
    **Uterus and ovaries: the pelvic registration, and its gates, fixed before any fitting.**
    UT-EndoMRI (owner-approved 2026-09-10; an endometriosis cohort, NOT a typical-anatomy
    reference) gives uterus and ovary labels on pelvic T2 MRI. TotalSegmentator's
