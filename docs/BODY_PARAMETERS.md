@@ -1159,8 +1159,8 @@ done; the others have moved.
 
    **Where in the sacrum, and what it rules out.** This body's sacrum spans 144 mm. The overlapping
    interior points sit at the MIDDLE of it -- 49% of its height for D2-044 and D2-026 (10-90%:
-   37-61%), 65% and 64% for D2-048 and D2-042 -- where 0% is the coccyx end and 100% the promontory.
-   (Four of the five measured; D2-073 registered after this was run and its location is not measured.)
+   37-61%), 65% and 64% for D2-048 and D2-042, 41% for D2-073 (39-42%) -- where 0% is the coccyx
+   end and 100% the promontory. **All five, 41-65%, and not one at the promontory.**
    (Resampled independently of the registration's own count: 24.1% against its 23.4% for D2-044.)
    A male promontory in the way would put the overlap HIGH, at 90-100%. It is not there. Mid-sacrum,
    S2-S3, is exactly where the rectum and the cul-de-sac lie between uterus and bone, so these uteri
