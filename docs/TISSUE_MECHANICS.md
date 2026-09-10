@@ -539,6 +539,45 @@ surface or a new joint has to answer, and they are now a short list.
 **v2 is not yet the plant's.** v1 was judged on three drops against the joint
 stops; v2 has to be judged the same way before it replaces it.
 
+#### Direction, not magnitude
+
+`scripts/measure_ligament_moments.py --tissue ...` gives each coordinate's passive
+ligament moment outside its declared range. Its summary line is a MAGNITUDE, and
+v1's pathology was a DIRECTION -- ligaments driving joints out of range instead of
+pulling them back. So every out-of-range sample is classed restoring or driving.
+
+On the **full** element set, v2 fixes the knee (v1 drove it at up to 101 N.m; v2
+restores on all 36 samples) and appears to introduce a hip-flexion drive, 0 / 18
+samples on the left and up to 37 N.m on the right.
+`scripts/measure_hip_flexion_drive.py` (gate: per-element sums reproduce the moment
+check to 4.3e-4 N.m) puts that drive on **one element per side, the ligament of the
+head of the femur**, carrying 2.4-7.1 kN in v2 and 12.9-14.7 kN in v1. It is
+inadmissible in both builds: an intra-articular ligament ~30 mm long, slack most of
+the time in a real hip, crossing a hip centre still 11-15 mm misregistered. No
+straight line from registered ends represents it.
+
+The plant only ever receives the **admissible** set, so that is the comparison
+that decides (66 elements in v1, 95 in v2):
+
+| coordinate | v1 restoring / driving (worst drive), samples past the stop | v2 |
+|---|---|---|
+| knee | 5 / 11 (0.3 N.m), 1 | **18 / 0, 13-14** |
+| ankle | 0 / 0 -- no restraint | 12 / 12 (0.1 N.m), **12** |
+| forearm pronation | 11-13 / 0, 2-4 | 20 / 2, **11** |
+| hip rotation | 26 / 0, 13 | 26 / 0, 13 |
+| hip flexion | ~0 | ~0 (the femoral-head drive is excluded) |
+| hip adduction | 5-6 / 16-18 (1.6 N.m) | 4-5 / 18-21 (**2.6 N.m**) |
+| **toe MTP** | 30 / 0, **15** | 15-16 / 13-15, **0-1** |
+| elbow flexion R | 11 / 0, 2 | 0 / 0 |
+| **total** | 169 / 70 / 77 | **192 / 107 / 109** |
+
+Net: v2's admissible set restrains the knee harder than the joint stop, adds an
+ankle restraint where v1 had none, and improves pronation. It LOSES the toe
+restraint -- consistent with the 17 deg forefoot swing the toe registration took
+(docs/SEGMENT_CONTACT_SURFACES.md) -- and the right elbow's, and its largest drive
+(hip adduction) grows from 1.6 to 2.6 N.m, still small against a 30 N.m/rad stop.
+That is arithmetic at a held pose; the drops are the dynamic test.
+
 ## What would move this next, in order
 
 1. **Per-segment registration of the atlas onto the scaffold**, before any wrap
