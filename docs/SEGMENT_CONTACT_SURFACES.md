@@ -762,3 +762,30 @@ So one smooth warp on bone correspondences alone fixes what it has correspondenc
 height, humerus, torso, most of the hand -- and fails at the two places where skin extends beyond
 the bones it is fitted to (the toe tips, the forefoot's lateral edge) and where the per-segment
 maps it interpolates disagree across a joint thinner than the skin over it (the MTP).
+
+#### Next attempt: a warp that cannot fold. ONE change, and the gates do not move (2026-09-10)
+
+A thin-plate spline is free to turn a surface over, and gate 4 says it did. The instrument is
+therefore replaced by one that cannot: `W(x) = G x + phi(G x)`, where `phi` is the flow of a
+STATIONARY VELOCITY FIELD integrated by scaling-and-squaring. A smooth velocity field's flow is a
+diffeomorphism, so det J > 0 holds by construction rather than by luck, and the check becomes
+numerical (enough squaring steps that the per-step displacement is small) instead of a gate the
+fit can fail.
+
+**Exactly one thing changes.** The correspondences are the same 4,410, built the same way; the
+regularisation is chosen by the same rule (5-fold CV on the bone correspondences alone, largest
+value within 1% of the minimum held-out RMS); the zero-warp control and gates 1-4 and their
+thresholds are unchanged -- including calcn and toes at 0.95, which this attempt missed at 0.926
+and 0.868-0.880. Changing the instrument after a FAIL is allowed; moving the line it failed
+against is not, and it has not moved. Additionally required, because a flow is not a spline: the
+velocity field's integration must be verified against its own known answer -- a constant velocity
+field flows to a pure translation, and the composed forward and inverse flows must return every
+skin vertex to itself within 1e-9 m.
+
+**Predicted here, before it runs, because it separates the two causes the diagnosis names:**
+folds go to ZERO (the instrument forbids them), and enclosure at calcn and toes is expected to
+IMPROVE BUT STILL FAIL, because those failures are skin extrapolated beyond the bones it is
+fitted to, which a different smoothness class does not supply. If the folds go and toes still
+read ~0.87, the remaining problem is correspondence coverage, not the warp family, and the next
+step is anchors for skin that has no bone under it. If the toes instead reach 0.95, the fold and
+the coverage story were one thing, and this note was wrong about it.
