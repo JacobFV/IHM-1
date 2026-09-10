@@ -578,6 +578,41 @@ restraint -- consistent with the 17 deg forefoot swing the toe registration took
 (hip adduction) grows from 1.6 to 2.6 N.m, still small against a 30 N.m/rad stop.
 That is arithmetic at a held pose; the drops are the dynamic test.
 
+#### The drops: v2 halves the worst excursion when added to the stops
+
+`scripts/measure_tissue_mechanics.py --tissue data/derived/tissue-force-elements-v2`,
+the same three drops that judged v1. Gate: the arms that carry no tissue at all
+reproduce v1's recorded excursions on every drop to 0.01 deg (bare 17.43 / 30.69 /
+30.27, stops 5.30 / 6.62 / 5.96).
+
+Worst excursion past the declared ranges, deg:
+
+| arm | prone | prone_high | prone_rolled | mean |
+|---|---:|---:|---:|---:|
+| bare | 17.43 | 30.69 | 30.27 | 26.13 |
+| stops | 5.30 | 6.62 | 5.96 | 5.96 |
+| v1 admissible | 6.08 | 30.47 | 18.50 | 18.35 |
+| **v2 admissible** | **5.15** | **17.86** | **7.65** | **10.22** |
+| v1 stops + admissible | 4.07 | 6.39 | 5.35 | 5.27 |
+| **v2 stops + admissible** | **2.12** | **2.91** | **3.36** | **2.80** |
+| v2 full set | 31.41 | 33.30 | 31.90 | 32.20 |
+
+(v1's prone stops + admissible is not recorded separately; 4.07 is the documented
+5.27 mean less the two recorded drops.)
+
+* **Added to the stops, v2's admissible ligaments halve the worst excursion on
+  every drop**, 5.96 -> 2.80 deg mean, where v1's took it 5.96 -> 5.27.
+* **Alone, v2 does not replace the stops** -- 17.86 against 6.62 on the high drop
+  -- though it roughly halves what v1 did alone (18.35 -> 10.22 mean).
+* **The full set is worse than no tissue on every drop** (32.20 against 26.13),
+  because it carries the inadmissible elements, including the femoral-head ligament
+  that drives hip flexion. Only the admissible set is ever a candidate for the plant.
+
+So v2's admissible set is the recommended tissue set for the participant plant,
+added to the joint stops, not in place of them. The measurement scripts still
+default to v1 so every result already recorded reproduces; switching the plant's
+default is a separate, deliberate step.
+
 ## What would move this next, in order
 
 1. **Per-segment registration of the atlas onto the scaffold**, before any wrap
