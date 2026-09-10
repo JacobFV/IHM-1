@@ -690,3 +690,25 @@ mediated by fat, muscle and skin rather than bone. Two routes were checked:
   the outer 3 mm of the body, so where the abdominal wall thins some deep fat can join it; the
   lower-abdominal depths may include deep fat. This gives a fat layer for three female subjects,
   not for this body; carrying one onto this body's skin is the skin-envelope problem.
+
+
+## Articular cartilage: the knee, and its gates fixed before any data is seen (2026-09-10)
+
+This body has no articular cartilage. OAIZIB-CM (cc-by-nc-4.0; 507 OAI knee MRIs; labels femur,
+femoral cartilage, tibia, medial and lateral tibial cartilage) supplies it for the knee. Only the
+label archives are taken: the femur and tibia carry the registration, the cartilage is the
+geometry. The registration follows the pelvic one -- a knee MRI crops both bones, so one-way ICP
+pulls the MRI's partial bone surfaces onto this body's COMPLETE femur and tibia, never the reverse.
+
+Gates, committed before a single subject is registered:
+* **known answer:** this body's own femur and tibia, truncated the way a knee MRI field of view
+  crops them, moved by a known similarity, are recovered within 2 mm, 2 deg and 1%.
+* **which knee:** OAI images one knee per scan. Each subject is fitted to BOTH of this body's
+  knees; the lower one-way residual must win by at least 20%, or the side is undetermined and
+  the subject is excluded.
+* **placement:** at least 95% of the mapped femoral cartilage lies within 3 mm of this body's
+  femoral surface and at most 1% inside the femur; the same for tibial cartilage and the tibia.
+* **joint space:** mapped femoral and tibial cartilage overlap by at most 1% of the smaller
+  volume at this body's reference pose.
+Reported, not judged: cartilage thickness (OAI knees are older and often osteoarthritic, so
+thin or eroded cartilage is expected and is the cohort's, not the registration's).
