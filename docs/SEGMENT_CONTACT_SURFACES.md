@@ -618,6 +618,29 @@ What the failure is made of, measured after the verdict and reported, not used t
   digitorum brevis, slightly under their 7.7 mm median. Heel strain at the plantar h would be
   0.42, still inside gate 3.
 
-**Next, and it is a new pre-registration, not a rescore of this one:** a stance pose solved
-against the skin (no vertex below the floor at t = 0), and an in vivo modulus for the plantar
-forefoot pad, before the stance is run again. The drops wait for the stance to pass.
+~~Next: a stance pose solved against the skin, and an in vivo forefoot modulus.~~ **Withdrawn
+the same day, before anything was run on it: the pose is not the cause, the foot registration
+is, and a pose solved against this skin would put bone through it.**
+
+A probe at t = 0 (one stream, 17.9 s to start, pose applied exactly): the heel skin's lowest
+vertex is **35.7 mm ABOVE** the floor while the toes skin is 8.0-8.5 mm below it. The foot is
+tipped onto its toes before anything moves; the heel compression in the table came later, as
+the body rotated down. And in each segment's own frame the heel skin's lowest point sits
+**20 mm above** the scaffold calcaneus's lowest point (8% of that bone's vertices inside its
+skin piece), where the canonical anatomy puts the plantar skin ~15 mm BELOW its own calcaneus
+(the plantar-band depth above). Levelling the skin on the floor would therefore drive the
+scaffold's calcaneus ~20 mm through the heel skin -- the one contact the programme forbids.
+
+This is the registration defect already recorded above (whole-skin enclosure calcn 0.75, toes
+0.78-0.80), now with its size. Against the scaffold's own foot bones, the global map leaves the
+atlas calcaneus group at 15.0 mm RMS (toes 8.0); fitting them alone takes a similarity with
+**scale 1.22** and a **20 deg** rotation from the global map (toes 1.21 and 17 deg). The
+scaffold's foot is about a fifth larger than this specimen's, relative to the rest of the body,
+which one global similarity cannot absorb; and carrying the skin with per-segment rigid maps
+is already measured to make it worse (toes 0.10-0.16).
+
+So skin-mediated stance is blocked on the item this file already names -- a skin carried by
+something continuous across joints -- not on the contact layer. The layer map (per-segment
+depth, in vivo modulus, V2 engine path) is built, gated and ready for it; its heel behaves like
+a heel. The toe pulp has no in vivo modulus in the literature retrieved
+(`data/sources/in-vivo-soft-tissue-compression.json`, `not_found`).

@@ -45,5 +45,19 @@
    "caveat": "peak PRINCIPAL values from an FE model driven by MRI displacements, not a layer pressure over a thickness strain; the secant 18/0.46 = 39 kPa is therefore a transferred apparent modulus, weaker evidence than the heel values"
   }
  ],
- "not_found": "no in vivo apparent compressive modulus retrieved for the forefoot/toes, knee, hand, forearm, elbow, shoulder or trunk soft tissue"
+ "forefoot_thickness_only": [
+  {
+   "citation": "Sanchez-Rodriguez R, Ponce-Barrero A, Fontan-Jimenez M, et al. Preliminary reference values for plantar fat pad thickness beneath the metatarsal heads and its relationship with body mass index. Healthcare (Basel) 2025;13(24):3219.",
+   "doi": "10.3390/healthcare13243219",
+   "values": "fat pad (dermis to flexor tendon), non-weight-bearing, n = 35 (17 M, 18 F), age 22.7, BMI 24.2: MTH1 6.6 +/- 1.0, MTH2 7.1 +/- 0.9, MTH3 6.9 +/- 0.9, MTH4 6.8 +/- 0.9, MTH5 5.8 +/- 0.9 mm; no sex difference; no toe or hallux values"
+  },
+  {
+   "citation": "Garcia CA, Hoffman SL, Hastings MK, Klaesner JW, Mueller MJ. Effect of metatarsal phalangeal joint extension on plantar soft tissue stiffness and thickness. Foot (Edinb) 2008;18(2):61-67.",
+   "doi": "10.1016/j.foot.2007.12.002",
+   "values": "total plantar soft tissue under the metatarsal heads 8.9-13.5 mm with the MPJ neutral, -8.8% with MPJ extension; K1 stiffness +81-88% with extension (abstract gives no modulus in kPa); n = 17"
+  }
+ ],
+ "searched_without_a_modulus": "Parker D et al. 2012, J Foot Ankle Res 5(Suppl 1):O39, doi:10.1186/1757-1146-5-S1-O39 -- a conference abstract whose text is not retrievable (PMC served a reCAPTCHA, which is not bypassed; Europe PMC carries metadata only)",
+ "note_on_segments": "in the plant's OpenSim scaffold the metatarsal heads ride on calcn and the toes segment is the phalanges alone, so the toes skin patch is the toe pulp, a site none of these sources measures",
+ "not_found": "no in vivo apparent compressive modulus retrieved for the forefoot/toe pulp, knee, hand, forearm, elbow, shoulder or trunk soft tissue"
 }
