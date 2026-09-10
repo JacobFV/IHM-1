@@ -96,6 +96,7 @@ ANATOMY = ROOT / "data/derived/canonical/anatomy.json"
 BINDING = ROOT / "data/derived/anatomy-segment-binding/binding.json"
 MODEL = ROOT / "data/models/engineering_stance_v1/model.osim"
 MATERIALS = ROOT / "data/derived/tissue-material-candidate-v1/materials.json"
+SEGMENT_REGISTRATION = ROOT / "data/derived/anatomy-segment-registration/registration.json"
 OUT = ROOT / "data/derived/tissue-force-elements-v1"
 
 # First match wins.  The order is the one `scripts/audit_joint_substrate.py`
@@ -273,6 +274,15 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--out", type=Path, default=OUT)
+    # WHICH atlas->scaffold map carries each ligament end.  `global` is the one
+    # similarity from binding.json and reproduces tissue-force-elements-v1 exactly.
+    # `per-segment` maps each end by ITS OWN bone's similarity from
+    # scripts/fit_segment_registration.py.  Measured on the 51 elements v1 rejects:
+    # the global map puts the atlas's articular centres 20-26 mm from the scaffold's
+    # at knee, ankle and hip, a cruciate is 33-37 mm long, and carrying the ends
+    # per segment takes those 51 from 0 admissible to 30 (every cruciate and every
+    # collateral).  It does not fix everything: 21 still fail, and two get worse.
+    parser.add_argument("--registration", choices=("global", "per-segment"), default="global")
     args = parser.parse_args()
     started = time.time()
 
@@ -311,8 +321,18 @@ def main():
     rest = model.forward(reference_pose)
     parent = {j["child"]: j["parent"] for j in model.joints}
 
+    segment_map, segment_scale = {}, {}
+    if args.registration == "per-segment":
+        fitted = json.loads(SEGMENT_REGISTRATION.read_text())
+        if fitted["reference_pose_rad"] != reference_pose:
+            raise ValueError("per-segment registration was fitted at a different pose than binding.json's")
+        for name, entry in fitted["segments"].items():
+            segment_map[name] = np.asarray(entry["atlas_to_ground"], float)
+            segment_scale[name] = float(entry["scale"])
+
     def to_local(point_atlas, segment):
-        world = inverse[:3, :3] @ point_atlas + inverse[:3, 3]
+        carry = segment_map.get(segment, inverse)
+        world = carry[:3, :3] @ point_atlas + carry[:3, 3]
         transform = rest[segment]
         return np.linalg.inv(transform[:3, :3]) @ (world - transform[:3, 3])
 
@@ -400,7 +420,12 @@ def main():
         # Atlas metric -> OpenSim metric.  The similarity carries a 0.963 scale,
         # so a volume read in the atlas is scale^3 of the same volume on the
         # body the engine integrates.
-        volume_model = volume / scale ** 3
+        # Per segment, the two ends carry different scales.  The volume is taken
+        # through their geometric mean: a stated choice, not a derivation, and it
+        # moves each element's cross-section by at most the spread of the two.
+        element_scale = (np.sqrt(segment_scale[segments[a]] * segment_scale[segments[b]])
+                         if segment_scale else scale)
+        volume_model = volume / element_scale ** 3
         section = volume_model / length if length > 0 else float("nan")
         stiffness = young_pa * section
         row.update(status="two_segment", body1=segments[a], body2=segments[b],
@@ -631,6 +656,11 @@ def main():
               "stiffness for this specimen. What it is NOT: an anatomical attachment, a "
               "subject-specific ligament property, or a claim that a structure absent from this "
               "list has no mechanics.")
+    manifest["registration"] = dict(
+        choice=args.registration,
+        source=(str(SEGMENT_REGISTRATION.relative_to(ROOT)) if args.registration == "per-segment"
+                else "binding.json similarity_atlas_from_opensim_ground"),
+        sha256=(sha256(SEGMENT_REGISTRATION) if args.registration == "per-segment" else sha256(BINDING)))
     (out / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
 
     print()

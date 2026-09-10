@@ -40,6 +40,22 @@ from scipy.spatial.transform import Rotation
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "data/derived/anatomy-segment-registration"
+FREE_REGISTRATION = OUT / "registration.json"
+# ROTATION MODE.  Point-to-point ICP cannot determine an elongated bone's spin about
+# its own long axis, and the free fit shows it: femur 19.8 deg of rotation relative to
+# the global map with only 1.3 deg off-axis, radius 32-36 deg almost all spin.  Those
+# spins move a ligament's attachment round the bone, so any ligament result that rides
+# on them is noise.  Two controls:
+#   global    rotation held at the global map's; only translation and scale are fitted
+#   no-twist  each free fit's rotation with its twist about the bone's long axis removed
+#             (swing kept), then translation and scale refitted with that rotation held
+import argparse
+_ap = argparse.ArgumentParser()
+_ap.add_argument("--rotation", choices=("free", "global", "no-twist"), default="free")
+_ap.add_argument("--out", type=Path, default=None)
+ARGS = _ap.parse_args()
+if ARGS.out is not None: OUT = ARGS.out
+OUT.mkdir(parents=True, exist_ok=True)
 N_FIT, N_FIT_TORSO, N_EVAL, TRIM, ITERS, TOL = 8000, 20000, 8000, 0.10, 400, 1e-12
 
 def load(name, rel):
@@ -84,6 +100,7 @@ def osim_meshes():
 
 binding = json.loads(B.BINDING.read_text())
 G = np.linalg.inv(np.asarray(binding["similarity_atlas_from_opensim_ground"], float))   # atlas -> ground, global
+RG = G[:3, :3] / np.cbrt(np.linalg.det(G[:3, :3]))   # the global map's rotation
 ref = binding["reference_pose_rad"]; model = render.OsimModel(B.MODEL); rest = model.forward(ref)
 parent = {j["child"]: j["parent"] for j in model.joints}
 
@@ -96,15 +113,24 @@ def sample(V, F, n, rng):
     k = rng.choice(len(F), n, p=a / a.sum()); r1 = np.sqrt(rng.random(n)); r2 = rng.random(n); t = tri[k]
     return (1 - r1)[:, None] * t[:, 0] + (r1 * (1 - r2))[:, None] * t[:, 1] + (r1 * r2)[:, None] * t[:, 2]
 
-def icp(src, tgt, M0):
-    """symmetric trimmed ICP; returns the atlas->target similarity and iterations used."""
+def icp(src, tgt, M0, R_fixed=None):
+    """symmetric trimmed ICP; returns the atlas->target similarity and iterations used.
+
+    with R_fixed, the rotation is held and only scale and translation are solved:
+    s = sum((R a_c) . b_c) / sum(|a_c|^2), t = b_mean - s R a_mean.
+    """
     tt = cKDTree(tgt); M = M0.copy()
     for k in range(1, ITERS + 1):
         S = apply(M, src)
         d1, j1 = tt.query(S); d2, j2 = cKDTree(S).query(tgt)
         k1 = d1 <= np.quantile(d1, 1 - TRIM); k2 = d2 <= np.quantile(d2, 1 - TRIM)
         A = np.vstack([src[k1], src[j2[k2]]]); Bt = np.vstack([tgt[j1[k1]], tgt[k2]])
-        s, R, t = bind.umeyama(A, Bt); Mn = sim(s, R, t)
+        if R_fixed is None:
+            s, R, t = bind.umeyama(A, Bt)
+        else:
+            R = R_fixed; ac, bc = A - A.mean(0), Bt - Bt.mean(0)
+            s = float(((ac @ R.T) * bc).sum() / (ac ** 2).sum()); t = Bt.mean(0) - s * R @ A.mean(0)
+        Mn = sim(s, R, t)
         if np.abs(Mn - M).max() < TOL: return Mn, k
         M = Mn
     return M, ITERS
@@ -117,8 +143,14 @@ def residual(M, src, tgt):
 say("== gate a: recovery of a known similarity ==")
 rng = np.random.default_rng(0)
 Va, Fa = atlas_mesh("femur_l"); P = sample(Va, Fa, N_FIT, rng)
-M_true = sim(1.04, Rotation.from_rotvec(np.deg2rad(6) * np.array([1, 2, 3]) / np.sqrt(14)).as_matrix(), np.array([0.015, -0.010, 0.008]))
-M_fit, it = icp(P, apply(M_true, P), np.eye(4))
+# in a fixed-rotation mode the gate exercises the fixed-rotation solver: recover a known
+# scale and translation with the rotation held at the global map's
+if ARGS.rotation == "free":
+    M_true = sim(1.04, Rotation.from_rotvec(np.deg2rad(6) * np.array([1, 2, 3]) / np.sqrt(14)).as_matrix(), np.array([0.015, -0.010, 0.008]))
+    M_fit, it = icp(P, apply(M_true, P), np.eye(4))
+else:
+    M_true = sim(1.04, RG, np.array([0.015, -0.010, 0.008]))
+    M_fit, it = icp(P, apply(M_true, P), sim(1.0, RG, np.zeros(3)), R_fixed=RG)
 terr, serr = float(np.abs(M_fit - M_true).max()), abs(scale_of(M_fit) - 1.04)
 say(f"GATE a: transform error {terr:.2e} (< 1e-6), scale error {serr:.2e} (< 1e-9), {it} iterations -> "
     + ("PASS" if terr < 1e-6 and serr < 1e-9 else "FAIL"))
@@ -129,13 +161,31 @@ if not (terr < 1e-6 and serr < 1e-9):
 say("\n== per-segment fit (atlas bone group -> OpenSim bone mesh at the binding reference pose) ==")
 om = osim_meshes()
 fits = {}
+Rfix = {}
+if ARGS.rotation == "global":
+    Rfix = {seg: RG for seg in segments}
+elif ARGS.rotation == "no-twist":
+    free = json.loads(FREE_REGISTRATION.read_text())["segments"]
+    say(f"{'segment':10s} {'removed twist':>14s} {'kept swing':>11s}")
+    for seg in segments:
+        Va_, _ = atlas_mesh(seg); g_ = apply(G, Va_)
+        axis = np.linalg.eigh(np.cov((g_ - g_.mean(0)).T))[1][:, -1]
+        Mf = np.asarray(free[seg]["atlas_to_ground"], float)
+        D = Rotation.from_matrix((Mf[:3, :3] / scale_of(Mf)) @ RG.T); q = D.as_quat()
+        twist = Rotation.from_quat([*((q[:3] @ axis) * axis), q[3]]); swing = D * twist.inv()
+        Rfix[seg] = swing.as_matrix() @ RG
+        say(f"{seg:10s} {np.degrees(twist.magnitude()):11.1f} deg {np.degrees(swing.magnitude()):8.1f} deg")
 say(f"{'segment':10s} {'scale':>7s} {'iters':>5s} {'RMS global':>11s} {'RMS per-seg':>12s} {'trimmed90 g':>12s} {'trimmed90 s':>12s}   mm")
 for seg in segments:
     r = np.random.default_rng(segments.index(seg) + 1)
     Va, Fa = atlas_mesh(seg); Vo, Fo = om[seg]; Vo_g = apply(rest[seg], Vo)
     n = N_FIT_TORSO if seg == "torso" else N_FIT
     src, tgt = sample(Va, Fa, n, r), sample(Vo_g, Fo, n, r)
-    M, it = icp(src, tgt, G)
+    if seg in Rfix:
+        Rf = Rfix[seg]; s0 = scale_of(G); c = src.mean(0)
+        M, it = icp(src, tgt, sim(s0, Rf, apply(G, c[None])[0] - s0 * Rf @ c), R_fixed=Rf)
+    else:
+        M, it = icp(src, tgt, G)
     es, et = sample(Va, Fa, N_EVAL, r), sample(Vo_g, Fo, N_EVAL, r)
     rg, rgt = residual(G, es, et); rs, rst = residual(M, es, et)
     fits[seg] = dict(M=M, iters=it, scale=scale_of(M), rms_global_m=rg, rms_segment_m=rs, trimmed_global_m=rgt, trimmed_segment_m=rst)
@@ -147,7 +197,7 @@ def sha(p): return hashlib.sha256(Path(p).read_bytes()).hexdigest()
 inputs = {str(Path(p).relative_to(ROOT)): sha(p) for p in
           (B.ANATOMY, B.BINDING, B.MODEL, ROOT / bscm.BINDING, ROOT / bscm.EVIDENCE)}
 (OUT / "registration.json").write_text(json.dumps(dict(
-    schema="ihm.anatomy-segment-registration.v1", frame_from="bodyparts3d-display-m (atlas canonical)",
+    schema="ihm.anatomy-segment-registration.v1", rotation_mode=ARGS.rotation, frame_from="bodyparts3d-display-m (atlas canonical)",
     frame_to="OpenSim ground at binding.json reference_pose_rad", reference_pose_rad=ref,
     method=("per-segment similarity, symmetric trimmed point-to-point ICP on area-weighted surface samples "
             "(atlas bone group -> OpenSim bone mesh of the same body), initialised from the global binding similarity"),
