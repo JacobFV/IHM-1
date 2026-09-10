@@ -644,3 +644,26 @@ something continuous across joints -- not on the contact layer. The layer map (p
 depth, in vivo modulus, V2 engine path) is built, gated and ready for it; its heel behaves like
 a heel. The toe pulp has no in vivo modulus in the literature retrieved
 (`data/sources/in-vivo-soft-tissue-compression.json`, `not_found`).
+
+### A skin carrier continuous across joints: gates fixed before it is built (2026-09-10)
+
+The instrument: one smooth space warp from atlas space to the scaffold's ground, fitted to
+correspondences between the atlas bone groups and the scaffold's own bone meshes (the
+per-segment fits above supply them), then applied to the WHOLE canonical skin before it is cut
+per segment. A single warp has no seams, so it cannot do what blended per-segment maps did at
+the joints. It can fold, which gate 4 is for.
+
+1. **Bones (known answer):** on every segment, the warped atlas bone group lies no further from
+   the scaffold's bone mesh (RMS nearest-surface) than the per-segment similarity leaves it, plus
+   1 mm. A warp with more freedom than a similarity that fits the bones worse is fitted wrong.
+2. **Enclosure (the goal):** whole-skin enclosure (`measure_skin_enclosure_whole.py`, the
+   partition-free measure) mean **>= 0.95**, and calcn and toes each **>= 0.95** -- against
+   0.888 / 0.75 / 0.78-0.80 on the global map and a ceiling of 0.997 (toes 0.966-0.968).
+3. **The heel sits on its pad:** in the calcn frame, heel skin's lowest point minus the scaffold
+   calcaneus's lowest point in **[-25, -5] mm** (in vivo pad 9.6-17.7 mm, Teng 2022; this
+   specimen's plantar band 14.8-16.5 mm). Today it is +20 mm.
+4. **No folding:** the warp's Jacobian determinant > 0 at every skin vertex, and no skin triangle
+   inverts. One fold is a FAIL.
+
+Reported, not gated: per-segment skin area change, the warp's bending energy, and the stance
+arm (layer map, this skin) scored by `score_skin_layer_map.py` with its three gates unchanged.
