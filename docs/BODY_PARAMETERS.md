@@ -682,8 +682,42 @@ done; the others have moved.
    cross-section for a breast; the coverage gates were added because of it, and a
    negative control shows they refuse it. What this is and is not: one clinical
    subject's anatomy as a segmentation model drew it, and "breast" is a single
-   soft-tissue label -- no gland, duct, nipple or areola. Registering it into this
-   body is the step in progress.
+   soft-tissue label -- no gland, duct, nipple or areola.
+
+   **Registered, and one gate still fails, by millimetres.**
+   `scripts/register_female_torso.py` fits one similarity from s0790's thorax to this
+   body on 39 bone correspondences (41 BodyParts3D entities; four bones exist twice,
+   once from Z-Anatomy -- T5, T11, T12 and the manubrium -- and only one copy may
+   enter), refined by ICP (scale 1.064, trimmed surface RMS 5.0 mm).
+   * a: recovers a known similarity, 6.4e-16. **PASS**
+   * b: leave-one-bone-out median 10.5 mm against a 29.7 mm neighbouring-rib null. **PASS**
+   * c: laterality after mapping. **PASS**
+   * d: this body's ribs are inside the mapped female trunk (0.997 / 0.999), but its
+     sternum is only 0.767 inside, and 4-5% of its rib vertices sit inside the mapped
+     breasts. **FAIL**
+
+   The failure has been taken apart:
+   * **Not the xiphoid.** TotalSegmentator's sternum label stops short of it (mapped,
+     it spans -66.5..+80.4 mm along this body's sternal axis; the xiphoid lies at
+     -91..-71), which biased the correspondence -- but refitting without it moves the
+     sternum residual 23.8 -> 20.4 mm and gate d **not at all** (0.767 both ways)
+     (`scripts/measure_sternum_correspondence.py`).
+   * **A symmetric forward offset of this body's chest wall.**
+     `scripts/measure_female_chest_wall_offset.py`, classifying every point first:
+     the sternum points outside the female trunk are 95-97% ANTERIOR of it, by a
+     median 2-4 mm; the rib points inside the breasts are ribs 2-7 on both sides,
+     deepest at rib 5 (median 8.0 / 8.3 mm, max 13.9 / 13.6 mm), tapering to 2-3 mm at
+     ribs 2 and 7. That is this body's chest wall bulging about a centimetre further
+     forward across the breast base -- a chest-SHAPE difference at the scale of the
+     fit's own residual, not a breast on the wrong ribs.
+
+   **What would move it next, and why it is not done yet.** The correction is local:
+   seat each breast on this body's chest wall rather than refit the thorax. It is
+   deferred for one reason that is not caution. A correction built to clear the ribs
+   passes the rib gate by construction, so that gate stops being able to judge it; and
+   whether the offset is s0790's or systematic between this body's chest and female
+   chests in general decides the design. Only a second subject answers that, and the
+   field-of-view screen is fetching them.
 2. ~~**A path refitting tool.**~~ **Done.** `libosimActuators.so` already
    exported 97 `PolynomialPathFitter` symbols; what was missing was 300 lines of
    driver. A refit of the unchanged model is 16.7× closer to the model's own
