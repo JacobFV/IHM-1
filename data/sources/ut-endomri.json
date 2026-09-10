@@ -4,7 +4,7 @@
   "modality": "pelvic MRI with structural segmentation labels",
   "role": "candidate source of UTERUS and OVARY geometry, of which this repository has zero entities",
   "access": "Zenodo record 13749613 carries NO licence field (license, rights and access_conditions all null). The terms are stated in the description's 'User Agreement': 'available for free use exclusively in non-commercial scientific research', and any publication must cite Liang et al., 'A Multi-Modal Pelvic MRI Dataset for Deep Learning-Based Pelvic Organ Segmentation in Endometriosis'. IRB: UTHealth CPHS protocol HSC-SBMI-22-0184.",
-  "status": "catalogued_verified_not_acquired_terms_need_owner_decision",
+  "status": "catalogued_verified_owner_approved_acquiring",
   "ingested": false,
   "raw_path": null,
   "derived_manifest": null,
@@ -30,5 +30,13 @@
     "the relayed 'CC-BY licence' is WRONG: there is no licence on the record, and the stated terms are non-commercial scientific research only",
     "the relayed 'second single-centre set of 81 subjects' is 82"
   ],
-  "decision_needed": "Whether this programme qualifies as 'exclusively non-commercial scientific research' is the owner's call, not an agent's. Until it is made, nothing from this record is downloaded, and no derived uterus or ovary geometry is committed to a public repository, since a public derived mesh is redistribution under terms that restrict use."
+  "owner_decision": {
+    "date": "2026-09-10",
+    "decision": "The programme owner confirmed that this programme is non-commercial scientific research within the record's User Agreement ('available for free use exclusively in non-commercial scientific research').",
+    "obligations": [
+      "cite Liang et al., 'A Multi-Modal Pelvic MRI Dataset for Deep Learning-Based Pelvic Organ Segmentation in Endometriosis', in any publication using it",
+      "raw data and derived geometry stay out of git (data/raw and data/derived are gitignored); nothing from this record is redistributed",
+      "the endometriosis caveat stays on every derived artefact: these uteri and ovaries come from a pathology-selected cohort and are not a typical-anatomy reference"
+    ]
+  }
 }
