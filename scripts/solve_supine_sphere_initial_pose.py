@@ -18,6 +18,7 @@ from scipy.optimize import least_squares, brentq
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from ihm.native.mechanical_stream import NativeMechanicalStream
+from ihm.body_parameters import MECHANICAL_TARGET_MASS_KG
 
 
 def solve(max_nfev=80, seed_path=None):
@@ -25,7 +26,7 @@ def solve(max_nfev=80, seed_path=None):
     started = time.monotonic()
     protocol_sha256 = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
     stream = NativeMechanicalStream(ROOT, output/'native', environment='supine',
-        target_mass_kg=77.6122029,
+        target_mass_kg=MECHANICAL_TARGET_MASS_KG,
         augmented_registration='data/derived/mechanics/whole_body_arm26_v2/registration.json')
     def write(name, data):
         (output/name).write_text(json.dumps(data, indent=2, allow_nan=False)+'\n')
@@ -95,7 +96,7 @@ def solve(max_nfev=80, seed_path=None):
         after = stream._request('observe')
         unchanged = all(before[k] == after[k] for k in ('time_s','coordinates'))
         artifact = dict(schema='ihm.native-initial-pose.v1', environment='supine',
-            target_mass_kg=77.6122029, coordinates=best['coordinates'],
+            target_mass_kg=MECHANICAL_TARGET_MASS_KG, coordinates=best['coordinates'],
             protocol_sha256=protocol_sha256, posture_bounds_rad=posture_bounds,
             accepted_equilibrium=False, native_static_residual=native,
             model_sha256=hashlib.sha256((output/'native/inputs/subject_walk_scaled.osim').read_bytes()).hexdigest(),

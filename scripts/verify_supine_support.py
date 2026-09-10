@@ -15,6 +15,7 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
+from ihm.body_parameters import MECHANICAL_TARGET_MASS_KG
 STAGES = (.02, .1, .3, .6, 1.)
 LIMITS = dict(balance_relative_weight=.02, acceleration_g=.02,
               kinetic_j_kg=5e-5, kinetic_slope_j_kg_s=1e-4,
@@ -157,7 +158,7 @@ def run_native(args):
     signal.setitimer(signal.ITIMER_REAL, args.wall_budget_s)
     try:
         write('protocol.json', report)
-        plant = ArticulatedBodyPlant(ROOT, output/'plant', environment='supine', target_mass_kg=77.6122029,
+        plant = ArticulatedBodyPlant(ROOT, output/'plant', environment='supine', target_mass_kg=MECHANICAL_TARGET_MASS_KG,
                                      augmented_registration='data/derived/mechanics/whole_body_arm26_v2/registration.json')
         native = plant.native.snapshot()
         assert len(native['muscles']) == 92

@@ -28,10 +28,11 @@ import numpy as np
 from ihm.assembly.articulated import ArticulatedBodyPlant
 from ihm.assembly.environment_dynamics import EnvironmentDynamics
 from ihm.assembly.world_frame import GravityAlignedWorldFrame
+from ihm.body_parameters import MECHANICAL_TARGET_MASS_KG
 
 ROOT = Path(__file__).resolve().parents[1]
 REGISTRATION = 'data/derived/mechanics/whole_body_lumbar_current/registration.json'
-MASS_KG = 77.6122029
+MASS_KG = MECHANICAL_TARGET_MASS_KG
 # The gravity direction each environment template is authored around. The whole
 # point of the correction is that the body does NOT share these axes natively.
 AUTHORED = {'supine': ([0., 0., -1.], 2), 'upright': ([0., -1., 0.], 1)}

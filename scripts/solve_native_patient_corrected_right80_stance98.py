@@ -11,6 +11,7 @@ from scipy.optimize import least_squares,lsq_linear
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from ihm.native.mechanical_stream import NativeMechanicalStream
 from ihm.assembly.embodied import _prepare_mechanical_registration
+from ihm.body_parameters import MECHANICAL_TARGET_MASS_KG
 ROOT=Path(__file__).resolve().parents[1]
 parser=argparse.ArgumentParser()
 parser.add_argument('--seed',required=True)
@@ -24,7 +25,7 @@ SEED=ARGS.seed
 OUT=ROOT/ARGS.output
 if ARGS.right_clearance_m is not None and not 0<=ARGS.right_clearance_m<=.04:raise ValueError('Bounded approach clearance required')
 if ARGS.right_load_fraction is not None and not 0<ARGS.right_load_fraction<.95:raise ValueError('Bounded first-contact load required')
-TARGET_MASS_KG=77.6122029
+TARGET_MASS_KG=MECHANICAL_TARGET_MASS_KG
 sha=lambda data:hashlib.sha256(data).hexdigest()
 
 def main():

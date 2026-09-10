@@ -31,10 +31,11 @@ from pathlib import Path
 
 from ihm.assembly.articulated import ArticulatedBodyPlant
 from ihm.assembly.snapshot_data import clone_snapshot_data
+from ihm.body_parameters import MECHANICAL_TARGET_MASS_KG
 
 ROOT = Path(__file__).resolve().parents[1]
 REGISTRATION = 'data/derived/mechanics/whole_body_lumbar_current/registration.json'
-MASS_KG = 77.6122029
+MASS_KG = MECHANICAL_TARGET_MASS_KG
 
 # Calls per simulated second observed in a profiled 50-step upright run with the
 # trained cortical stance controller, a play-floor scene and a 5 ms exchange.

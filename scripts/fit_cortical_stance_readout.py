@@ -13,6 +13,7 @@ import numpy as np
 import torch
 from ihm.native.cortical_stance import load_cortical_stance
 from ihm.native.stance_lqr import NativeStanceLQR
+from ihm.body_parameters import MECHANICAL_TARGET_MASS_KG
 
 
 def sha(path):return hashlib.sha256(Path(path).read_bytes()).hexdigest()
@@ -29,7 +30,7 @@ def main():
  paths.append(ROOT/'data/research/locomotion_control/patient_slow_lqr_delay4_com_push/trajectory.json')
  out=ROOT/args.output;out.mkdir(parents=True,exist_ok=False)
  policy,artifact=load_cortical_stance(source,dt_s=.01)
- teacher=NativeStanceLQR(teacher_path,model_sha256=artifact['provenance']['model_sha256'],dt_s=.01,target_mass_kg=77.6122029)
+ teacher=NativeStanceLQR(teacher_path,model_sha256=artifact['provenance']['model_sha256'],dt_s=.01,target_mass_kg=MECHANICAL_TARGET_MASS_KG)
  if not policy.reference_normalization:raise ValueError('Paired-reference cortical normalization required')
  assert policy.muscle_names==teacher.muscle_names and policy.state_names==teacher.state_names
  architecture={'sites':policy.dyn.n,'encoder_kind':policy.encoder_kind,

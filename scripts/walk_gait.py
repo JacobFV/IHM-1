@@ -48,10 +48,11 @@ from scipy.linalg import expm, solve_discrete_are
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from ihm.native.mechanical_stream import NativeMechanicalStream  # noqa: E402
+from ihm.body_parameters import MECHANICAL_TARGET_MASS_KG
 
 BUNDLE = ROOT / 'data/models/engineering_stance_v1'
 REGISTRATION = 'data/models/engineering_stance_v1/registration.json'
-TARGET_MASS_KG = 77.6122029
+TARGET_MASS_KG = MECHANICAL_TARGET_MASS_KG
 DT = 0.01
 WORK = ROOT / 'data/derived/gait-work'
 

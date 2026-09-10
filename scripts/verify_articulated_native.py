@@ -4,6 +4,7 @@ import argparse,json,sys,tempfile,time,resource,traceback
 import numpy as np
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from ihm.assembly.articulated import ArticulatedBodyPlant
+from ihm.body_parameters import MECHANICAL_TARGET_MASS_KG
 from verify_native_signed_energy_ledger import ENERGIES,check_interval
 ROOT=Path(__file__).resolve().parents[1]
 
@@ -12,11 +13,11 @@ def main():
     if not args.run_native:raise SystemExit('Native acceptance requires an explicitly coordinated --run-native resource slot')
     output=Path(tempfile.mkdtemp(prefix='articulated-acceptance-',dir=ROOT/'data/derived'));started=time.monotonic();plant=None
     try:
-        plant=ArticulatedBodyPlant(ROOT,output/'plant',environment='supine',target_mass_kg=77.6122029,augmented_registration=args.augmentation_registration,enable_garments=args.garments)
+        plant=ArticulatedBodyPlant(ROOT,output/'plant',environment='supine',target_mass_kg=MECHANICAL_TARGET_MASS_KG,augmented_registration=args.augmentation_registration,enable_garments=args.garments)
         # The entity count is read from the canonical mechanics the plant was built on,
         # not written here: it was 2408, then 2403 after the duplicate-surface collapse,
         # then 4000 once the display promotion landed, and a literal only ever gets
-        # rewritten to match. The 77.6122029 kg is the native 22-body patient mass, which
+        # rewritten to match. The MECHANICAL_TARGET_MASS_KG kg is the native 22-body patient mass, which
         # is scaled independently of the canonical proxy partition and is deliberately
         # not the profile.
         expected=json.loads((ROOT/'data/derived/canonical/mechanics.json').read_bytes())['counts']['entities']

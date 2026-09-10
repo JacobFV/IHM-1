@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from ihm.native.mechanical_stream import NativeMechanicalStream
 from ihm.native.stance_lqr import NativeStanceLQR
+from ihm.body_parameters import MECHANICAL_TARGET_MASS_KG
 
 
 def digest(path):
@@ -35,7 +36,7 @@ def main():
     registration_path = ROOT / 'data/models/engineering_stance_v1/registration.json'
     artifact_path = registration_path.parent / 'linearization.npz'
     registration = json.loads(registration_path.read_text())
-    mass, dt, seconds = 77.6122029, .01, 3.
+    mass, dt, seconds = MECHANICAL_TARGET_MASS_KG, .01, 3.
     teacher = NativeStanceLQR(artifact_path, model_sha256=registration['model_sha256'], dt_s=dt, target_mass_kg=mass)
     sources = [Path(__file__), ROOT / 'ihm/native/mechanical_stream.py', ROOT / 'ihm/native/stance_lqr.py', registration_path, artifact_path]
     source_hashes = {str(p.relative_to(ROOT)): digest(p) for p in sources}

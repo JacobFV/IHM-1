@@ -20,6 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from ihm.assembly.articulated import ArticulatedBodyPlant, CanonicalRegistration
 from ihm.assembly.selective_projection import SelectiveProjectionPlant
+from ihm.body_parameters import MECHANICAL_TARGET_MASS_KG
 
 
 def reference():
@@ -269,7 +270,7 @@ def native_acceptance():
         hashes[str(relative)] = hashlib.sha256(raw).hexdigest()
     (output/'source_manifest.json').write_text(json.dumps(hashes, indent=2)+'\n')
     plant = SelectiveProjectionPlant(ROOT, output/'plant', environment='supine',
-                                    target_mass_kg=77.6122029,
+                                    target_mass_kg=MECHANICAL_TARGET_MASS_KG,
                                     augmented_registration='data/derived/mechanics/whole_body_arm26_v2/registration.json')
     try:
         initial = plant.snapshot()

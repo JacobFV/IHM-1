@@ -9,6 +9,7 @@ from scipy import sparse
 from scipy.sparse.linalg import splu
 from ihm.native.cortical_stance import CorticalStancePolicy,load_cortical_stance
 from ihm.native.stance_lqr import NativeStanceLQR
+from ihm.body_parameters import MECHANICAL_TARGET_MASS_KG
 
 
 def sha(path):return hashlib.sha256(Path(path).read_bytes()).hexdigest()
@@ -22,7 +23,7 @@ def main():
  source=ROOT/args.artifact;out=ROOT/args.output;out.mkdir(parents=True,exist_ok=False)
  policy,artifact=load_cortical_stance(source,dt_s=.01)
  teacher_path=ROOT/'data/research/locomotion_control/delay_design_e5s_lepu/candidate_state1.0_R1000.0.npz'
- teacher=NativeStanceLQR(teacher_path,model_sha256=artifact['provenance']['model_sha256'],dt_s=.01,target_mass_kg=77.6122029)
+ teacher=NativeStanceLQR(teacher_path,model_sha256=artifact['provenance']['model_sha256'],dt_s=.01,target_mass_kg=MECHANICAL_TARGET_MASS_KG)
  assert policy.encoder_kind=='signed_identity' and policy.reference_normalization
  assert policy.state_names==teacher.state_names and policy.muscle_names==teacher.muscle_names
  initial={k:v.detach().clone() for k,v in policy.state_dict().items()}

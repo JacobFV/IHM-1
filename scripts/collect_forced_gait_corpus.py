@@ -52,6 +52,7 @@ sys.path.insert(0, str(ROOT))
 from ihm.native.mechanical_stream import NativeMechanicalStream
 from ihm.native.gait_reference import GaitReference
 from ihm.native.moment_arm_control import FittedMomentArms
+from ihm.body_parameters import MECHANICAL_TARGET_MASS_KG
 
 
 def main() -> None:
@@ -64,7 +65,7 @@ def main() -> None:
     ap.add_argument("--kp", type=float, default=900.0, help="N per rad of joint error")
     ap.add_argument("--kd", type=float, default=60.0, help="N per rad/s")
     ap.add_argument("--fmax", type=float, default=400.0, help="clamp per force point")
-    ap.add_argument("--mass", type=float, default=77.6122029)
+    ap.add_argument("--mass", type=float, default=MECHANICAL_TARGET_MASS_KG)
     ap.add_argument("--environment", default="upright",
                     choices=("free", "upright", "supine"))
     ap.add_argument("--out", default="data/derived/forced-gait-corpus")

@@ -27,6 +27,7 @@ sys.path.insert(0, str(ROOT))
 from ihm.body_parameters import MECHANICAL_STATURE_M  # noqa: E402
 from ihm.native.model_scaling import head_marker_height_m  # noqa: E402
 from ihm.native.moment_arm_control import FittedMomentArms  # noqa: E402
+from ihm.body_parameters import MECHANICAL_TARGET_MASS_KG
 import scripts.materialize_stature_variant as msv  # noqa: E402
 
 SCALES = (0.80, 0.90, 1.0, 1.05, 1.13)
@@ -59,7 +60,7 @@ def refusal(output):
     shutil.rmtree(fresh, ignore_errors=True)
     try:
         NativeMechanicalStream(ROOT, fresh, environment='supine',
-                               target_mass_kg=77.6122029,
+                               target_mass_kg=MECHANICAL_TARGET_MASS_KG,
                                augmented_registration=str(broken.relative_to(ROOT)))
     except ValueError as error:
         return str(error)

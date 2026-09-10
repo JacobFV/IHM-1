@@ -19,6 +19,7 @@ from scipy.optimize import least_squares, brentq, lsq_linear
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from ihm.native.mechanical_stream import NativeMechanicalStream
+from ihm.body_parameters import MECHANICAL_TARGET_MASS_KG
 
 
 def solve(max_nfev=80, seed_path=None, surface=None, bed=None):
@@ -29,7 +30,7 @@ def solve(max_nfev=80, seed_path=None, surface=None, bed=None):
     protocol_sha256 = hashlib.sha256(protocol_bytes).hexdigest()
     (output/'solver.py').write_bytes(protocol_bytes)
     stream = NativeMechanicalStream(ROOT, output/'native', environment='supine',
-        target_mass_kg=77.6122029,
+        target_mass_kg=MECHANICAL_TARGET_MASS_KG,
         augmented_registration='data/derived/mechanics/whole_body_lumbar_current/registration.json',
         surface_contact_manifest=surface, bed_material=bed)
     def write(name, data):
@@ -192,7 +193,7 @@ def solve(max_nfev=80, seed_path=None, surface=None, bed=None):
         after = stream._request('observe')
         unchanged = all(before[k] == after[k] for k in ('time_s','coordinates'))
         artifact = dict(schema='ihm.native-initial-pose.v1', environment='supine',
-            target_mass_kg=77.6122029, coordinates=best['coordinates'], requested_coordinates=best['requested_coordinates'], activations=best['activations'],
+            target_mass_kg=MECHANICAL_TARGET_MASS_KG, coordinates=best['coordinates'], requested_coordinates=best['requested_coordinates'], activations=best['activations'],
             activation_selection_path=seed.get('activation_selection_path'),
             protocol_sha256=protocol_sha256, posture_bounds_rad=posture_bounds, body_length_m=body_length_m,
             support_geometry=None if surface is None else dict(manifest_path=str(surface),manifest_sha256=hashlib.sha256((ROOT/surface).read_bytes()).hexdigest(),bed_material=bed),

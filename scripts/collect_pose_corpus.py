@@ -42,6 +42,7 @@ sys.path.insert(0, str(ROOT))
 
 from ihm.native.mechanical_stream import NativeMechanicalStream
 from ihm.native.moment_arm_control import FittedMomentArms
+from ihm.body_parameters import MECHANICAL_TARGET_MASS_KG
 
 PATHSET = ("data/raw/mechanics/opensim-core/OpenSim/Examples/Moco/"
            "example3DWalking/subject_walk_scaled_FunctionBasedPathSet.xml")
@@ -95,7 +96,7 @@ def main() -> None:
     ap.add_argument("--min-coords", type=int, default=6,
                     help="motions matching fewer model coordinates are skipped")
     ap.add_argument("--max-frames", type=int, default=400)
-    ap.add_argument("--mass", type=float, default=77.6122029)
+    ap.add_argument("--mass", type=float, default=MECHANICAL_TARGET_MASS_KG)
     ap.add_argument("--out", default="data/derived/pose-corpus")
     ap.add_argument("--limit", type=int, default=0)
     a = ap.parse_args()

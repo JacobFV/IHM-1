@@ -4,12 +4,13 @@ import hashlib,json,sys,tempfile
 import numpy as np
 ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT))
 from ihm.assembly.bed_compression import load_bed,series_response,maximum_approach
+from ihm.body_parameters import MECHANICAL_TARGET_MASS_KG
 
 
 def main():
     manifest_path=ROOT/'data/derived/supine-surface-contact-exmzq9pq/manifest.json'
     manifest=json.loads(manifest_path.read_text());data=np.load(ROOT/manifest['arrays_path']);skin=manifest['material']
-    points=data['reference_points_source_m'];areas=data['area_m2'];minimum=float(points[:,0].min());weight=77.6122029*9.81
+    points=data['reference_points_source_m'];areas=data['area_m2'];minimum=float(points[:,0].min());weight=MECHANICAL_TARGET_MASS_KG*9.81
     report=dict(passed=True,native_run=False,accepted_equilibrium=False,
         scope='Source constitutive/domain and rigid-translation feasibility; no native support or moment equilibrium acceptance',materials={})
     for material in ('SM','MM','HM'):

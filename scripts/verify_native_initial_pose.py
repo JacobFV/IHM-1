@@ -8,11 +8,12 @@ import numpy as np
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
 from ihm.native.mechanical_stream import NativeMechanicalStream
+from ihm.body_parameters import MECHANICAL_TARGET_MASS_KG
 
 
 def main():
     output=Path(tempfile.mkdtemp(prefix='native-initial-pose-',dir=ROOT/'data/derived'))
-    kwargs=dict(environment='supine',target_mass_kg=77.6122029,
+    kwargs=dict(environment='supine',target_mass_kg=MECHANICAL_TARGET_MASS_KG,
                 augmented_registration='data/derived/mechanics/whole_body_arm26_v2/registration.json')
     pose={'pelvis_tx':-.005,'elbow_flex_r':.3,'elbow_flex_l':.3}
     reference=NativeMechanicalStream(ROOT,output/'reference',**kwargs)

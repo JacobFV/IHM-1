@@ -4,6 +4,7 @@ import argparse,json,signal,sys,tempfile,time,traceback
 import numpy as np
 ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT))
 from ihm.assembly.supine_contact import foundation
+from ihm.body_parameters import MECHANICAL_TARGET_MASS_KG
 
 
 def run(manifest_path,bed_material=None):
@@ -22,7 +23,7 @@ def run(manifest_path,bed_material=None):
     old=signal.signal(signal.SIGALRM,deadline);signal.setitimer(signal.ITIMER_REAL,60)
     try:
         for variant in ('sphere','surface'):
-            stream=NativeMechanicalStream(ROOT,output/variant,environment='supine',target_mass_kg=77.6122029,
+            stream=NativeMechanicalStream(ROOT,output/variant,environment='supine',target_mass_kg=MECHANICAL_TARGET_MASS_KG,
                  augmented_registration='data/derived/mechanics/whole_body_arm26_v2/registration.json',
                  surface_contact_manifest=manifest_path if variant=='surface' else None,
                  surface_sensor_indices=[int(np.argmin(data['reference_points_source_m'][:,0]))] if variant=='surface' else [],

@@ -11,11 +11,12 @@ from scipy.optimize import least_squares,lsq_linear
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from ihm.native.mechanical_stream import NativeMechanicalStream
 from ihm.assembly.embodied import _prepare_mechanical_registration
+from ihm.body_parameters import MECHANICAL_TARGET_MASS_KG
 ROOT=Path(__file__).resolve().parents[1]
 BASE='data/derived/mechanics/patient_stagger_right80_stance98/registration.json'
 SEED='data/derived/mechanics/patient_stagger_right80_stance98/registration.json'
 OUT=ROOT/'data/derived/mechanics/patient_stagger_right80_refined_stance98'
-TARGET_MASS_KG=77.6122029
+TARGET_MASS_KG=MECHANICAL_TARGET_MASS_KG
 sha=lambda data:hashlib.sha256(data).hexdigest()
 
 def main():

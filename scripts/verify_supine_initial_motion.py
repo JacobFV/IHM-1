@@ -12,6 +12,7 @@ sys.path.insert(0,str(ROOT))
 from ihm.native.mechanical_stream import NativeMechanicalStream
 from ihm.assembly.articulated import CanonicalRegistration
 from ihm.assembly.environment_dynamics import EnvironmentDynamics
+from ihm.body_parameters import MECHANICAL_TARGET_MASS_KG
 
 
 def main(pose_path):
@@ -20,7 +21,7 @@ def main(pose_path):
     canonical=json.loads((ROOT/'data/derived/canonical/mechanics.json').read_text())
     reports={}
     for label,pose in [('default',None),('candidate',artifact['coordinates'])]:
-        native=NativeMechanicalStream(ROOT,output/label,environment='supine',target_mass_kg=77.6122029,
+        native=NativeMechanicalStream(ROOT,output/label,environment='supine',target_mass_kg=MECHANICAL_TARGET_MASS_KG,
             augmented_registration='data/derived/mechanics/whole_body_arm26_v2/registration.json',initial_pose=pose)
         try:
             assert hashlib.sha256((native.output/'inputs/subject_walk_scaled.osim').read_bytes()).hexdigest()==artifact['model_sha256']
