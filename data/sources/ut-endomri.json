@@ -14,7 +14,7 @@
     "method": "Zenodo REST API, 2026-09-10; zenodo.org answers 200 from this machine now",
     "record": "13749613, published 2024-09-11, one file UT-EndoMRI.zip of 7.98 GB",
     "dataset_1": "D1_MHS: 51 patients, T2 and T1 fat-suppressed; uterus, ovaries, endometriomas, cysts and cul-de-sac contoured by THREE raters (files *_ut_r1.nii.gz etc.)",
-    "dataset_2": "D2_TCPW: 82 patients, T1, T1FS, T2, T2FS; uterus, ovaries and endometriomas contoured by ONE rater",
+    "dataset_2": "D2_TCPW: 73 subjects in the archive (the description says 82); T1, T1FS, T2, T2FS; one rater",
     "labels": {
       "ut": "uterus",
       "ov": "ovary",
@@ -22,13 +22,55 @@
       "cy": "cyst",
       "cds": "cul de sac"
     },
-    "caveat_from_the_record": "ovaries may be deformed or ABSENT through surgical resection; MRI sequences may be missing"
+    "caveat_from_the_record": "ovaries may be deformed or ABSENT through surgical resection; MRI sequences may be missing",
+    "archive_layout": {
+      "method": "the zip's own central directory, read by HTTP Range from Zenodo on 2026-09-10 (listing saved as data/raw/anatomy/ut-endomri/central_directory_listing.json)",
+      "files": 714,
+      "bytes": 7975894471,
+      "md5_recorded_by_zenodo": "7ace6e1b08efa10d0a1967073b0ba41c",
+      "subjects": {
+        "D1_MHS": 51,
+        "D2_TCPW": 73
+      },
+      "subjects_with_uterus_label": 111,
+      "subjects_with_ovary_label": 101,
+      "label_kinds": {
+        "ut": 62,
+        "ut_r1": 9,
+        "ut_r2": 26,
+        "ut_r3": 47,
+        "ut_re3": 1,
+        "ov": 58,
+        "ov_r1": 10,
+        "ov_r2": 19,
+        "ov_r3": 38,
+        "em": 11,
+        "em_r1": 9,
+        "em_r2": 21,
+        "em_r3": 40,
+        "cy": 17,
+        "pat": 3
+      },
+      "sequences": {
+        "T2": 92,
+        "T1FS": 104,
+        "T2FS": 70,
+        "T1": 69
+      },
+      "anomalies": [
+        "one file named ut_re3 -- read as rater 3 and flagged",
+        "three files named pat -- meaning undocumented, excluded and flagged",
+        "rater coverage in D1 is uneven: rater 3 labelled the uterus in 47 subjects, rater 2 in 26, rater 1 in 9",
+        "the archive carries __MACOSX/ and .DS_Store entries"
+      ]
+    }
   },
   "the_caution_that_belongs_on_the_face_of_this_card": "It is an ENDOMETRIOSIS cohort. Endometriosis distorts pelvic anatomy -- adhesions, endometriomas, adenomyosis, altered uterine position and ovarian morphology -- so these uteri and ovaries are not a typical-anatomy reference and must never be presented as one. Using them would mean a body whose uterus came from a patient selected for uterine pathology.",
   "limitations": "MRI segmentation of a clinical cohort, not a curated atlas. Different subject from the body's skeleton, from its skin, and from whatever supplies the breast.",
   "corrections": [
     "the relayed 'CC-BY licence' is WRONG: there is no licence on the record, and the stated terms are non-commercial scientific research only",
-    "the relayed 'second single-centre set of 81 subjects' is 82"
+    "the second set holds 73 subjects in the archive, not the 82 the record's description states (and not the relayed 81); counted from the zip's central directory",
+    "uterus labels exist for 111 of 124 subjects and ovary labels for 101, not 'all subjects'"
   ],
   "owner_decision": {
     "date": "2026-09-10",
