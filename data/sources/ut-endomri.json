@@ -4,9 +4,9 @@
   "modality": "pelvic MRI with structural segmentation labels",
   "role": "candidate source of UTERUS and OVARY geometry, of which this repository has zero entities",
   "access": "Zenodo record 13749613 carries NO licence field (license, rights and access_conditions all null). The terms are stated in the description's 'User Agreement': 'available for free use exclusively in non-commercial scientific research', and any publication must cite Liang et al., 'A Multi-Modal Pelvic MRI Dataset for Deep Learning-Based Pelvic Organ Segmentation in Endometriosis'. IRB: UTHealth CPHS protocol HSC-SBMI-22-0184.",
-  "status": "catalogued_verified_owner_approved_acquiring",
+  "status": "acquired_verified_not_yet_ingested",
   "ingested": false,
-  "raw_path": null,
+  "raw_path": "data/raw/anatomy/ut-endomri/UT-EndoMRI.zip",
   "derived_manifest": null,
   "independent_subject": true,
   "physiological_dynamic_calibration": false,
@@ -96,5 +96,13 @@
       "raw data and derived geometry stay out of git (data/raw and data/derived are gitignored); nothing from this record is redistributed",
       "the endometriosis caveat stays on every derived artefact: these uteri and ovaries come from a pathology-selected cohort and are not a typical-anatomy reference"
     ]
+  },
+  "acquisition": {
+    "date": "2026-09-10",
+    "transport": "zenodo.org/records/13749613, curl with resume",
+    "bytes": 7975894471,
+    "md5": "7ace6e1b08efa10d0a1967073b0ba41c",
+    "md5_verified_against": "the md5 Zenodo records for the file (REST API files[].checksum)",
+    "in_git": false
   }
 }
