@@ -750,6 +750,23 @@ done; the others have moved.
    optimise: that the breast base still CONTACTS the chest wall (does not float), that
    breast volume is conserved, and that the same correction, fitted on two subjects,
    clears the third.
+
+   **Tried, and no whole-breast correction works** (`scripts/fit_breast_seating_correction.py`;
+   leave-one-subject-out, the judge above, fixed before fitting):
+
+   | model | ribs inside the breast (<= 1%) | contact median, posterior 10% (<= 3 mm) | volume |
+   |---|---|---|---|
+   | one rigid forward shift per side (8-16 mm) | fails with s0790 held out (1.2-1.6%) | **fails every fold** (3.3-7.4 mm) | exact |
+   | height-dependent push along the chest-wall normal | 0.00-1.51% | **fails every fold** (3.4-6.9 mm) | **fails every fold** (+7.8-9.2%) |
+
+   Rib clearance and chest-wall contact pull against each other under any movement of
+   the WHOLE breast: clearing the rib-5 overlap (up to ~16 mm) lifts the base 3-7 mm
+   off the chest wall everywhere else, and the height profile buys that back with 8-9%
+   more breast. Had gate d2 been the judge, the shift would have passed. Nothing seated
+   was written. What is needed is a local deformation of the breast's BASE, conformed to
+   this body's own chest wall with its volume compensated -- the breast-sized instance of
+   the deformable soft-tissue decision this programme already has open. The sternum
+   (gate d1) is untouched by any breast correction; that is the skin-envelope problem.
 2. ~~**A path refitting tool.**~~ **Done.** `libosimActuators.so` already
    exported 97 `PolynomialPathFitter` symbols; what was missing was 300 lines of
    driver. A refit of the unchanged model is 16.7× closer to the model's own
