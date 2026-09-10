@@ -6,7 +6,7 @@
   "modality": "whole-body CT segmentation model and its training corpus",
   "role": "candidate source of FEMALE-SUBJECT organ geometry, which no catalogued source in this repository currently provides",
   "access": "tool Apache-2.0 (pip install TotalSegmentator); dataset CC-BY-4.0 on Zenodo; several SUBTASKS require a licence key and are not Apache-2.0",
-  "status": "catalogued_not_acquired",
+  "status": "catalogued_verified_not_acquired",
   "ingested": false,
   "raw_path": null,
   "derived_manifest": null,
@@ -16,23 +16,58 @@
     "method": "totalsegmentator/map_to_binary.py fetched from the repository at raw.githubusercontent.com and parsed; README task/licence split read from the same commit",
     "total_task_classes": 117,
     "breasts_subtask_exists": true,
-    "breasts_subtask_classes": ["breast"],
+    "breasts_subtask_classes": [
+      "breast"
+    ],
     "breasts_subtask_licence": "Apache-2.0 (listed under 'Openly available for any usage')",
     "prostate_in_total_task": true,
     "female_reproductive_classes_anywhere_in_the_class_map": 0,
-    "female_terms_searched": ["uterus", "ovary", "ovaries", "vagina", "cervix", "endometrium", "fallopian"]
+    "female_terms_searched": [
+      "uterus",
+      "ovary",
+      "ovaries",
+      "vagina",
+      "cervix",
+      "endometrium",
+      "fallopian"
+    ],
+    "zenodo_record": "10047292, version 2.0.1, published 2023-10-27, licence cc-by-4.0, open access, ONE file Totalsegmentator_dataset_v201.zip of 23.58 GB with 147,361 members",
+    "subjects_in_meta_csv": 1228,
+    "sex_from_meta_csv": {
+      "f": 510,
+      "m": 716,
+      "blank": 2
+    },
+    "sex_column": "'gender', with values f / m / blank",
+    "split_from_meta_csv": {
+      "train": 1082,
+      "val": 57,
+      "test": 89
+    },
+    "meta_csv_columns": [
+      "image_id",
+      "age",
+      "gender",
+      "institute",
+      "study_type",
+      "split",
+      "manufacturer",
+      "scanner_model",
+      "kvp",
+      "pathology",
+      "pathology_location"
+    ],
+    "correction": "the relayed '503 of 1,220 subjects female (41.2%)' is WRONG: meta.csv carries 510 female of 1,226 with a recorded sex (41.6%), and 1,228 rows in total",
+    "method_meta_csv": "zip central directory (14.2 MB) read by HTTP Range, then the single member meta.csv (112,544 bytes) fetched and inflated; no archive download"
   },
   "not_verified_here": {
-    "reason": "zenodo.org is unreachable from this sandbox (HTTP 504 through the egress proxy on both the record page and the API); huggingface.co, api.github.com and pypi.org all return 200, so this is host-specific",
+    "reason": "none remaining for the two counts: zenodo.org answers 200 from this machine as of 2026-09-10 (the earlier HTTP 504 was the old sandbox's egress proxy), and the archive's own meta.csv was read out of the 23.58 GB zip by HTTP Range without downloading it",
     "claims_left_unchecked": [
-      "1,228 CT subjects in the released dataset",
-      "503 of 1,220 subjects female (41.2%)",
-      "meta.csv carries a sex column",
-      "the dataset files are CC-BY-4.0"
+      "the per-structure label quality, which is an algorithm's segmentation of clinical CT and was never going to be checkable from metadata"
     ]
   },
   "what_it_would_actually_contribute": [
-    "ONE female-specific structure: 'breast', as a single undifferentiated soft-tissue label. Not left and right, and no mammary gland, nipple, areola, lobule or lactiferous duct. The body currently has none of these in EITHER sex, so this closes the envelope and none of the internal structure.",
+    "ONE female-specific structure: 'breast', as a single undifferentiated soft-tissue label. Not left and right, and no mammary gland, nipple, areola, lobule or lactiferous duct. The body currently has none of these in EITHER sex, so this closes the envelope and none of the internal structure. AND IT IS NOT IN THE DATASET: the Zenodo archive holds the 117 total-task labels only. A breast label has to be PRODUCED by running the Apache-2.0 breasts subtask model on a female CT from the archive, so the breast is that model's drawing of that subject.",
     "NOTHING toward female internal or external genitalia. The class map has no uterus, ovary, vagina or cervix, so the uterine.* and placental.* field groups stay at 0 supporting entities.",
     "Sex-neutral organ geometry from female subjects, which is a different and weaker claim than female-specific anatomy: a liver from a female donor is a liver.",
     "A prostate, which this body already has."

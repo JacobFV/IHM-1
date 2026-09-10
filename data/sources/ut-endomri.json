@@ -3,24 +3,32 @@
   "reference": "https://zenodo.org/records/13749613",
   "modality": "pelvic MRI with structural segmentation labels",
   "role": "candidate source of UTERUS and OVARY geometry, of which this repository has zero entities",
-  "access": "Zenodo, reported CC-BY",
-  "status": "catalogued_not_acquired",
+  "access": "Zenodo record 13749613 carries NO licence field (license, rights and access_conditions all null). The terms are stated in the description's 'User Agreement': 'available for free use exclusively in non-commercial scientific research', and any publication must cite Liang et al., 'A Multi-Modal Pelvic MRI Dataset for Deep Learning-Based Pelvic Organ Segmentation in Endometriosis'. IRB: UTHealth CPHS protocol HSC-SBMI-22-0184.",
+  "status": "catalogued_verified_not_acquired_terms_need_owner_decision",
   "ingested": false,
   "raw_path": null,
   "derived_manifest": null,
   "independent_subject": true,
   "physiological_dynamic_calibration": false,
   "verified_here": {
-    "method": "none",
-    "reason": "zenodo.org is unreachable from this sandbox: HTTP 504 through the egress proxy on both /records/ and /api/records/, while huggingface.co, api.github.com and pypi.org return 200. Nothing on this card has been checked against the archive."
+    "method": "Zenodo REST API, 2026-09-10; zenodo.org answers 200 from this machine now",
+    "record": "13749613, published 2024-09-11, one file UT-EndoMRI.zip of 7.98 GB",
+    "dataset_1": "D1_MHS: 51 patients, T2 and T1 fat-suppressed; uterus, ovaries, endometriomas, cysts and cul-de-sac contoured by THREE raters (files *_ut_r1.nii.gz etc.)",
+    "dataset_2": "D2_TCPW: 82 patients, T1, T1FS, T2, T2FS; uterus, ovaries and endometriomas contoured by ONE rater",
+    "labels": {
+      "ut": "uterus",
+      "ov": "ovary",
+      "em": "endometrioma",
+      "cy": "cyst",
+      "cds": "cul de sac"
+    },
+    "caveat_from_the_record": "ovaries may be deformed or ABSENT through surgical resection; MRI sequences may be missing"
   },
-  "claims_as_relayed_and_unverified": [
-    "UTHealth Endometriosis MRI Dataset",
-    "51 patients with T2 and T1 fat-suppressed sequences plus structural labels",
-    "a second single-centre set of 81 subjects with multiple pelvic structures",
-    "uterus and ovary segmentations for all subjects",
-    "CC-BY licence"
-  ],
   "the_caution_that_belongs_on_the_face_of_this_card": "It is an ENDOMETRIOSIS cohort. Endometriosis distorts pelvic anatomy -- adhesions, endometriomas, adenomyosis, altered uterine position and ovarian morphology -- so these uteri and ovaries are not a typical-anatomy reference and must never be presented as one. Using them would mean a body whose uterus came from a patient selected for uterine pathology.",
-  "limitations": "MRI segmentation of a clinical cohort, not a curated atlas. Different subject from the body's skeleton, from its skin, and from whatever supplies the breast."
+  "limitations": "MRI segmentation of a clinical cohort, not a curated atlas. Different subject from the body's skeleton, from its skin, and from whatever supplies the breast.",
+  "corrections": [
+    "the relayed 'CC-BY licence' is WRONG: there is no licence on the record, and the stated terms are non-commercial scientific research only",
+    "the relayed 'second single-centre set of 81 subjects' is 82"
+  ],
+  "decision_needed": "Whether this programme qualifies as 'exclusively non-commercial scientific research' is the owner's call, not an agent's. Until it is made, nothing from this record is downloaded, and no derived uterus or ovary geometry is committed to a public repository, since a public derived mesh is redistribution under terms that restrict use."
 }
