@@ -72,9 +72,18 @@ def main():
     import nibabel as nib
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--device", default="gpu", choices=("gpu", "cpu"))
+    ap.add_argument("--subjects", nargs="*", default=None,
+                    help="run only these subjects, taking their metadata from the archive's meta.csv "
+                         "(for re-gating a subject the current fetch manifest no longer lists)")
+    ap.add_argument("--out", type=Path, default=OUT)
     a = ap.parse_args()
+    OUT_ = a.out
     fetched = json.loads((RAW / "manifest.json").read_text())
-    OUT.mkdir(parents=True, exist_ok=True)
+    if a.subjects:
+        import csv, io
+        meta = {r["image_id"]: r for r in csv.DictReader(io.open(RAW / "meta.csv", encoding="utf-8-sig"), delimiter=";")}
+        fetched = dict(fetched, subjects={sid: dict(meta=meta[sid]) for sid in a.subjects})
+    OUT_.mkdir(parents=True, exist_ok=True)
     report = dict(schema="ihm.female-torso-totalsegmentator.v1", source=fetched["citation"],
                   dataset_licence=fetched["licence"], model_licence="Apache-2.0 (breasts, body subtasks)",
                   selection_rule=fetched["selection_rule"], breast_ml_bound=BREAST_ML_BOUND,
@@ -83,12 +92,12 @@ def main():
         print(f"\n=== {sid}  age {meta['meta']['age']}  {meta['meta']['study_type']}", flush=True)
         ct = RAW / sid / "ct.nii.gz"
         if not ct.exists(): raise SystemExit(f"{ct} missing: the fetch did not deliver this subject's CT")
-        run_subtask(ct, "breasts", OUT / sid / "breasts", a.device)
-        run_subtask(ct, "body", OUT / sid / "body", a.device)
+        run_subtask(ct, "breasts", OUT_ / sid / "breasts", a.device)
+        run_subtask(ct, "body", OUT_ / sid / "body", a.device)
         img = nib.load(str(ct)); affine = img.affine; voxel_ml = abs(np.linalg.det(affine[:3, :3])) / 1000.0
         load = lambda p: np.asanyarray(nib.load(str(p)).dataobj) > 0
-        body = load(OUT / sid / "body" / "body.nii.gz")
-        breast = load(OUT / sid / "breasts" / "breast.nii.gz")
+        body = load(OUT_ / sid / "body" / "body.nii.gz")
+        breast = load(OUT_ / sid / "breasts" / "breast.nii.gz")
         seg = RAW / sid / "segmentations"
         bones = {n: load(seg / f"{n}.nii.gz") for n in REGISTRATION_LABELS if (seg / f"{n}.nii.gz").exists()}
         present = {n: m for n, m in bones.items() if m.any()}
@@ -138,17 +147,17 @@ def main():
                              and rec["gate_laterality"] and rec["gate_volume"]
                              and rec["gate_chest_whole"] and rec["gate_breast_whole"])
         # --- meshes, in the CT's own world frame (metres); registration is a later step
-        d = OUT / sid / "meshes"; d.mkdir(parents=True, exist_ok=True)
+        d = OUT_ / sid / "meshes"; d.mkdir(parents=True, exist_ok=True)
         for side, sel in (("left", on_left), ("right", ~on_left)):
             m = np.zeros_like(breast); m[tuple(ijk[sel].T)] = True
             v, f = mesh(m, affine); write_obj(d / f"breast_{side}.obj", v, f, f"{sid} breast_{side}, CT world frame, metres")
-        skin = OUT / sid / "body" / "skin.nii.gz"
+        skin = OUT_ / sid / "body" / "skin.nii.gz"
         if skin.exists():
             v, f = mesh(load(skin), affine); write_obj(d / "skin.obj", v, f, f"{sid} skin, CT world frame, metres")
         for n, m in present.items():
             v, f = mesh(m, affine); write_obj(d / f"{n}.obj", v, f, f"{sid} {n}, CT world frame, metres")
         report["subjects"][sid] = rec
-        (OUT / "manifest.json").write_text(json.dumps(report, indent=2) + "\n")
+        (OUT_ / "manifest.json").write_text(json.dumps(report, indent=2) + "\n")
     ok = [s for s, r in report["subjects"].items() if r["passes"]]
     print(f"\n{len(ok)}/{len(report['subjects'])} subjects pass every gate: {ok}")
 
