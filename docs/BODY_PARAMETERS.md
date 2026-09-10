@@ -940,6 +940,16 @@ done; the others have moved.
    permissive than its motivation, and a test like that is how a misregistration gets waved
    through. **The gate as written stays the verdict for every subject.**
 
+   Where D1-035 leaves the ring (`scripts/locate_uterus_outside_ring.py`, evidence after the
+   verdict): the uterus sits LOW, 50-92 mm above the ring's floor in a ring 206 mm tall, and the
+   1.7% outside is at mid-height, about 35 mm anterior of its centroid and barely above it (+2
+   mm), 23-28 mm beyond the nearest ring bone -- out through the convex hull's FRONT face. D1-017's
+   bulge instead rises (+39 mm up, +34 mm anterior, 59-205 mm, up to 93 mm from the bone). So
+   D1-035 reads as a normally seated uterus whose body leans forward (the usual anteverted
+   position) past a hull face that is not an anatomical wall. Neither a volume rule nor a
+   lowest-quartile rule describes that; the honest limit is the one already named -- a convex
+   hull of three bones is not the pelvic cavity.
+
    **Prediction, fixed now, before either is registered:** D1-041 (766 mL) and D1-045 (618 mL)
    FAIL containment as written and PASS the lowest-quartile test, as D1-017 does. If either
    fails the lowest-quartile test, it is misplaced, not merely enlarged, and it is reported as

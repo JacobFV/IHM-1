@@ -517,9 +517,11 @@ buttock. PASS. The depth is to the NEAREST surface, not along the inward normal,
 underestimates in folds (axilla, groin).
 
 A threefold range: a single thickness makes the foundation too stiff over the buttocks or too
-soft over the shin (stiffness goes as 1/h). **Next, not done:** give each skin patch the local
-depth instead of one h. That changes the plant's contact, so it has to be judged the way the
-tissue elements were -- the stance and the three drops -- before it replaces the single value.
+soft over the shin (stiffness goes as 1/h). ~~Next, not done: give each skin patch the local
+depth instead of one h.~~ **Built and judged the same day (2428731), below:** each segment
+carries its own depth and an in vivo modulus through the V2 engine path. The stance FAILED
+never-bone on the toes, and the cause turned out to be the skin's registration on the foot,
+not the layer, so the drops wait on the continuous skin carrier.
 The per-point map is saved in `data/derived/soft-tissue-depth-v1/depth.npz`.
 
 ### Depth alone would make it worse: the modulus is the missing half (pre-registered 2026-09-10, before any run)
