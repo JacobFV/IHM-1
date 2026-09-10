@@ -69,5 +69,53 @@ def main():
     print(f"\nEvery non-fat tissue above is inflated by the same {100*(scale-1):.1f}% the ledger applies to reach "
           f"{prof['mass_kg']} kg. The fat this body declares but has no geometry for is carried as denser bone, "
           f"muscle and organs, which is a mass distribution no body has.")
+    where_it_would_go(mech, fat, declared, scale)
+
+def where_it_would_go(mech, fat, declared, scale):
+    """The subcutaneous space this body measures, against the space its skin layers declare.
+
+    KNOWN ANSWER: the hypodermis's own volume must equal its declared thickness times the exterior
+    skin area, because that is how a layer is defined; if it does not, this comparison is void.
+    """
+    import gzip
+    bundle = json.loads((ROOT / "data/derived/segment-contact-meshes/skin/manifest.json").read_text())
+    layers = {l["id"]: l["thickness_m"] for l in bundle["skin_material"]["layers"]}
+    # The bundle's own exterior_surface_area_m2 is in the SCAFFOLD frame (the binding map's scale
+    # 0.963, so 1.9198 m2 against 1.7805 here); the hypodermis volume is canonical, so the area
+    # has to be canonical too. Taken from the same exterior triangles the depth map used.
+    skin = next(e for e in mech["entities"] if e["role"] == "skin")
+    g = json.loads(gzip.decompress((ROOT / skin["reference_geometry"]["path"]).read_bytes()))
+    V = np.asarray(g["positions"], float).reshape(-1, 3); F = np.asarray(g["indices"], np.int64).reshape(-1, 3)
+    ext = np.asarray(json.loads((ROOT / "data/research/engineered_skin_territories/materialization.json").read_text())
+                     ["contact_eligible_triangle_ids"], np.int64)
+    t = V[F[ext]]
+    area = float(np.linalg.norm(np.cross(t[:, 1] - t[:, 0], t[:, 2] - t[:, 0]), axis=1).sum() / 2)
+    hypo = next(e for e in mech["entities"] if e["name"] == "hypodermis")
+    h = layers["body-skin-hypodermis"]
+    implied = h * area
+    if abs(implied / hypo["volume_m3"] - 1) > 0.02:
+        print(f"\n[skipped: the hypodermis is {1e3*hypo['volume_m3']:.2f} L but its {1e3*h:.1f} mm layer over "
+              f"{area:.4f} m2 is {1e3*implied:.2f} L -- the layer identity does not hold, so this comparison is void]")
+        return
+    d = np.load(ROOT / "data/derived/soft-tissue-depth-v1/depth.npz")["depth_m"]
+    declared_layer = sum(layers.values())
+    print(f"\nwhere the missing fat would go (known answer: {1e3*h:.1f} mm x {area:.4f} m2 = {1e3*implied:.2f} L "
+          f"= the hypodermis's {1e3*hypo['volume_m3']:.2f} L)")
+    print(f"  this body's skin declares      {1e3*declared_layer:.1f} mm of layer -> {1e3*declared_layer*area:.2f} L")
+    print(f"  its own geometry measures      {1e3*np.median(d):.1f} mm median, {1e3*d.mean():.1f} mm mean skin-to-bone/muscle "
+          f"-> {1e3*d.mean()*area:.2f} L of subcutaneous space")
+    gap = (d.mean() - declared_layer) * area
+    print(f"  the difference is              {1e3*gap:.2f} L, {gap*950*scale:.3f} kg at the hypodermis's ledger density")
+    print(f"  the fat with no geometry is    {declared-fat:.3f} kg")
+    need = (declared - fat) / (950 * scale)
+    print(f"\nThe space is ample and the deficit does NOT fill it: the missing {declared-fat:.3f} kg is {1e3*need:.2f} L, "
+          f"{100*need/gap:.0f}% of the {1e3*gap:.2f} L the measurement leaves over the declared layers. Filling the whole "
+          f"difference at fat density would be {gap*950*scale:.1f} kg, three times the declared depot's shortfall, so "
+          "this is a bound, not an allocation: nearest-structure depth is an UPPER bound on a subcutaneous layer (it "
+          "runs to the nearest bone or muscle, and where neither is close -- abdomen, gluteal region, breast -- the "
+          "space it measures holds fascia, vessels and glands as well as fat). What it does establish is that the "
+          "hypodermis is declared thinner than this body's own surfaces measure, with room for the fat the ledger has "
+          "no geometry for -- and that the same declared layer is the contact model's thickness "
+          "(docs/SEGMENT_CONTACT_SURFACES.md), so the mass gap and the contact gap are the same declaration.")
 
 if __name__ == "__main__": main()

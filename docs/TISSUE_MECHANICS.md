@@ -435,6 +435,26 @@ mass or an inertia: the fall proxies inscribed in inertia ellipsoids, every stan
 controller fitted to them. It is also the same gap the contact layer meets from the other side --
 the subcutaneous depot that the declared 3 kPa skin cannot hold the body up with.
 
+**Is there room for it?** Yes, and the room is where the contact layer is declared too thin.
+Known answer first: the hypodermis's 5.0 mm layer over the canonical exterior skin, 1.7805 m2, is
+8.90 L -- its own volume, exactly. (The skin bundle's `exterior_surface_area_m2` is 1.9198 m2
+because it is in the SCAFFOLD frame, the binding map's 0.963 scale squared; using it fails this
+identity by 7.9%, which is how the frame error was caught.)
+
+| | |
+|---|---:|
+| declared skin layers, 6.6 mm over 1.7805 m2 | 11.75 L |
+| this body's measured skin-to-bone/muscle space (median 11.0 mm, mean 14.0) | 24.86 L |
+| difference | 13.11 L = 14.7 kg at fat density |
+| fat with no geometry | 4.887 kg = 4.36 L |
+
+The deficit is **33%** of that difference, so the space is ample and this is a BOUND, not an
+allocation: nearest-structure depth runs to the nearest bone or muscle, and where neither is close
+-- abdomen, gluteal region, breast -- the space it measures also holds fascia, vessels and glands.
+What it establishes is that the hypodermis is declared thinner than this body's own surfaces
+measure, with room for the fat the ledger cannot place; and since that same declared layer is the
+contact model's thickness, the mass gap and the contact gap are one declaration, not two problems.
+
 That matters mechanically and not only cosmetically.
 `docs/SEGMENT_CONTACT_SURFACES.md` measured that the declared skin alone cannot
 hold the body up — 761 N over ~0.02 m² of plantar skin at 1.72 MPa/m needs
