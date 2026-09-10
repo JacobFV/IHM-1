@@ -30,7 +30,7 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 ZIP = ROOT / "data/raw/anatomy/ut-endomri/UT-EndoMRI.zip"
-OUT = ROOT / "data/derived/ut-endomri-organs-v1"
+OUT_DEFAULT = ROOT / "data/derived/ut-endomri-organs-v1"
 MD5 = "7ace6e1b08efa10d0a1967073b0ba41c"
 CAVEAT = ("UT-EndoMRI: endometriosis cohort, pathology-selected -- NOT a typical-anatomy reference. "
           "Non-commercial research use only; cite Liang et al.")
@@ -69,18 +69,21 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--skip-md5", action="store_true", help="only when the download step already verified it")
     ap.add_argument("--limit", type=int, default=None)
+    ap.add_argument("--zip", type=Path, default=ZIP, help="the archive (default: the verified download)")
+    ap.add_argument("--out", type=Path, default=OUT_DEFAULT)
     a = ap.parse_args()
+    out = a.out
     if not a.skip_md5:
-        got = md5(ZIP); print(f"GATE md5: {got} {'PASS' if got == MD5 else 'FAIL'}")
+        got = md5(a.zip); print(f"GATE md5: {got} {'PASS' if got == MD5 else 'FAIL'}")
         if got != MD5: raise SystemExit("the zip is not the archive Zenodo records; nothing extracted")
-    zf = zipfile.ZipFile(ZIP)
+    zf = zipfile.ZipFile(a.zip)
     pat = re.compile(r"UT-EndoMRI/(D[12]_\w+)/(D\d-\d+)/\s*(D\d-\d+)_\s*(\w+)\.nii(\.gz)?$")
     subjects = {}
     for n in zf.namelist():
         if "__MACOSX" in n or n.endswith(".DS_Store"): continue
         m = pat.match(n.replace(" ", ""))
         if m: subjects.setdefault(m.group(2), {})[m.group(4)] = n
-    OUT.mkdir(parents=True, exist_ok=True)
+    out.mkdir(parents=True, exist_ok=True)
     report = dict(schema="ihm.ut-endomri-organs.v1", source="Zenodo 13749613", md5=MD5, caveat=CAVEAT,
                   consensus_rule=">=2 of 3 raters; both of 2; the one of 1", subjects={})
     for i, (sid, files) in enumerate(sorted(subjects.items())):
@@ -109,7 +112,7 @@ def main():
             pair = {f"{x}~{y}": dice(masks[x], masks[y]) for ix, x in enumerate(masks) for y in list(masks)[ix + 1:]}
             vox_ml = abs(np.linalg.det(ref.affine[:3, :3])) / 1000.0
             o = dict(grid=next(iter(grids)), raters=sorted(masks), inter_rater_dice=pair)
-            d = OUT / sid; d.mkdir(parents=True, exist_ok=True)
+            d = out / sid; d.mkdir(parents=True, exist_ok=True)
             if organ == "ut":
                 vol = float(cons.sum() * vox_ml); o["volume_ml"] = vol
                 o["volume_in_bound"] = UTERUS_ML[0] <= vol <= UTERUS_ML[1]
@@ -128,7 +131,7 @@ def main():
         u = rec["organs"].get("ut", {}); ov = rec["organs"].get("ov", {})
         print(f"{sid}: uterus {u.get('volume_ml', float('nan')):7.1f} mL (raters {u.get('raters', [])}) | "
               f"ovaries {ov.get('count', '-')} {ov.get('pieces_ml', [])} | flags {flags or '-'}", flush=True)
-        (OUT / "manifest.json").write_text(json.dumps(report, indent=2) + "\n")
-    print(f"{len(report['subjects'])} subjects written to {OUT.relative_to(ROOT)}")
+        (out / "manifest.json").write_text(json.dumps(report, indent=2) + "\n")
+    print(f"{len(report['subjects'])} subjects written to {out}")
 
 if __name__ == "__main__": main()
