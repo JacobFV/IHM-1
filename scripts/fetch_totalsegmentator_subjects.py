@@ -14,6 +14,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 URL = "https://zenodo.org/records/10047292/files/Totalsegmentator_dataset_v201.zip?download=1"
 OUT = ROOT / "data/raw/anatomy/totalsegmentator"
+# the members registration needs: the SAME 39 labels build_female_torso_from_totalsegmentator.py
+# registers by.  a subject carries 118 members; the breast and skin are produced by running
+# subtask models on the CT, so the other 78 (sex-neutral organs) are not needed for this step.
+REGISTRATION_LABELS = ([f"rib_{s}_{i}" for s in ("left", "right") for i in range(1, 13)]
+                       + ["sternum", "clavicula_left", "clavicula_right"]
+                       + [f"vertebrae_T{i}" for i in range(1, 13)])
 
 def rng(a, b):
     req = urllib.request.Request(URL, headers={"Range": f"bytes={a}-{b}"})
@@ -52,6 +58,11 @@ def central_directory():
     return dict(archive_bytes=size, members=members)
 
 def fetch(name, m, dest):
+    # already on disk and the zip's own CRC32 agrees: nothing to fetch
+    if dest.exists() and dest.stat().st_size == m["size"]:
+        raw = dest.read_bytes()
+        if (zlib.crc32(raw) & 0xFFFFFFFF) == m["crc32"]:
+            return hashlib.sha256(raw).hexdigest()
     head, _ = rng(m["offset"], m["offset"] + 29); nl, xl = struct.unpack("<HH", head[26:30])
     start = m["offset"] + 30 + nl + xl
     data, _ = rng(start, start + m["compressed"] - 1) if m["compressed"] else (b"", 0)
@@ -63,7 +74,10 @@ def fetch(name, m, dest):
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--subjects", type=int, default=4)
-    ap.add_argument("--target-age", type=float, default=40.0); a = ap.parse_args()
+    ap.add_argument("--target-age", type=float, default=40.0)
+    ap.add_argument("--members", choices=("all", "registration"), default="all",
+                    help="'registration': only ct.nii.gz and the 39 registration labels")
+    a = ap.parse_args()
     cd = central_directory()["members"]
     if not (OUT / "meta.csv").exists(): fetch("meta.csv", cd["meta.csv"], OUT / "meta.csv")
     rows = list(csv.DictReader(io.open(OUT / "meta.csv", encoding="utf-8-sig"), delimiter=";"))
@@ -82,9 +96,13 @@ def main():
     manifest = dict(source="totalsegmentator", zenodo_record="10047292", version="2.0.1", licence="CC-BY-4.0",
                     citation="Wasserthal et al., Radiology: Artificial Intelligence 2023, doi:10.1148/ryai.230024",
                     selection_rule="female; pathology == no_pathology; study_type spans neck, thorax and pelvis; ages closest to %g" % a.target_age,
-                    pool_size=len(pool), subjects={})
+                    pool_size=len(pool), members=a.members, subjects={})
     for r in chosen:
         sid = r["image_id"]; names = sorted(n for n in cd if n.startswith(sid + "/") and not n.endswith("/"))
+        if a.members == "registration":
+            keep = {f"{sid}/ct.nii.gz"} | {f"{sid}/segmentations/{l}.nii.gz" for l in REGISTRATION_LABELS}
+            if not keep <= set(names): raise SystemExit(f"{sid}: archive lacks {sorted(keep - set(names))}")
+            names = sorted(keep)
         total = sum(cd[n]["size"] for n in names); print(f"{sid}: {len(names)} members, {total/1e6:.0f} MB", flush=True)
         files = {n: fetch(n, cd[n], OUT / n) for n in names}
         manifest["subjects"][sid] = dict(meta=r, members=len(names), bytes=total, sha256=files)

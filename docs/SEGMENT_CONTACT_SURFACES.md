@@ -299,6 +299,53 @@ needed. The canonical map reads 0.000 for every foot and hand segment, which is
 the 96 mm hover above, and should not be used for anything that touches the
 world.
 
+### Per-segment registration does not carry the skin
+
+`scripts/fit_segment_registration.py` fits one similarity per segment (atlas bone
+group -> the scaffold's own bone mesh, trimmed symmetric ICP from the global map).
+It fits every bone better (radius 4.4 -> 1.7 mm, patella 28.3 -> 2.5, humerus up
+to 32.9 -> 4.9). Carrying the SKIN with those maps by linear blend skinning over the
+existing skinning weights does not follow:
+
+| | global map | per-segment, blended |
+|---|---:|---:|
+| **mean enclosure** | **0.888** | **0.873** |
+| segments >= 0.99 | 9 / 22 | 10 / 22 |
+| hand | 0.63 / 0.57 | 0.81 / 0.81 |
+| humerus | 0.82 / 0.67 | 1.000 / 1.000 |
+| torso | 0.84 | 0.94 |
+| **toes** | 0.78 / 0.80 | **0.16 / 0.10** |
+| tibia, radius | 0.99-1.00 | 0.93-0.98 |
+
+(gate: blending with the GLOBAL map for every segment reproduces the global column
+to within its print precision.)
+
+**The toes are not a bone-group mismatch.** That was the first explanation offered,
+and the names refute it: the atlas `toes` group is 28 phalanges and nothing else,
+the five metatarsals sit in `calcn` with the tarsals and sesamoids, and OpenSim
+splits the foot the same way (`l_foot.vtp` for calcn, `l_bofoot.vtp` for toes).
+
+**What the rotations actually are.** Split each per-segment rotation relative to
+the global map into twist about the bone's own long axis and off-axis swing:
+
+| segment | total | twist | swing | elongation |
+|---|---:|---:|---:|---:|
+| femur | 19.6-19.8 | 19.5-19.8 | 1.3-1.5 | 8.3-8.7x |
+| tibia | 15.0-16.6 | 14.6-16.3 | 3.4 | 7.3-7.4x |
+| radius | 31.9-36.1 | 31.6-36.0 | 2.9-4.1 | 10.9-11.9x |
+| **toes** | **16.9-17.0** | **1.0-1.6** | **16.8-16.9** | 1.5x |
+| talus | 22.9-29.6 | 5.0-8.9 | 22.3-28.3 | 1.4-1.5x |
+| patella | 21.1-25.0 | 5.9-6.6 | 20.1-24.4 | 1.1-1.2x |
+
+The long bones rotate almost entirely about their own axis, which point-to-point
+ICP cannot determine: those twists are unconstrained, not fitted. The toes are
+the one segment whose rotation is almost pure SWING -- a 17 deg tilt of the
+forefoot, which lifts the toe skin off the phalanges once it is carried by that
+map. That is the likeliest reading of the collapse and it is not yet tested.
+
+So per-segment rigid maps are the wrong instrument for skin. Skin spans joints; a
+rigid map per segment, blended, puts seams exactly where the partition did.
+
 ### Skin-mediated ground contact, on the better map
 
 25 advances of 10 ms from the stance pose, skin bundle built on the binding
