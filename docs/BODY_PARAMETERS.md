@@ -870,7 +870,20 @@ done; the others have moved.
    8 subjects, all float noise from two header sources agreeing only to the affine tolerance).
    **D1-004 is ambiguous:** its raters outline 116 mL against 649 and 680 mL; the strict route's
    two-rater intersection gave 89 mL and the world route's majority of three gives 609 -- with two
-   raters, one outlier collapses the intersection to the smaller outline. The sternum
+   raters, one outlier collapses the intersection to the smaller outline.
+
+   **The four recovered uteri, registered.** D1-001, D1-008 and D1-009 pass every gate. **D1-017
+   fails containment as written**: 0.688 of its uterus inside this body's pelvic ring. The
+   diagnosis, from a check defined AFTER the failure and therefore evidence, not a gate: it is a
+   726.5 mL uterus whose lowest 25% (and lowest 10%) lies entirely inside the ring, while the
+   part outside bulges 44 mm up and 32 mm forward out of the hull's front face above the pubis,
+   below the iliac crests. The fit is ordinary (residual 4.9 mm, laterality correct, 0.37% into
+   the sacrum). That is an enlarged uterus seated correctly, and it says the containment gate
+   cannot judge an enlarged uterus: it fails correctly placed pathological uteri, which this
+   cohort is full of. A lowest-quartile containment test would separate misplaced from enlarged;
+   it is recorded as a proposal, to be applied to every subject and labelled post-hoc if
+   adopted. The gate is unchanged, and the main batch still holds D1-041 (766 mL) and D1-045
+   (618 mL), predicted to fail it the same way. The sternum
    (gate d1) is untouched by any breast correction; that is the skin-envelope problem.
 2. ~~**A path refitting tool.**~~ **Done.** `libosimActuators.so` already
    exported 97 `PolynomialPathFitter` symbols; what was missing was 300 lines of

@@ -190,6 +190,28 @@
     ],
     "ambiguous": {
       "D1-004": "raters outline 116.0 mL (r2) against 649.4 (r1) and 679.7 mL (r3); the strict route's two-rater intersection gave 89 mL, the world route's majority of three gives 609 mL. with two raters, one outlier collapses the intersection to the smaller outline"
+    },
+    "registration": {
+      "script": "scripts/register_pelvic_organs_batch.py --organs data/derived/ut-endomri-organs-v2-world --out data/derived/ut-endomri-registered-v2-world",
+      "subjects": [
+        "D1-001",
+        "D1-008",
+        "D1-009",
+        "D1-017"
+      ],
+      "pass_all_gates": [
+        "D1-001",
+        "D1-008",
+        "D1-009"
+      ],
+      "fails": {
+        "D1-017": {
+          "gate": "containment, as written: 0.688 of the uterus inside this body's pelvic ring (>= 0.99 required)",
+          "diagnosis": "a 726.5 mL uterus. its lowest 25% and lowest 10% of vertices lie entirely inside the ring; the part outside bulges 44 mm up and 32 mm forward, out of the ring hull's front face above the pubis, below the iliac crests. fit residual 4.9 mm, laterality correct, bone overlap 0.37%. an enlarged uterus seated correctly, not a misplaced one",
+          "gate_changed": false
+        }
+      },
+      "note": "the containment gate cannot judge an enlarged uterus: it fails correctly seated pathological uteri. a lowest-quartile containment test separates 'misplaced' from 'enlarged', but it was defined AFTER D1-017 failed, so it is a proposal: adopting it means applying it to every subject and recording it as a post-hoc amendment. the main batch still holds D1-041 (766 mL) and D1-045 (618 mL), predicted to fail containment the same way"
     }
   }
 }
