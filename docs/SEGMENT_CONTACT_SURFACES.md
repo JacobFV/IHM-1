@@ -201,6 +201,71 @@ because the model says so, and the same error becomes a 96 mm hover.
 39 mm, femurs 88–89 mm, tibias 112 mm above the reference plane" — as a property
 of the geometry rather than of the registration.
 
+### The gate was measuring the partition, not only the registration
+
+The paragraph above says the failure "is not a global-fit problem any more"
+because the two bodies are different subjects. **That is at most part of it, and
+the gate as built cannot tell.** Test the body's OWN anatomical bones against its
+OWN skin -- one acquired body, one canonical frame, no registration anywhere --
+through the same cut, the same caps and the same `enclosure()`
+(`scripts/measure_skin_enclosure_premise.py`):
+
+| segment | own bones inside own skin piece |
+|---|---:|
+| hand, pelvis | **1.000** |
+| torso, toes | 0.97-0.98 |
+| tibia, humerus | 0.86-0.92 |
+| femur | 0.62-0.64 |
+| calcn | 0.04 |
+| ulna, radius | **0.01-0.04** |
+| patella | **0.000** |
+| **mean** | **0.547, 3 of 20 >= 0.99** |
+
+So under this partition even a PERFECT registration tops out at 0.547, and the
+binding map's 0.445 is already 81% of it.
+
+Which piece does contain them (`measure_skin_enclosure_cross.py`)? The
+controls hold -- hand bones read 1.00 in their own piece and 0 in every other,
+and every piece far from a bone reads 0. Two different defects:
+
+* **boundary misassignment.** calcn bones sit **0.78 inside the toes piece**;
+  femur reads 0.62 in its own piece and 0.28 in the pelvis piece, where the
+  femoral head is.
+* **segments that own no closed region at all.** radius and ulna split ONE
+  forearm into two strips, and the patella's piece is a patch on the front of the
+  knee. A capped strip encloses nothing deeper than itself, and these bones are
+  barely inside any piece (row sums 0.23, 0.23, 0.08).
+
+Merging the regions those segments share is the decisive test
+(`measure_skin_enclosure_merged.py`), and it passes:
+
+| skin pieces merged | bones | inside |
+|---|---|---:|
+| radius | radius | 0.008 |
+| radius + ulna | radius / ulna | 0.774 / 0.812 |
+| radius + ulna + hand | radius | **1.000** |
+| patella | patella | 0.000 |
+| patella + tibia (+ femur) | patella | 0.917 (**1.000**) |
+| calcn + toes | calcn | **1.000** |
+| femur + pelvis | femur | 0.900 |
+
+**This body's bones are inside its skin; the per-segment hard partition is what
+fails.** The consequences:
+
+1. **The per-segment enclosure gate is structurally unpassable** for radius, ulna
+   and patella under ANY registration, so it cannot be the acceptance test for
+   one. Registration quality has to be measured against the whole skin, where the
+   partition cannot intervene (`measure_skin_enclosure_whole.py`).
+2. **A skin contact piece is a SURFACE carried by the segment under it, not a
+   volume that encloses that segment's bone.** A forearm is one tube carried by
+   two rigid bodies that rotate relative to each other (pronation). Nothing about
+   a hard partition can represent that; the real fix is the deformable skin that
+   `DIRECTION.md` already requires, with rigid per-segment pieces as the
+   scaffold that stands in for it.
+3. **"Per-segment geometric transformation of the anatomy" is still needed, but
+   it must be judged by the whole-skin gate**, or it will be tuned against a
+   ceiling of 0.547 that no transformation can move.
+
 ### Skin-mediated ground contact, on the better map
 
 25 advances of 10 ms from the stance pose, skin bundle built on the binding
