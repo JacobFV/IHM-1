@@ -712,3 +712,50 @@ Gates, committed before a single subject is registered:
   volume at this body's reference pose.
 Reported, not judged: cartilage thickness (OAI knees are older and often osteoarthritic, so
 thin or eroded cartilage is expected and is the cohort's, not the registration's).
+
+### Pilot: 0 of 6 pass, and the reason is this body's knee, not the fit (07e3415)
+
+`scripts/register_knee_cartilage.py`, six KL-0 right knees (three coded male, three female, by the
+anatomy-established coding on the source card). **Known answer: PASS** -- this body's right femur
+and tibia cut to a 112 x 140 x 140 mm field of view (25% and 30% of their surface kept) and moved
+by the brief's 9 deg similarity and a harder 110 deg one are recovered to <= 0.026 mm, 0.12 deg,
+0.021%.
+
+| subject | residual R / L | which knee | femoral cart. within 3 mm / inside | tibial within 3 mm / inside | overlap |
+|---|---:|---|---:|---:|---:|
+| oaizib_001 | 1.27 / 2.58 mm | R, PASS | 81.1% / 15.3% | 85.2% / 24.9% | 16.7% |
+| oaizib_002 | 1.39 / 2.84 | R, PASS | 89.6% / 29.0% | 88.5% / 27.1% | 16.2% |
+| oaizib_003 | 1.07 / 2.95 | R, PASS | 79.3% / 21.5% | 85.0% / 28.9% | 15.9% |
+| oaizib_004 | 1.22 / 2.61 | R, PASS | 78.8% / 13.3% | 93.6% / 26.8% | 19.3% |
+| oaizib_005 | 1.33 / 2.57 | R, PASS | 78.6% / 21.2% | 88.2% / 15.5% | 12.3% |
+| oaizib_006 | 1.35 / 2.60 | R, PASS | 60.7% / 16.1% | 81.4% / 32.4% | 17.6% |
+
+Which-knee passes on all six (every OAI knee is a right knee, so that is a real check), the medial
+tibial cartilage lands nearer the midline on all six, and mean thickness is 1.3-2.4 mm. Placement
+and joint space fail on all six.
+
+**Why.** This body's femur and tibia are drawn almost touching: the closest vertices are 0.64 mm
+apart on the right and 1.21 mm on the left (checked independently of the pilot; 2 of 857 right
+tibia vertices lie within 1 mm of the femur, 19 within 3 mm), where the scans' own bones stay
+3.3 mm apart. Two ~2 mm cartilage layers cannot fit in that gap, so overlap and cartilage inside
+bone are forced whatever the fit. The fit itself sits where it should: the mapped scan bone
+coincides with this body's bone (50-53% of its samples inside, as for two coincident surfaces),
+residual 1.1-1.4 mm. That the body's femur matches the scans' BONE surface rather than their
+cartilage surface says the cartilage is not already inside these bone meshes; the bones are simply
+drawn in contact. Whether the canonical pose or the source model closes the joint is not tested.
+
+**The placement gate fails its own known answer.** In each scan's own frame, before any
+registration, only 85-97% of the femoral cartilage surface lies within 3 mm of its own femur --
+cartilage is up to ~3 mm thick and the gate samples its whole surface. A gate the ground truth
+fails cannot separate a good registration from a bad one, so its verdicts here carry no
+information about the fit. It is recorded as void as a measurement, not loosened; a replacement
+(for instance on the cartilage's bone-facing surface only, checked first on the scans' own frames)
+would be a new pre-registration, made before any subject is scored on it.
+
+Two metric corrections the pilot made to itself, both changing no verdict: the first overlap
+measure read 2.2% on the scans' own mutually exclusive labels (answer: 0) and was replaced by an
+exact label lookup (0.00%); cartilage inside bone measured by VOLUME rather than surface is
+4.5-20%, recorded as evidence only. Meshes and manifest: `data/derived/knee-cartilage-registered-v1/`.
+**Not to be used as contact geometry** until the joint space is resolved -- in this body's canonical
+bones, or by carrying the cartilage with the plant's own femur and tibia, which set the running
+joint's gap.
