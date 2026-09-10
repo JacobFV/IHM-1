@@ -491,3 +491,33 @@ the collaterals and the ankle ligaments, and what they need is a wrap surface pe
 joint.
 
 `docs/TISSUE_MECHANICS.md` is the full account.
+
+
+## One layer thickness, and the map it should be (2026-09-10)
+
+The skin's elastic foundation derives its stiffness from ONE layer thickness for the whole
+body (`skin_layers`, from the three skin-layer entities). A real body has a few millimetres
+of soft tissue over the shin and scalp and centimetres over the buttocks, and the programme
+requires contact to be mediated by that tissue, never by bone.
+`scripts/measure_soft_tissue_depth.py` reads the map out of this body's own geometry: for
+40,000 points on its exterior skin, the distance to the nearest of 658 bone and muscle
+surfaces.
+
+| region (by nearest deep structure) | median depth | 10-90% |
+|---|---:|---:|
+| sternum | 6.6 mm | 2.4-11.1 |
+| scalp | 7.4 mm | 5.1-9.8 |
+| anterior shin | 10.3 mm | 6.6-13.8 |
+| thigh | 18.4 mm | 8.5-29.7 |
+| buttock | **23.2 mm** | 14.7-27.5 |
+| whole exterior skin | 11.0 mm | 5.3-24.6 |
+
+Gate, an anatomical known answer: the shin and the scalp must each be at most half the
+buttock. PASS. The depth is to the NEAREST surface, not along the inward normal, so it
+underestimates in folds (axilla, groin).
+
+A threefold range: a single thickness makes the foundation too stiff over the buttocks or too
+soft over the shin (stiffness goes as 1/h). **Next, not done:** give each skin patch the local
+depth instead of one h. That changes the plant's contact, so it has to be judged the way the
+tissue elements were -- the stance and the three drops -- before it replaces the single value.
+The per-point map is saved in `data/derived/soft-tissue-depth-v1/depth.npz`.
