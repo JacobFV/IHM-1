@@ -20,9 +20,13 @@ def header(cd, sid):
     m = cd[f"{sid}/ct.nii.gz"]
     head, _ = F.rng(m["offset"], m["offset"] + 29); nl, xl = struct.unpack("<HH", head[26:30])
     start = m["offset"] + 30 + nl + xl
-    chunk, _ = F.rng(start, start + min(m["compressed"], 8192) - 1)
-    raw = zlib.decompress(chunk, -15) if m["method"] == 8 else chunk          # the zip layer
-    nii = zlib.decompressobj(16 + zlib.MAX_WBITS).decompress(raw, 400)          # the .gz layer
+    # a PARTIAL deflate stream: one-shot zlib.decompress refuses a stream cut mid-way
+    # ("incomplete or truncated stream"), which failed every subject on the first run.
+    # a decompressobj yields whatever the chunk holds, and 64 KB is ample for 348 bytes.
+    chunk, _ = F.rng(start, start + min(m["compressed"], 65536) - 1)
+    raw = zlib.decompressobj(-15).decompress(chunk) if m["method"] == 8 else chunk   # the zip layer
+    nii = zlib.decompressobj(16 + zlib.MAX_WBITS).decompress(raw, 400)                # the .gz layer
+    if len(nii) < 348: raise ValueError(f"only {len(nii)} header bytes decoded")
     endian = "<" if struct.unpack("<i", nii[:4])[0] == 348 else ">"
     dim = struct.unpack(endian + "8h", nii[40:56]); pixdim = struct.unpack(endian + "8f", nii[76:108])
     return [dim[i + 1] for i in range(3)], [abs(pixdim[i + 1]) for i in range(3)]
