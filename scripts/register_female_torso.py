@@ -154,13 +154,22 @@ def mask_surface(path, affine_mm, step):
     return (v @ affine_mm[:3, :3].T + affine_mm[:3, 3]) / 1000.0, f.astype(np.int64)
 
 def main():
-    global OUT, FIT_STERNUM_PARTS
+    global OUT, FIT_STERNUM_PARTS, SUBJECT, SRC, RAW
     import argparse
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", type=Path, default=None)
     ap.add_argument("--fit-sternum-parts", default=",".join(FIT_STERNUM_PARTS))
+    ap.add_argument("--subject", default=SUBJECT)
+    # a scan that cuts a bone cannot give that bone's centroid: register only on labels whose
+    # mask touches NO face of the volume. stated in advance, not a relaxed gate -- s1067's
+    # scan cuts ribs 10-11 (both) and right 12 at the bottom, and keeps ribs 2-7 and its
+    # breast whole, which is what the chest-wall question needs.
+    ap.add_argument("--whole-labels-only", action="store_true")
     a = ap.parse_args()
     if a.out is not None: OUT = a.out.resolve()
+    SUBJECT = a.subject
+    SRC = ROOT / "data/derived/female-torso-totalsegmentator-v1" / SUBJECT
+    RAW = ROOT / "data/raw/anatomy/totalsegmentator" / SUBJECT
     FIT_STERNUM_PARTS = [x.strip() for x in a.fit_sternum_parts.split(",")]
     import nibabel as nib
     OUT.mkdir(parents=True, exist_ok=True)
@@ -180,6 +189,16 @@ def main():
             by_name.setdefault(e["name"], []).append(e)
     used_ids = []
     labels = sorted(pairs)
+    if a.whole_labels_only:
+        def whole(lab):
+            mm = np.asanyarray(nib.load(str(RAW / "segmentations" / f"{lab}.nii.gz")).dataobj) > 0
+            if not mm.any(): return False
+            ijk = np.argwhere(mm)
+            return not ((ijk.min(0) == 0).any() or (ijk.max(0) == np.array(mm.shape) - 1).any())
+        dropped = [l for l in labels if not whole(l)]
+        labels = [l for l in labels if l not in dropped]
+        say(f"--whole-labels-only: {len(labels)} of {len(pairs)} labels lie wholly inside {SUBJECT}'s scan; "
+            f"dropped {dropped}")
     src_c, dst_c, src_surf, dst_surf, body_mesh = [], [], [], [], {}
     for lab in labels:
         Vs, Fs = read_obj(SRC / "meshes" / f"{lab}.obj")
@@ -200,6 +219,17 @@ def main():
         src_c.append(area_centroid(Vs, Fs)); dst_c.append(area_centroid(Vb, Fb))
         src_surf.append(sample(Vs, Fs, SAMPLES_PER_BONE, rng)); dst_surf.append(sample(Vb, Fb, SAMPLES_PER_BONE, rng))
     if len(used_ids) != len(set(used_ids)): raise SystemExit("an entity would enter the fit twice")
+    for lab in sorted(pairs):
+        if lab in body_mesh: continue
+        # dropped from the FIT (e.g. a rib the scan cuts); the gates still test this body's
+        # whole bone, so containment and the rib null never change with the subject's scan
+        prts = []
+        for nm in pairs[lab]:
+            cand = by_name.get(nm, [])
+            if len(cand) != 1: raise SystemExit(f"{lab}: expected exactly one BodyParts3D entity named {nm!r}, found {len(cand)}")
+            prts.append(entity_mesh(cand[0]))
+        o3 = np.cumsum([0] + [len(v) for v, _ in prts[:-1]])
+        body_mesh[lab] = (np.vstack([v for v, _ in prts]), np.vstack([f + o for (_, f), o in zip(prts, o3)]))
     src_c, dst_c = np.array(src_c), np.array(dst_c)
     src_all, dst_all = np.vstack(src_surf), np.vstack(dst_surf)
     say(f"{len(labels)} bone correspondences, {len(used_ids)} body entities (all BodyParts3D, none twice)")
@@ -208,7 +238,7 @@ def main():
     Rt = Rotation.from_rotvec(np.deg2rad(11) * np.array([1, -2, 3]) / np.sqrt(14)).as_matrix()
     Mt = sim(1.07, Rt, np.array([0.12, -0.31, 0.05]))
     err_a = float(np.abs(sim(*umeyama(src_c, apply(Mt, src_c))) - Mt).max())
-    say(f"GATE a: recovery of a known similarity on s0790's own centroids, transform error {err_a:.2e} (< 1e-9) -> "
+    say(f"GATE a: recovery of a known similarity on {SUBJECT}'s own centroids, transform error {err_a:.2e} (< 1e-9) -> "
         + ("PASS" if err_a < 1e-9 else "FAIL"))
     if err_a >= 1e-9: sys.exit(1)
 
@@ -234,7 +264,8 @@ def main():
         Mi = sim(*umeyama(src_c[keep], dst_c[keep]))
         held.append(float(np.linalg.norm(apply(Mi, src_c[i:i + 1])[0] - dst_c[i])))
     held = np.array(held)
-    neigh = [np.linalg.norm(dst_c[labels.index(f"rib_{s}_{k}")] - dst_c[labels.index(f"rib_{s}_{k + 1}")])
+    rib_c = {lab: area_centroid(*body_mesh[lab]) for lab in body_mesh if lab.startswith("rib_")}
+    neigh = [np.linalg.norm(rib_c[f"rib_{s}_{k}"] - rib_c[f"rib_{s}_{k + 1}"])
              for s in ("left", "right") for k in range(1, 12)]
     null = float(np.median(neigh)); ratio = float(np.median(held)) / null
     say(f"GATE b: leave-one-bone-out (centroid fit) median {1000*np.median(held):.1f} mm, max {1000*held.max():.1f} mm "
@@ -246,7 +277,7 @@ def main():
     mc = apply(M, src_c); idx = labels.index
     c1 = np.linalg.norm(mc[idx("clavicula_left")] - dst_c[idx("clavicula_left")]) < np.linalg.norm(mc[idx("clavicula_left")] - dst_c[idx("clavicula_right")])
     c2 = np.linalg.norm(mc[idx("rib_left_6")] - dst_c[idx("rib_left_6")]) < np.linalg.norm(mc[idx("rib_left_6")] - dst_c[idx("rib_right_6")])
-    say(f"GATE c: laterality after mapping -- s0790 left clavicle nearer this body's left clavicle: {c1}; "
+    say(f"GATE c: laterality after mapping -- {SUBJECT} left clavicle nearer this body's left clavicle: {c1}; "
         f"rib_left_6 nearer left sixth rib: {c2} -> " + ("PASS" if c1 and c2 else "FAIL"))
     if not (c1 and c2): sys.exit(1)
 

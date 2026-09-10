@@ -51,6 +51,13 @@ def inside(V, F, points, seed=0):
     return odd[0] & odd[1]
 
 def main():
+    global R
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--reg-dir", type=Path, default=R,
+                    help="a register_female_torso.py output directory (default: s0790's)")
+    R = ap.parse_args().reg_dir.resolve()
+    print(f"registration: {R.relative_to(ROOT)}")
     ents = {e["name"]: e for e in json.loads(ANATOMY.read_text())["entities"] if e["role"] == "rigid_bone"}
     def verts(n, k, seed=0):
         g = json.loads(gzip.decompress((ROOT / ents[n]["reference_geometry"]["path"]).read_bytes()))
