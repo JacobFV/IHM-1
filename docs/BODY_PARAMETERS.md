@@ -303,6 +303,33 @@ chest skin over a chest wall carrying no gland.
 So a female body is **new source geometry**, not new code. This is the fact that
 determines everything below it.
 
+**Amended 2026-09-10: one female source does exist, for the lower body.** The survey above stands
+for whole bodies and is wrong for the pelvis-and-below. `data/sources/visible-human-lower-extremity.json`:
+the Visible Human **Female** and **Male** cryosections segmented into 260 geometries each -- 76
+muscles, 28 bones, **16 cartilages, 8 ligaments, and subcutaneous and intramuscular FAT** --
+CC BY 4.0, public download, no agreement (Andreassen et al., Scientific Data 2023;10:34). The
+female cryosections are 0.33 mm apart against the male's 1.0 mm, and NLM has required no licence
+for the underlying images since July 2019.
+
+It is a female LOWER body, not a female body: no thorax, no viscera, no head. But it answers three
+things this repository has open, and answers them from ONE specimen each:
+
+* **articular cartilage**, which this body has none of and whose absence made the knee pilot fail
+  0 of 6 (`docs/TISSUE_MECHANICS.md`) -- here it comes with the femur and tibia it belongs to;
+* **fat as geometry**, subcutaneous and intramuscular, against the 4.887 kg of declared fat this
+  body carries as denser bone and muscle instead;
+* **the foot**, where the skin-on-bone registration fails the stance gate -- a foot whose bones,
+  muscles and fat are one person's needs no cross-specimen warp.
+
+What it is not: MakeHuman and the parametric surface models (SMPL-X and its skeleton-inferring
+descendants) are skins. MakeHuman's assets are CC0 and its surface is better than anything here,
+but the mesh is an envelope with helper cubes for animation bones -- no femur, no pectoralis, no
+uterus. They are legitimate as a shape TARGET to warp measured anatomy toward, or for display and
+clothing, and they are not anatomy. The whole-body female options that are anatomy remain: the
+ICRP-110/145 reference female (a real 43-year-old's CT, 141 tissues, but the phantom data ships
+with the publication and its terms are unread here), and segmenting the Visible Human Female
+above the pelvis ourselves.
+
 ### The proportional half, which is measurable and is measured
 
 `index_anthropometry.py`, survey-weighted, 4,883 adults 20–79, male minus female,

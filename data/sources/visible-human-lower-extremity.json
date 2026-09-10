@@ -1,0 +1,33 @@
+{
+ "id": "visible-human-lower-extremity",
+ "reference": "https://digitalcommons.du.edu/visiblehuman/",
+ "citation": "Andreassen TE, Hume DR, Hamilton LD, Walker KE, Higinbotham SE, Shelburne KB. Three dimensional lower extremity musculoskeletal geometry of the Visible Human Female and Male. Scientific Data 2023;10(1):34. doi:10.1038/s41597-022-01905-2",
+ "role": "candidate source of (a) FEMALE lower-body musculoskeletal geometry, which no catalogued source here provides, (b) ARTICULAR CARTILAGE at hip, knee and ankle, of which this body has none, and (c) SUBCUTANEOUS and INTRAMUSCULAR FAT as geometry, which this body carries only as one uniform skin layer",
+ "access": "public download, CC BY 4.0, no registration or agreement; two records, one per sex",
+ "status": "catalogued_verified_not_acquired",
+ "verified_here": {
+  "method": "collection and record pages fetched 2026-09-10, plus the Scientific Data abstract via Europe PMC and NLM's Visible Human access page",
+  "records": ["Visible Human Female", "Visible Human Male"],
+  "structures_per_subject": {"total": 260, "muscles": 76, "bones": 28, "cartilages": 16, "ligaments": 8,
+                             "fat": ["intramuscular", "subcutaneous"]},
+  "coverage": "pelvis through the feet. The collection page says 'pelvis to ankle' in one place and 'through the feet' in another; which of the two the foot geometry actually reaches is NOT settled here and must be read off the files before any claim rests on it",
+  "files_female_record_mb": {"aligned_cryosection_dicom": 462.7, "aligned_ct_dicom": 301.9,
+                             "aligned_scans_mat_tif": 1472.6, "original_masks_mhd": 1318.1,
+                             "original_label_maps": 2081.3, "masks_3d_slicer": 2616.3,
+                             "smoothed_masks_3d_slicer": 2073.7, "final_masks_3d_slicer": 2076.0,
+                             "stl_original": 506.2, "stl_smoothed": 173.0, "stl_final": 87.8},
+  "source_images": "NLM Visible Human Project cryosections. The FEMALE axial anatomical images are 0.33 mm apart (over 5,000 slices) against 1.0 mm for the male (1,871), per NLM; VHP data itself has needed no licence since July 2019",
+  "why_it_matters_here": [
+   "this body has 51 cartilage entities and NO articular cartilage; the knee pilot failed 0 of 6 because the canonical femur and tibia are drawn 0.64 mm apart, and this source carries the cartilage AND the bones it belongs to from one specimen",
+   "this body's only fat geometry is the hypodermis skin layer, and 4.887 kg of its declared 21% has no geometry at all (docs/TISSUE_MECHANICS.md); this source segments subcutaneous and intramuscular fat as surfaces",
+   "the skin-on-foot registration is where the stance gate fails (docs/SEGMENT_CONTACT_SURFACES.md): a foot whose bones, muscles and fat come from ONE specimen is the case that does not need a cross-specimen warp"
+  ]
+ },
+ "limitations": [
+  "LOWER EXTREMITY ONLY: no thorax, no abdomen above the pelvis, no head, no viscera, no vessels, no nerves. It cannot be a female body; it can be a female lower body.",
+  "one cadaver per sex, segmented by the authors from cryosection photographs, so every boundary carries their judgement and this specimen's anatomy, not a population.",
+  "the two specimens are decades apart in acquisition and differ in slice spacing (0.33 vs 1.0 mm), so male and female geometry here are not matched in resolution.",
+  "provenance: the Visible Human Male cadaver was an executed prisoner who had consented to donation, which NLM states plainly and which any use of the male record inherits."
+ ],
+ "not_acquired_because": "catalogued only; nothing downloaded. Acquiring it is a decision about scope (a female LOWER body, not a female body) and about mixing specimens, and belongs to the owner."
+}
