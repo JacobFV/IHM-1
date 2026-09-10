@@ -180,11 +180,24 @@ def joint_stops():
             for name, (lo, hi) in sorted(declared_ranges().items())]
 
 
+# Which derived ligament set the plant carries. None keeps the plant exactly as it was
+# (stops only). Set from --tissue in main; a dict, so no function needs `global`. Only the
+# admissible elements of a set are loaded: docs/TISSUE_MECHANICS.md shows the full sets are
+# worse than no tissue on every drop, and v2's admissible set, added to the stops, halves
+# the worst excursion on all three drops. This asks whether that carries into the crawl.
+# Worker processes spawned by search mode do not inherit it; use it with --mode best.
+CONFIG = {'tissue': None}
+
+
 def open_stream(out_dir, pose, stops=True):
+    tissue = CONFIG['tissue']
     return NativeMechanicalStream(ROOT, out_dir, environment='upright',
                                   target_mass_kg=TARGET_MASS_KG, initial_pose=pose,
                                   augmented_registration=REGISTRATION,
-                                  coordinate_limits=joint_stops() if stops else None)
+                                  coordinate_limits=joint_stops() if stops else None,
+                                  tissue_ligaments=tissue,
+                                  tissue_ligament_classes=['ligament', 'joint_capsule'] if tissue else None,
+                                  tissue_ligament_admissible_only=bool(tissue))
 
 
 def contact_summary(state):
@@ -796,7 +809,9 @@ def main():
     ap.add_argument('--search-out', default='data/derived/crawl-search/search.json')
     ap.add_argument('--out', default='data/derived/crawl-best')
     ap.add_argument('--trace', help='write a per-advance wall-time trace here')
+    ap.add_argument('--tissue', default=None, help='a tissue-force-elements directory; admissible elements only')
     a = ap.parse_args()
+    CONFIG['tissue'] = a.tissue
     WORK.mkdir(parents=True, exist_ok=True)
     params = dict(SEED)
     if a.params:

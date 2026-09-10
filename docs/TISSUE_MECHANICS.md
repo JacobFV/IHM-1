@@ -613,6 +613,29 @@ added to the joint stops, not in place of them. The measurement scripts still
 default to v1 so every result already recorded reproduces; switching the plant's
 default is a separate, deliberate step.
 
+#### ...and in the crawl it is neutral
+
+`scripts/crawl.py --tissue DIR` loads a set's admissible elements into the plant alongside
+the stops. Search B's best crawl parameters replayed for 16 s, three ways (gate: the
+stops-only replay reproduces the recorded crawl, 0.9200 m and 0.2003 rad at the right
+ankle -- PASS):
+
+| arm | reaches 16 s | travel | worst excursion | peak fibre velocity (of 10) | wall clock |
+|---|---|---:|---:|---:|---:|
+| stops | yes | 0.9200 m | 0.2003 rad, ankle_angle_r | 9.69 | 707 s |
+| stops + v1 admissible | **no -- 0.01 s** | 0 | -- | 5.20 | 8 s |
+| stops + v2 admissible | yes | 0.9146 m | 0.1987 rad, ankle_angle_r | **9.99** | 863 s |
+
+* **v1 cannot start the crawl.** A joint-speed guard stopped it on the first advance, with
+  arm_rot_r past 25 rad/s.
+* **v2 does no harm and no good here.** Travel and worst excursion are within 1% of the
+  stops alone. The drop tests' halving was unactuated falls; in actuated crawling the stops
+  already hold the worst excursion to 0.2 rad, at an ankle v2 barely restrains.
+* **Its costs:** 22% more wall clock, and peak fibre velocity at 9.99 of the muscle model's
+  10 -- at the edge of the force-velocity domain, where the stops-only crawl had 3% to spare.
+
+One trajectory per arm: v2 is safe to carry in locomotion; its benefit is not shown there.
+
 ## What would move this next, in order
 
 1. **Per-segment registration of the atlas onto the scaffold**, before any wrap
