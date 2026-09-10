@@ -673,4 +673,20 @@ mediated by fat, muscle and skin rather than bone. Two routes were checked:
   is the standard adipose window, and it is the threshold TotalSegmentator's own
   `tissue_4_types` post-processing uses. Applied inside the Apache-2.0 `body` mask, it gives an
   adipose segmentation for the CT subjects already on disk (s0790, s1159, s0970), split into
-  subcutaneous and deep by distance from the skin. Being tested.
+  subcutaneous and deep by distance from the skin. Tested on the three CT subjects that pass
+  every extraction gate:
+
+    subject   body L  fat L  fat % breast mL breast fat % glandular %     T6    T12  T12-120  T12-250   (subcutaneous depth, 95th pct, mm)
+    s0790       37.9  12.74   33.6      1161         82.6        13.8   36.5   18.1     51.0     37.3
+    s1159       34.3   7.35   21.4       956         67.0        29.7   16.8   10.6     34.0     28.1
+    s0970       35.3  10.58   30.0      1437         87.8        11.5   43.5   14.8     31.7      nan
+
+  Two checks, neither a known answer in the strict sense, both passed. The breast is fat plus
+  glandular tissue, and glandular tissue (~30-50 HU) falls OUTSIDE the window, so the share of
+  breast voxels in the window is the breast's fat fraction; it lands in or just above the range a
+  rough prior expects for these ages, with the glandular remainder in the -30..100 HU band. And
+  the skin-connected fat is deepest over the lower abdomen and hips, thinner over the upper
+  abdomen -- the female, lower-body distribution. Limitation: "subcutaneous" is fat connected to
+  the outer 3 mm of the body, so where the abdominal wall thins some deep fat can join it; the
+  lower-abdominal depths may include deep fat. This gives a fat layer for three female subjects,
+  not for this body; carrying one onto this body's skin is the skin-envelope problem.
