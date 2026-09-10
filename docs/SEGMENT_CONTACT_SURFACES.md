@@ -346,6 +346,22 @@ map. That is the likeliest reading of the collapse and it is not yet tested.
 So per-segment rigid maps are the wrong instrument for skin. Skin spans joints; a
 rigid map per segment, blended, puts seams exactly where the partition did.
 
+The rotation controls settle whether the twists were the problem: they were not.
+Blended skin, by how each segment's rotation is fitted:
+
+| rotation | mean enclosure | segments >= 0.99 |
+|---|---:|---:|
+| global map, one similarity | **0.888** | 9 / 22 |
+| per segment, free | 0.873 | 10 / 22 |
+| per segment, twist about the long axis removed | 0.857 | 12 / 22 |
+| per segment, rotation held at the global map's | 0.830 | 12 / 22 |
+
+Every per-segment variant is worse than the one global similarity on the mean,
+including the one with no per-segment rotation at all -- so it is not the
+rotations. Per-segment scale and translation, blended across a joint, already
+distort the surface. The skin has to be carried by something that is continuous
+across joints.
+
 ### Skin-mediated ground contact, on the better map
 
 25 advances of 10 ms from the stance pose, skin bundle built on the binding
