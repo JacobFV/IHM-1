@@ -924,6 +924,37 @@ done; the others have moved.
      moved until it fits. Whether the sliding condition is right for a breast is what step 2 tests;
      step 1 exists so that test is reachable, not to make it pass.
 
+   **Run on s1159 left: unseated, and the objective is why.** Step 1 as written minimises
+   penetration ONLY, and that has a degenerate minimum -- carry the breast away and every ray misses
+   the muscle. Unbounded, L-BFGS took it in one step (999.7 mm). Bounded to the region where
+   placement means anything, the minimiser from the registered pose ran to the CORNER of the box
+   (translation [25.0, -25.0, 21.7] mm, magnitude 41.5 mm, rotation 18.9 deg): the objective fell
+   15x while the WORST penetration got worse, 45.5 -> 56.6 mm, and 672 of 2,850 base nodes lost the
+   muscle on their ray. By the 25 mm rule that is a registration failure and s1159 left is reported
+   unseated -- but the verdict is a property of the objective, not evidence about the registration,
+   and it is recorded as such. The other seven were not attempted.
+
+   **What a rigid placement can and cannot do**, swept directly with no optimiser: a pure anterior
+   translation of the registered breast (mean base normal [0.308, 0.160, 0.938]).
+
+   | anterior shift | penetration max | median | nodes penetrating | nodes with muscle on their ray | objective |
+   |---:|---:|---:|---:|---:|---:|
+   | 0 mm | 45.5 mm | 18.5 mm | 2597 | 2850 | 1.157 |
+   | 10 mm | 58.4 mm | 12.1 mm | 2721 | 3082 | 0.612 |
+   | 20 mm | 46.6 mm | 8.5 mm | 2489 | 3291 | 0.460 |
+   | 25 mm | 49.4 mm | 8.0 mm | 1838 | 3264 | 0.470 |
+
+   The median halves and MORE nodes come over the muscle -- the opposite of escape -- but the
+   deepest nodes stay 45-58 mm inside at every shift. So a rigid placement improves the typical node
+   and does not remove the extreme overlap, which is the part neither solver can push out. Step 1
+   does not make step 2 reachable for this breast.
+
+   **Two implementation faults to fix before this is re-run, neither applied here.** The 25 mm rule
+   is on translation MAGNITUDE; the search bounded each COMPONENT, so the magnitude could reach 43 mm
+   and the rotation vector 26 deg -- a magnitude constraint is needed, not a box. And the escape has
+   a cheap fix: count a node that loses its bed at its pre-placement penetration, so carrying tissue
+   off the muscle cannot pay. Both change a pre-registered step and are argued, not silently made.
+
    **Uterus and ovaries: the pelvic registration, and its gates, fixed before any fitting.**
    UT-EndoMRI (owner-approved 2026-09-10; an endometriosis cohort, NOT a typical-anatomy
    reference) gives uterus and ovary labels on pelvic T2 MRI. TotalSegmentator's

@@ -28,6 +28,16 @@ away), so their measured gap flipped sign as they slid and the re-linearisation 
 tens of millimetres of apparent penetration through a constraint that forbids any. A ray cannot
 pick the wrong sheet, and its hit point travels continuously as the node slides.
 
+SEAT IT IN TWO STEPS (docs/BODY_PARAMETERS.md, fixed 2026-09-10 before it ran). 45 mm of overlap
+is placement, not tissue deformation: the breast is another woman's tissue where a similarity
+registration put it, and neither solver will push that out (FEBio 582 s without finishing a step;
+the in-repo solve 0.1% of the seating per step). So step 1 PLACES the breast rigidly -- translation
+and rotation, no scale, so volume cannot change -- minimising the sum of squared penetration depths
+of the base nodes along their own outward normals, by L-BFGS over the six degrees of freedom. Step 2
+CONFORMS it with the sliding boundary condition above, from the placed state. A breast needing more
+than PLACEMENT_LIMIT_M of translation is a REGISTRATION failure for that subject, reported unseated
+rather than moved until it fits.
+
 THE SOLVERS. In-repo: SlidingRegion (ihm/assembly/sliding_contact.py), projected Newton on
 DeformableRegion's energy with each base node's frame rotated to the bed normal, so the normal is
 a bound; frames re-linearised as nodes slide. FEBio 4.13: ihm/assembly/febio_sliding.py, rigid
@@ -70,6 +80,16 @@ DECIMATE_FACES, DECIMATE_VOLUME_TOL, MESH_LR = 8000, 0.005, 0.08
 # motion slides its hit point millimetres along the surface, which reads as the constraint moving.
 # Those nodes are free, like the ones with no muscle on their line.
 RAY_REACH_M, GRAZING_COS, LOAD_STEPS, GAP_TOL_M = 0.060, 0.3, 8, 5e-5
+# The objective is penetration only, so it has a degenerate minimum: fly the breast away and every
+# ray misses the muscle. Unbounded L-BFGS took it in one step (999.7 mm). The search is therefore
+# bounded to the region where 'placement' means anything -- the 25 mm honesty limit itself, and
+# 15 deg -- so a breast that wants more sits at the bound and is reported a registration failure.
+# The finite-difference step is 0.5 mm, not 0.1: a ray-cast objective changes in facet-sized jumps
+# and a finer step reads as noise (the search stalled after 2 iterations). Several starts are tried,
+# including pure anterior offsets -- lifting the breast off the chest is the obvious direction -- and
+# the best is kept.
+PLACEMENT_LIMIT_M, PLACEMENT_SAMPLE, PLACEMENT_TURN_LIMIT_RAD = 0.025, 1200, 0.262
+PLACEMENT_EPS_M, PLACEMENT_STARTS_MM = 5e-4, (0.0, 8.0, 16.0, 22.0)
 CAVEATS = ["one clinical subject per breast, as a segmentation model drew it",
            "'breast' is a single soft-tissue label: no gland, ducts or nipple",
            "nu = 0.49 is assumed (adipose is nearly incompressible)",
@@ -236,6 +256,90 @@ def stage_prepare(sid, side, d):
           f"deepest penetration {info['deepest_penetration_mm']:.1f} mm")
 
 
+def stage_place(sid, side, d):
+    """Step 1: the rigid motion (no scale) minimising the summed squared penetration of the base
+    nodes along their own outward normals. Rewrites the prepared state in the PLACED pose, keeping
+    the registered one beside it."""
+    from scipy.optimize import minimize
+    from scipy.spatial.transform import Rotation
+    P = np.load(d / "prepared.npz")
+    X0 = P["X_registered"] if "X_registered" in P.files else P["X"]
+    T, B, posterior, bV, bF = P["T"], P["boundary"], P["posterior"], P["bedV"], P["bedF"]
+    vn = np.zeros_like(X0)
+    for k in range(3): np.add.at(vn, B[:, k], np.cross(X0[B[:, 1]] - X0[B[:, 0]], X0[B[:, 2]] - X0[B[:, 0]]))
+    dirs0 = vn[posterior] / np.maximum(np.linalg.norm(vn[posterior], axis=1, keepdims=True), 1e-30)
+    centroid = X0.mean(0)
+
+    def place(params):
+        R = Rotation.from_rotvec(params[3:]).as_matrix()
+        return (X0 - centroid) @ R.T + centroid + params[:3], dirs0 @ R.T
+
+    def penetration(params, idx):
+        Y, D = place(params)
+        association, _ = bed_rays(bV, bF, D[idx], RAY_REACH_M)
+        c, n = association(Y[posterior[idx]])
+        gap = np.einsum('ij,ij->i', n, Y[posterior[idx]] - c)
+        return np.where(np.isfinite(gap), np.maximum(0.0, -gap), 0.0)
+
+    sample = np.random.default_rng(0).choice(len(posterior), min(PLACEMENT_SAMPLE, len(posterior)), replace=False)
+    before = penetration(np.zeros(6), np.arange(len(posterior)))
+    t0 = time.time()
+    bounds = [(-PLACEMENT_LIMIT_M, PLACEMENT_LIMIT_M)] * 3 + [(-PLACEMENT_TURN_LIMIT_RAD, PLACEMENT_TURN_LIMIT_RAD)] * 3
+    objective = lambda q: float((penetration(q, sample) ** 2).sum())
+    anterior = -dirs0.mean(0); anterior /= max(np.linalg.norm(anterior), 1e-30)
+    tries = []
+    for mm in PLACEMENT_STARTS_MM:
+        q0 = np.zeros(6); q0[:3] = anterior * (mm * 1e-3)
+        q0[:3] = np.clip(q0[:3], -PLACEMENT_LIMIT_M, PLACEMENT_LIMIT_M)
+        ri = minimize(objective, q0, method="L-BFGS-B", bounds=bounds,
+                      options={"eps": PLACEMENT_EPS_M, "maxiter": 60, "ftol": 1e-14, "gtol": 1e-14})
+        tries.append(ri)
+        print(f"    start {mm:.0f} mm anterior: objective {objective(q0):.3e} -> {ri.fun:.3e}, "
+              f"|t| {np.linalg.norm(ri.x[:3])*1e3:.2f} mm, {ri.nit} iterations", flush=True)
+    r = min(tries, key=lambda ri: ri.fun)
+    after = penetration(r.x, np.arange(len(posterior)))
+
+    def with_bed(params):
+        Y, D = place(params); _, has = bed_rays(bV, bF, D, RAY_REACH_M); return int(has(Y[posterior]).sum())
+    bed_before, bed_after = with_bed(np.zeros(6)), with_bed(r.x)
+    shift = float(np.linalg.norm(r.x[:3])); turn = float(np.degrees(np.linalg.norm(r.x[3:])))
+    rec = dict(translation_mm=(r.x[:3] * 1e3).tolist(), translation_magnitude_mm=shift * 1e3,
+               rotation_deg=turn, rotation_axis=(r.x[3:] / max(np.linalg.norm(r.x[3:]), 1e-30)).tolist(),
+               penetration_before_mm=dict(max=float(before.max() * 1e3), median_over_penetrating=float(np.median(before[before > 0]) * 1e3) if (before > 0).any() else 0.0,
+                                          nodes=int((before > 0).sum())),
+               penetration_after_mm=dict(max=float(after.max() * 1e3), median_over_penetrating=float(np.median(after[after > 0]) * 1e3) if (after > 0).any() else 0.0,
+                                         nodes=int((after > 0).sum())),
+               objective_before=float((before ** 2).sum()), objective_after=float((after ** 2).sum()),
+               iterations=int(r.nit), starts_mm=list(PLACEMENT_STARTS_MM),
+               start_objectives=[float(ri.fun) for ri in tries], wall_seconds=time.time() - t0,
+               nodes_with_bed_on_their_ray=dict(before=bed_before, after=bed_after),
+               at_translation_bound=bool(np.max(np.abs(r.x[:3])) >= PLACEMENT_LIMIT_M - 1e-9),
+               at_rotation_bound=bool(np.max(np.abs(r.x[3:])) >= PLACEMENT_TURN_LIMIT_RAD - 1e-9),
+               registration_failure=shift > PLACEMENT_LIMIT_M or bool(np.max(np.abs(r.x[:3])) >= PLACEMENT_LIMIT_M - 1e-9),
+               limit_mm=PLACEMENT_LIMIT_M * 1e3)
+    (d / "place.json").write_text(json.dumps(rec, indent=2) + "\n")
+    print(f"  rigid placement: translation {shift*1e3:.2f} mm {np.round(r.x[:3]*1e3,2).tolist()}, rotation {turn:.2f} deg, "
+          f"{r.nit} iterations, {time.time()-t0:.0f} s")
+    print(f"  penetration: max {before.max()*1e3:.1f} -> {after.max()*1e3:.1f} mm; nodes penetrating {int((before>0).sum())} -> {int((after>0).sum())}; "
+          f"nodes with muscle on their ray {bed_before} -> {bed_after}")
+    if rec["registration_failure"]:
+        raise SystemExit(f"REGISTRATION FAILURE for {sid} {side}: placement wants {shift*1e3:.1f} mm "
+                         f"(bound {PLACEMENT_LIMIT_M*1e3:.0f} mm); reported unseated")
+    # re-classify in the placed pose: step 2 starts here
+    X, D = place(r.x)
+    association, has_bed = bed_rays(bV, bF, D, RAY_REACH_M)
+    c, n = association(X[posterior])
+    facing = np.abs(np.einsum('ij,ij->i', np.nan_to_num(n), D)) >= GRAZING_COS
+    on_line = has_bed(X[posterior]) & facing
+    base = posterior[on_line]; dirs = D[on_line]
+    gap0 = np.einsum('ij,ij->i', n[on_line], X[base] - c[on_line])
+    np.savez(d / "prepared.npz", X=X, X_registered=X0, T=T, base=base, posterior=posterior, anterior=P["anterior"],
+             boundary=B, gap0=gap0, bedV=bV, bedF=bF, rim=P["rim"], ray_directions=dirs,
+             rigid_translation=r.x[:3], rigid_rotvec=r.x[3:], rigid_centroid=centroid)
+    print(f"  placed: base {len(base)} of {len(posterior)} posterior nodes, {int((gap0 < 0).sum())} held, "
+          f"{int((gap0 >= 0).sum())} unilateral; deepest penetration {-gap0.min()*1e3:.1f} mm")
+
+
 def stage_dr(sid, side, d, young, tag=""):
     P = np.load(d / "prepared.npz")
     mu, lam = lame(young, NU)
@@ -336,10 +440,11 @@ def stage_judge(sid, side, d):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--subject", required=True, choices=sorted(REG)); ap.add_argument("--side", required=True, choices=("left", "right"))
-    ap.add_argument("--stage", required=True, choices=("prepare", "dr", "dr-check-E", "febio", "judge"))
+    ap.add_argument("--stage", required=True, choices=("prepare", "place", "dr", "dr-check-E", "febio", "judge"))
     a = ap.parse_args(); d = OUT / a.subject / a.side; d.mkdir(parents=True, exist_ok=True)
     print(f"{a.subject} {a.side}: {a.stage}", flush=True)
-    {"prepare": lambda: stage_prepare(a.subject, a.side, d), "dr": lambda: stage_dr(a.subject, a.side, d, E_PA),
+    {"prepare": lambda: stage_prepare(a.subject, a.side, d), "place": lambda: stage_place(a.subject, a.side, d),
+     "dr": lambda: stage_dr(a.subject, a.side, d, E_PA),
      "dr-check-E": lambda: stage_dr(a.subject, a.side, d, E_CHECK_PA, "_E10000"),
      "febio": lambda: stage_febio(a.subject, a.side, d), "judge": lambda: stage_judge(a.subject, a.side, d)}[a.stage]()
 
