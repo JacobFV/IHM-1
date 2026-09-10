@@ -670,7 +670,12 @@ done; the others have moved.
 
 1. **A female whole-body mesh source.** Still the gate on internal genitalia,
    external genitalia and breast, all of which are *additional entities* and none
-   of which can be produced by transforming male ones. **Moved, as of 2026-09-10.**
+   of which can be produced by transforming male ones. **Still not delivered, and the
+   word that matters is WHOLE-body**: the Visible Human Female is now catalogued
+   (`data/sources/visible-human-lower-extremity.json`, CC BY 4.0, 260 segmented
+   geometries per sex including cartilage and fat) and it stops at the pelvis, so it
+   reaches none of the three entities named in this item. See the amendment under
+   "Does any catalogued source ship a female variant". **Moved, as of 2026-09-10.**
    zenodo.org answers from this machine (the HTTP 504 was the old sandbox's
    egress proxy), so both catalogued cards were checked against the archive and
    both were wrong in places:
