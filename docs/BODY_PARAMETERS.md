@@ -711,6 +711,17 @@ done; the others have moved.
      forward across the breast base -- a chest-SHAPE difference at the scale of the
      fit's own residual, not a breast on the wrong ribs.
 
+   **Stray fragments, and a third subject that passes everything.** TotalSegmentator
+   sometimes labels a speck far from the bone it names. s0970's "cut" ribs were specks
+   of 1-25 voxels 138-372 mm from their bones, scattered through the lower scan. The
+   extraction now drops a label's piece only if its closest approach to the label's
+   largest piece exceeds 50 mm. Across all eight subjects every kept piece lies within
+   11.2 mm and every dropped one at least 73.5 mm away; "keep the largest piece" would
+   have been wrong, because s0790's and s1159's vertebrae carry real bone split off by
+   a sub-voxel gap, 7.5-11.2 mm away. Regression: s0790 and s1159 drop nothing and
+   their gates and volumes are identical. **3 of 8 subjects now pass every gate:
+   s0790, s1159, s0970.**
+
    **Three subjects, one answer: it is systematic.** Two more women were registered the
    same way. s1067 (38) on the 34 labels wholly inside her scan
    (`--whole-labels-only`; her scan cuts ribs 10-11 and right 12, keeps ribs 2-7 and the

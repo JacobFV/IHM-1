@@ -39,6 +39,7 @@ GATES, each with an answer this script does not compute:
 import argparse, hashlib, json, subprocess
 from pathlib import Path
 import numpy as np
+from scipy import ndimage
 
 ROOT = Path(__file__).resolve().parents[1]
 RAW = ROOT / "data/raw/anatomy/totalsegmentator"
@@ -47,6 +48,20 @@ TS = ROOT / ".venv-totalseg/bin/TotalSegmentator"
 REGISTRATION_LABELS = ([f"rib_{s}_{i}" for s in ("left", "right") for i in range(1, 13)]
                        + ["sternum", "clavicula_left", "clavicula_right"]
                        + [f"vertebrae_T{i}" for i in range(1, 13)])
+# STRAY FRAGMENTS. TotalSegmentator occasionally labels a speck far from the bone it names:
+# s0970's "rib_left_4" is a 3,864-voxel rib plus 10- and 1-voxel specks 343 mm below it at the
+# bottom of the scan; its "rib_right_12" carries a 25-voxel speck 202 mm away that drags the
+# rib's centroid 10.0 mm. Those specks made s0970 fail chest-whole. But secondary pieces are
+# not all strays: s0790's T2-T4 and s1159's T7 carry 77-224-voxel pieces 7.5-11.2 mm from the
+# vertebra (inside its own 30-40 mm span), moving its centroid at most 1.2 mm -- bone split by a
+# sub-voxel gap. So the rule is DISTANCE, not "largest piece": drop a piece only if its closest
+# approach to the label's largest piece exceeds STRAY_GAP_MM. Across all eight subjects and 39
+# labels, every piece KEPT lies within 11.2 mm of its bone and every piece DROPPED lies 73.5 mm
+# or more from it (s0897 rib_right_8: 73.5-117.8 mm; s0970: 138-372 mm), so 50 mm sits in the
+# empty interval 11.2-73.5 mm. (A first version of this comment said 11-201 mm, from six pieces;
+# the full census narrowed it.) Every dropped piece is recorded in the manifest.
+STRAY_GAP_MM = 50.0
+
 # NOT a measured range: a bound wide enough that any real adult breast passes and a
 # unit or laterality error (mm^3 read as mL, both sides in one) does not.
 BREAST_ML_BOUND = (30.0, 3000.0)
@@ -105,16 +120,31 @@ def main():
         body = load(OUT_ / sid / "body" / "body.nii.gz")
         breast = load(OUT_ / sid / "breasts" / "breast.nii.gz")
         seg = RAW / sid / "segmentations"
-        bones = {n: load(seg / f"{n}.nii.gz") for n in REGISTRATION_LABELS if (seg / f"{n}.nii.gz").exists()}
+        from scipy.spatial import cKDTree
+        world_mm = lambda ijk: ijk @ affine[:3, :3].T + affine[:3, 3]
+        strays = {}
+        def clean(n, m):
+            if not m.any(): return m
+            lab, k = ndimage.label(m, structure=np.ones((3, 3, 3), bool))
+            if k < 2: return m
+            sizes = np.bincount(lab.ravel())[1:]; main = int(np.argmax(sizes)) + 1
+            tree = cKDTree(world_mm(np.argwhere(lab == main)))
+            for j in range(1, k + 1):
+                if j == main: continue
+                gap = float(tree.query(world_mm(np.argwhere(lab == j)))[0].min())
+                if gap > STRAY_GAP_MM:
+                    m = m & (lab != j)
+                    strays.setdefault(n, []).append(dict(voxels=int(sizes[j - 1]), gap_to_main_mm=round(gap, 1)))
+            return m
+        bones = {n: clean(n, load(seg / f"{n}.nii.gz")) for n in REGISTRATION_LABELS if (seg / f"{n}.nii.gz").exists()}
         present = {n: m for n, m in bones.items() if m.any()}
         missing = sorted(set(REGISTRATION_LABELS) - set(present))
-        rec = dict(meta=meta["meta"], ct_sha256=sha(ct), voxel_ml=voxel_ml,
+        rec = dict(meta=meta["meta"], ct_sha256=sha(ct), voxel_ml=voxel_ml, stray_pieces_dropped=strays,
                    registration_labels_present=len(present), registration_labels_missing=missing)
         # --- gates
         all_bone = np.zeros_like(body)
         for m in present.values(): all_bone |= m
         rec["gate_bones_in_body"] = float(body[all_bone].mean()) if all_bone.any() else None
-        from scipy import ndimage
         body_1 = ndimage.binary_dilation(body, iterations=1)
         rec["gate_breast_in_body_strict"] = float(body[breast].mean()) if breast.any() else None
         rec["gate_breast_in_body"] = float(body_1[breast].mean()) if breast.any() else None
