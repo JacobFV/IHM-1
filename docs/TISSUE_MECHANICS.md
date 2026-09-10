@@ -444,7 +444,7 @@ measured:
 | tendon | 44 | 36 of them are tendon **sheaths** — glide interfaces, same block as bursae. The two real tendons (calcaneal, EDL) are already inside the model's musculotendon units and adding them would double-count. |
 | fascia / aponeurosis | 44 | glide surface and bulge constraint need a deformable continuum; the load-transfer part needs a sheet, not a line. |
 | retinaculum | 18 | 80 of 98 muscle paths are polynomials with no geometry to constrain; the other 4 straps hold muscles this plant does not have. |
-| adipose | 2 | 1.26 mL of geometry. Data gap. |
+| adipose | 2 | 1.26 mL of geometry. Data gap -- see "Where adipose can come from" below. |
 | periosteum | 0 | absent entirely. Data gap. |
 | **ligament (inadmissible)** | 48 of 105 | a straight-line path is not a ligament's path; needs a wrap surface per joint. |
 | **joint capsule (inadmissible)** | 3 of 12 | same. |
@@ -657,3 +657,20 @@ One trajectory per arm: v2 is safe to carry in locomotion; its benefit is not sh
    measured wall-clock cost, so the six ankle retinacula have something to hold.
 4. **Regional subcutaneous depth**, which is simultaneously the adipose gap and
    the reason the declared skin cannot hold the body up.
+
+
+## Where adipose can come from (2026-09-10)
+
+This body carries two adipose entities, 1.26 mL, and the programme requires contact to be
+mediated by fat, muscle and skin rather than bone. Two routes were checked:
+
+* **TotalSegmentator `tissue_types` / `tissue_4_types`** (subcutaneous_fat, torso_fat,
+  skeletal_muscle, intermuscular_fat): **licensed**, listed under "Available with a license"
+  in the tool's README. A licence is free for non-commercial use but is obtained through a web
+  registration form (`backend.totalsegmentator.com/license-academic/`) that only the programme
+  owner can submit; the key is then set with `totalseg_set_license -l <key>`. Not obtained.
+* **CT attenuation, no model and no licence.** Fat is defined physically on CT: -190 to -30 HU
+  is the standard adipose window, and it is the threshold TotalSegmentator's own
+  `tissue_4_types` post-processing uses. Applied inside the Apache-2.0 `body` mask, it gives an
+  adipose segmentation for the CT subjects already on disk (s0790, s1159, s0970), split into
+  subcutaneous and deep by distance from the skin. Being tested.
