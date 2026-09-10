@@ -412,6 +412,29 @@ There is **no visceral, no intermuscular and no intramuscular adipose geometry a
 all**. `body_fat_fraction` is in the body-parameter schema and
 `docs/BODY_PARAMETERS.md` already records that it *reaches nothing*; this is why.
 
+**The missing fat is being carried as denser bone and muscle** (`scripts/measure_adipose_budget.py`,
+2026-09-10). Known answers first: the 4,000 entity masses sum to the profile's **70.7713 kg**
+exactly; `mass_allocation`'s **uniform scale 1.179437** holds on every entity with material volume
+to 2.2e-16 relative, with the ledger's own 206 numerical carriers (1 mg each, no volume) excluded;
+and the only entity carried at adipose density is the hypodermis -- even the two fat pads are
+classed `dense_connective` at 1060 kg/m³, not 950.
+
+| | mass | share of 70.7713 kg |
+|---|---:|---:|
+| fat as geometry (hypodermis, at its ledger density) | 9.975 kg | **14.1%** |
+| fat as this body declares it (`profile.json` `body_fat_fraction`) | 14.862 kg | **21.0%** |
+| shortfall | **4.887 kg** | a third of the declared depot |
+
+Carrying 21% would need the hypodermis at 13.26 L against its 8.90 L. The ledger reaches the
+declared total anyway, because the tissue volumes at sourced densities weigh 60.00 kg and every
+entity is then multiplied by 1.179437 -- so the 4.887 kg of fat that has no geometry is
+distributed over skeletal muscle (28.7 kg, 40.6%), soft tissue (11.8 kg), skeleton with marrow
+(9.1 kg, 12.8%) and the rest, each 17.9% denser than its own sourced tissue density.
+**That is a mass distribution no body has**, and it is upstream of everything that reads a segment
+mass or an inertia: the fall proxies inscribed in inertia ellipsoids, every stance margin, and any
+controller fitted to them. It is also the same gap the contact layer meets from the other side --
+the subcutaneous depot that the declared 3 kPa skin cannot hold the body up with.
+
 That matters mechanically and not only cosmetically.
 `docs/SEGMENT_CONTACT_SURFACES.md` measured that the declared skin alone cannot
 hold the body up — 761 N over ~0.02 m² of plantar skin at 1.72 MPa/m needs
