@@ -58,6 +58,15 @@ def main():
         ok = r.returncode == 0
         tally["registered" if ok else "registration failed"] += 1
         print(f"{sid} [{grid}]: {'ok' if ok else 'FAILED (exit %d)' % r.returncode} | " + " | ".join(gates[-3:]), flush=True)
-    print("\nTALLY:", json.dumps(tally))
+    print("\nTALLY (a subject 'registered' only ran to completion):", json.dumps(tally))
+    # "registered" is NOT "passed": the registration exits 0 whether or not a subject's gates pass,
+    # and the first world-route run printed "ok" for D1-017, which fails them. read the verdicts.
+    man = out_dir / "manifest.json"
+    if man.exists():
+        subs = json.loads(man.read_text()).get("subjects", {})
+        passed = sorted(k for k, v in subs.items() if v.get("passes"))
+        failed = sorted(k for k, v in subs.items() if not v.get("passes"))
+        print(f"GATES: {len(passed)} of {len(subs)} subjects in the manifest pass laterality and containment; "
+              f"failing: {failed or 'none'}")
 
 if __name__ == "__main__": main()
