@@ -711,13 +711,34 @@ done; the others have moved.
      forward across the breast base -- a chest-SHAPE difference at the scale of the
      fit's own residual, not a breast on the wrong ribs.
 
-   **What would move it next, and why it is not done yet.** The correction is local:
-   seat each breast on this body's chest wall rather than refit the thorax. It is
-   deferred for one reason that is not caution. A correction built to clear the ribs
-   passes the rib gate by construction, so that gate stops being able to judge it; and
-   whether the offset is s0790's or systematic between this body's chest and female
-   chests in general decides the design. Only a second subject answers that, and the
-   field-of-view screen is fetching them.
+   **Three subjects, one answer: it is systematic.** Two more women were registered the
+   same way. s1067 (38) on the 34 labels wholly inside her scan
+   (`--whole-labels-only`; her scan cuts ribs 10-11 and right 12, keeps ribs 2-7 and the
+   breast whole), and s1159 (47), who passes every extraction gate, on all 39. Zenodo's
+   file backend was down (HTTP 504 at 30.5 s, every request); both came through a
+   HuggingFace copy verified byte-identical to Zenodo's central directory -- all
+   147,361 members -- with every member still checked against the zip's own CRC32.
+
+   | | s0790 | s1067 | s1159 |
+   |---|---:|---:|---:|
+   | gates a-c | pass | pass | pass |
+   | this body's sternum inside the mapped trunk | 0.767 | 0.635 | 0.315 |
+   | ribs inside the mapped breasts | 5.1% / 3.9% | 4.2% / 3.0% | 3.4% / 4.4% |
+   | out-of-trunk sternum points that are ANTERIOR | 95-97% | 95-98% | 92-99% |
+   | deepest rib inside the breast | rib 5 | rib 5 | rib 5 |
+   | its median / max depth, L; R (mm) | 8.0/13.9; 8.3/13.6 | 10.5/17.2; 7.3/14.9 | 6.7/12.6; 7.8/12.7 |
+
+   The same direction, the same profile -- deepest at rib 5, tapering to 1-3 mm at ribs
+   2-3 and 7 -- and about a centimetre at worst, in all three. This is a chest-SHAPE
+   difference between this body and female chests, not one subject's anatomy.
+
+   **What would move it next.** One systematic correction: seat each breast on this
+   body's own chest wall instead of refitting the thorax per subject. It is not built
+   yet, and when it is, gate d2 cannot judge it -- a correction built to clear the ribs
+   passes that gate by construction. Its judge has to be something it does not
+   optimise: that the breast base still CONTACTS the chest wall (does not float), that
+   breast volume is conserved, and that the same correction, fitted on two subjects,
+   clears the third.
 2. ~~**A path refitting tool.**~~ **Done.** `libosimActuators.so` already
    exported 97 `PolynomialPathFitter` symbols; what was missing was 300 lines of
    driver. A refit of the unchanged model is 16.7× closer to the model's own
