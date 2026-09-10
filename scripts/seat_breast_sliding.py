@@ -66,7 +66,10 @@ DECIMATE_FACES, DECIMATE_VOLUME_TOL, MESH_LR = 8000, 0.005, 0.08
 # A ray finds the bed only NEARBY: uncapped, a ray grazes off to a distant fold of the muscle and
 # calls it the bed (175 mm of 'penetration' on a breast 13 cm deep). 60 mm is well beyond the
 # deepest real penetration measured on these four subjects (43 mm).
-RAY_REACH_M, LOAD_STEPS, GAP_TOL_M = 0.060, 8, 5e-5
+# A ray that meets the bed at a shallow angle has no well-defined bed direction: a micrometre of
+# motion slides its hit point millimetres along the surface, which reads as the constraint moving.
+# Those nodes are free, like the ones with no muscle on their line.
+RAY_REACH_M, GRAZING_COS, LOAD_STEPS, GAP_TOL_M = 0.060, 0.3, 8, 5e-5
 CAVEATS = ["one clinical subject per breast, as a segmentation model drew it",
            "'breast' is a single soft-tissue label: no gland, ducts or nipple",
            "nu = 0.49 is assumed (adipose is nearly incompressible)",
@@ -146,6 +149,13 @@ def bed_rays(V, F, directions, reach_m=0.060):
     behind it -- a classification the nearest-point rule gets wrong wherever the muscle's three
     parts overlap."""
     fn = np.cross(V[F[:, 1]] - V[F[:, 0]], V[F[:, 2]] - V[F[:, 0]])
+    # SMOOTH vertex normals, interpolated at the hit point. The bed is a marching-cubes surface, so
+    # its facet normals are noisy: neighbouring base nodes given their own raw facet normal are
+    # pushed in measurably different directions, which distorts the elements between them and
+    # inverts them even at micrometre steps.
+    vn = np.zeros_like(V)
+    for k in range(3): np.add.at(vn, F[:, k], fn)
+    vn /= np.maximum(np.linalg.norm(vn, axis=1, keepdims=True), 1e-30)
     fn /= np.maximum(np.linalg.norm(fn, axis=1, keepdims=True), 1e-30)
     D = np.asarray(directions, float)
     D = D / np.maximum(np.linalg.norm(D, axis=1, keepdims=True), 1e-30)
@@ -158,9 +168,18 @@ def bed_rays(V, F, directions, reach_m=0.060):
         t = np.where(front, t_front, t_back); f = np.where(front, f_front, f_back)
         hit = np.isfinite(t)
         c = P + np.where(front, -1.0, 1.0)[:, None] * np.where(hit, t, 0.0)[:, None] * D
-        n = fn[np.where(f >= 0, f, 0)].copy()
+        tri = V[F[np.where(f >= 0, f, 0)]]
+        w = np.stack([np.linalg.norm(np.cross(tri[:, 1] - c, tri[:, 2] - c), axis=1),
+                      np.linalg.norm(np.cross(tri[:, 2] - c, tri[:, 0] - c), axis=1),
+                      np.linalg.norm(np.cross(tri[:, 0] - c, tri[:, 1] - c), axis=1)], 1)
+        w /= np.maximum(w.sum(1, keepdims=True), 1e-30)
+        n = np.einsum('ij,ijk->ik', w, vn[F[np.where(f >= 0, f, 0)]])
+        n /= np.maximum(np.linalg.norm(n, axis=1, keepdims=True), 1e-30)
         n[np.einsum('ij,ij->i', n, D) > 0] *= -1        # orient anteriorly, opposite the outward normal
-        n[~hit] = -D[~hit]                              # no bed on this line: an inert plane through the node
+        # No hit within reach: INVALID, not a plane through the node. Returning the node's own
+        # position reads as a zero gap, so a held node 14 mm deep reports its error as its own depth
+        # and the re-linearisation never converges. The caller keeps the node's previous association.
+        c[~hit] = np.nan; n[~hit] = np.nan
         return c, n
     def has_bed(P):
         P = np.ascontiguousarray(np.asarray(P, float))
@@ -201,14 +220,15 @@ def stage_prepare(sid, side, d):
     dirs = vn[posterior] / np.maximum(np.linalg.norm(vn[posterior], axis=1, keepdims=True), 1e-30)
     association, has_bed = bed_rays(bV, bF, dirs, RAY_REACH_M)
     c, n = association(X[posterior])
-    on_line = has_bed(X[posterior])
+    facing = np.abs(np.einsum('ij,ij->i', np.nan_to_num(n), dirs)) >= GRAZING_COS
+    on_line = has_bed(X[posterior]) & facing
     base = posterior[on_line]; dirs = dirs[on_line]
     gap0 = np.einsum('ij,ij->i', n[on_line], X[base] - c[on_line])
     np.savez(d / "prepared.npz", X=X, T=T, base=base, posterior=posterior, anterior=anterior, boundary=B,
              gap0=gap0, bedV=bV, bedF=bF, rim=rim, ray_directions=dirs)
     info = dict(nodes=len(X), tets=len(T), mesh_ml=tet_volumes(X, T).sum() * 1e6, surface_ml=vol_o * 1e6,
                 posterior_nodes=len(posterior), base_nodes=len(base), held=int((gap0 < 0).sum()),
-                unilateral=int((gap0 >= 0).sum()), free_no_bed_on_the_line=int((~on_line).sum()),
+                unilateral=int((gap0 >= 0).sum()), free_no_bed_on_the_line=int((~on_line).sum()), grazing_excluded=int((~facing).sum()),
                 deepest_penetration_mm=float(-gap0.min() * 1e3))
     (d / "prepared.json").write_text(json.dumps(info, indent=2) + "\n")
     print(f"  {len(X)} nodes, {len(T)} tets; base {len(base)} of {len(posterior)} posterior nodes "
@@ -222,7 +242,7 @@ def stage_dr(sid, side, d, young, tag=""):
     region = SlidingRegion(P["X"], P["T"], mu_pa=mu, lambda_pa=lam, density_kg_m3=950.0)
     closest, _ = bed_rays(P["bedV"], P["bedF"], P["ray_directions"], RAY_REACH_M)
     t0 = time.time()
-    r = seat_on_bed(region, P["base"], closest, load_steps=LOAD_STEPS, gap_tol_m=GAP_TOL_M,
+    r = seat_on_bed(region, P["base"], closest, load_steps=LOAD_STEPS, gap_tol_m=GAP_TOL_M, jump_limit_m=5e-4,
                     log=lambda m, flush=True: print(m, flush=True))
     np.save(d / f"dr_displacement{tag}.npy", r["displacement"])
     (d / f"dr{tag}.json").write_text(json.dumps(dict(

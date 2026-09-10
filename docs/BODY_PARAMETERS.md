@@ -859,6 +859,51 @@ done; the others have moved.
    * **Stop rule:** a breast that fails (a)-(d) is a result and is recorded; the boundary
      condition is not changed and re-run on the same subjects.
 
+   **Built: the solver gate passes in both codes; no breast is seated.**
+   (`scripts/seat_breast_sliding.py`, `ihm/assembly/sliding_contact.py`,
+   `ihm/assembly/febio_sliding.py`.) The in-repo side is projected Newton on
+   `DeformableRegion`'s energy with the analytic neo-Hookean Hessian projected positive
+   semi-definite per element, each base node's frame rotated to the bed normal so the normal is a
+   bound, re-linearised as the node slides.
+
+   | solver known answer | in-repo | FEBio | gate |
+   |---|---:|---:|---|
+   | nu=0.49 block, 10% between frictionless platens, vs the exact homogeneous field (lateral stretch 1.052925) | 0.00004% | 0.00002% | 1% -- **pass** |
+   | block pressed onto a frictionless cylinder, the two codes against each other | RMS 1.58% of max displacement | 5% -- **pass** ||
+
+   Supporting known answers: the Hessian against finite differences of the parent's own gradient
+   (1.5e-10 relative), the rotation map against a per-node product (2e-16), and a mismatched-case
+   control reading 124.8%, so the agreement metric can tell cases apart. FEBio terminates normally
+   on the cylinder with no penetration left and a median held gap of 0.077 mm.
+
+   | breast | (a) volume | (b) J > 0.2 | (c) two solvers | (d) base flips |
+   |---|---|---|---|---|
+   | s1159 left | not evaluated | not evaluated | not evaluated | not evaluated |
+   | s0790, s1067, s0970 (both sides), s1159 right | not attempted | | | |
+
+   **Neither solver completes a breast, so nothing is judged.** A breast starts up to 45 mm inside
+   the bed. FEBio will not resolve that by contact: in place, 582 s without finishing one time step;
+   with augmented Lagrangian (which closed the cylinder's gap and read 1.47%), the step retries are
+   exhausted; with the bed retracted and advanced back, contact never engages. The in-repo solve
+   advances about 0.1% of the seating per accepted step -- two elements invert whenever the
+   increment grows -- so a full seating would need ~1000 steps of ~30-60 s. The other seven breasts
+   were not attempted. Whether the sliding base is the right boundary condition is therefore still
+   **untested on a breast**; what is tested is the solver, on the new boundary condition, in both
+   codes.
+
+   Four findings worth keeping. **The bed's three parts overlap:** taking each node's NEAREST bed
+   point puts 34% of s1159-left's candidates on a sheet on the wrong side of them (median 24.6 mm
+   away), so their measured gap flips sign as they slide -- tens of millimetres of apparent
+   penetration through a constraint that forbids any. A capped ray along each node's own outward
+   normal cannot pick the wrong sheet. **A re-linearisation cannot be judged by the held gap while
+   nodes are deep:** at 41.4 mm depth a 1.36 deg turn of the interpolated normal moves the measured
+   gap by 0.98 mm while the solve honours its bound to 0 um; the test is whether the linearisation
+   settles, plus the gap itself at the end, where the lever arm is zero. **This FEBio build has only
+   the skyline solver** (MKL, HYPRE and SUPERLU all OFF), so sliding contact runs with a symmetric
+   approximation of its stiffness -- that changes the Newton matrix, not the equilibrium. **numpy 2
+   scalars must never reach FEBio's XML:** `{x!r}` writes `np.float64(-0.01)`, which FEBio reads as
+   no displacement at all, silently.
+
    **Uterus and ovaries: the pelvic registration, and its gates, fixed before any fitting.**
    UT-EndoMRI (owner-approved 2026-09-10; an endometriosis cohort, NOT a typical-anatomy
    reference) gives uterus and ovary labels on pelvic T2 MRI. TotalSegmentator's

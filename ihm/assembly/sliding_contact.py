@@ -112,7 +112,7 @@ def tangent_frames(n, hint=(0.0, 1.0, 0.0)):
 
 
 def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5, max_outer=25,
-                hint=(0.0, 1.0, 0.0), rtol=1e-7, jump_limit_m=0.01, log=None):
+                hint=(0.0, 1.0, 0.0), rtol=1e-7, jump_limit_m=0.01, assoc_tol_m=1e-4, log=None):
     """The sliding base. base: node indices on the surface facing the bed. closest(points) ->
     (c, n): closest bed points and the bed's outward unit normals there. A base node BEHIND the bed
     in the registered position is HELD: its signed normal gap is ramped to zero over load_steps and
@@ -132,17 +132,21 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
         that sheet its gap flips sign -- tens of millimetres of apparent penetration through a
         constraint that forbids any. Real sliding moves the association ~0.02 mm per pass."""
         c_new, n_new = closest(points)
-        teleport = np.linalg.norm(c_new - assoc[0], axis=1) > jump_limit_m
+        # An association is rejected if it teleports, or if the bed function reports none (NaN):
+        # either way the node keeps the patch it had.
+        teleport = ~np.isfinite(c_new).all(1) | ~np.isfinite(n_new).all(1) | \
+                   (np.linalg.norm(np.nan_to_num(c_new - assoc[0]), axis=1) > jump_limit_m)
         c_new[teleport] = assoc[0][teleport]; n_new[teleport] = assoc[1][teleport]
+        moved = float(np.linalg.norm(c_new - assoc[0], axis=1).max())
         assoc[0], assoc[1] = c_new, n_new
-        return c_new, n_new, int(teleport.sum())
+        return c_new, n_new, int(teleport.sum()), moved
 
     def advance(fraction, u_start):
         """Re-linearise and solve at this fraction of the held nodes' gap closure."""
         u_local = u_start
         for outer in range(max_outer):
             target = (1 - fraction) * gap0[held]
-            c, n, kept = associate((X + u_local)[base])
+            c, n, kept, _ = associate((X + u_local)[base])
             frames = np.tile(np.eye(3), (N, 1, 1)); frames[base] = tangent_frames(n, hint)
             lo = np.full(X.shape, -np.inf); hi = np.full(X.shape, np.inf)
             on_plane = np.einsum('ij,ij->i', n, c - X[base])                     # n.u that puts the node on the tangent plane
@@ -153,12 +157,13 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
                 if len(col) != 1: raise ValueError(f"pin on node {node}, axis {axis}, is not along one of its frame axes")
                 lo[node, col[0]] = hi[node, col[0]] = 0.0
             r = region.solve_sliding(frames, lo, hi, start=u_local, rtol=rtol); u_local = r['displacement']
-            c, n, kept = associate((X + u_local)[base]); gap = np.einsum('ij,ij->i', n, (X + u_local)[base] - c)
+            c, n, kept, moved = associate((X + u_local)[base]); gap = np.einsum('ij,ij->i', n, (X + u_local)[base] - c)
             held_err = float(np.abs(gap[held] - target).max()) if held.any() else 0.0
             pen = float(max(0.0, -gap[~held].min())) if (~held).any() else 0.0
             if log: log(f"  fraction {fraction:.4f} pass {outer}: Newton {r['iterations']}, held gap error {held_err*1e3:.4f} mm, "
-                        f"unilateral penetration {pen*1e3:.4f} mm, min J {r['minimum_jacobian']:.3f}, kept {kept}", flush=True)
-            if held_err <= gap_tol_m and pen <= gap_tol_m:
+                        f"unilateral penetration {pen*1e3:.4f} mm, min J {r['minimum_jacobian']:.3f}, association moved {moved*1e3:.4f} mm", flush=True)
+            settled = moved <= assoc_tol_m and pen <= gap_tol_m
+            if settled and (fraction < 1.0 - 1e-12 or held_err <= gap_tol_m):
                 return u_local, dict(passes=outer + 1, held_gap_error_m=held_err, unilateral_penetration_m=pen,
                                      newton_last=r['iterations'], min_J=r['minimum_jacobian'], converged=bool(r['converged'])), gap, c, n
         raise RuntimeError("re-linearisation did not converge")
