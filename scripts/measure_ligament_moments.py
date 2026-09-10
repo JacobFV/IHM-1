@@ -87,6 +87,9 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--out", required=True)
+    # which derived element set.  default v1 so every earlier result reproduces;
+    # data/derived/tissue-force-elements-v2 is the per-segment (no-twist) build.
+    parser.add_argument("--tissue", type=Path, default=TISSUE)
     parser.add_argument("--samples", type=int, default=SAMPLES)
     parser.add_argument("--admissible-only", action="store_true",
                         help="keep only the elements that never pass ligament ultimate strain "
@@ -97,7 +100,7 @@ def main():
     crawl = load_module("crawl", ROOT / "scripts/crawl.py")
     render = load_module("render_body_3d", ROOT / "scripts/render_body_3d.py")
     model = render.OsimModel(BUNDLE / "model.osim")
-    elements = json.loads((TISSUE / "ligaments.json").read_text())["elements"]
+    elements = json.loads((args.tissue / "ligaments.json").read_text())["elements"]
     if args.admissible_only:
         elements = [r for r in elements if r.get("kinematically_admissible")]
     for row in elements:

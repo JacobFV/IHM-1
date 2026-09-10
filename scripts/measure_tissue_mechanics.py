@@ -325,7 +325,12 @@ def main():
     parser.add_argument("--drop", action="append", default=[])
     parser.add_argument("--work", default="data/derived/tissue-mechanics")
     parser.add_argument("--out", required=True)
+    # which derived element set.  default v1, so every recorded result reproduces;
+    # data/derived/tissue-force-elements-v2 is the per-segment (no-twist) build.
+    # the bare and stops arms carry no tissue at all and must reproduce under either.
+    parser.add_argument("--tissue", default=TISSUE)
     args = parser.parse_args()
+    globals()["TISSUE"] = args.tissue   # open_stream() and the report read the module-level name
 
     elements = json.loads((ROOT / TISSUE / "ligaments.json").read_text())["elements"]
     spec_by_element = {r["element"]: r for r in elements}
