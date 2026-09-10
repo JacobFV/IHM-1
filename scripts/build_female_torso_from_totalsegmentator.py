@@ -23,6 +23,12 @@ GATES, each with an answer this script does not compute:
                      catches a flipped axis convention before it names a breast.
   volume             per-side breast volume within a COARSE sanity bound
                      (BREAST_ML_BOUND). a typo catcher, not a measurement.
+  chest-whole        all 24 ribs, the sternum and both clavicles present, and NONE
+                     touches the first or last slice along the superior-inferior
+                     axis. the archive's study_type names the exam and the member is
+                     a crop: s1218 'neck-thorax-abdomen-pelvis' is a 68 mm slab.
+  breast-whole       the breast mask touches no face of the volume. a breast cut
+                     by the field of view is a wrong breast, not a smaller one.
 """
 import argparse, hashlib, json, subprocess
 from pathlib import Path
@@ -98,6 +104,15 @@ def main():
         for n, m in present.items():
             if n.startswith("rib_"): ribs |= m
         rec["gate_breast_on_ribs"] = float(ribs[breast].mean()) if breast.any() else None
+        codes = nib.aff2axcodes(affine); si = next(i for i, c in enumerate(codes) if c in "SI")
+        def touches_si(m):
+            ix = np.argwhere(m)[:, si]; return bool(ix.min() == 0 or ix.max() == m.shape[si] - 1)
+        chest = [f"rib_{x}_{i}" for x in ("left", "right") for i in range(1, 13)] + ["sternum", "clavicula_left", "clavicula_right"]
+        rec["gate_chest_whole"] = bool(all(n in present for n in chest) and not any(touches_si(present[n]) for n in chest))
+        def touches_face(m):
+            ijk_ = np.argwhere(m); return bool((ijk_.min(0) == 0).any() or (ijk_.max(0) == np.array(m.shape) - 1).any())
+        rec["gate_breast_whole"] = bool(breast.any() and not touches_face(breast))
+        rec["volume_extent_mm"] = [float(n * z) for n, z in zip(body.shape, img.header.get_zooms()[:3])]
         def world_x(m):
             ijk = np.argwhere(m); return (ijk @ affine[:3, :3].T + affine[:3, 3])[:, 0]
         if "sternum" not in present: raise SystemExit(f"{sid}: no sternum label, so no midline; refusing to name sides")
@@ -115,10 +130,13 @@ def main():
         print(f"  bones in body {rec['gate_bones_in_body']:.4f} | breast in body {rec['gate_breast_in_body']:.4f} | "
               f"breast on ribs {rec['gate_breast_on_ribs']:.4f} | laterality {rec['gate_laterality']} | "
               f"breast L {rec['breast_ml']['left']:.0f} mL R {rec['breast_ml']['right']:.0f} mL | "
-              f"registration labels {len(present)}/{len(REGISTRATION_LABELS)}", flush=True)
+              f"registration labels {len(present)}/{len(REGISTRATION_LABELS)} | "
+              f"chest whole {rec['gate_chest_whole']} | breast whole {rec['gate_breast_whole']} | "
+              f"extent {' x '.join('%.0f' % e for e in rec['volume_extent_mm'])} mm", flush=True)
         rec["passes"] = bool(rec["gate_bones_in_body"] is not None and rec["gate_bones_in_body"] >= .99
                              and rec["gate_breast_in_body"] >= .99 and rec["gate_breast_on_ribs"] < .01
-                             and rec["gate_laterality"] and rec["gate_volume"])
+                             and rec["gate_laterality"] and rec["gate_volume"]
+                             and rec["gate_chest_whole"] and rec["gate_breast_whole"])
         # --- meshes, in the CT's own world frame (metres); registration is a later step
         d = OUT / sid / "meshes"; d.mkdir(parents=True, exist_ok=True)
         for side, sel in (("left", on_left), ("right", ~on_left)):

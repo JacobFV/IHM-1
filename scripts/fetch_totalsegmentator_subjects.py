@@ -75,6 +75,9 @@ def fetch(name, m, dest):
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--subjects", type=int, default=4)
     ap.add_argument("--target-age", type=float, default=40.0)
+    ap.add_argument("--subjects-from", type=Path, default=None,
+                    help="a JSON with a 'candidates' list (scripts/select_totalsegmentator_by_coverage.py): "
+                         "take subjects from it, in order, instead of the study_type rule")
     ap.add_argument("--members", choices=("all", "registration"), default="all",
                     help="'registration': only ct.nii.gz and the 39 registration labels")
     a = ap.parse_args()
@@ -91,11 +94,19 @@ def main():
             and r["age"] not in ("", "nan")]
     pool.sort(key=lambda r: abs(float(r["age"]) - a.target_age))
     chosen = pool[:a.subjects]
+    rule = "female; pathology == no_pathology; study_type spans neck, thorax and pelvis; ages closest to %g" % a.target_age
+    if a.subjects_from is not None:
+        # THE STUDY_TYPE RULE IS WRONG and this is why: study_type names the clinical EXAM,
+        # while the archive member is a CROP of it.  s1218, 'ct neck-thorax-abdomen-pelvis',
+        # is 45 slices at 1.5 mm -- a 68 mm slab with 15 of 39 registration labels in it.
+        by_id = {r["image_id"]: r for r in rows}
+        chosen = [by_id[c] for c in json.loads(a.subjects_from.read_text())["candidates"][:a.subjects]]
+        rule = "coverage: " + str(a.subjects_from.relative_to(ROOT) if a.subjects_from.is_absolute() else a.subjects_from)
     print(f"{len(pool)} subjects satisfy the rule; taking {len(chosen)}:")
     for r in chosen: print(f"  {r['image_id']}  age {float(r['age']):.0f}  {r['study_type']}  split {r['split']}")
     manifest = dict(source="totalsegmentator", zenodo_record="10047292", version="2.0.1", licence="CC-BY-4.0",
                     citation="Wasserthal et al., Radiology: Artificial Intelligence 2023, doi:10.1148/ryai.230024",
-                    selection_rule="female; pathology == no_pathology; study_type spans neck, thorax and pelvis; ages closest to %g" % a.target_age,
+                    selection_rule=rule,
                     pool_size=len(pool), members=a.members, subjects={})
     for r in chosen:
         sid = r["image_id"]; names = sorted(n for n in cd if n.startswith(sid + "/") and not n.endswith("/"))
