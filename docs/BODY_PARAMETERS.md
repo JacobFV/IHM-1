@@ -798,6 +798,40 @@ done; the others have moved.
      0.49 (adipose is nearly incompressible), an assumption. Gravity, and recovering the
      unloaded shape of a breast imaged supine under gravity, are out of scope here and named.
 
+   **Result (673696f): the solver passes; closest-point seating is ill-posed and stopped at the
+   gate on the first breast.** Solver: block at nu = 0.49 under 10% compression, volume -0.221%;
+   `DeformableRegion` vs FEBio 0.00001% (compression) and 0.00009% (base on a cylinder) of max
+   displacement; a mismatched-case control reads 124.8%, so the metric discriminates. Per breast,
+   s1159-left: prescribing each of 2,449 penetrating base nodes to its closest point on the
+   pectoralis bed is not one-to-one -- 867 of 4,241 base triangles flip and 2,945 are squeezed
+   below 0.2 of their area BEFORE any solve, 7,904 of 12,621 base tets start at J <= 0, and FEBio
+   stops at t = 0.227 after 104 retries. Gate (b) cannot be met under that boundary condition by
+   any solver, so no breast was seated and the modulus-cancels check was not reached. The other
+   seven breasts were meshed and not solved (s0970 would need up to 72 mm).
+
+   **The sliding base: its judge, fixed 2026-09-10 before it is built.** The boundary condition
+   the result points to is the anatomical one -- the breast is attached to the pectoral fascia
+   along the normal and slides on it. So: every base node that penetrates the bed in the
+   registered position is held ON the bed along the bed's normal and is free tangentially
+   (frictionless, bilateral); every other base node may not enter the bed (unilateral); the rest
+   of the surface is free. FEBio's counterpart is sliding contact against a rigid bed with
+   tension allowed on the held nodes.
+   * **The solver first, on the new boundary condition, with a known answer.** A block at
+     nu = 0.49 compressed 10% between two frictionless platens deforms HOMOGENEOUSLY: every
+     node's displacement is linear in its position and the lateral stretch is fixed by volume.
+     Both solvers must reproduce the homogeneous field within 1% of the maximum displacement,
+     and agree with each other within 5% on a block pressed onto a frictionless cylinder.
+   * **Per breast, the same four subjects:** (a) volume within 1%; (b) every tet J > 0.2;
+     (c) the two solvers agree within 5% of the maximum displacement; **(d) no base triangle
+     flipped in the solved state** -- the failure the closest-point rule produced, judged
+     because nothing in the new boundary condition prevents it by construction.
+   * **Reported, not judged:** normal gap of the held nodes (enforced by the in-repo bound; a
+     real number in FEBio's penalty contact), tangential slide per node, this body's rib points
+     inside the breast, and whether Young's modulus still cancels (it should; checked by solving
+     at two moduli).
+   * **Stop rule:** a breast that fails (a)-(d) is a result and is recorded; the boundary
+     condition is not changed and re-run on the same subjects.
+
    **Uterus and ovaries: the pelvic registration, and its gates, fixed before any fitting.**
    UT-EndoMRI (owner-approved 2026-09-10; an endometriosis cohort, NOT a typical-anatomy
    reference) gives uterus and ovary labels on pelvic T2 MRI. TotalSegmentator's
