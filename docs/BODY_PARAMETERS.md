@@ -1042,6 +1042,33 @@ done; the others have moved.
    lowest-quartile rule describes that; the honest limit is the one already named -- a convex
    hull of three bones is not the pelvic cavity.
 
+   **The batch at 78 of 87: 68 pass, 10 fail, in two disjoint modes.** No subject fails both.
+
+   | mode | subjects | what fails |
+   |---|---|---|
+   | containment | D1-035, D1-039, D1-041, D2-061, D2-062, D2-072 | uterus surface outside the ring, 0.766-0.983 against >= 0.99 |
+   | bone overlap | D2-026, D2-042, D2-044, D2-048 | 1.8-23.4% of the uterus interior inside a bone -- **the sacrum in all four** -- against <= 1%, while the ring share is 0.998-1.000 |
+
+   The two modes point in OPPOSITE directions. Every containment failure leans forward: the part
+   outside sits 29-45 mm anterior of its own centroid (D1-035 +35, D1-039 +38, D2-061 +29,
+   D2-062 +45), out through the hull's front face. The sacrum cases lean back -- D2-044's small
+   outside fraction is 25 mm POSTERIOR of its centroid.
+
+   **It is not fit quality.** The four sacrum cases fit like the cohort: scale 0.957-1.011,
+   trimmed residual 4.0-4.8 mm, against cohort means of 0.985 +/- 0.063 (D1, n=23) and
+   0.962 +/- 0.049 (D2, n=55) at ~4.3 mm. Failure rates by sub-dataset are also alike -- D1 3 of
+   23, D2 7 of 55 -- but **every bone overlap is D2**, and D1_MHS and D2_TCPW are different sites
+   with different rating protocols (three raters against one).
+
+   Two candidate causes, and this batch does not separate them:
+   * **the target pelvis is MALE** -- a male sacrum is narrower with a more prominent promontory,
+     so a uterus mapped correctly in its own pelvis can land inside this body's sacrum. The
+     section above already names the male pelvis as what the similarity's scale absorbs;
+   * **the cohort is endometriosis**, where cul-de-sac disease retroverts and fixes the uterus
+     against the sacrum; the source card records "altered uterine position" as expected here.
+   A uterus is never inside a sacrum in a living person, so the overlap is an artefact of mapping
+   whichever way it arose. The gate is unchanged and these subjects stay failed.
+
    **Prediction, fixed now, before either is registered:** D1-041 (766 mL) and D1-045 (618 mL)
    FAIL containment as written and PASS the lowest-quartile test, as D1-017 does. If either
    fails the lowest-quartile test, it is misplaced, not merely enlarged, and it is reported as
