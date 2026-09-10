@@ -358,6 +358,16 @@ def stage_score():
     say(f"  4 folding: det J <= 0 at {folds_v} of {len(det):,} skin vertices (min det {det.min():.4f}, global map {det0:.4f}); "
         f"{folds_t} of {len(dots):,} skin triangles inverted -> {'PASS' if gate4 else 'FAIL'}")
     say(f"     caps (invented surface, not gated): {int((cdots < 0).sum())} of {len(cdots)} inverted")
+    # where the folds are (reported after the verdict, not gated): by partition segment, and how far from
+    # the nearest spline centre -- a fold pulled into the skin by the bones under it sits close to them
+    vseg = np.asarray(sb["weights"], np.float32).argmax(1)
+    bad_v = used[det <= 0]; bad_t = np.where(dots < 0)[0]
+    near = cKDTree(W.centres).query(W.ground(V[bad_v]))[0] if len(bad_v) else np.zeros(0)
+    fold_where = dict(vertices={names[i]: int((vseg[bad_v] == i).sum()) for i in np.unique(vseg[bad_v])},
+                      triangles={names[i]: int((owner[bad_t] == i).sum()) for i in np.unique(owner[bad_t])},
+                      vertex_to_nearest_centre_mm=[1e3 * float(q) for q in np.quantile(near, (0, .5, 1))] if len(near) else None)
+    say(f"     folded vertices by segment {fold_where['vertices']}; inverted triangles by segment {fold_where['triangles']}")
+    if len(near): say(f"     folded vertex to nearest spline centre min/median/max {near.min()*1e3:.1f}/{np.median(near)*1e3:.1f}/{near.max()*1e3:.1f} mm")
     say(f"\n  reported: bending energy {W.bending_energy():.4e}; skin area {a0.sum():.4f} -> {a1.sum():.4f} m2")
     for n, v in area.items(): say(f"     {n:10s} area x{v['ratio']:.3f}")
     say("  enclosure per segment (binding -> warped): " + ", ".join(f"{s} {ew['binding_map'][s]:.3f}->{ew['warped'][s]:.3f}" for s in ew["segments"]))
@@ -373,7 +383,67 @@ def stage_score():
         reported=dict(bending_energy=W.bending_energy(), area=area, area_total_before_m2=float(a0.sum()), area_total_after_m2=float(a1.sum()))),
         indent=2) + "\n")
 
+# ================================================= stage diagnose (after the verdict; reported, never used to refit)
+def inside_mask(skin_vertices, skin_faces, bone_points, samples=500, seed=0):
+    """bscm.enclosure with the same draws, returning which tested points are inside, not only the mean."""
+    generator = np.random.default_rng(seed); points = np.asarray(bone_points, float)
+    if len(points) > samples: points = points[generator.choice(len(points), samples, replace=False)]
+    triangles = np.asarray(skin_vertices, float)[np.asarray(skin_faces)]
+    a = triangles[:, 0]; edge1 = triangles[:, 1] - a; edge2 = triangles[:, 2] - a
+    direction = generator.normal(size=3); direction /= np.linalg.norm(direction); counts = []
+    for sign in (1., -1.):
+        d = sign * direction; pvec = np.cross(d, edge2); det = (edge1 * pvec).sum(axis=1)
+        parallel = np.abs(det) < 1e-14; inverse = np.where(parallel, 0., 1. / np.where(parallel, 1., det))
+        hits = np.zeros(len(points), dtype=np.int64)
+        for start in range(0, len(points), 256):
+            block = points[start:start + 256]; tvec = block[:, None, :] - a[None, :, :]
+            u = (tvec * pvec[None, :, :]).sum(axis=2) * inverse[None, :]; qvec = np.cross(tvec, edge1[None, :, :])
+            v = (qvec * d).sum(axis=2) * inverse[None, :]; t = (qvec * edge2[None, :, :]).sum(axis=2) * inverse[None, :]
+            hits[start:start + 256] = ((~parallel[None, :]) & (u >= 0) & (v >= 0) & (u + v <= 1) & (t > 1e-9)).sum(axis=1)
+        counts.append(hits % 2 == 1)
+    return points, counts[0] & counts[1]
+
+def stage_diagnose():
+    """Where the bone points that are NOT inside the skin sit, in their own segment's frame
+    (OpenSim: x anterior/distal along the foot, y superior, z right), and how far outside."""
+    W = Warp.load(OUT / "warp.npz"); Tb, frames_b, _ = bscm.binding_registration()
+    ew = json.loads((OUT / "enclosure_warp.json").read_text())
+    mech = json.loads((ROOT / "data/derived/canonical/mechanics.json").read_text())
+    skin = next(e for e in mech["entities"] if e["role"] == "skin")
+    g = json.loads(gzip.decompress((ROOT / skin["reference_geometry"]["path"]).read_bytes()))
+    V = np.asarray(g["positions"], float).reshape(-1, 3); F = np.asarray(g["indices"], np.int64).reshape(-1, 3)
+    ext = np.asarray(json.loads((ROOT / bscm.EVIDENCE).read_text())["contact_eligible_triangle_ids"], np.int64)
+    used, inv = np.unique(F[ext], return_inverse=True); sv, sf = V[used], inv.reshape(-1, 3)
+    if bscm.simtk_precondition(sv, sf) is not None:
+        cv_, cf_ = bscm.repair(sv, sf); sv, sf, _ = bscm.cap_boundaries(cv_, cf_)
+    osim = bscm.bone_clouds(); out = {}
+    for seg in ("toes_l", "toes_r", "calcn_l", "calcn_r", "pelvis", "hand_l", "hand_r"):
+        M = frames_b[seg]; bones = osim[seg] @ M[:3, :3].T + M[:3, 3]; lb = osim[seg]
+        say(f"== {seg}   bone extent in its frame: x {1e3*lb[:,0].min():+.0f}..{1e3*lb[:,0].max():+.0f}  "
+            f"y {1e3*lb[:,1].min():+.0f}..{1e3*lb[:,1].max():+.0f}  z {1e3*lb[:,2].min():+.0f}..{1e3*lb[:,2].max():+.0f} mm")
+        out[seg] = {}
+        for name, S in (("binding", W.ground(sv)), ("warped", W.apply(sv))):
+            pts, ins = inside_mask(S, sf, bones)
+            check = ew["binding_map" if name == "binding" else "warped"][seg]
+            if float(ins.mean()) != check: sys.exit(f"{seg} {name}: mask mean {ins.mean()} != enclosure() {check}; diagnosis void")
+            o = pts[~ins]; local = (o - M[:3, 3]) @ M[:3, :3]
+            dist = cKDTree(S).query(o)[0] if len(o) else np.zeros(0)
+            rec = dict(inside=float(ins.mean()), outside=int((~ins).sum()), tested=int(len(pts)))
+            if len(o):
+                rec.update(nearest_skin_vertex_mm=dict(median=1e3 * float(np.median(dist)), max=1e3 * float(dist.max())),
+                           outside_x_mm=[1e3 * float(q) for q in np.quantile(local[:, 0], (0, .5, 1))],
+                           outside_y_mm=[1e3 * float(q) for q in np.quantile(local[:, 1], (0, .5, 1))],
+                           outside_z_mm=[1e3 * float(q) for q in np.quantile(local[:, 2], (0, .5, 1))])
+            out[seg][name] = rec
+            say(f"   {name:8s} inside {rec['inside']:.3f} (= enclosure()); {rec['outside']:3d}/{rec['tested']} outside"
+                + ("" if not len(o) else
+                   f"; nearest skin vertex median {rec['nearest_skin_vertex_mm']['median']:.1f} max {rec['nearest_skin_vertex_mm']['max']:.1f} mm; "
+                   f"outside x {rec['outside_x_mm'][0]:+.0f}/{rec['outside_x_mm'][1]:+.0f}/{rec['outside_x_mm'][2]:+.0f}  "
+                   f"y {rec['outside_y_mm'][0]:+.0f}/{rec['outside_y_mm'][1]:+.0f}/{rec['outside_y_mm'][2]:+.0f}  "
+                   f"z {rec['outside_z_mm'][0]:+.0f}/{rec['outside_z_mm'][1]:+.0f}/{rec['outside_z_mm'][2]:+.0f} mm (min/median/max)"))
+    (OUT / "diagnose.json").write_text(json.dumps(out, indent=2) + "\n")
+
 if __name__ == "__main__":
-    ap = argparse.ArgumentParser(); ap.add_argument("--stage", choices=("fit", "score"), required=True)
+    ap = argparse.ArgumentParser(); ap.add_argument("--stage", choices=("fit", "score", "diagnose"), required=True)
     stage = ap.parse_args().stage
-    stage_fit() if stage == "fit" else stage_score()
+    {"fit": stage_fit, "score": stage_score, "diagnose": stage_diagnose}[stage]()

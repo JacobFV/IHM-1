@@ -700,3 +700,65 @@ binding column (ceiling **0.997**), and the bundle built through a zero warp is 
 **Gate 1: PASS, 22 / 22.** The warped bone group is at or under the per-segment similarity on 21
 segments (calcn 6.09 -> 5.37 / 6.00 -> 5.10 mm, torso 15.65 -> 11.28, humerus 5.38 -> 3.77); femur_l
 is 0.04 mm over it (3.92 vs 3.88), inside the 1 mm margin.
+
+#### Result: FAIL -- the heel reaches its pad, but the forefoot stays outside and the toe skin folds (2026-09-10)
+
+The warp committed in 96e5f1b, unchanged, through the pre-registered instruments
+(`fit_skin_warp.py --stage score`; gate 2 is `measure_skin_enclosure_whole.py --warp`, gate 3 the
+calcn records of `build_skin_contact_meshes.py --warp` into
+`data/derived/segment-contact-meshes/skin-warp-v1`):
+
+| gate | value | threshold | |
+|---|---|---|---|
+| zero-warp control | enclosure 0.888 identical per segment, ceiling 0.997; calcn +20.1 / +20.0 mm; bundle identical to `skin-binding` | reproduce to print precision | **PASS** |
+| 1 bones | 22 / 22; closest to its limit femur_l 3.92 mm against 4.88 | warped <= per-segment + 1 mm | **PASS** |
+| 2 enclosure | mean **0.954**; calcn **0.926 / 0.920**, toes **0.868 / 0.880** | mean >= 0.95; calcn and toes each >= 0.95 | **FAIL** |
+| 3 heel on its pad | **-6.7 / -6.6 mm** | [-25, -5] mm | **PASS** |
+| 4 no folding | det J <= 0 at **45** of 54,949 skin vertices (min -0.68; global map 1.12); **72** of 109,183 skin triangles inverted | none | **FAIL** |
+
+**The verdict is FAIL, on gates 2 and 4.** The stance was not run: the pre-registration makes it
+conditional on all four gates, so no layer-map bundle was built from this skin and
+`measure_segment_contact_meshes.py` is unchanged.
+
+Whole-skin enclosure per segment, the segments that moved:
+
+| segment | binding map | warped |
+|---|---:|---:|
+| calcn | 0.754 / 0.756 | **0.926 / 0.920** |
+| toes (ceiling 0.966 / 0.968) | 0.784 / 0.796 | **0.868 / 0.880** |
+| hand | 0.634 / 0.572 | 0.794 / 0.810 |
+| humerus | 0.821 / 0.674 | 0.979 / 0.988 |
+| torso | 0.844 | 0.922 |
+| pelvis | 0.948 | **0.912** (worse) |
+| talus, tibia | 0.987-0.994 | 0.994-1.000 |
+| **mean** / >= 0.99 | 0.888 / 9 of 22 | **0.954** / 12 of 22 |
+
+Reported, not gated: bending energy 8.69; skin area 1.9198 -> 1.9114 m2 overall, but calcn
+x1.30, talus x1.22, toes x1.09-1.10, tibia x1.06-1.07, femur x0.89-0.90, hand x0.85-0.86 -- the warp
+carries the scaffold's larger foot and smaller hand into the skin, as it was built to. Caps: 0 of
+132 inverted.
+
+What the failures are made of, measured after the verdict and not used to refit (`--stage
+diagnose`, which reproduces `enclosure()`'s value on every segment before reading its points):
+
+* **Every fold is in the toe skin**: 20 + 25 vertices and 33 + 39 triangles, all in the toes
+  partition, 7.5-15.3 mm from the nearest spline centre. The toe skin is thin and sits between
+  phalanx correspondences (toes map: scale 1.21, a 17 deg swing) and metatarsal ones a few mm
+  behind them (calcn map: scale 1.22, 20 deg); where those two ask for different displacements
+  over less than the skin's own thickness, the spline turns the skin over. That is the joint
+  conflict the pre-registration named, at the MTP; it is the likeliest reading and it is not
+  separately tested.
+* **The foot bone still outside is the far forefoot, not the heel.** Under the binding map calcn's
+  outside points spanned the whole bone (x -11 to +212 mm in its frame); under the warp they are
+  the distal lateral end (median x +199 of 212 mm, z +-40 mm: the lateral metatarsal heads). The toes'
+  are the phalanx tips (median x +73 on a bone running -41 to +87 mm). The warp brought the heel
+  down onto its pad (gate 3) but the skin does not reach the ends of a forefoot a fifth longer
+  than this specimen's: skin with no correspondence under it is extrapolated, not carried.
+* **Pelvis got worse** (0.948 -> 0.912; 39 of 442 points outside, median 10.7 mm, against 23 at
+  6.5 mm): the points outside are the most posterior bone (x -207 to -153 mm in the pelvis frame),
+  the sacrum and posterior ilium, under the thinnest skin of the pelvis.
+
+So one smooth warp on bone correspondences alone fixes what it has correspondences under -- heel
+height, humerus, torso, most of the hand -- and fails at the two places where skin extends beyond
+the bones it is fitted to (the toe tips, the forefoot's lateral edge) and where the per-segment
+maps it interpolates disagree across a joint thinner than the skin over it (the MTP).
