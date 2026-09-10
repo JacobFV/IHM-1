@@ -844,8 +844,24 @@ done; the others have moved.
    were drawn on MRI series that are not in the release, and some subjects' raters sit on two
    different released grids. No label is the same shape as an image with a small offset, so
    the tolerance was never the problem and the strict gate's exclusions are correct under
-   its rule. Whether those labels can be recovered in scanner world space is being tested
-   against a criterion fixed before any cross-grid pair was computed. The sternum
+   its rule. Whether those labels can be recovered in scanner world space was tested
+   against a criterion fixed before any cross-grid pair was computed -- the median cross-grid
+   Dice at least half the median same-grid Dice:
+
+   | organ | same grid | different released grids | one off the release |
+   |---|---:|---:|---:|
+   | uterus | 0.812 (19 pairs) | 0.798 (6) | 0.708 (17), some near 0 |
+   | ovary | 0.602 (20) | 0.626 (5) | **0.162 (5)** |
+
+   Both organs pass AS WRITTEN, and the ovary pass needs saying plainly: the pooled number is
+   carried by the released-grid pairs, and off-release ovary labels do not agree. Off-release
+   uterus labels mostly agree, with gross failures (D1-019 0.000, D1-027 0.031, D1-004 0.246 --
+   most likely the patient moved between series). So the recovery route, added after the
+   result and recorded as such: merge raters across RELEASED grids in world space; accept an
+   off-release uterus label only where an on-grid uterus label of the same subject confirms it
+   at Dice >= 0.406 (the committed criterion, applied per pair); never recover an off-release
+   ovary. It recovers five uteri (D1-001, D1-008, D1-009, D1-017; D1-034), 87 -> 92; 19 D1
+   subjects stay without one because nothing can confirm their labels. Not yet built. The sternum
    (gate d1) is untouched by any breast correction; that is the skin-envelope problem.
 2. ~~**A path refitting tool.**~~ **Done.** `libosimActuators.so` already
    exported 97 `PolynomialPathFitter` symbols; what was missing was 300 lines of

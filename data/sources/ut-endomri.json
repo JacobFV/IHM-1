@@ -130,5 +130,60 @@
       "median": 0.785,
       "min": 0.224
     }
+  },
+  "world_frame_check": {
+    "date": "2026-09-10",
+    "result_file": "data/derived/ut-endomri-organs-v1/world_frame_agreement.json",
+    "criterion_fixed_first": "world frames CONSISTENT if median cross-grid Dice >= 0.5 x median same-grid Dice",
+    "uterus": {
+      "same_grid": [
+        19,
+        0.812
+      ],
+      "different_released_grids": [
+        6,
+        0.798
+      ],
+      "one_off_release": [
+        17,
+        0.708
+      ],
+      "verdict": "consistent"
+    },
+    "ovary": {
+      "same_grid": [
+        20,
+        0.602
+      ],
+      "different_released_grids": [
+        5,
+        0.626
+      ],
+      "one_off_release": [
+        5,
+        0.162
+      ],
+      "verdict": "consistent AS WRITTEN (pooled), but the pass is carried by the released-grid pairs; off-release ovary labels do not agree and are NOT recovered"
+    },
+    "gross_failures": "off-release uterus pairs D1-019 (0.000), D1-027 (0.031), D1-004 (0.246): most likely the patient moved between series",
+    "route": [
+      "raters on different RELEASED grids: merge in world space onto one reference grid (T2 where present), same consensus rule",
+      "off-release UTERUS labels: accepted only where the subject has an on-grid uterus label and the pair's world Dice >= 0.406 (the committed criterion applied per pair)",
+      "off-release OVARY labels: excluded"
+    ],
+    "recovers": {
+      "by_merging_released_grids": [
+        "D1-001",
+        "D1-008",
+        "D1-009",
+        "D1-017"
+      ],
+      "by_verified_off_release_label": [
+        "D1-034"
+      ],
+      "still_without_uterus_D1": 19,
+      "uterus_meshes": "87 -> 92"
+    },
+    "built": false
   }
 }
