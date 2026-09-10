@@ -904,6 +904,50 @@ done; the others have moved.
    scalars must never reach FEBio's XML:** `{x!r}` writes `np.float64(-0.01)`, which FEBio reads as
    no displacement at all, silently.
 
+   **The bed misses a fifth of the breast base, and two attempts to overturn the 45 mm failed
+   their own known answers (2026-09-10).** The judge names the bed as the anterior surface of
+   pectoralis major. A breast's base is not confined to that muscle: inferolaterally it lies on
+   serratus anterior and the external oblique aponeurosis. Measured, and needing no depth
+   instrument -- the share of breast vertices with ANY pectoralis major within 15 mm of them in the
+   plane perpendicular to the anterior axis:
+
+   | breast | on pectoralis major | with serratus, obliques, rectus, ribs and sternum added |
+   |---|---:|---:|
+   | s1159 left | 87% | 99% |
+   | s1159 right | 82% | 98% |
+   | s0790 left | 78% | 90% |
+   | s0970 left | 71% | 90% |
+
+   So 13-29% of each breast has no bed under it at all, and a node there is measured against the
+   muscle's EDGE. That is a candidate explanation for penetrations of 45 mm where the chest-wall
+   offset this file already measures is about 10 mm (ribs 2-7, deepest at rib 5, max 13.9 mm).
+
+   **It is only a candidate, and my own attempts to settle it failed.** I built two instruments for
+   "how far behind the chest wall is this vertex" and both were refused by their own known answer:
+   a local-median rule read p99 +190.9 mm testing the wall against itself once ribs were included
+   (the wall wraps the body, so the median sits between front and back), and restricting to
+   anterior-FACING vertices read median +39.9, p90 +173.4 mm, because the inner surface of a
+   posterior rib faces anteriorly too. What passed its known answers is narrower: the pectoralis's
+   own interior points read 100% inside and a point 500 mm lateral 0%, and by that test 27.5% of
+   s1159-left lies inside the muscle's volume, at most 12.5 mm deep -- which is bounded by the
+   sheet's thickness and therefore says nothing about tissue BEHIND it. **The subagent's 45 mm
+   stands unrefuted**; what is established is the coverage gap above.
+
+   **The bed is corrected before the next run, and the gates are not.** The judge above named
+   pectoralis major because that is the breast's bed over most of its area; the measurement says
+   it is not the bed over 13-29% of it. So the bed becomes **pectoralis major, pectoralis minor,
+   serratus anterior, the external oblique and rectus abdominis** -- the muscular chest wall the
+   breast actually rests on -- and still NOT the ribs, because a breast rests on muscle, and the
+   rib overlap is a separate gate this file already reports. This is a modelling correction made
+   after a failure and labelled as one: it changes what the tissue is seated ON, not what counts
+   as seated. Gates (a)-(d) and the two-step placement rule are unchanged.
+
+   **Predicted before it runs:** the maximum penetration falls from 45 mm to the order of the
+   measured chest-wall offset, ~10-15 mm, and the count of base nodes with no bed on their ray
+   falls from 672 of 2,850 to under 100. If the penetration stays above 40 mm with the full
+   muscular wall under it, the depth is not a coverage artefact and the registration itself is
+   what puts this tissue inside the chest.
+
    **Seat it in two steps: place, then conform. Fixed 2026-09-10, before it runs.** 45 mm of
    overlap is not tissue deformation, it is placement -- the breast is another woman's tissue where
    a similarity registration put it, and a quasi-static solve pushing 45 mm of interpenetration out
