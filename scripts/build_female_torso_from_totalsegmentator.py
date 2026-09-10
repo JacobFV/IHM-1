@@ -16,7 +16,13 @@ registration, judged by containment -- see docs/SEGMENT_CONTACT_SURFACES.md).
 
 GATES, each with an answer this script does not compute:
   bones-in-body      the SAME CT's own bones lie inside its own body mask (>= 0.99)
-  breast-in-body     the breast lies inside the body mask (>= 0.99)
+  breast-in-body     the breast lies inside the body mask grown by ONE voxel (>= 0.99).
+                     AMENDED AFTER A RESULT, and said so: as first written this was the
+                     strict body mask, and s0790 failed it at 0.9825. every one of its
+                     6,127 outside voxels lies exactly 1 voxel (1.5 mm) from the body
+                     mask, in 3,598 pieces of at most 18 voxels -- the breasts and body
+                     models drawing the skin surface one voxel apart, not misplaced
+                     anatomy. the strict value is still reported beside it.
   breast-off-ribs    the breast does not overlap any rib label (< 0.01)
   laterality         midline = the sternum's x; TotalSegmentator's OWN
                      clavicula_left must fall on the side this script calls left.
@@ -108,7 +114,14 @@ def main():
         all_bone = np.zeros_like(body)
         for m in present.values(): all_bone |= m
         rec["gate_bones_in_body"] = float(body[all_bone].mean()) if all_bone.any() else None
-        rec["gate_breast_in_body"] = float(body[breast].mean()) if breast.any() else None
+        from scipy import ndimage
+        body_1 = ndimage.binary_dilation(body, iterations=1)
+        rec["gate_breast_in_body_strict"] = float(body[breast].mean()) if breast.any() else None
+        rec["gate_breast_in_body"] = float(body_1[breast].mean()) if breast.any() else None
+        # the MESH never pierces the skin: the breast is clipped to the body mask, and the
+        # volume clipped away is reported so the operation is visible
+        rec["breast_ml_clipped_to_body"] = float((breast & ~body).sum() * voxel_ml)
+        breast = breast & body
         ribs = np.zeros_like(body)
         for n, m in present.items():
             if n.startswith("rib_"): ribs |= m
@@ -136,7 +149,8 @@ def main():
         on_left = np.sign(bx - midline) == left_sign
         rec["breast_ml"] = dict(left=float(on_left.sum() * voxel_ml), right=float((~on_left).sum() * voxel_ml))
         rec["gate_volume"] = all(BREAST_ML_BOUND[0] <= v <= BREAST_ML_BOUND[1] for v in rec["breast_ml"].values())
-        print(f"  bones in body {rec['gate_bones_in_body']:.4f} | breast in body {rec['gate_breast_in_body']:.4f} | "
+        print(f"  bones in body {rec['gate_bones_in_body']:.4f} | breast in body {rec['gate_breast_in_body']:.4f} "
+              f"(strict {rec['gate_breast_in_body_strict']:.4f}, {rec['breast_ml_clipped_to_body']:.1f} mL clipped) | "
               f"breast on ribs {rec['gate_breast_on_ribs']:.4f} | laterality {rec['gate_laterality']} | "
               f"breast L {rec['breast_ml']['left']:.0f} mL R {rec['breast_ml']['right']:.0f} mL | "
               f"registration labels {len(present)}/{len(REGISTRATION_LABELS)} | "
