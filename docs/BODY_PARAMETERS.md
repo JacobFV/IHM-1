@@ -730,18 +730,26 @@ done; the others have moved.
    HuggingFace copy verified byte-identical to Zenodo's central directory -- all
    147,361 members -- with every member still checked against the zip's own CRC32.
 
-   | | s0790 | s1067 | s1159 |
-   |---|---:|---:|---:|
-   | gates a-c | pass | pass | pass |
-   | this body's sternum inside the mapped trunk | 0.767 | 0.635 | 0.315 |
-   | ribs inside the mapped breasts | 5.1% / 3.9% | 4.2% / 3.0% | 3.4% / 4.4% |
-   | out-of-trunk sternum points that are ANTERIOR | 95-97% | 95-98% | 92-99% |
-   | deepest rib inside the breast | rib 5 | rib 5 | rib 5 |
-   | its median / max depth, L; R (mm) | 8.0/13.9; 8.3/13.6 | 10.5/17.2; 7.3/14.9 | 6.7/12.6; 7.8/12.7 |
+   | | s0790 | s1067 | s1159 | s0970 |
+   |---|---:|---:|---:|---:|
+   | gates a-c | pass | pass | pass | pass |
+   | this body's sternum inside the mapped trunk | 0.767 | 0.635 | 0.315 | **0.090** |
+   | ribs inside the mapped breasts | 5.1% / 3.9% | 4.2% / 3.0% | 3.4% / 4.4% | 5.2% / 5.0% |
+   | out-of-trunk sternum points that are ANTERIOR | 95-97% | 95-98% | 92-99% | 99-100% |
+   | ...by a median of | 2-4 mm | 3-5 mm | 5-6 mm | **11-19 mm** |
+   | deepest rib inside the breast | rib 5 | rib 5 | rib 5 | rib 6 (5 close) |
+   | its median / max depth, L; R (mm) | 8.0/13.9; 8.3/13.6 | 10.5/17.2; 7.3/14.9 | 6.7/12.6; 7.8/12.7 | **14.1/21.1; 13.4/20.9** |
 
-   The same direction, the same profile -- deepest at rib 5, tapering to 1-3 mm at ribs
-   2-3 and 7 -- and about a centimetre at worst, in all three. This is a chest-SHAPE
-   difference between this body and female chests, not one subject's anatomy.
+   In all four the DIRECTION is the same -- this body's anterior chest wall in front of
+   hers -- and so is the PROFILE: peaking mid-chest (ribs 5-6) and tapering above and
+   below. The MAGNITUDE is not: from a few millimetres to about two centimetres, with
+   s0970 roughly twice the others. (A first version of this paragraph, written on three
+   subjects, said "about a centimetre at worst"; the fourth overturned it.) s0970 is also
+   where the fit is least certain -- its sternum carries the largest residual of any
+   subject (34-36 mm) and its fitted scale is the lowest (1.014 against 1.06-1.10) -- so
+   one subject cannot say how much of her larger offset is anatomy and how much is
+   registration. The direction is a chest-shape difference between this body and female
+   chests; the size varies between women.
 
    **What would move it next.** One systematic correction: seat each breast on this
    body's own chest wall instead of refitting the thorax per subject. It is not built
@@ -765,7 +773,9 @@ done; the others have moved.
    more breast. Had gate d2 been the judge, the shift would have passed. Nothing seated
    was written. What is needed is a local deformation of the breast's BASE, conformed to
    this body's own chest wall with its volume compensated -- the breast-sized instance of
-   the deformable soft-tissue decision this programme already has open. The sternum
+   the deformable soft-tissue decision this programme already has open. The fourth subject
+   makes the case harder to avoid: a correction of one fixed size cannot cover an offset
+   that varies twofold between women, so the base has to conform to each chest wall. The sternum
    (gate d1) is untouched by any breast correction; that is the skin-envelope problem.
 2. ~~**A path refitting tool.**~~ **Done.** `libosimActuators.so` already
    exported 97 `PolynomialPathFitter` symbols; what was missing was 300 lines of
