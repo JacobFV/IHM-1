@@ -1069,6 +1069,18 @@ done; the others have moved.
    A uterus is never inside a sacrum in a living person, so the overlap is an artefact of mapping
    whichever way it arose. The gate is unchanged and these subjects stay failed.
 
+   **Where in the sacrum, and what it rules out.** This body's sacrum spans 144 mm. The overlapping
+   interior points sit at the MIDDLE of it -- 49% of its height for D2-044 and D2-026 (10-90%:
+   37-61%), 65% and 64% for D2-048 and D2-042 -- where 0% is the coccyx end and 100% the promontory.
+   (Resampled independently of the registration's own count: 24.1% against its 23.4% for D2-044.)
+   A male promontory in the way would put the overlap HIGH, at 90-100%. It is not there. Mid-sacrum,
+   S2-S3, is exactly where the rectum and the cul-de-sac lie between uterus and bone, so these uteri
+   are mapped 2-4 cm too far back, through a space that is not empty in either sex. That leaves the
+   endometriosis reading -- a retroverted uterus adherent to the cul-de-sac, which this cohort is
+   selected for -- as the likelier of the two, and it is still a reading, not a measurement: a
+   posterior bias in the fit would look the same from here. What would separate them is the rectum,
+   which this body has and which nothing has yet been asked about.
+
    **Prediction, fixed now, before either is registered:** D1-041 (766 mL) and D1-045 (618 mL)
    FAIL containment as written and PASS the lowest-quartile test, as D1-017 does. If either
    fails the lowest-quartile test, it is misplaced, not merely enlarged, and it is reported as
