@@ -775,7 +775,28 @@ done; the others have moved.
    this body's own chest wall with its volume compensated -- the breast-sized instance of
    the deformable soft-tissue decision this programme already has open. The fourth subject
    makes the case harder to avoid: a correction of one fixed size cannot cover an offset
-   that varies twofold between women, so the base has to conform to each chest wall. The sternum
+   that varies twofold between women, so the base has to conform to each chest wall.
+
+   **The base deformation: approved 2026-09-10, judged by rules fixed BEFORE it is built.**
+   The judge written above for a fitted, systematic correction does not fit this. A
+   deformation that places the breast's base on the chest wall clears the ribs and makes
+   contact by construction, so neither can judge it. The judge, committed before any code:
+   * **The solver first, on a case with a known answer.** A near-incompressible block
+     (nu = 0.49) under prescribed compression conserves volume within 1%, and on the SAME
+     mesh and boundary conditions the in-repo solver (`DeformableRegion`) and FEBio 4.13 --
+     independent codes -- agree within 5% of the maximum displacement (RMS over nodes).
+   * **Per breast, all four subjects (s0790, s1067, s1159, s0970):** (a) volume within 1%
+     of the undeformed breast -- the solver only penalises volume change, so this is a real
+     test; (b) no collapsed or inverted element, every tet's J > 0.2, the backend's own
+     rejection threshold; (c) the in-repo solver and FEBio agree on the deformed breast
+     within 5% of its maximum displacement.
+   * **Reported, NOT judged, because the boundary conditions enforce them:** base contact
+     (median <= 3 mm) and this body's rib points inside the breast (<= 1%).
+   * **Stated up front.** The bed is the anterior surface of this body's pectoralis major,
+     the breast's anatomical bed, not the ribs. With only prescribed displacements and no
+     body force, Young's modulus cancels from the resting shape; only nu matters, taken as
+     0.49 (adipose is nearly incompressible), an assumption. Gravity, and recovering the
+     unloaded shape of a breast imaged supine under gravity, are out of scope here and named. The sternum
    (gate d1) is untouched by any breast correction; that is the skin-envelope problem.
 2. ~~**A path refitting tool.**~~ **Done.** `libosimActuators.so` already
    exported 97 `PolynomialPathFitter` symbols; what was missing was 300 lines of
