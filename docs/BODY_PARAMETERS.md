@@ -796,7 +796,24 @@ done; the others have moved.
      the breast's anatomical bed, not the ribs. With only prescribed displacements and no
      body force, Young's modulus cancels from the resting shape; only nu matters, taken as
      0.49 (adipose is nearly incompressible), an assumption. Gravity, and recovering the
-     unloaded shape of a breast imaged supine under gravity, are out of scope here and named. The sternum
+     unloaded shape of a breast imaged supine under gravity, are out of scope here and named.
+
+   **Uterus and ovaries: the pelvic registration, and its gates, fixed before any fitting.**
+   UT-EndoMRI (owner-approved 2026-09-10; an endometriosis cohort, NOT a typical-anatomy
+   reference) gives uterus and ovary labels on pelvic T2 MRI. TotalSegmentator's
+   `total_mr` labels both hip bones, the sacrum and both femurs on these scans (tested on
+   D1-000: 24 classes, the rater's uterus inside the box the bones span). The T2 is 5 mm
+   slices over 160 mm, so the femurs and possibly the iliac crests are CUT: bone centroids
+   would be dragged toward the scan, as s1067's cut ribs were. So the registration pulls
+   the MRI's partial bone surfaces one way onto this body's complete bones. Gates:
+   * **known answer:** truncate one of this body's own bones, move it by a known
+     similarity, and the one-way fit must recover it (translation within 2 mm, rotation
+     within 2 deg, scale within 1%);
+   * **laterality:** the MRI's left hip bone maps nearer this body's left hip bone;
+   * **containment:** the mapped uterus lies inside this body's pelvic ring (the convex
+     hull of the hip bones and sacrum), and overlaps no bone (<= 1% of its volume).
+   Overlap with this male body's prostate, seminal vesicles and bladder is EXPECTED -- a
+   female pelvis variant does not exist yet -- and is reported, not judged. The sternum
    (gate d1) is untouched by any breast correction; that is the skin-envelope problem.
 2. ~~**A path refitting tool.**~~ **Done.** `libosimActuators.so` already
    exported 97 `PolynomialPathFitter` symbols; what was missing was 300 lines of

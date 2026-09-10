@@ -63,6 +63,22 @@
         "rater coverage in D1 is uneven: rater 3 labelled the uterus in 47 subjects, rater 2 in 26, rater 1 in 9",
         "the archive carries __MACOSX/ and .DS_Store entries"
       ]
+    },
+    "pelvic_landmarks": {
+      "method": "TotalSegmentator total_mr (Apache-2.0) on D1-000's T2, 2026-09-10",
+      "t2_geometry": "480 x 480 x 32 voxels, 0.5 x 0.5 x 5.0 mm, LAS: 160 mm superior-inferior",
+      "classes_found": 24,
+      "landmarks": [
+        "hip_left",
+        "hip_right",
+        "sacrum",
+        "femur_left",
+        "femur_right",
+        "spinal_cord",
+        "urinary_bladder"
+      ],
+      "sanity": "the rater's uterus centroid lies inside the box the pelvic bones span",
+      "consequence": "with 160 mm of coverage the femurs, and possibly the iliac crests, are CUT by the volume; bone centroids would be biased toward the scan, so registration uses one-way partial-to-whole surface fitting, not centroid correspondence"
     }
   },
   "the_caution_that_belongs_on_the_face_of_this_card": "It is an ENDOMETRIOSIS cohort. Endometriosis distorts pelvic anatomy -- adhesions, endometriomas, adenomyosis, altered uterine position and ovarian morphology -- so these uteri and ovaries are not a typical-anatomy reference and must never be presented as one. Using them would mean a body whose uterus came from a patient selected for uterine pathology.",
