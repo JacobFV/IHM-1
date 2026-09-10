@@ -1,0 +1,9 @@
+{
+  "id": "skm-tea",
+  "reference": "https://huggingface.co/datasets/arjundd/skm-tea-mini",
+  "modality": "Stanford knee MRI with tissue segmentations (mini subset, 34.6 GB)",
+  "role": "a second candidate for articular cartilage geometry",
+  "access": "licence 'other': 'By using this dataset, you agree to the Stanford University Dataset Research Use Agreement'",
+  "status": "catalogued_not_acquired_needs_owner_acceptance",
+  "decision_needed": "accepting the Stanford research use agreement is the owner's act, not an agent's; nothing is downloaded until then"
+}

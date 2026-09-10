@@ -1,0 +1,29 @@
+{
+  "id": "oaizib-cm",
+  "reference": "https://huggingface.co/datasets/YongchengYAO/OAIZIB-CM",
+  "modality": "knee MRI (Osteoarthritis Initiative) with segmentation masks",
+  "role": "candidate source of ARTICULAR CARTILAGE geometry, of which this body has none (51 cartilage entities, none articular -- docs/TISSUE_MECHANICS.md)",
+  "access": "HuggingFace, not gated; declared licence cc-by-nc-4.0; citing the CartiMorph paper (doi:10.1016/j.media.2023.103035) and the OAIZIB paper is compulsory per the card",
+  "status": "catalogued_verified_acquiring_labels",
+  "verified_here": {
+    "method": "HuggingFace API and dataset README, 2026-09-10",
+    "subjects": 507,
+    "bytes_total": 12650000000,
+    "labels": {
+      "1": "femur",
+      "2": "femoral cartilage",
+      "3": "tibia",
+      "4": "medial tibial cartilage",
+      "5": "lateral tibial cartilage"
+    },
+    "also": "CLAIR-Knee-103R template atlas with a 20-ROI articular cartilage atlas",
+    "not_present": "patellar cartilage; any joint but the knee"
+  },
+  "basis_for_use": "the programme owner confirmed on 2026-09-10 that this programme is non-commercial scientific research (recorded for UT-EndoMRI); CC-BY-NC-4.0's condition is non-commercial use",
+  "not_verified_here": [
+    "the licence of the upstream OAIZIB release (Ambellan et al.) and whether cc-by-nc-4.0 is consistent with it",
+    "the Osteoarthritis Initiative's own data-use terms for its MRI"
+  ],
+  "plan": "labels only (femur, tibia for bone-to-bone registration onto this body's knee; cartilage for geometry); the images are not needed",
+  "in_git": false
+}
