@@ -953,7 +953,28 @@ done; the others have moved.
    **Prediction, fixed now, before either is registered:** D1-041 (766 mL) and D1-045 (618 mL)
    FAIL containment as written and PASS the lowest-quartile test, as D1-017 does. If either
    fails the lowest-quartile test, it is misplaced, not merely enlarged, and it is reported as
-   such. The sternum
+   such.
+
+   **The prediction was half wrong** (both registered by the batch the same day; 37 uteri scored,
+   the known answer still reproducing every manifest's ring share exactly):
+
+   | subject | registered volume | as written | lowest 25% | predicted | got |
+   |---|---:|---:|---:|---|---|
+   | D1-041 | 631.3 mL | 0.8753 FAIL | 1.0000 PASS | FAIL / PASS | **as predicted** |
+   | D1-045 | 461.4 mL | **1.0000 PASS** | 1.0000 PASS | FAIL / PASS | **wrong: it passes** |
+   | D1-039 | 319.9 mL | 0.9604 FAIL | **0.9892 FAIL** | not predicted | fails both |
+
+   D1-045 is 461 mL registered and sits entirely inside the ring, so **volume does not predict a
+   containment failure**: what matters is where the uterus points, not how big it is. That is the
+   same lesson D1-035 gave from the other end (142 mL, fails as written), and it further weakens
+   the case for any volume-based amendment.
+
+   D1-039 is the first uterus to fail BOTH, and by the rule stated above that reads as misplaced
+   rather than enlarged -- but it fails the lowest-quartile test at 0.9892 against 0.99, which is
+   0.1% of its surface and no distance at all. Its outside part is 38 mm anterior of its centroid
+   and 31-59 mm past the nearest ring bone, at mid-height: the same forward lean as D1-035, larger.
+   Calling that "misplaced" would be reading a threshold to three decimals it was never worth to;
+   it is recorded as marginal and nothing is inferred from it. The sternum
    (gate d1) is untouched by any breast correction; that is the skin-envelope problem.
 2. ~~**A path refitting tool.**~~ **Done.** `libosimActuators.so` already
    exported 97 `PolynomialPathFitter` symbols; what was missing was 300 lines of
