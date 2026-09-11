@@ -281,13 +281,17 @@ def _behind(subject, side, Y, F, workdir):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--subject", choices=CW.SUBJECTS); ap.add_argument("--stage", default="all", choices=("all", "gate0", "known-answer", "curve", "scale"))
+    ap.add_argument("--subject", choices=CW.SUBJECTS); ap.add_argument("--stage", default="all", choices=("all", "gate0", "known-answer", "curve", "scale", "scalar"))
     ap.add_argument("--density", type=int)
     a = ap.parse_args()
     OUT.mkdir(parents=True, exist_ok=True)
     body = CW.body_meshes()
     if a.stage == "curve": stage_curve(body, a.density); return
     if a.stage == "scale": stage_scale(body); return
+    if a.stage == "scalar":
+        ok, normals = stage_scalar(body)
+        stage_gate_b(body, normals)
+        return
     g0_ok, g0 = gate0(body)
     (OUT / "gate0.json").write_text(json.dumps(g0, indent=2) + "\n")
     if not g0_ok:
@@ -364,7 +368,8 @@ def tps_fit_direct(S, D, lam):
     A[:n, :n] = SW.phi(cdist(S, S)) + lam * np.eye(n)
     P = np.hstack([S, np.ones((n, 1))])
     A[:n, n:] = P; A[n:, :n] = P.T
-    rhs = np.zeros((n + 4, 3)); rhs[:n] = D
+    D = np.asarray(D, float); D = D[:, None] if D.ndim == 1 else D      # scalar fields are one column, not three
+    rhs = np.zeros((n + 4, D.shape[1])); rhs[:n] = D
     z = sla.solve(A, rhs, assume_a="gen")
     return z[:n], z[n:]
 
@@ -465,6 +470,141 @@ def stage_scale(body):
             f"{scale:.0f} mm ({len(S)} correspondences)")
     (OUT / "real_field_scale.json").write_text(json.dumps(out, indent=2) + "\n")
     return out
+
+
+# ---- the scalar offset field (docs/BODY_PARAMETERS.md, 9d2f487) ---------------------------------
+# d(x) = s(x) n_smooth(x): one number per point, so the normal's turning -- the thing that binds a
+# 3D vector warp here -- cannot enter the quantity being fitted.
+TAUBIN_ITERS, TAUBIN_LAMBDA, TAUBIN_MU = 20, 0.5, -0.53
+GATE_A_BAR_MM = 0.5
+
+
+def taubin_smooth(V, F, iters=TAUBIN_ITERS, lam=TAUBIN_LAMBDA, mu=TAUBIN_MU):
+    """Volume-preserving Laplacian smoothing: alternating positive and negative steps, so the
+    surface is smoothed without the shrinkage a plain Laplacian causes."""
+    from scipy.sparse import coo_matrix
+    n = len(V)
+    e = np.vstack([F[:, [0, 1]], F[:, [1, 2]], F[:, [2, 0]]])
+    e = np.vstack([e, e[:, ::-1]])
+    A = coo_matrix((np.ones(len(e)), (e[:, 0], e[:, 1])), shape=(n, n)).tocsr()
+    deg = np.asarray(A.sum(1)).ravel(); deg[deg == 0] = 1
+    X = V.copy()
+    for i in range(iters):
+        L = A @ X / deg[:, None] - X
+        X = X + (lam if i % 2 == 0 else mu) * L
+    return X
+
+
+def smoothed_normals(V, F):
+    """Normals of the Taubin-smoothed surface, carried back to the original vertices."""
+    Vs = taubin_smooth(V, F)
+    from ihm.anatomy.normal_shooting import vertex_normals as _vn
+    return _vn(Vs, F), float(np.linalg.norm(Vs - V, axis=1).mean()), float(np.linalg.norm(Vs - V, axis=1).max())
+
+
+def scalar_field(chest, L_m, seed, amplitude_m=CURVE_AMPLITUDE_M):
+    """A known SCALAR field of the fitted family at spatial scale L, amplitude fixed: anchors one per
+    occupied cell of an L grid, scalar weights, rescaled so mean |s| is the amplitude."""
+    rng = np.random.default_rng(1000 + seed)
+    pts = np.vstack([CW.area_samples(*chest[l], 4000, seed * 89 + i) for i, l in enumerate(chest)])
+    origin = pts.min(0) - rng.random(3) * L_m
+    cell = np.floor((pts - origin) / L_m).astype(np.int64)
+    _, first = np.unique(cell, axis=0, return_index=True)
+    anchors = pts[np.sort(first)]
+    P = np.hstack([anchors, np.ones((len(anchors), 1))])
+    Q, _ = np.linalg.qr(P, mode="complete"); Q2 = Q[:, 4:]
+    w = Q2 @ rng.standard_normal((Q2.shape[1], 1))
+    predict = lambda Y: (SW.phi(cdist(Y, anchors)) @ w).ravel()
+    probe = np.vstack([CW.area_samples(*chest[l], 1500, 41 + i) for i, l in enumerate(chest)])
+    w *= amplitude_m / max(float(np.abs(predict(probe)).mean()), 1e-12)
+    return (lambda Y: (SW.phi(cdist(Y, anchors)) @ w).ravel()), len(anchors)
+
+
+def stage_scalar(body):
+    chest = {l: body[l] for l in CW.FIT_LABELS}
+    normals, moved_mean, moved_max = {}, [], []
+    for l, (V, F) in chest.items():
+        n, mm, mx = smoothed_normals(V, F); normals[l] = n; moved_mean.append(mm); moved_max.append(mx)
+    say(f"Taubin smoothing ({TAUBIN_ITERS} iterations) moves the surface it smooths by "
+        f"{1000*np.mean(moved_mean):.3f} mm mean, {1000*np.max(moved_max):.3f} mm max -- an error the fit cannot see")
+    rows = []
+    for L in CURVE_L_MM:
+        for seed in range(CURVE_SEEDS):
+            s_true, n_anchor = scalar_field(chest, L * 1e-3, seed)
+            moved = {l: (V + s_true(V)[:, None] * normals[l], F) for l, (V, F) in chest.items()}
+            t0 = time.time()
+            S, obs, kept_by = [], [], {}
+            for i, l in enumerate(chest):
+                from ihm.anatomy.normal_shooting import shoot_pairs
+                Vm, F = moved[l]
+                r = shoot_pairs(Vm, F, *chest[l], n=PER_RIB, cap_m=SHOOT_CAP_M,
+                                return_tol_m=SHOOT_RETURN_TOL_M, seed=seed + i, min_normal_agreement=SHOOT_AGREEMENT)
+                if not len(r["source"]): continue
+                # the observation is ONE NUMBER: how far to move along the smoothed normal at this point
+                tree = cKDTree(Vm); nb = normals[l][tree.query(r["source"])[1]]
+                S.append(r["source"]); obs.append(np.einsum('ij,ij->i', r["target"] - r["source"], nb))
+                kept_by[l] = int(r["keep"].sum())
+            S = np.vstack(S); obs = np.concatenate(obs)
+            w, a = tps_fit_direct(S, obs[:, None], CURVE_LAMBDA)
+            predict = lambda Y: (SW.phi(cdist(Y, S)) @ w + Y @ a[:3] + a[3]).ravel()
+            err = []
+            for i, l in enumerate(chest):
+                Vm, F = moved[l]
+                P, _, face, bary = __import__("ihm.anatomy.normal_shooting", fromlist=["x"]).surface_samples(Vm, F, 1500, 500 + i + seed)
+                nb = np.einsum('nk,nkj->nj', bary, normals[l][F[face]])
+                nb /= np.maximum(np.linalg.norm(nb, axis=1, keepdims=True), 1e-30)
+                mapped = P + predict(P)[:, None] * nb
+                err.append(cKDTree(CW.area_samples(*chest[l], 40000, 300 + i)).query(mapped)[0])
+            rms = float(np.sqrt((np.concatenate(err) ** 2).mean()))
+            rows.append(dict(L_mm=L, seed=seed, anchors=n_anchor, correspondences=int(len(S)),
+                             surface_rms_mm=1000 * rms, seconds=time.time() - t0))
+            say(f"  L {L:.0f} mm, seed {seed}: {n_anchor} anchors, {len(S)} correspondences, surface RMS "
+                f"{1000*rms:.3f} mm ({time.time()-t0:.0f} s)")
+        got = [r["surface_rms_mm"] for r in rows if r["L_mm"] == L]
+        say(f"  -> L {L:.0f} mm: surface RMS mean {np.mean(got):.3f} mm (max {np.max(got):.3f}) -> "
+            f"{'PASS' if np.max(got) <= GATE_A_BAR_MM else 'FAIL'} against {GATE_A_BAR_MM} mm")
+    worst = max(r["surface_rms_mm"] for r in rows)
+    say(f"GATE A: worst surface RMS over all L and seeds {worst:.3f} mm (<= {GATE_A_BAR_MM}) -> "
+        f"{'PASS' if worst <= GATE_A_BAR_MM else 'FAIL'}")
+    (OUT / "scalar_gate_a.json").write_text(json.dumps(dict(
+        taubin=dict(iterations=TAUBIN_ITERS, surface_moved_mean_mm=1000 * float(np.mean(moved_mean)),
+                    surface_moved_max_mm=1000 * float(np.max(moved_max))), rows=rows, bar_mm=GATE_A_BAR_MM,
+        passes=bool(worst <= GATE_A_BAR_MM)), indent=2) + "\n")
+    return worst <= GATE_A_BAR_MM, normals
+
+
+def stage_gate_b(body, normals):
+    """GATE B: how much of the REAL offset field a normal-only model gives up. The correspondence
+    must not impose a direction, so the pairing here is NEAREST POINT -- which carries its own
+    d^2/R bias, stated -- and the decomposition is against this body's smoothed normal."""
+    import igl
+    chest = {l: body[l] for l in CW.FIT_LABELS}
+    out = {}
+    for subject in CW.SUBJECTS:
+        src = CW.subject_meshes(subject)
+        G = np.array(json.loads((ROOT / "data/derived" / CW.REGISTERED[subject] / "manifest.json").read_text())["transform"])
+        nrm, tan = [], []
+        for i, lab in enumerate(CW.FIT_LABELS):
+            if lab not in src: continue
+            V, F = src[lab]; P = CW.apply(G, CW.area_samples(V, F, 600, i))
+            tV, tF = chest[lab]
+            d2, I, C = igl.point_mesh_squared_distance(np.ascontiguousarray(P), tV, tF)
+            n = normals[lab][tF[I]].mean(1); n /= np.maximum(np.linalg.norm(n, axis=1, keepdims=True), 1e-30)
+            d = C - P
+            along = np.einsum('ij,ij->i', d, n)
+            nrm.append(np.abs(along)); tan.append(np.linalg.norm(d - along[:, None] * n, axis=1))
+        nrm = np.concatenate(nrm); tan = np.concatenate(tan)
+        frac = float(tan.mean() / (tan.mean() + nrm.mean()))
+        energy = float((tan ** 2).sum() / ((tan ** 2).sum() + (nrm ** 2).sum()))
+        out[subject] = dict(normal_mean_mm=1000 * float(nrm.mean()), tangential_mean_mm=1000 * float(tan.mean()),
+                            tangential_fraction=frac, tangential_energy_fraction=energy, samples=int(len(nrm)))
+        say(f"  {subject}: normal {1000*nrm.mean():.2f} mm, tangential {1000*tan.mean():.2f} mm -> tangential "
+            f"fraction {100*frac:.1f}% (energy {100*energy:.1f}%)")
+    worst = max(v["tangential_fraction"] for v in out.values())
+    say(f"GATE B: worst tangential fraction {100*worst:.1f}% -> "
+        f"{'a normal-only model is PERMITTED' if worst <= 0.5 else 'tangential-MAJORITY: a normal-only model is the wrong representation'}")
+    (OUT / "scalar_gate_b.json").write_text(json.dumps(out, indent=2) + "\n")
+    return worst <= 0.5, out
 
 
 if __name__ == "__main__": main()

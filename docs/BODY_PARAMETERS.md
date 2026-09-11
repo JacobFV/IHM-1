@@ -1381,6 +1381,40 @@ done; the others have moved.
    differs mostly in how far forward it sits. If gate B comes back tangential-majority, the line
    ends for good and the female chest wall needs a different body, not a different fit.
 
+   **Gate B passes decisively; gate A fails at every L. The representation is right and the
+   instrument still misses by about a factor of two.**
+
+   | gate A, surface RMS, 5 seeds, amplitude 3.1 mm | L = 5 | 10 | 20 | 40 mm |
+   |---|---:|---:|---:|---:|
+   | scalar field along smoothed normals | 1.046 | 1.064 | 0.942 | **0.897** |
+   | the 3D vector warp, for comparison | 1.53 | 1.58 | 1.47 | 1.52 |
+   | the bar | 0.5 | 0.5 | 0.5 | 0.5 |
+
+   Worst over all L and seeds: 1.430 mm. So gate A **fails**, and gates 2-4 are not reached. But the
+   scalar field is the better representation by the margin its argument predicted: it takes 1.5 mm to
+   about 1.0, and unlike the vector warp it now IMPROVES with scale (0.897 at L = 40 against 1.046 at
+   L = 5), which is what a representation that matches the deformation should do.
+
+   | gate B, the real offset field decomposed against this body's smoothed normals | normal | tangential | tangential fraction |
+   |---|---:|---:|---:|
+   | s0790 | 6.49 mm | 0.54 mm | 7.7% (energy 3.1%) |
+   | s1067 | 10.87 mm | 1.12 mm | 9.3% (energy 2.9%) |
+   | s1159 | 10.06 mm | 1.02 mm | 9.2% (energy 2.2%) |
+   | s0970 | 9.27 mm | 0.62 mm | 6.3% (energy 0.7%) |
+
+   **A normal-only model gives up 6-9% of the deformation**, far inside the 50% that would have
+   ended the line, and the normal part -- 6.5 to 10.9 mm -- is the chest-wall offset this file has
+   recorded all along. A chest wall differs from another chest wall mostly in how far forward it
+   sits, as predicted, and that is now measured rather than assumed. (The pairing here is
+   NEAREST POINT, because a decomposition cannot use a correspondence that imposes a direction; it
+   carries its own d^2/R bias, which inflates neither fraction by anything like the margin.)
+
+   **Reported, and it matters for the bar:** 20 Taubin iterations move the surface they smooth by
+   0.416 mm mean and 5.501 mm max. The gate A bar of 0.5 mm therefore sits BETWEEN the measure's own
+   floor (0.288 mm, an identity warp on coinciding surfaces) and the smoothing displacement, so at
+   0.9 mm the instrument is roughly twice a bar that is itself at the geometry's noise level. Said
+   here, as with the 1 mm bar before it, so nobody quotes the gap without it.
+
    **Normal agreement is adopted, on the argument and not on the score (2026-09-10).** A hit whose
    surface faces away from the source is on the far wall of the rib: it is not the partner of the
    source point, it is a different part of the bone that happens to lie along the ray, and the
