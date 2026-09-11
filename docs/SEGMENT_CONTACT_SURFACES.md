@@ -1063,6 +1063,51 @@ is worth having and costs nothing further. **Everything downstream stays frozen*
 v3, no normal-shooting instrument, and no verdict read from v3 until the 1-7 mm control lands. The
 agent froze these on its own initiative when my two instructions conflicted, and that was right.
 
+### The invariant 85-90% has a KNOWN ANSWER, and it is pi/4
+
+The fraction held across every scale tested -- 88% at 1.5 mm, 84% at 20 mm, 89.2% at 1.17 mm of
+residual displacement. An invariant fraction is the signature of a quantity set by construction
+rather than by the thing being measured, so the construction was asked for its value directly.
+
+For a random isotropic field, the component tangent to the surface is invisible to **any**
+surface-based correspondence. That floor is computable in closed form, with no reference to any
+mesh, correspondence or warp:
+
+| statistic | analytic | Monte Carlo, N = 4e6 |
+|---|---:|---:|
+| mean \|v_t\| / mean \|v\| | **pi/4 = 0.7854** | 0.7854 |
+| rms \|v_t\| / rms \|v\| | sqrt(2/3) = 0.8165 | 0.8166 |
+| mean \|v_n\| / mean \|v\| | 1/2 | 0.4999 |
+
+A random spline field has iid Gaussian components, so its direction is isotropic and `pi/4` is the
+floor this control cannot go below however good the correspondence is.
+
+| run | measured fraction | floor | **excess** | excess, absolute |
+|---|---:|---:|---:|---:|
+| 1.17 mm residual | 0.8920 | 0.7854 | **+0.1066** | 0.125 mm |
+| 1.50 mm field | 0.8787 | 0.7854 | **+0.0933** | 0.140 mm |
+| 20.0 mm field | 0.8408 | 0.7854 | **+0.0554** | 1.11 mm |
+
+**So roughly nine tenths of the alarming number is the control's own construction, and the
+correspondence's actual contribution is the excess.** Reporting 84-89% as "target error" attributes
+to nearest-point matching a quantity that a perfect correspondence would also incur. This is the
+programme's standing rule applied to my own control: check the metric against a case whose answer
+you know, and the answer here was available analytically before any run.
+
+**What the instrument must report from now on**, fixed before the replacement control's numbers are
+read: the error vector decomposed per point into components NORMAL and TANGENTIAL to the scaffold
+surface. The tangential part is the identifiability floor and is reported as such; the **normal
+part is the only component a correspondence can be blamed for**, and it is the only one that may be
+called target error. The floor subtraction in the table above is the crude version of this and is
+labelled as crude -- a per-point decomposition does not assume isotropy, and a real bone
+displacement field is not isotropic.
+
+**Not concluded:** the absolute excess grows 0.140 -> 1.11 mm from 1.5 to 20 mm, which is
+sublinear in a 13.3x change, and d^2/R would be superlinear. That is one more reason the d^2/R
+question stays open rather than answered in either direction, and the denominators in those two
+rows do not mean the same thing (residual displacement against field amplitude), so the trend is
+not read as a result at all.
+
 #### A known answer this line has never had, and what the chest wall found without it
 
 Every gate above compares a fit to another fit. Gate 1 asks whether the warped bone group sits no
