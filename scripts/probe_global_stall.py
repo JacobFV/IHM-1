@@ -42,14 +42,14 @@ def logger(m, flush=True):
 out = {}
 
 
-def on_stall(fraction, advance, u):
+def on_stall(fraction, advance, u, aim):
     """The whole point of the script. advance(fraction, u) at the fraction ALREADY ACCEPTED is a
     step of size zero: the held nodes' targets are unchanged, so nothing is asked to travel."""
     out["fraction"] = fraction
     print(f"\n  STALLED at fraction {fraction:.4f}; the body has moved at most "
           f"{1000 * np.abs(u).max():.2f} mm", flush=True)
     try:
-        advance(fraction, u)
+        advance(fraction, u, 0.0, aim)
         out["zero"] = "SUCCEEDS -- a zero-sized step is fine, so the failure DOES need a finite increment"
     except Exception as e:
         out["zero"] = f"FAILS TOO -- {type(e).__name__}: {e}"
@@ -57,7 +57,7 @@ def on_stall(fraction, advance, u):
     # And again, to see whether the zero-sized step is repeatable or drifts: two identical requests
     # from the same accepted state must give the same answer, for the same reason a query must.
     try:
-        advance(fraction, u)
+        advance(fraction, u, 0.0, aim)
         out["zero2"] = "SUCCEEDS"
     except Exception as e:
         out["zero2"] = f"FAILS -- {e}"

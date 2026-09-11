@@ -3590,3 +3590,84 @@ What has changed is that the parametrization no longer stops at the scaffold.
    fraction, each from the last one's answer, fixed point at **1 µm**, a thousandth of the bed's 1 mm
    facet scale, and the whole sequence printed either way.
 
+   **THE REPAIR LANDS, BB' FAILS HONESTLY, AND A JUMP LIMIT WAS SILENTLY TURNING PERSISTENT
+   ASSOCIATION INTO NO ASSOCIATION.**
+
+   *The repair.* A held node's bound was `on_plane + gap0 + fraction*travel`, and the fraction scales
+   `travel` and not `on_plane`. It is now interpolated from where the node IS to where the constraint
+   wants it, by `theta` -- the share of the REMAINING drive the increment consumes -- so every term
+   is under the increment parameter. At theta = 0 the bound is the node's own coordinate, formed with
+   the SAME einsum over the SAME frames the solver uses for `v_prev`, so the two agree bit for bit.
+
+   *Gate BB, the bounds half.* A step of size zero displaces the bounds by **exactly 0.000e+00 mm
+   over 0 nodes, with no inversions**, against **7.19 mm over 26 nodes and 4 inverted elements**
+   before the repair. The defect is closed as a test.
+
+   *GATE BB' FAILS, and it is the branch that was pre-registered as the bad one.* Six zero-sized
+   steps at ONE fraction (0.0625), each from the last one's answer, in mm:
+
+   | repeat | 1 | 2 | 3 | 4 | 5 | 6 |
+   |---|---:|---:|---:|---:|---:|---:|
+   | the solve moved | 0.335152 | 0.122123 | 0.034554 | 0.036361 | 0.037410 | 0.036119 |
+
+   It decays for three repeats and then **plateaus at about 36 um and stays there**. The declared
+   fixed point was 1 um, written into the script before the run. This is not a one-time relaxation
+   into a loosened feasible set: **at a FIXED load the association and the solve are chasing each
+   other**, and the repair does not address it. The motion is almost entirely on the base (36.1 um
+   against 6.0 um in the interior), so it is the contact that is cycling. Reported as a failure.
+
+   *Gate R2 / R-prime under persistent association -- the repair turns a FAILING control into a
+   passing one.* Same stage, same data, the only difference being the code:
+
+   | | outcome | min J | against the ideal rigid translation |
+   |---|---|---:|---|
+   | pre-repair (50e7583, a separate worktree) | **STALLS at fraction 0.6250**, 1 inverted, bounds moved 4 nodes up to 7.3841 mm | -- | -- |
+   | with the repair | **completes to 1.0**, 0 inversions, 1866 s | 0.4174 | median 0.256 mm, max 6.325 mm |
+
+   That is the first evidence that the repair is good rather than merely neutral. The earlier
+   comparison at one fraction (0.710 against 0.920) is superseded by this and should not be quoted.
+
+   *Regressions, all with the repair in:* T-none PASS (rigid translation reproduced to median and max
+   0.000 mm, min J 1.0000), W PASS, X PASS, V-on-the-plane PASS.
+
+   **A JUMP LIMIT THAT SILENTLY DISABLES WHAT IT PROTECTS.** Building gate CC exposed this, and it is
+   the most transferable thing in the round. With `jump_limit_m` at 0.5 mm and a per-step slide of
+   0.935 mm, the association is refused EVERY step and the run reports:
+
+   | jump limit | association moved per step, mm |
+   |---|---|
+   | 0.5 mm | 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 |
+   | raised clear | 0.9233 0.9317 0.9382 0.9428 0.9453 0.9457 0.9442 0.9406 (slide 0.9350) |
+
+   **"association moved 0.0000 mm" reads as SETTLED and means REFUSED.** Persistent association was
+   not being exercised at all, and the frozen/re-linearised arms were bit-identical for that reason.
+   The anatomical runs report 0.4999 mm against the same 0.5 mm limit, which is the same clamp one
+   step from binding. Same shape as the four earlier catches: a reassuring number meaning its
+   opposite.
+
+   *Gate CC, with the limit raised so persistence is real.* CC-flat reads **max |u - d| 0.000002 mm,
+   min J 1.000000** -- two nanometres, the same noise floor gate W reports at 0.000001 mm, and
+   2.7e-7 of the 7.48 mm motion, at the solver's own rtol of 1e-7. **My declared criterion was
+   "exactly zero", and 2 nm is not exactly zero, so the script prints FAIL.** I am not rewriting the
+   criterion after seeing the number; I am reporting that "exactly zero" is stricter than a
+   double-precision solve can be and leaving the judgement where it belongs.
+
+   **FOUR CONSTRUCTIONS OF GATE CC WERE WRONG BEFORE ONE WAS RIGHT, ALL MINE.** Recorded because
+   three of the four returned a plausible number rather than an error:
+   1. a tangential drive on the contact face -- **nothing moved**, because u = 0 already satisfies
+      n.u = 0. Every case returned max |u - d| = 7.480000 mm, min J exactly 1, volume ratio exactly
+      1, in 0 s. The trap gate W exists to expose, and it is quoted in a comment I had read aloud
+      earlier the same session.
+   2. tilting the drive out of the tangent -- the block moved only along the normal, and |u - d| came
+      back as **exactly the tangential component of d**. The tangential direction is undetermined.
+   3. dragging the contact face through the block, but leaving `travel` at its default `-gap0`, so
+      the face was ALSO being seated 1 mm. The plane read 1.402927 mm. Running it against the
+      pre-repair code gave **bit-identical numbers**, which is what proved the reference wrong rather
+      than the solver.
+   4. `travel = 0` with the drive still tilted -- now the face is pinned normally while the far face
+      pulls it up, so the block stretches. The plane read 2.602647 mm.
+
+   A guard that says **"NOTHING MOVED -- the drive is not driving; this case is void"** is now in the
+   script, and it fired on all five cases of construction 1. The lesson is the standing one in a new
+   place: ask whether the mechanism can do anything at all, not only whether it can fail.
+

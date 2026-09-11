@@ -149,6 +149,8 @@ class SlidingRegion(DeformableRegion):
         u = np.einsum('nik,nk->ni', R, v)
         self.positions = self.reference + u
         return dict(displacement=u, local=v, iterations=it + 1, residual_n=res, tolerance_n=tol,
+                    bound_displacement_m=float(clip0.max()),
+                    bound_nodes_over_1mm=int((clip0.max(1) > 1e-3).sum()),
                     converged=res <= tol, wall_seconds=time.perf_counter() - began,
                     minimum_jacobian=float(np.linalg.det(self.deformation(self.positions)).min()))
 
@@ -167,7 +169,7 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
                 hint=(0.0, 1.0, 0.0), rtol=1e-7, jump_limit_m=0.01, assoc_tol_m=1e-4, move=None,
                 rigid_m=None, freeze_frames=False, project=True, solver_log=None, stop_fraction=1.0,
                 association='persistent', lost_bed='hold', facet_m=1e-3, drive_full=False,
-                prescribe=None, phases=(1.0,), on_stall=None, log=None):
+                prescribe=None, phases=(1.0,), on_stall=None, on_step=None, log=None):
     """The sliding base. base: node indices on the surface facing the bed. closest(points) ->
     (c, n): closest bed points and the bed's outward unit normals there. A base node BEHIND the bed
     in the registered position is HELD: its signed normal gap is ramped to zero over load_steps and
@@ -245,8 +247,23 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
     # is infeasible" from "the stepping is wrong".
     rigid = None if rigid_m is None else np.asarray(rigid_m, float)
 
-    def advance(fraction, u_start):
-        """Re-linearise and solve at this fraction of the held nodes' travel.
+    def advance(fraction, u_start, theta, aim):
+        """Re-linearise and solve, closing `theta` of the distance remaining to fraction `aim`.
+
+        THE REPAIR (gate BB). The bound used to be set ABSOLUTELY to `on_plane + gap0 +
+        fraction*travel`, where `on_plane = n.(c - X[base])` is the displacement that puts the node
+        on its association plane. The load fraction scales `travel` and does NOT scale `on_plane`,
+        so once the association had drifted, the head of the next increment demanded that drift
+        instantly -- 7.19 mm over 26 nodes at a step of size ZERO, four inverted elements, identical
+        when repeated. Shrinking the step could not touch it, which is what made the inversion count
+        invariant across a 256x range and what every gate from R to AA was unknowingly fighting.
+
+        Now the bound is interpolated from where the node IS to where the constraint wants it, by
+        theta -- the fraction of the REMAINING drive this increment consumes. Every term, the
+        association term included, is under the increment parameter. At theta = 0 the bound is the
+        node's own current position, so a step of size zero moves nothing, exactly. At theta = 1 the
+        bound is the constraint itself, so the endpoint is unchanged: this reschedules the approach,
+        it does not relax where the drive lands.
 
         With freeze_frames, the association is taken ONCE at the head of the step and the constraint
         directions are held fixed while the solve runs, so a drift inside a step cannot be the
@@ -257,7 +274,6 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
         for outer in range(passes):
             c, n, kept, _ = associate((X + u_local)[base])
             step = travel if rigid is None else n[held] @ rigid      # rigid: the normal part of one vector
-            target = gap0[held] + fraction * step
             frames = np.tile(np.eye(3), (N, 1, 1)); frames[base] = tangent_frames(n, hint)
             lo = np.full(X.shape, -np.inf); hi = np.full(X.shape, np.inf)
             on_plane = np.einsum('ij,ij->i', n, c - X[base])                     # n.u that puts the node on the tangent plane
@@ -269,8 +285,20 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
                 full = np.einsum('nik,ni->nk', frames[base], np.broadcast_to(fraction * rigid, (len(base), 3)))
                 lo[base] = hi[base] = full
             else:
-                lo[base[held], 0] = hi[base[held], 0] = on_plane[held] + target
-                lo[base[~held], 0] = on_plane[~held]
+                # v0 is the node's CURRENT normal displacement, in the coordinate the bound is written
+                # in. It uses the SAME einsum over the SAME frames that solve_sliding uses to form
+                # v_prev, not the mathematically equal n . u: at theta = 0 the bound must land
+                # bit-identically on the node's own coordinate, or gate BB reads float dust instead
+                # of the exact zero it is asking for.
+                v0 = np.einsum('nik,ni->nk', frames[base], u_local[base])[:, 0]
+                want = on_plane[held] + gap0[held] + aim * step          # fully seated at the aim
+                lo[base[held], 0] = hi[base[held], 0] = v0[held] + theta * (want - v0[held])
+                # The unilateral bound carries the association term too, so it gets the same
+                # treatment -- but only where the drifted association has left the node in
+                # violation. Where the node already satisfies it, the true constraint stands;
+                # relaxing it there would invent a push that the contact does not ask for.
+                free_side = on_plane[~held]
+                lo[base[~held], 0] = np.minimum(free_side, v0[~held] + theta * (free_side - v0[~held]))
             if assoc[2].any():                          # released: no constraint for this step
                 lo[base[assoc[2]]] = -np.inf; hi[base[assoc[2]]] = np.inf
             if prescribe is not None:
@@ -289,16 +317,21 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
                                      log=solver_log); u_local = r['displacement']
             c, n, kept, moved = associate((X + u_local)[base]); gap = np.einsum('ij,ij->i', n, (X + u_local)[base] - c)
             step = travel if rigid is None else n[held] @ rigid
-            target = gap0[held] + fraction * step
-            held_err = float(np.abs(gap[held] - target).max()) if held.any() else 0.0
+            # Measured against the AIM, not against a nominal mid-drive schedule the repair no longer
+            # tracks: the increment now closes theta of what remains, so "distance from
+            # gap0 + fraction*travel" would be a number the drive is not trying to hit. At the aim,
+            # where the acceptance test below actually reads it, the two coincide.
+            held_err = float(np.abs(gap[held] - (gap0[held] + aim * step)).max()) if held.any() else 0.0
             pen = float(max(0.0, -gap[~held].min())) if (~held).any() else 0.0
-            if log: log(f"  fraction {fraction:.4f} pass {outer}: Newton {r['iterations']}, held gap error {held_err*1e3:.4f} mm, "
+            if log: log(f"  fraction {fraction:.4f} pass {outer}: Newton {r['iterations']}, held gap to the aim {held_err*1e3:.4f} mm, "
                         f"unilateral penetration {pen*1e3:.4f} mm, min J {r['minimum_jacobian']:.3f}, "
                         + (f"association moved {moved*1e3:.4f} mm" if association != 'adaptive'
                            else "association held for the step (adaptive updates after it)"), flush=True)
             settled = moved <= assoc_tol_m and pen <= gap_tol_m
-            if freeze_frames or (settled and (fraction < 1.0 - 1e-12 or held_err <= gap_tol_m)):
+            if freeze_frames or (settled and (abs(fraction - aim) > 1e-12 or held_err <= gap_tol_m)):
                 return u_local, dict(passes=outer + 1, held_gap_error_m=held_err, unilateral_penetration_m=pen,
+                                     bound_displacement_m=r['bound_displacement_m'],
+                                     bound_nodes_over_1mm=r['bound_nodes_over_1mm'],
                                      newton_last=r['iterations'], min_J=r['minimum_jacobian'],
                                      min_J_entry=j_entry, association_moved_m=moved,
                                      converged=bool(r['converged'])), gap, c, n
@@ -319,9 +352,12 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
             if abs(fraction - target) <= 1e-12: continue
         direction = 1.0 if target > fraction else -1.0
         trial = fraction + direction * min(ds, abs(target - fraction))
+        # theta: the share of the REMAINING drive this increment consumes. It is what now carries the
+        # association term, so a cut-back shrinks EVERY term of the prescribed displacement.
+        theta = (trial - fraction) / (target - fraction)
         saved = [assoc[0].copy(), assoc[1].copy()]      # a failed step must not leave a stale association
         try:
-            u_new, info, gap, c, n = advance(trial, u)
+            u_new, info, gap, c, n = advance(trial, u, theta, target)
         except (ValueError, RuntimeError) as failure:
             assoc[0], assoc[1] = saved
             ds *= 0.5; cutbacks += 1
@@ -331,7 +367,7 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
                 # the fraction already accepted asks for no new travel at all, so anything it does is
                 # the RE-ASSOCIATION acting on an already-deformed state rather than the increment.
                 # It is the only way to separate the two, since every cut-back keeps re-associating.
-                if on_stall is not None: on_stall(fraction, advance, u)
+                if on_stall is not None: on_stall(fraction, advance, u, target)
                 raise RuntimeError(f"load stepping stalled at fraction {fraction:.4f}: {failure}")
             continue
         if association == 'adaptive':
@@ -353,6 +389,10 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
             lost_history.append(int(invalid.sum()))
             info = dict(info, association_moved_m=moved_now)
         u = u_new; fraction = trial; record.append(dict(fraction=fraction, **info))
+        # GATE BB is asked here, after every ACCEPTED step, not only at a stall: if the repair
+        # works there may be no stall at all, and a gate that only fires on failure would never
+        # run on the code it is meant to certify.
+        if on_step is not None: on_step(fraction, advance, u, target)
         ds = min(ds * 1.5, 1.0 / load_steps)
     return dict(displacement=u, gap_m=gap, held=held, initial_gap_m=gap0, closest_m=c, normal=n, steps=record,
                 cutbacks=cutbacks, lost_bed_per_association=lost_history, association=association,

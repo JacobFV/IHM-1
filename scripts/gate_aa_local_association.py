@@ -218,7 +218,7 @@ r, err = None, None
 stalled = {}
 
 
-def on_stall(fraction, advance, u):
+def on_stall(fraction, advance, u, aim):
     """At the stall: measure the price where the body has actually MOVED, then ask whether a step of
     size ZERO also fails. The price is taken first, because advance() re-associates and would
     overwrite the state being measured."""
@@ -228,7 +228,7 @@ def on_stall(fraction, advance, u):
     print(f"\n  at the stall, fraction {fraction:.4f}, the body having moved "
           f"{1000 * np.abs(u).max():.2f} mm at most:", flush=True)
     try:
-        advance(fraction, u)
+        advance(fraction, u, 0.0, aim)
         stalled["zero"] = "a ZERO-sized step SUCCEEDS -- the failure needs a finite increment"
     except Exception as e:
         stalled["zero"] = f"a ZERO-sized step ALSO FAILS -- {type(e).__name__}: {e}"
