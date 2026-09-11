@@ -742,6 +742,12 @@ done; the others have moved.
      ribs 2 and 7. That is this body's chest wall bulging about a centimetre further
      forward across the breast base -- a chest-SHAPE difference at the scale of the
      fit's own residual, not a breast on the wrong ribs.
+     **Caveat added 2026-09-10, and it applies wherever this figure is quoted:** these are
+     nearest-point distances, the estimator later measured to carry a d^2/R bias and to
+     select for already-aligned regions. An independent reader along the surface normal
+     agrees within 5% on s0790 and sits 36-45% below on the other three. Quote it as
+     **6-11 mm by a biased estimator, 5.5-6.6 mm by another**, and see the distance-field
+     section below before relying on either.
 
    **Stray fragments, and a third subject that passes everything.** TotalSegmentator
    sometimes labels a speck far from the bone it names. s0970's "cut" ribs were specks
@@ -968,8 +974,10 @@ done; the others have moved.
 
    Deeper than 30 mm: **13 nodes (0.3%)**. Deeper than 40 mm: **one**. So the 45 mm that drove this
    whole line of work was always a handful of nodes, and the bulk of the base sits at 7-17 mm --
-   the order of the ~10 mm chest-wall offset this file measures. Every "45 mm" statement here,
-   mine included, described one node as though it described the base.
+   the order of the chest-wall offset this file measures, which is **6-11 mm by a biased
+   estimator and 5.5-6.6 mm by an independent one** (the caveat above; it was written here as
+   "~10 mm" before either was checked). Every "45 mm" statement here, mine included, described one
+   node as though it described the base.
 
    **Step 1 with both faults fixed still fails the 25 mm rule**, and the escape is not fully cured.
    The translation magnitude is now capped smoothly rather than boxed per component, and a node
