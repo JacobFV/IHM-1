@@ -1232,7 +1232,37 @@ done; the others have moved.
    | D1-000 | 1.003 | 4.46 mm | pass | 1.000 | 0.000 | 1.4% inside this body's bladder |
    | D2-000 | 0.929 | 3.36 mm | pass | 1.000 | 0.000 | none |
 
-   Both carry one ovary piece, inside the ring. **One threshold was not fixed in advance:**
+   **The ovaries, measured rather than reported (2026-09-10).** The gates judged the uterus and
+   reported the ovaries as a share inside the ring, which says nothing about whether they land
+   where ovaries land. `scripts/measure_registered_ovaries.py` over the completed batch: 66 of 87
+   subjects carry an ovary mesh, 75 pieces in all.
+
+   | | median | 10-90% |
+   |---|---:|---:|
+   | lateral offset from the midline | 35.0 mm (unsigned) | 12 to 41 mm |
+   | distance to the nearest hip bone | 24.2 mm | 15.9 to 38.1 |
+   | height above the ring floor | 100.2 mm | 85.6 to 118.5 |
+
+   74 of 75 pieces sit at >= 0.99 inside the ring, and the sides are even: 36 on this body's left,
+   39 on its right. Known answers first, as always. **(1)** The lateral axis is fixed by this body's
+   own hips, 138 mm apart. **(2)** The uterus is a midline organ and the ovaries are not: median
+   |lateral offset| 8.2 mm over 87 uteri against 35.0 mm over 75 ovary pieces -- if that had come
+   out the other way the frame would have been wrong and nothing else readable. **(3)** A woman has
+   one ovary per side, so the two pieces of a two-piece subject should fall on opposite sides:
+   **8 of 9 do, and D1-026 does not.**
+
+   **The failure is in my assumption, not in the registration.** D1-026's two pieces sit 1.0 mm
+   apart laterally and 10.5 mm vertically, both on the left, 42-45 mm from the hip bone: that is one
+   structure segmented into two fragments, not two ovaries on one side -- and the extraction keeps
+   any piece within 50 mm of the label's largest, so a fragmented ovary arrives as two pieces by
+   design. "Two pieces means one per side" is therefore void as a rule for this archive, and in an
+   endometriosis cohort it would also fail honestly on kissing ovaries, where both are drawn
+   adherent on one side. The number that survives is the other eight, and the caveat on every
+   artefact stands: these ovaries are displaced and enlarged by disease, so this measures where the
+   labels land, not where a healthy ovary sits.
+
+   Both subjects in the first pair carry one ovary piece, inside the ring. **One threshold was not
+   fixed in advance:**
    the gate said "inside the pelvic ring" without a number; the implementer chose >= 0.99 of
    the uterus surface. Both subjects read 1.000, so it decided nothing here, and it is
    recorded as the implementer's choice. What the gates cannot say: where the uterus sits
