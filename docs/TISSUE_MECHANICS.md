@@ -908,7 +908,55 @@ inherits it.
 **Next, pre-registered before it is run:** re-target the right knee onto **the left femur mirrored**,
 which is what every other bone in this model already is, and re-run gates 1-4 unchanged. Reported
 beside them: the same run on the present right femur, so the two targets can be read against each
-other. **Predicted:** the ceiling rises toward the left knee's and gate 3's placement improves
+other. **RESULT (751db56): the ceiling rises on every subject and gate 4 goes further than
+predicted.** The mirror is verified at load rather than assumed -- l_tibia to r_tibia and l_patella
+to r_patella reflect to 0.000 mm about mesh axis 2, the femurs are not a pair at all (456 vertices
+against 132), and the target refuses to build if that ever stops holding. The right knee gap goes
+**2.02 -> 3.47 mm**, matching the left's 3.32. Gate 1 passes on the new target (<= 0.029 mm,
+0.153 deg, 0.057%); gate 2 passes 6 of 6 with margins 48-62% -> 22-76%. The femur ceiling rises on
+**every** subject, mean **82.2% -> 88.9%** within 3 mm, and femoral placement follows,
+88.3% -> 91.1%. **Gate 4: 2 of 6 becomes 4 of 5 sound fits**, beyond the prediction, because the
+mirrored femur also opens the gap the overlap is measured in; only oaizib_003 remains over, at 1.97%.
+
+**Gate 3's "inside" half cannot be met by any registration, and that is my error.** The subject's
+OWN bone, carried by the same map, is **42-53% inside** the target: a surface registered onto
+another sits about half inside it at any nonzero residual. The source-frame validation I required
+cannot catch this -- it scores the criterion against a perfect fit onto the SAME bone, where the
+labels are exclusive and the answer is 0%, which is a different situation from a real fit onto a
+different bone. The "within 3 mm" half is now met on several bones; the "inside" half was never
+measurable as written.
+
+**One fit was quietly degenerate, and only running two targets found it.** oaizib_006's tibia
+collapsed to scale **0.529** against a target the other five fitted at 0.958-1.090, dropping its
+cartilage from 4.6 mL to 0.6 and handing it a spurious 0.00% joint-space pass. The 0.5-2.0 scale
+bound admitted it. A knee's two bones belong to one person, so their scales are now compared and a
+disagreement over 20% marks the subject suspect and fails it -- a correctness condition, adopted
+without touching the bound it slipped through.
+
+#### Gate 3 replaced, and the moving knee tested. Fixed 2026-09-10, before either runs
+
+* **Gate 3', paired against the ceiling.** The criterion is no longer an absolute share but a
+  comparison with the same map's own performance on the bone: the cartilage's "within 3 mm" must be
+  **no more than 5 points below the ceiling's**, and its "inside" **no more than 5 points above**.
+  A bad fit cannot pass it, because the ceiling moves with the fit; and it is measurable, which the
+  absolute form was not.
+* **Gate 3'', signed.** Cartilage sits ON bone, so the median signed offset of the mapped cartilage
+  from the bone surface, along the bone's outward normal, must be **positive**. Half-inside by
+  residual is symmetric noise; a negative median is cartilage buried in bone.
+* **Gate 4', the moving knee.** Overlap is currently measured at the reference pose alone, and
+  oaizib_003 is already over at rest. Measure it at knee flexion **0, 30, 60 and 90 degrees**,
+  driven by the plant's own joint, and report the curve. The pass is at every angle, not the mean.
+* **Reported:** the flexion at which each subject first exceeds 1%, which is the number a crawl
+  cares about.
+
+**Predicted:** gate 3' passes on the femur for most subjects, since cartilage already tracks its
+bone within a point or two; gate 3'' passes, because a cartilage label sits outside its bone in the
+source; and **gate 4' fails at flexion for most knees**, since the tibiofemoral gap narrows as the
+knee bends and four of five are within 0.5% of the bar at rest. If gate 4' fails, cartilage from
+this source cannot be carried as contact geometry through a crawl, and that is the finding rather
+than a defect.
+
+**Predicted (the earlier round):** the ceiling rises toward the left knee's and gate 3's placement improves
 markedly, while gate 4's overlap moves little, because overlap is set by the joint's gap and not by
 the facet size. **Not decided here:** whether the PLANT should carry the mirrored femur. That
 changes contact geometry and every stance result measured on it, and it is the owner's call, not a
