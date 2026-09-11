@@ -1822,30 +1822,49 @@ same whole skin, same frame"*, the same `enclosure()` and the same samples, with
 vertex positions differing between columns. It reads **1.000 for twenty segments and 0.966 / 0.968
 for toes_l / toes_r.**
 
-**Gate 2's bar is ≥ 0.99. The toes' ceiling is 0.966. They cannot pass, and never could.** The
+> **WITHDRAWN IN FULL (`c3388fa`), the same day it was written.** Everything in the rest of this
+> subsection rests on "gate 2's bar is ≥ 0.99", and that is not gate 2. Gate 2 is **mean ≥ 0.95, with
+> calcn and toes each ≥ 0.95**, as written in 93d3d57 and in this file's own result tables. The
+> `>= 0.99  20/22` line is a convenience summary row in `measure_skin_enclosure_whole.py`'s output --
+> a count of segments above a round number -- and it was read as the gate without the gate being
+> checked. The toes' ceiling of **0.966 exceeds the 0.95 bar by 0.016**, so they are NOT barred:
+> their 0.854 / 0.876 is an ordinary shortfall of 0.096 and 0.074 against a reachable bar. No segment
+> is reported as barred and pass counts are out of 22. Struck through rather than deleted, per this
+> file's practice for withdrawn claims. What survives is only this: the toes have 0.016 of headroom
+> above the bar where every other segment has 0.05, and the canonical body's own toe bones sit 3.4%
+> outside its own toe skin -- a scaffold fact, independent of any registration.
+
+~~**Gate 2's bar is ≥ 0.99. The toes' ceiling is 0.966. They cannot pass, and never could.** The
 script has been printing this all along, in its own summary row: **`>= 0.99   20/22`** *on the
 ceiling column*. Two segments fail at ceiling, and the two are the toes. Nobody read that row --
-including me, through four rounds in which the toes were the headline failure.
+including me, through four rounds in which the toes were the headline failure.~~
 
-**So every round of work aimed at the toes was aimed at a gate they are barred from.** The anchor
+~~**So every round of work aimed at the toes was aimed at a gate they are barred from.** The anchor
 rule, the correspondence rule, the trim removal, a 28% better warp: all of it was measured against
 a bar that the canonical anatomy itself misses by 2.4 points. The toes' 0.854 / 0.876 is a real
 shortfall against their own 0.966 ceiling -- 0.11 and 0.09 of genuine gap -- but "toes FAIL gate 2"
 was never the informative statement, and the count that matters is **12 of 20 reachable**, not 12
-of 22.
+of 22.~~
 
-**This is the third gate on this programme found to be unreachable by construction**, after gate 3's
+~~**This is the third gate on this programme found to be unreachable by construction**, after gate 3's
 "inside ≤ 1%" against a 42-53% ceiling (`61e5d1c`) and gate A's 0.5 mm bar on a 0.51 mm noise floor
 (`de88ef4`). The shape is identical each time: **a bar set in absolute terms, against a quantity
 whose achievable maximum was measured but never compared to the bar.** The ceiling column existed
-from the start; it simply sat next to the bar without anyone subtracting.
+from the start; it simply sat next to the bar without anyone subtracting.~~
 
-**Fixed here, and NOT applied retroactively.** Gate 2's bar stays at 0.99 and every recorded verdict
+~~**Fixed here, and NOT applied retroactively.** Gate 2's bar stays at 0.99 and every recorded verdict
 stands as recorded -- the toes' FAILs are not rescored into passes, because a gate is not loosened
 after a result. What changes is the *reporting*: the ceiling is quoted beside the bar wherever gate 2
 appears, the pass count is given as **n of 20 reachable** with the two barred segments named, and a
 segment whose ceiling is below the bar is reported as **BARRED** rather than FAILED. That is a
-statement about what the number means, not a change to the number.
+statement about what the number means, not a change to the number.~~
+
+> **The reporting change above is REVERSED with the claim it served (`c3388fa`).** Gate 2's bar is
+> 0.95, not 0.99; no segment is barred; pass counts are out of 22. The verdicts are unaffected either
+> way -- the toes failed gate 2 before this subsection and they still fail it, at 0.854 / 0.876
+> against 0.95. Only the false explanation for that failure is withdrawn. The one reporting practice
+> worth keeping from it: quote the ceiling beside the bar, because that is what would have caught the
+> error in the first place.
 
 **And the scaffold defect underneath it is now the finding.** The canonical body's own toe bones are
 **3.4% outside its own toe skin**. That is not a registration error and no warp can be blamed for
