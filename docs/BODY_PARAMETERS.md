@@ -3286,3 +3286,51 @@ What has changed is that the parametrization no longer stops at the scaffold.
    * **No prediction.** Every prediction I have made about this regime ahead of a measurement has
      been wrong, most recently the floor.
 
+   ### Gate AA fails, and the SHAPE of its failure says the stepping was never the problem
+
+   | attempted fraction | step cut back to | inverted elements **at the start of the increment** |
+   |---:|---:|---:|
+   | 0.1250 | 0.06250 | **44** |
+   | 0.0625 | 0.03125 | 38 |
+   | 0.0312 | 0.01562 | 39 |
+   | 0.0156 | 0.00781 | 41 |
+   | 0.0078 | 0.00391 | 43 |
+   | 0.0039 | 0.00195 | 43 |
+   | 0.0020 | 0.00098 | **42** |
+   | 0.0010 | 0.00049 | **42** |
+   | 0.0005 | 0.00024 | **42** |
+   | 0.0002 | 0.00012 | **42** |
+   | 0.0001 | 0.00006 | **42** |
+
+   **The count does not move.** Across a 2,000-fold reduction in step size it sits at 42, and the
+   local-search association cannot be the cause because it is constrained not to jump. **An inversion
+   count that is invariant to the step size is not caused by the step.**
+
+   **And as the attempted fraction tends to zero, the configuration tends to the starting one.** The
+   straightforward reading is that **the starting configuration for this drive already contains
+   about 42 inverted elements**, and every stepping, threshold and association scheme tried on this
+   line — R, R′, R″, S, T, U, V, AA — has been trying to step away from a state that was already
+   broken.
+
+   **That is a hypothesis with a one-command test, pre-registered here before it is run:** evaluate
+   `det J` on the seating drive's **initial bound configuration**, before any increment is applied,
+   and count the non-positive elements.
+
+   * **~42 inverted at the start** → the stepping was never the problem, and neither was the
+     association. Every control on this line was measuring its own ability to escape a broken
+     initial state, which no amount of stepping can do. The work moves to how that state is built.
+   * **Zero inverted at the start** → the inversions are created by the first increment and then
+     persist regardless of its size, which is a different and stranger finding, and the stepping
+     question reopens on new terms.
+   * **T-none is the reason this was not obvious**: it reached `min J` 1.0000 with zero inversions,
+     so the mesh is sound *in that configuration* — rigid drive, no bed. Whatever is wrong appears
+     when the bed's constraints are applied to the seating drive's starting pose, not in the mesh
+     itself.
+   * **No prediction**, and for a specific reason: I have now been wrong about this regime at four
+     levels, each time by generalising from a control that had removed the thing that mattered.
+
+   **The agent's own honesty about what AA could NOT measure is worth keeping**: "at the starting
+   positions the local association IS the global one, so a comparison there would read 0 by
+   construction." The wrong-sheet price I asked for is unmeasurable from a run that never left the
+   start — reporting that, rather than a reassuring zero, is what makes the rest of the run readable.
+
