@@ -1352,6 +1352,35 @@ done; the others have moved.
    normals, so fitting the normal component as a SCALAR field on the surface, or smoothing the
    target surface before shooting, attacks the thing that binds rather than the two that do not.
 
+   **The scalar offset field: pre-registered 2026-09-10, before it is built.** Taken, because the
+   diagnosis names what to change and the change is a different REPRESENTATION rather than another
+   transform. A vector field in 3D has to reproduce the normal's turning to describe a deformation
+   that is mostly a difference in how far out the surface sits; a scalar does not.
+
+   * **The instrument.** The deformation is `d(x) = s(x) n_smooth(x)` on this body's own rib
+     surface: `s` a smooth scalar field fitted over the surface, `n_smooth` the normal of that
+     surface after **20 Taubin iterations** (volume-preserving, fixed here, reported), which is the
+     roughness that binds. A displacement is then one number per point, and the turning cannot
+     enter it.
+   * **Gate A, known answer.** Displace this body's own ribs by a KNOWN scalar field along those
+     same smoothed normals, at the same amplitude (3.1 mm) and the same four scales
+     (L = 5, 10, 20, 40 mm), five seeds. Recover to **<= 0.5 mm surface RMS** at every L. Half the
+     old bar, because a representation that matches the deformation should beat a general one, and
+     a scalar field that cannot do this is not worth fitting to a subject.
+   * **Gate B, what the representation gives up, measured before it is used.** The real deformation
+     is not purely normal. Decompose the unfiltered offset field between her ribs and this body's
+     into normal and tangential parts and report the tangential fraction. **If tangential exceeds
+     50% of the total, a normal-only model is the wrong representation and that is the result** --
+     stated now so it cannot be discovered later and explained away.
+   * **Gates 2-4 unchanged**, reached only if A passes and B permits.
+   * **Reported:** how much the Taubin smoothing moves the surface it smooths, since that motion is
+     an error the fit will not see.
+
+   **Predicted:** gate A passes at every L, because the field being fitted is exactly the field
+   being represented; gate B comes back tangential-minority at the breast base, where a chest wall
+   differs mostly in how far forward it sits. If gate B comes back tangential-majority, the line
+   ends for good and the female chest wall needs a different body, not a different fit.
+
    **Normal agreement is adopted, on the argument and not on the score (2026-09-10).** A hit whose
    surface faces away from the source is on the far wall of the rib: it is not the partner of the
    source point, it is a different part of the bone that happens to lie along the ray, and the
