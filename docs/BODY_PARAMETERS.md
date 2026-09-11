@@ -1213,6 +1213,38 @@ done; the others have moved.
    from what the geometry can support, which is a new pre-registration and not a loosening of this
    one.
 
+   **Gate 0 fails as written, on the mean alone, and one line fixes it -- proposed, not adopted**
+   (`ihm/anatomy/normal_shooting.py`, written as a reusable instrument because the skin line needs
+   it too; `scripts/fit_chest_wall_warp.py` uses it).
+
+   | target error vs the known preimage | mean | p90 | max | kept |
+   |---|---:|---:|---:|---:|
+   | nearest point, the rule that failed gate 1 | 0.671 mm | 2.281 mm | 7.152 mm | -- |
+   | **normal shooting, exactly as pre-registered** | **0.299 mm** | 0.194 mm | 7.142 mm | 4,701 / 4,800 |
+   | normal shooting + normal agreement (NOT the gate) | 0.078 mm | 0.157 mm | 5.074 mm | 4,382 / 4,800 |
+   | the bars | <= 0.2 | <= 0.5 | | |
+
+   The instrument itself is sound: a closed-form check on a subdivided sphere, where the true partner
+   of a point on a 2%-inflated copy is its radial point, recovers it to a mean 4.9e-4 of the radius
+   with nothing dropped. On the ribs, p90 beats its bar by 2.6x and beats nearest point by 12x. The
+   MEAN fails because of a tail, and the tail is one thing: a normal shot at a rib a few millimetres
+   thick CROSSES it and lands on the far cortical wall, where the surface faces the other way and the
+   return test still passes because the two walls are roughly parallel. On right rib 2 that is 99 of
+   362 kept pairs, normal agreement -0.850, median error 4.52 mm; the failure is concentrated in
+   right ribs 2 and 3 (means 1.548 and 1.396 mm) while the other ten sit near 0.12 mm.
+
+   **The fix is to require the target's normal to agree with the source's** -- a far-side hit is
+   exactly a disagreement -- which drops 319 of 4,800 samples and gives 0.078 mm mean, 0.157 mm p90,
+   inside both bars. It is implemented and OFF by default, because it ADDS a filter to an instrument
+   whose pre-registration specifies shooting and the return test, and a gate is not something to
+   quietly re-specify after seeing its number. It needs a pre-registration of its own; the numbers
+   above are what it would be judged against.
+
+   So no warp was fitted and gates 1-4 were not reached. What is established: normal shooting removes
+   the d^2/R bias that made nearest-point targets unusable (0.671 -> 0.299 mm mean, 2.281 -> 0.194 mm
+   p90, both without any filter), and what remains is a thin-sheet failure with a known cause, a
+   measured size, and a one-line remedy.
+
    **Seat it in two steps: place, then conform. Fixed 2026-09-10, before it runs.** 45 mm of
    overlap is not tissue deformation, it is placement -- the breast is another woman's tissue where
    a similarity registration put it, and a quasi-static solve pushing 45 mm of interpenetration out

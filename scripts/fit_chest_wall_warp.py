@@ -49,6 +49,7 @@ def _load(name, rel):
 
 
 SW = _load("skin_warp", "scripts/skin_warp.py")          # imported, never edited: another agent owns it
+from ihm.anatomy.normal_shooting import shoot_pairs, surface_samples, build_index   # noqa: E402
 CW = _load("chestwall", "scripts/register_female_chest_wall.py")
 SEAT = CW.SEAT
 
@@ -56,6 +57,8 @@ OUT = ROOT / "data/derived/female-chest-wall-warp-v1"
 WHOLE_TORSO_HELD_OUT_MM = {"s0790": 4.55, "s1067": 5.18, "s1159": 5.52, "s0970": 5.60}
 LAMBDA_GRID = (1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 1.0)
 FOLDS, TRIM, PASSES, PER_RIB = 5, 0.2, 2, 300
+SHOOT_CAP_M, SHOOT_RETURN_TOL_M = 0.020, 1e-3
+GATE0_MEAN_MM, GATE0_P90_MM = 0.2, 0.5
 KA_RMS_M = 1e-3
 TRIM_DEPTH_M, TRIM_VOLUME_TOL = 0.020, 0.01
 
@@ -103,35 +106,78 @@ def choose_lambda(S, D, seed=0):
 
 
 def correspondences(src, body, G, warp=None, seed=0):
-    """her partial rib surfaces onto this body's complete ribs, one way, worst TRIM dropped."""
-    S, T = [], []
+    """Her rib surfaces onto this body's, by SYMMETRIC NORMAL SHOOTING (ihm/anatomy/normal_shooting.py).
+
+    The source surface is hers carried into body space -- by the warp of the previous pass where
+    there is one, otherwise by G alone -- so the shooting direction is the source surface's own
+    normal where it currently sits. Nearest-point matching is not used anywhere: its d^2/R bias on
+    these ribs is what failed gate 1.
+    """
+    S, T, drops = [], [], dict(sampled=0, no_hit=0, no_return=0, return_too_far=0, per_label={})
     for i, lab in enumerate(CW.FIT_LABELS):
         if lab not in src or lab not in body: continue
-        P = CW.area_samples(*src[lab], PER_RIB, seed + i)
-        y = warp.apply(P) if warp is not None else CW.apply(G, P)
-        tree = cKDTree(CW.area_samples(*body[lab], 40000, 100 + i))
-        d, j = tree.query(y)
-        S.append(CW.apply(G, P)); T.append(tree.data[j]); 
-    S, T = np.vstack(S), np.vstack(T)
-    d = np.linalg.norm(T - S, axis=1)
-    keep = d <= np.quantile(d, 1 - TRIM)
-    return S[keep], T[keep]
+        V, F = src[lab]
+        moved = warp.apply(V) if warp is not None else CW.apply(G, V)
+        r = shoot_pairs(moved, F, *body[lab], n=PER_RIB, cap_m=SHOOT_CAP_M,
+                        return_tol_m=SHOOT_RETURN_TOL_M, seed=seed + i)
+        S.append(r["source"]); T.append(r["target"])
+        for k in ("sampled", "no_hit", "no_return", "return_too_far"): drops[k] += r[k]
+        drops["per_label"][lab] = dict(kept=int(r["keep"].sum()), sampled=int(r["sampled"]))
+    return np.vstack(S), np.vstack(T), drops
 
 
 def fit_warp(src, body, G, seed=0):
     warp = None; report = []
     for p in range(PASSES):
-        S, T = correspondences(src, body, G, warp, seed)
+        S, T, drops = correspondences(src, body, G, warp, seed)
         D = T - S
         lam, cv = choose_lambda(S, D, seed)
         w, a = tps_fit(S, D, lam)
         warp = SW.Warp(G, S, w, np.vstack([a[:3], a[3]]), dict(kind="chest wall ribs 2-7", lam=lam, pass_=p + 1))
         resid = np.linalg.norm(tps_predict(S, S, w, a) - D, axis=1)
-        report.append(dict(pass_=p + 1, centres=int(len(S)), lam=float(lam), cv=cv,
+        report.append(dict(pass_=p + 1, centres=int(len(S)), lam=float(lam), cv=cv, drops=drops,
                            residual_median_mm=float(1000 * np.median(resid)), bending_energy=warp.bending_energy()))
-        say(f"    pass {p+1}: {len(S)} correspondences, lambda {lam:g}, fit residual median "
-            f"{1000*np.median(resid):.2f} mm, bending energy {warp.bending_energy():.4f}")
+        say(f"    pass {p+1}: {len(S)} of {drops['sampled']} samples kept (no hit {drops['no_hit']}, "
+            f"no return {drops['no_return']}, return too far {drops['return_too_far']}), lambda {lam:g}, "
+            f"fit residual median {1000*np.median(resid):.2f} mm, bending energy {warp.bending_energy():.4f}")
     return warp, report
+
+
+def gate0(body, seed=0):
+    """GATE 0: the correspondence itself, against the known preimage of a known smooth field. The
+    nearest-point rule gives 0.671 mm mean and 2.281 mm p90 on this same test."""
+    chest = {l: body[l] for l in CW.FIT_LABELS}
+    k = 2 * np.pi / 0.25
+    err, kept, sampled, drops = [], 0, 0, dict(no_hit=0, no_return=0, return_too_far=0)
+    per_rib = {}
+    for i, (lab, (V, F)) in enumerate(chest.items()):
+        vn = np.zeros_like(V); n = np.cross(V[F[:, 1]] - V[F[:, 0]], V[F[:, 2]] - V[F[:, 0]])
+        for c in range(3): np.add.at(vn, F[:, c], n)
+        vn /= np.maximum(np.linalg.norm(vn, axis=1, keepdims=True), 1e-30)
+        amp = 0.004 * np.sin(k * V[:, 0]) * np.cos(k * V[:, 1])
+        Vm = V + amp[:, None] * vn                                  # moved; same connectivity, so
+        P, N, face, bary = surface_samples(Vm, F, 400, seed + i)    # (face, bary) locates the preimage
+        truth = np.einsum('nk,nkj->nj', bary, V[F[face]])
+        r = shoot_pairs(Vm, F, V, F, cap_m=SHOOT_CAP_M, return_tol_m=SHOOT_RETURN_TOL_M,
+                        samples=(P, N, face, bary))
+        e = np.linalg.norm(r["target"] - truth[r["keep"]], axis=1)
+        err.append(e); kept += int(r["keep"].sum()); sampled += r["sampled"]
+        for key in drops: drops[key] += r[key]
+        per_rib[lab] = dict(kept=int(r["keep"].sum()), sampled=int(r["sampled"]),
+                            mean_mm=float(1000 * e.mean()) if len(e) else None)
+    err = np.concatenate(err)
+    mean_mm = float(1000 * err.mean()); p90_mm = float(1000 * np.percentile(err, 90))
+    ok = mean_mm <= GATE0_MEAN_MM and p90_mm <= GATE0_P90_MM
+    say(f"GATE 0 correspondence: target error vs the known preimage mean {mean_mm:.3f} mm (<= {GATE0_MEAN_MM}), "
+        f"p90 {p90_mm:.3f} mm (<= {GATE0_P90_MM}) -> {'PASS' if ok else 'FAIL'}")
+    say(f"  nearest point on the same test gave 0.671 mm mean, 2.281 mm p90")
+    say(f"  kept {kept} of {sampled} samples: no hit {drops['no_hit']}, no return {drops['no_return']}, "
+        f"return too far {drops['return_too_far']}")
+    worst = sorted((v["mean_mm"] or 0, l) for l, v in per_rib.items())[-3:]
+    say("  worst three ribs: " + ", ".join(f"{l} {m:.3f} mm" for m, l in reversed(worst)))
+    return ok, dict(mean_mm=mean_mm, p90_mm=p90_mm, max_mm=float(1000 * err.max()), kept=kept,
+                    sampled=sampled, drops=drops, per_rib=per_rib, passes=ok,
+                    nearest_point_reference=dict(mean_mm=0.671, p90_mm=2.281))
 
 
 def known_answer(body, seed=0):
@@ -227,12 +273,18 @@ def _behind(subject, side, Y, F, workdir):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--subject", choices=CW.SUBJECTS); ap.add_argument("--stage", default="all", choices=("all", "known-answer"))
+    ap.add_argument("--subject", choices=CW.SUBJECTS); ap.add_argument("--stage", default="all", choices=("all", "gate0", "known-answer"))
     a = ap.parse_args()
     OUT.mkdir(parents=True, exist_ok=True)
     body = CW.body_meshes()
+    g0_ok, g0 = gate0(body)
+    (OUT / "gate0.json").write_text(json.dumps(g0, indent=2) + "\n")
+    if not g0_ok:
+        say("GATE 0 FAILED: the correspondence is not accurate enough to fit anything with; no warp is fitted.")
+        return
     ka_ok, ka = known_answer(body)
     (OUT / "known_answer.json").write_text(json.dumps(ka, indent=2) + "\n")
+    if a.stage == "gate0": return
     if a.stage == "known-answer" or not ka_ok:
         if not ka_ok: say("GATE 1 FAILED: the instrument does not recover a known warp; no subject is fitted.")
         return
