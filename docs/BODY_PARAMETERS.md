@@ -3146,3 +3146,40 @@ What has changed is that the parametrization no longer stops at the scaffold.
    whether the seated breast is anatomically right, which is judged by gates (a)-(d) and by nothing
    else.
 
+   ### The cost of the real regime is itself the first measurement of it
+
+   | control | regime | time |
+   |---|---|---:|
+   | T-none | rigid, no bed | **36 s** |
+   | W | rigid tangential, analytic plane | seconds |
+   | X | non-rigid, analytic plane | **30 s** |
+   | **Z, first leg** | **non-rigid, anatomical bed** | **>37 min, unfinished** |
+
+   **The regime the breast is actually in is at least 60× more expensive per leg than every control
+   used to reason about it**, and Z needs three legs. Nothing in the control series gave any warning,
+   because each control removed exactly the thing that costs: W and X replace the bed with a plane,
+   which has no features for an association to contest, and T-none removes the bed entirely.
+
+   **The cost is not incidental — it is the same finding in another currency.** The anatomical bed
+   refused **93.8%** of association updates under a *rigid* drive. A non-rigid motion contests them
+   at nearly every step, and a solver fighting a constraint set that will not settle spends its
+   iterations there. **So gate V's adaptive stepping is not an optimisation and not merely a
+   correctness fix: it is plausibly what makes this regime affordable at all.** That reverses the
+   priority set two entries ago, where V was placed behind the sliding controls.
+
+   **Ordered now, because it costs nothing to find out:** run **gate V on the analytic plane** — where
+   X completes in 30 s, the answer is closed-form, and any refusal is a defect in the stepping rather
+   than the bed's doing — **in parallel with Z** rather than after it. If adaptive stepping works on
+   the plane it is a candidate for making Z affordable; if it does not, we learn that in seconds
+   instead of after hours.
+
+   **Z still runs on the current stepping**, because it measures the path-dependence of what exists
+   today, and because a V that changed the stepping would require Z to be re-run regardless. They are
+   not competing for the same answer.
+
+   **A silent long job cost a scheduling decision for the second time today.** The Z/Y driver passed
+   no log, so 37 minutes of compute produced no visible progress; it logs per increment now. The first
+   instance was the v3 anchored fit running 4h34m without output, which forced a keep-or-kill call to
+   be made blind. Same class as the wording bugs this line has removed — **not a wrong number, but no
+   number where one was needed** — and on today's evidence it is the more expensive of the two.
+
