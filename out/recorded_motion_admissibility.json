@@ -1,0 +1,2001 @@
+{
+  "gates": {
+    "g1": 0.99,
+    "g2": 0.99,
+    "corpus": 0.9
+  },
+  "n_motions": 48,
+  "g1_pass": 42,
+  "g2_admissible": 20,
+  "g2_fraction": 0.47619047619047616,
+  "degrees_files": [],
+  "no_source_model": [
+    "subject01_walk1_ik",
+    "subject01_walk1_ik",
+    "crouch4",
+    "normal",
+    "crouch2",
+    "crouch1",
+    "crouch3",
+    "subject01_walk_IK",
+    "subject_adjusted_Kinematics_q",
+    "walk_subject_Kinematics_q",
+    "walk_subject_Kinematics_q",
+    "walk_subject_Kinematics_q",
+    "walk_subject_Kinematics_q",
+    "leg69_IK_stance",
+    "leg69_IK_swing",
+    "walk_subject_pErr",
+    "walk_subject_pErr",
+    "subject_adjusted_pErr",
+    "walk_subject_pErr",
+    "walk_subject_pErr"
+  ],
+  "motions": [
+    {
+      "id": "subject02_running_ik",
+      "n_frames": 599,
+      "in_degrees_json": false,
+      "source_model": "data/raw/anatomy/opensim-models/source/Pipelines/Hamner/outputReference/subject02_RRA_Adjusted.osim",
+      "source_coords_matched": 31,
+      "sign_flipped": [
+        "knee_angle_l",
+        "knee_angle_r"
+      ],
+      "g1_frac_outside_own_model": 0.0,
+      "g1_pairs": 18569,
+      "g1_detail": {},
+      "g2_frac_outside_this_body": 0.00015176809834572774,
+      "g2_pairs": 13178,
+      "g2_detail": {
+        "hip_flexion_r": {
+          "frac_out": 0.00333889816360601,
+          "worst_rad": 0.0029483921719317685,
+          "range": [
+            -0.52359878,
+            2.0943951
+          ],
+          "span": [
+            -0.5265471721719318,
+            0.8407943115426234
+          ]
+        }
+      }
+    },
+    {
+      "id": "rra_run_1_Kinematics_q",
+      "n_frames": 451,
+      "in_degrees_json": false,
+      "source_model": "data/raw/anatomy/opensim-models/source/Pipelines/Hamner/outputReference/subject02_RRA_Adjusted.osim",
+      "source_coords_matched": 31,
+      "sign_flipped": [
+        "knee_angle_l",
+        "knee_angle_r"
+      ],
+      "g1_frac_outside_own_model": 0.0,
+      "g1_pairs": 13981,
+      "g1_detail": {},
+      "g2_frac_outside_this_body": 0.0,
+      "g2_pairs": 9922,
+      "g2_detail": {}
+    },
+    {
+      "id": "subject02_Kinematics_q",
+      "n_frames": 348,
+      "in_degrees_json": false,
+      "source_model": "data/raw/anatomy/opensim-models/source/Pipelines/Hamner/outputReference/subject02_RRA_Adjusted.osim",
+      "source_coords_matched": 31,
+      "sign_flipped": [
+        "knee_angle_l",
+        "knee_angle_r"
+      ],
+      "g1_frac_outside_own_model": 0.0,
+      "g1_pairs": 10788,
+      "g1_detail": {},
+      "g2_frac_outside_this_body": 0.0,
+      "g2_pairs": 7656,
+      "g2_detail": {}
+    },
+    {
+      "id": "desiredKinematics_padded",
+      "n_frames": 193,
+      "in_degrees_json": false,
+      "source_model": "data/raw/mechanics/opensim-core/Applications/RRA/tests/resources/subject01_RRA_adjusted.osim",
+      "source_coords_matched": 21,
+      "sign_flipped": [
+        "knee_angle_l",
+        "knee_angle_r"
+      ],
+      "g1_frac_outside_own_model": 0.01307673328398717,
+      "g1_pairs": 4053,
+      "g1_detail": {
+        "knee_angle_l": {
+          "frac_out": 0.22797927461139897,
+          "worst_rad": 0.7735507034131184,
+          "range": [
+            -2.0943951,
+            0.17453293
+          ],
+          "span": [
+            -1.202210049071281,
+            0.9480836334131184
+          ]
+        },
+        "knee_angle_r": {
+          "frac_out": 0.046632124352331605,
+          "worst_rad": 0.12272828482095166,
+          "range": [
+            -2.0943951,
+            0.17453293
+          ],
+          "span": [
+            -2.2171233848209515,
+            0.018384502644902285
+          ]
+        }
+      },
+      "g2_frac_outside_this_body": 0.02475532527345999,
+      "g2_pairs": 3474,
+      "g2_detail": {
+        "hip_flexion_l": {
+          "frac_out": 0.11917098445595854,
+          "worst_rad": 0.04711799177432763,
+          "range": [
+            -0.52359878,
+            2.0943951
+          ],
+          "span": [
+            -0.5707167717743277,
+            0.3531432669552923
+          ]
+        },
+        "knee_angle_l": {
+          "frac_out": 0.3160621761658031,
+          "worst_rad": 0.9480836334131184,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.9480836334131184,
+            1.202210049071281
+          ]
+        },
+        "knee_angle_r": {
+          "frac_out": 0.010362694300518135,
+          "worst_rad": 0.018384502644902285,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.018384502644902285,
+            2.2171233848209515
+          ]
+        }
+      }
+    },
+    {
+      "id": "f0914m.FC2.HighJump.D2",
+      "n_frames": 567,
+      "in_degrees_json": false,
+      "source_model": "data/raw/mechanics/scone-core/source/scenarios/UnitTests/OpenSim3/data/Human0914.osim",
+      "source_coords_matched": 9,
+      "sign_flipped": [
+        "knee_angle_l",
+        "knee_angle_r"
+      ],
+      "g1_frac_outside_own_model": 0.015285126396237508,
+      "g1_pairs": 5103,
+      "g1_detail": {
+        "ankle_angle_l": {
+          "frac_out": 0.13756613756613756,
+          "worst_rad": 0.27546245,
+          "range": [
+            -1.04719755,
+            1.04719755
+          ],
+          "span": [
+            -1.32266,
+            0.61518
+          ]
+        }
+      },
+      "g2_frac_outside_this_body": 0.11791383219954649,
+      "g2_pairs": 3969,
+      "g2_detail": {
+        "ankle_angle_l": {
+          "frac_out": 0.15343915343915343,
+          "worst_rad": 0.4499953740028352,
+          "range": [
+            -0.8726646259971648,
+            0.8726646259971648
+          ],
+          "span": [
+            -1.32266,
+            0.61518
+          ]
+        },
+        "ankle_angle_r": {
+          "frac_out": 0.15343915343915343,
+          "worst_rad": 0.4499953740028352,
+          "range": [
+            -0.8726646259971648,
+            0.8726646259971648
+          ],
+          "span": [
+            -1.32266,
+            0.61518
+          ]
+        },
+        "hip_flexion_l": {
+          "frac_out": 0.10582010582010581,
+          "worst_rad": 0.42228422,
+          "range": [
+            -0.52359878,
+            2.0943951
+          ],
+          "span": [
+            -0.945883,
+            1.87515
+          ]
+        },
+        "hip_flexion_r": {
+          "frac_out": 0.10582010582010581,
+          "worst_rad": 0.42228422,
+          "range": [
+            -0.52359878,
+            2.0943951
+          ],
+          "span": [
+            -0.945883,
+            1.87515
+          ]
+        },
+        "knee_angle_l": {
+          "frac_out": 0.15343915343915343,
+          "worst_rad": 0.110325,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.110325,
+            1.76089
+          ]
+        },
+        "knee_angle_r": {
+          "frac_out": 0.15343915343915343,
+          "worst_rad": 0.110325,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.110325,
+            1.76089
+          ]
+        }
+      }
+    },
+    {
+      "id": "coordinates",
+      "n_frames": 238,
+      "in_degrees_json": false,
+      "source_model": "data/raw/mechanics/opensim-core/Bindings/Java/Matlab/examples/Moco/exampleEMGTracking/subject_walk_armless_18musc.osim",
+      "source_coords_matched": 21,
+      "sign_flipped": [],
+      "g1_frac_outside_own_model": 0.0,
+      "g1_pairs": 4998,
+      "g1_detail": {},
+      "g2_frac_outside_this_body": 0.0,
+      "g2_pairs": 5236,
+      "g2_detail": {}
+    },
+    {
+      "id": "subject_walk_armless_coordinates",
+      "n_frames": 238,
+      "in_degrees_json": false,
+      "source_model": "data/raw/mechanics/opensim-core/OpenSim/Moco/tests/resources/subject_walk_armless_18musc.osim",
+      "source_coords_matched": 21,
+      "sign_flipped": [],
+      "g1_frac_outside_own_model": 0.0,
+      "g1_pairs": 4998,
+      "g1_detail": {},
+      "g2_frac_outside_this_body": 0.0,
+      "g2_pairs": 5236,
+      "g2_detail": {}
+    },
+    {
+      "id": "subject01_walk1_ik",
+      "n_frames": 211,
+      "in_degrees_json": false,
+      "source_model": "data/raw/mechanics/opensim-core/OpenSim/Examples/Plugins/AnalysisPluginExample/TestPlugin/subject01_simbody_adjusted.osim",
+      "source_coords_matched": 21,
+      "sign_flipped": [
+        "knee_angle_l",
+        "knee_angle_r"
+      ],
+      "g1_frac_outside_own_model": 0.0,
+      "g1_pairs": 4431,
+      "g1_detail": {},
+      "g2_frac_outside_this_body": 0.0013164823591363876,
+      "g2_pairs": 3798,
+      "g2_detail": {
+        "knee_angle_l": {
+          "frac_out": 0.004739336492890996,
+          "worst_rad": 0.00011138481846717572,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.00011138481846717572,
+            1.260924409859965
+          ]
+        },
+        "knee_angle_r": {
+          "frac_out": 0.018957345971563982,
+          "worst_rad": 0.017583975618482697,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.017583975618482697,
+            1.226309858371977
+          ]
+        }
+      }
+    },
+    {
+      "id": "subject01_walk1_Kinematics",
+      "n_frames": 500,
+      "in_degrees_json": false,
+      "source_model": "data/raw/anatomy/opensim-models/source/Tutorials/Estimating_Joint_Reaction_Loads/subject01_simbody_adjusted_StaticOp.osim",
+      "source_coords_matched": 21,
+      "sign_flipped": [
+        "knee_angle_l",
+        "knee_angle_r"
+      ],
+      "g1_frac_outside_own_model": 0.0,
+      "g1_pairs": 10500,
+      "g1_detail": {},
+      "g2_frac_outside_this_body": 0.004111111111111111,
+      "g2_pairs": 9000,
+      "g2_detail": {
+        "knee_angle_l": {
+          "frac_out": 0.008,
+          "worst_rad": 0.0014098418886430541,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.0014098418886430541,
+            1.1995751909493921
+          ]
+        },
+        "knee_angle_r": {
+          "frac_out": 0.066,
+          "worst_rad": 0.027346558041718302,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.027346558041718302,
+            1.2092108978843845
+          ]
+        }
+      }
+    },
+    {
+      "id": "subject01_walk1_ik",
+      "n_frames": 211,
+      "in_degrees_json": false,
+      "source_model": "data/raw/anatomy/opensim-models/source/Pipelines/Gait2354_Simbody/OutputReference/subject01_scaledOnly.osim",
+      "source_coords_matched": 21,
+      "sign_flipped": [
+        "knee_angle_l",
+        "knee_angle_r"
+      ],
+      "g1_frac_outside_own_model": 0.0,
+      "g1_pairs": 4431,
+      "g1_detail": {},
+      "g2_frac_outside_this_body": 0.0013164823591363876,
+      "g2_pairs": 3798,
+      "g2_detail": {
+        "knee_angle_l": {
+          "frac_out": 0.004739336492890996,
+          "worst_rad": 0.00011138481846717572,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.00011138481846717572,
+            1.260924409859965
+          ]
+        },
+        "knee_angle_r": {
+          "frac_out": 0.018957345971563982,
+          "worst_rad": 0.017583975618482697,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.017583975618482697,
+            1.226309858371977
+          ]
+        }
+      }
+    },
+    {
+      "id": "normal_gait",
+      "n_frames": 51,
+      "in_degrees_json": false,
+      "source_model": "data/raw/mechanics/opensim-core/Bindings/Python/tutorials/resources/Tutorial 4/gait2392.osim",
+      "source_coords_matched": 17,
+      "sign_flipped": [
+        "knee_angle_l",
+        "knee_angle_r"
+      ],
+      "g1_frac_outside_own_model": 0.0,
+      "g1_pairs": 867,
+      "g1_detail": {},
+      "g2_frac_outside_this_body": 0.0,
+      "g2_pairs": 816,
+      "g2_detail": {}
+    },
+    {
+      "id": "crouch_gait",
+      "n_frames": 119,
+      "in_degrees_json": false,
+      "source_model": "data/raw/mechanics/opensim-core/Bindings/Python/tutorials/resources/Tutorial 4/gait2392.osim",
+      "source_coords_matched": 17,
+      "sign_flipped": [
+        "knee_angle_l",
+        "knee_angle_r"
+      ],
+      "g1_frac_outside_own_model": 0.0,
+      "g1_pairs": 2023,
+      "g1_detail": {},
+      "g2_frac_outside_this_body": 0.0,
+      "g2_pairs": 1904,
+      "g2_detail": {}
+    },
+    {
+      "id": "subject01_walk1_RRA_Kinematics_q",
+      "n_frames": 500,
+      "in_degrees_json": false,
+      "source_model": "data/raw/anatomy/opensim-models/source/Pipelines/Gait2354_Simbody/OutputReference/subject01_scaledOnly.osim",
+      "source_coords_matched": 21,
+      "sign_flipped": [
+        "knee_angle_l",
+        "knee_angle_r"
+      ],
+      "g1_frac_outside_own_model": 0.0,
+      "g1_pairs": 10500,
+      "g1_detail": {},
+      "g2_frac_outside_this_body": 0.007,
+      "g2_pairs": 9000,
+      "g2_detail": {
+        "knee_angle_l": {
+          "frac_out": 0.126,
+          "worst_rad": 0.03551572376734079,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.03551572376734079,
+            1.1943566149351872
+          ]
+        }
+      }
+    },
+    {
+      "id": "subject01_walk1_RRA_Kinematics_initial_q",
+      "n_frames": 500,
+      "in_degrees_json": false,
+      "source_model": "data/raw/mechanics/opensim-core/Applications/CMC/tests/resources/subject01_simbody_adjusted.osim",
+      "source_coords_matched": 21,
+      "sign_flipped": [
+        "knee_angle_l",
+        "knee_angle_r"
+      ],
+      "g1_frac_outside_own_model": 0.0,
+      "g1_pairs": 10500,
+      "g1_detail": {},
+      "g2_frac_outside_this_body": 0.0,
+      "g2_pairs": 9000,
+      "g2_detail": {}
+    },
+    {
+      "id": "subject01_walk1_Kinematics_q",
+      "n_frames": 29,
+      "in_degrees_json": false,
+      "source_model": "data/raw/anatomy/opensim-models/source/Pipelines/Gait2354_Simbody/OutputReference/subject01_scaledOnly.osim",
+      "source_coords_matched": 21,
+      "sign_flipped": [
+        "knee_angle_l",
+        "knee_angle_r"
+      ],
+      "g1_frac_outside_own_model": 0.0,
+      "g1_pairs": 609,
+      "g1_detail": {},
+      "g2_frac_outside_this_body": 0.0,
+      "g2_pairs": 522,
+      "g2_detail": {}
+    },
+    {
+      "id": "state_reference",
+      "n_frames": 73,
+      "in_degrees_json": false,
+      "source_model": "data/raw/mechanics/opensim-core/OpenSim/Sandbox/futureOrientationInverseKinematics.osim",
+      "source_coords_matched": 0,
+      "sign_flipped": [],
+      "g1_frac_outside_own_model": NaN,
+      "g1_pairs": 0,
+      "g1_detail": {},
+      "g2_frac_outside_this_body": 0.08082191780821918,
+      "g2_pairs": 730,
+      "g2_detail": {
+        "knee_angle_l": {
+          "frac_out": 0.8082191780821918,
+          "worst_rad": 1.1929721855759579,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -1.1929721855759579,
+            0.05600905646579556
+          ]
+        }
+      }
+    },
+    {
+      "id": "subject01_walk1_Kinematics_q",
+      "n_frames": 29,
+      "in_degrees_json": false,
+      "source_model": "data/raw/anatomy/opensim-models/source/Pipelines/Gait2354_Simbody/OutputReference/subject01_scaledOnly.osim",
+      "source_coords_matched": 21,
+      "sign_flipped": [
+        "knee_angle_l",
+        "knee_angle_r"
+      ],
+      "g1_frac_outside_own_model": 0.0,
+      "g1_pairs": 609,
+      "g1_detail": {},
+      "g2_frac_outside_this_body": 0.0,
+      "g2_pairs": 522,
+      "g2_detail": {}
+    },
+    {
+      "id": "subject01_walk_IK",
+      "n_frames": 151,
+      "in_degrees_json": false,
+      "source_model": "data/raw/anatomy/opensim-models/source/Pipelines/Gait10dof18musc/OutputReference/gait10dof18musc.osim",
+      "source_coords_matched": 10,
+      "sign_flipped": [
+        "knee_angle_l",
+        "knee_angle_r"
+      ],
+      "g1_frac_outside_own_model": 0.0,
+      "g1_pairs": 1510,
+      "g1_detail": {},
+      "g2_frac_outside_this_body": 0.033112582781456956,
+      "g2_pairs": 1208,
+      "g2_detail": {
+        "knee_angle_l": {
+          "frac_out": 0.17880794701986755,
+          "worst_rad": 0.09064124363321041,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.09064124363321041,
+            1.2052131868497054
+          ]
+        },
+        "knee_angle_r": {
+          "frac_out": 0.08609271523178808,
+          "worst_rad": 0.08579702557109944,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.08579702557109944,
+            1.21075084429492
+          ]
+        }
+      }
+    },
+    {
+      "id": "subject01_walk_IK",
+      "n_frames": 151,
+      "in_degrees_json": false,
+      "source_model": "data/raw/anatomy/opensim-models/source/Tutorials/Working_with_Static_Optimization/subject01.osim",
+      "source_coords_matched": 10,
+      "sign_flipped": [
+        "knee_angle_l",
+        "knee_angle_r"
+      ],
+      "g1_frac_outside_own_model": 0.0,
+      "g1_pairs": 1510,
+      "g1_detail": {},
+      "g2_frac_outside_this_body": 0.033112582781456956,
+      "g2_pairs": 1208,
+      "g2_detail": {
+        "knee_angle_l": {
+          "frac_out": 0.17880794701986755,
+          "worst_rad": 0.09064124363321041,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.09064124363321041,
+            1.2052131868497054
+          ]
+        },
+        "knee_angle_r": {
+          "frac_out": 0.08609271523178808,
+          "worst_rad": 0.08579702557109944,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.08579702557109944,
+            1.21075084429492
+          ]
+        }
+      }
+    },
+    {
+      "id": "subject01_walk_IK",
+      "n_frames": 151,
+      "in_degrees_json": false,
+      "source_model": "data/raw/mechanics/opensim-core/Bindings/Python/tutorials/resources/Tutorial 6/gait10dof18musc_simbody.osim",
+      "source_coords_matched": 10,
+      "sign_flipped": [
+        "knee_angle_l",
+        "knee_angle_r"
+      ],
+      "g1_frac_outside_own_model": 0.0,
+      "g1_pairs": 1510,
+      "g1_detail": {},
+      "g2_frac_outside_this_body": 0.033112582781456956,
+      "g2_pairs": 1208,
+      "g2_detail": {
+        "knee_angle_l": {
+          "frac_out": 0.17880794701986755,
+          "worst_rad": 0.09064124363321041,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.09064124363321041,
+            1.2052131868497054
+          ]
+        },
+        "knee_angle_r": {
+          "frac_out": 0.08609271523178808,
+          "worst_rad": 0.08579702557109944,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.08579702557109944,
+            1.21075084429492
+          ]
+        }
+      }
+    },
+    {
+      "id": "subject_adjusted_Kinematics_q",
+      "n_frames": 423,
+      "in_degrees_json": false,
+      "source_model": "data/raw/anatomy/opensim-models/source/Pipelines/Gait10dof18musc/OutputReference/gait10dof18musc.osim",
+      "source_coords_matched": 10,
+      "sign_flipped": [
+        "knee_angle_l",
+        "knee_angle_r"
+      ],
+      "g1_frac_outside_own_model": 0.0,
+      "g1_pairs": 4230,
+      "g1_detail": {},
+      "g2_frac_outside_this_body": 0.03605200945626478,
+      "g2_pairs": 3384,
+      "g2_detail": {
+        "hip_flexion_r": {
+          "frac_out": 0.01182033096926714,
+          "worst_rad": 0.003160239592512326,
+          "range": [
+            -0.52359878,
+            2.0943951
+          ],
+          "span": [
+            -0.5267590195925124,
+            0.356050045922528
+          ]
+        },
+        "knee_angle_l": {
+          "frac_out": 0.1867612293144208,
+          "worst_rad": 0.08815010355425555,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.08815010355425555,
+            1.2075527315620587
+          ]
+        },
+        "knee_angle_r": {
+          "frac_out": 0.08983451536643026,
+          "worst_rad": 0.08290204498597403,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.08290204498597403,
+            1.2127442943373252
+          ]
+        }
+      }
+    },
+    {
+      "id": "subject_adjusted_Kinematics_q",
+      "n_frames": 423,
+      "in_degrees_json": false,
+      "source_model": "data/raw/anatomy/opensim-models/source/Tutorials/Working_with_Static_Optimization/subject01.osim",
+      "source_coords_matched": 10,
+      "sign_flipped": [
+        "knee_angle_l",
+        "knee_angle_r"
+      ],
+      "g1_frac_outside_own_model": 0.0,
+      "g1_pairs": 4230,
+      "g1_detail": {},
+      "g2_frac_outside_this_body": 0.03605200945626478,
+      "g2_pairs": 3384,
+      "g2_detail": {
+        "hip_flexion_r": {
+          "frac_out": 0.01182033096926714,
+          "worst_rad": 0.003160239592512326,
+          "range": [
+            -0.52359878,
+            2.0943951
+          ],
+          "span": [
+            -0.5267590195925124,
+            0.356050045922528
+          ]
+        },
+        "knee_angle_l": {
+          "frac_out": 0.1867612293144208,
+          "worst_rad": 0.08815010355425555,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.08815010355425555,
+            1.2075527315620587
+          ]
+        },
+        "knee_angle_r": {
+          "frac_out": 0.08983451536643026,
+          "worst_rad": 0.08290204498597403,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.08290204498597403,
+            1.2127442943373252
+          ]
+        }
+      }
+    },
+    {
+      "id": "gait10dof18musc_subject_adjusted_Kinematics_q",
+      "n_frames": 423,
+      "in_degrees_json": false,
+      "source_model": "data/raw/mechanics/opensim-core/Applications/CMC/tests/resources/gait10dof18musc_subject01.osim",
+      "source_coords_matched": 10,
+      "sign_flipped": [
+        "knee_angle_l",
+        "knee_angle_r"
+      ],
+      "g1_frac_outside_own_model": 0.0,
+      "g1_pairs": 4230,
+      "g1_detail": {},
+      "g2_frac_outside_this_body": 0.03605200945626478,
+      "g2_pairs": 3384,
+      "g2_detail": {
+        "hip_flexion_r": {
+          "frac_out": 0.01182033096926714,
+          "worst_rad": 0.003160239592512326,
+          "range": [
+            -0.52359878,
+            2.0943951
+          ],
+          "span": [
+            -0.5267590195925124,
+            0.356050045922528
+          ]
+        },
+        "knee_angle_l": {
+          "frac_out": 0.1867612293144208,
+          "worst_rad": 0.08815010355425555,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.08815010355425555,
+            1.2075527315620587
+          ]
+        },
+        "knee_angle_r": {
+          "frac_out": 0.08983451536643026,
+          "worst_rad": 0.08290204498597403,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.08290204498597403,
+            1.2127442943373252
+          ]
+        }
+      }
+    },
+    {
+      "id": "subject_adjusted_Kinematics_q",
+      "n_frames": 423,
+      "in_degrees_json": false,
+      "source_model": "data/raw/mechanics/opensim-core/Bindings/Python/tutorials/resources/Tutorial 6/gait10dof18musc_simbody.osim",
+      "source_coords_matched": 10,
+      "sign_flipped": [
+        "knee_angle_l",
+        "knee_angle_r"
+      ],
+      "g1_frac_outside_own_model": 0.0,
+      "g1_pairs": 4230,
+      "g1_detail": {},
+      "g2_frac_outside_this_body": 0.03605200945626478,
+      "g2_pairs": 3384,
+      "g2_detail": {
+        "hip_flexion_r": {
+          "frac_out": 0.01182033096926714,
+          "worst_rad": 0.003160239592512326,
+          "range": [
+            -0.52359878,
+            2.0943951
+          ],
+          "span": [
+            -0.5267590195925124,
+            0.356050045922528
+          ]
+        },
+        "knee_angle_l": {
+          "frac_out": 0.1867612293144208,
+          "worst_rad": 0.08815010355425555,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.08815010355425555,
+            1.2075527315620587
+          ]
+        },
+        "knee_angle_r": {
+          "frac_out": 0.08983451536643026,
+          "worst_rad": 0.08290204498597403,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.08290204498597403,
+            1.2127442943373252
+          ]
+        }
+      }
+    },
+    {
+      "id": "walk_subject01_Kinematics_q",
+      "n_frames": 423,
+      "in_degrees_json": false,
+      "source_model": "data/raw/mechanics/opensim-core/Applications/Analyze/tests/resources/subject01.osim",
+      "source_coords_matched": 10,
+      "sign_flipped": [
+        "knee_angle_l",
+        "knee_angle_r"
+      ],
+      "g1_frac_outside_own_model": 0.0,
+      "g1_pairs": 4230,
+      "g1_detail": {},
+      "g2_frac_outside_this_body": 0.03634751773049645,
+      "g2_pairs": 3384,
+      "g2_detail": {
+        "hip_flexion_r": {
+          "frac_out": 0.016548463356973995,
+          "worst_rad": 0.0053350183974947285,
+          "range": [
+            -0.52359878,
+            2.0943951
+          ],
+          "span": [
+            -0.5289337983974948,
+            0.35642955263986026
+          ]
+        },
+        "knee_angle_l": {
+          "frac_out": 0.1867612293144208,
+          "worst_rad": 0.08735185126257397,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.08735185126257397,
+            1.2070145629873044
+          ]
+        },
+        "knee_angle_r": {
+          "frac_out": 0.08747044917257683,
+          "worst_rad": 0.08261773275846902,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.08261773275846902,
+            1.212192127766439
+          ]
+        }
+      }
+    },
+    {
+      "id": "walk_subject_Kinematics_q",
+      "n_frames": 511,
+      "in_degrees_json": false,
+      "source_model": "data/raw/anatomy/opensim-models/source/Pipelines/Gait10dof18musc/OutputReference/CMC/subject01_metabolics.osim",
+      "source_coords_matched": 10,
+      "sign_flipped": [
+        "knee_angle_l",
+        "knee_angle_r"
+      ],
+      "g1_frac_outside_own_model": 0.0,
+      "g1_pairs": 5110,
+      "g1_detail": {},
+      "g2_frac_outside_this_body": 0.03816046966731898,
+      "g2_pairs": 4088,
+      "g2_detail": {
+        "hip_flexion_r": {
+          "frac_out": 0.046966731898238745,
+          "worst_rad": 0.009697564332364683,
+          "range": [
+            -0.52359878,
+            2.0943951
+          ],
+          "span": [
+            -0.5332963443323647,
+            0.35767653000201804
+          ]
+        },
+        "knee_angle_l": {
+          "frac_out": 0.18590998043052837,
+          "worst_rad": 0.0748346999803186,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.0748346999803186,
+            1.1727583139811824
+          ]
+        },
+        "knee_angle_r": {
+          "frac_out": 0.07240704500978473,
+          "worst_rad": 0.07358496639420602,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.07358496639420602,
+            1.2132002304659895
+          ]
+        }
+      }
+    },
+    {
+      "id": "walk_subject_Kinematics_q",
+      "n_frames": 511,
+      "in_degrees_json": false,
+      "source_model": "data/raw/anatomy/opensim-models/source/Pipelines/Gait10dof18musc/OutputReference/CMC/subject01_metabolics.osim",
+      "source_coords_matched": 10,
+      "sign_flipped": [
+        "knee_angle_l",
+        "knee_angle_r"
+      ],
+      "g1_frac_outside_own_model": 0.0,
+      "g1_pairs": 5110,
+      "g1_detail": {},
+      "g2_frac_outside_this_body": 0.03816046966731898,
+      "g2_pairs": 4088,
+      "g2_detail": {
+        "hip_flexion_r": {
+          "frac_out": 0.046966731898238745,
+          "worst_rad": 0.009697564332364683,
+          "range": [
+            -0.52359878,
+            2.0943951
+          ],
+          "span": [
+            -0.5332963443323647,
+            0.35767653000201804
+          ]
+        },
+        "knee_angle_l": {
+          "frac_out": 0.18590998043052837,
+          "worst_rad": 0.0748346999803186,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.0748346999803186,
+            1.1727583139811824
+          ]
+        },
+        "knee_angle_r": {
+          "frac_out": 0.07240704500978473,
+          "worst_rad": 0.07358496639420602,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.07358496639420602,
+            1.2132002304659895
+          ]
+        }
+      }
+    },
+    {
+      "id": "gait10dof18musc_ik_CRLF_line_ending",
+      "n_frames": 15,
+      "in_degrees_json": false,
+      "source_model": "data/raw/mechanics/opensim-core/OpenSim/Tests/shared/calibrated_model_imu.osim",
+      "source_coords_matched": 10,
+      "sign_flipped": [],
+      "g1_frac_outside_own_model": 0.2,
+      "g1_pairs": 150,
+      "g1_detail": {
+        "knee_angle_l": {
+          "frac_out": 1.0,
+          "worst_rad": 0.30357930737339,
+          "range": [
+            0.0,
+            2.0944
+          ],
+          "span": [
+            -0.30357930737339,
+            -0.010864950879285292
+          ]
+        },
+        "knee_angle_r": {
+          "frac_out": 1.0,
+          "worst_rad": 1.0946483607170308,
+          "range": [
+            0.0,
+            2.0944
+          ],
+          "span": [
+            -1.0946483607170308,
+            -0.08951108395041536
+          ]
+        }
+      },
+      "g2_frac_outside_this_body": 0.25,
+      "g2_pairs": 120,
+      "g2_detail": {
+        "knee_angle_l": {
+          "frac_out": 1.0,
+          "worst_rad": 0.30357930737339,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.30357930737339,
+            -0.010864950879285292
+          ]
+        },
+        "knee_angle_r": {
+          "frac_out": 1.0,
+          "worst_rad": 1.0946483607170308,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -1.0946483607170308,
+            -0.08951108395041536
+          ]
+        }
+      }
+    },
+    {
+      "id": "leg69_IK_stance",
+      "n_frames": 91,
+      "in_degrees_json": false,
+      "source_model": "data/raw/anatomy/opensim-models/source/Tutorials/Strength_of_Simulation/Stance/Reference/leg6dof9musc_added_mass.osim",
+      "source_coords_matched": 6,
+      "sign_flipped": [
+        "knee_angle_r"
+      ],
+      "g1_frac_outside_own_model": 0.0,
+      "g1_pairs": 546,
+      "g1_detail": {},
+      "g2_frac_outside_this_body": 0.0,
+      "g2_pairs": 364,
+      "g2_detail": {}
+    },
+    {
+      "id": "leg69_IK_stance",
+      "n_frames": 91,
+      "in_degrees_json": false,
+      "source_model": "data/raw/mechanics/opensim-core/Applications/CMC/tests/resources/gait10dof18musc_subject01.osim",
+      "source_coords_matched": 6,
+      "sign_flipped": [
+        "knee_angle_l",
+        "knee_angle_r"
+      ],
+      "g1_frac_outside_own_model": 0.0,
+      "g1_pairs": 546,
+      "g1_detail": {},
+      "g2_frac_outside_this_body": 0.0,
+      "g2_pairs": 364,
+      "g2_detail": {}
+    },
+    {
+      "id": "leg69_IK_swing",
+      "n_frames": 31,
+      "in_degrees_json": false,
+      "source_model": "data/raw/mechanics/opensim-core/Applications/CMC/tests/resources/gait10dof18musc_subject01.osim",
+      "source_coords_matched": 6,
+      "sign_flipped": [
+        "knee_angle_l",
+        "knee_angle_r"
+      ],
+      "g1_frac_outside_own_model": 0.0,
+      "g1_pairs": 186,
+      "g1_detail": {},
+      "g2_frac_outside_this_body": 0.0,
+      "g2_pairs": 124,
+      "g2_detail": {}
+    },
+    {
+      "id": "subject01_walk_IK",
+      "n_frames": 151,
+      "in_degrees_json": false,
+      "source_model": "data/raw/mechanics/opensim-core/Applications/Analyze/tests/resources/UsingRelativePaths/subject01.osim",
+      "source_coords_matched": 10,
+      "sign_flipped": [
+        "knee_angle_l",
+        "knee_angle_r"
+      ],
+      "g1_frac_outside_own_model": 0.0,
+      "g1_pairs": 1510,
+      "g1_detail": {},
+      "g2_frac_outside_this_body": 0.033112582781456956,
+      "g2_pairs": 1208,
+      "g2_detail": {
+        "knee_angle_l": {
+          "frac_out": 0.17880794701986755,
+          "worst_rad": 0.09064124363321041,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.09064124363321041,
+            1.2052131868497054
+          ]
+        },
+        "knee_angle_r": {
+          "frac_out": 0.08609271523178808,
+          "worst_rad": 0.08579702557109944,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.08579702557109944,
+            1.21075084429492
+          ]
+        }
+      }
+    },
+    {
+      "id": "subject02_pErr",
+      "n_frames": 87,
+      "in_degrees_json": false,
+      "source_model": "data/raw/anatomy/opensim-models/source/Pipelines/Hamner/outputReference/subject02_RRA_Adjusted.osim",
+      "source_coords_matched": 29,
+      "sign_flipped": [
+        "knee_angle_l",
+        "knee_angle_r"
+      ],
+      "g1_frac_outside_own_model": 0.06777645659928656,
+      "g1_pairs": 2523,
+      "g1_detail": {
+        "elbow_flex_l": {
+          "frac_out": 0.4827586206896552,
+          "worst_rad": 0.0359149,
+          "range": [
+            0.0,
+            2.618
+          ],
+          "span": [
+            -0.0359149,
+            0.03103213
+          ]
+        },
+        "elbow_flex_r": {
+          "frac_out": 0.5402298850574713,
+          "worst_rad": 0.04729435,
+          "range": [
+            0.0,
+            2.618
+          ],
+          "span": [
+            -0.04729435,
+            0.02928846
+          ]
+        },
+        "pro_sup_l": {
+          "frac_out": 0.5287356321839081,
+          "worst_rad": 0.00946684,
+          "range": [
+            0.0,
+            1.57079633
+          ],
+          "span": [
+            -0.00946684,
+            0.00854765
+          ]
+        },
+        "pro_sup_r": {
+          "frac_out": 0.41379310344827586,
+          "worst_rad": 0.00678127,
+          "range": [
+            0.0,
+            1.57079633
+          ],
+          "span": [
+            -0.00678127,
+            0.00863954
+          ]
+        }
+      },
+      "g2_frac_outside_this_body": 0.10229885057471265,
+      "g2_pairs": 1740,
+      "g2_detail": {
+        "elbow_flex_l": {
+          "frac_out": 0.4827586206896552,
+          "worst_rad": 0.0359149,
+          "range": [
+            0.0,
+            2.618
+          ],
+          "span": [
+            -0.0359149,
+            0.03103213
+          ]
+        },
+        "elbow_flex_r": {
+          "frac_out": 0.5402298850574713,
+          "worst_rad": 0.04729435,
+          "range": [
+            0.0,
+            2.618
+          ],
+          "span": [
+            -0.04729435,
+            0.02928846
+          ]
+        },
+        "knee_angle_l": {
+          "frac_out": 0.011494252873563218,
+          "worst_rad": 3.586e-05,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -3.586e-05,
+            0.06893894
+          ]
+        },
+        "knee_angle_r": {
+          "frac_out": 0.06896551724137931,
+          "worst_rad": 0.00712626,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.00712626,
+            0.0404123
+          ]
+        },
+        "pro_sup_l": {
+          "frac_out": 0.5287356321839081,
+          "worst_rad": 0.00946684,
+          "range": [
+            0.0,
+            2.09
+          ],
+          "span": [
+            -0.00946684,
+            0.00854765
+          ]
+        },
+        "pro_sup_r": {
+          "frac_out": 0.41379310344827586,
+          "worst_rad": 0.00678127,
+          "range": [
+            0.0,
+            2.09
+          ],
+          "span": [
+            -0.00678127,
+            0.00863954
+          ]
+        }
+      }
+    },
+    {
+      "id": "leg6dof9musc_adjusted_Kinematics_q",
+      "n_frames": 450,
+      "in_degrees_json": false,
+      "source_model": "data/raw/mechanics/opensim-core/Applications/CMC/tests/resources/gait10dof18musc_subject01.osim",
+      "source_coords_matched": 6,
+      "sign_flipped": [
+        "knee_angle_l",
+        "knee_angle_r"
+      ],
+      "g1_frac_outside_own_model": 0.0,
+      "g1_pairs": 2700,
+      "g1_detail": {},
+      "g2_frac_outside_this_body": 0.0,
+      "g2_pairs": 1800,
+      "g2_detail": {}
+    },
+    {
+      "id": "leg6dof9musc_RRA_adjusted_Kinematics_q",
+      "n_frames": 451,
+      "in_degrees_json": false,
+      "source_model": "data/raw/anatomy/opensim-models/source/Tutorials/Strength_of_Simulation/Stance/Reference/RRA/leg6dof9musc_RRA_adjusted.osim",
+      "source_coords_matched": 6,
+      "sign_flipped": [
+        "knee_angle_r"
+      ],
+      "g1_frac_outside_own_model": 0.0,
+      "g1_pairs": 2706,
+      "g1_detail": {},
+      "g2_frac_outside_this_body": 0.0,
+      "g2_pairs": 1804,
+      "g2_detail": {}
+    },
+    {
+      "id": "leg6dof9musc_CMC_Kinematics_q",
+      "n_frames": 427,
+      "in_degrees_json": false,
+      "source_model": "data/raw/anatomy/opensim-models/source/Tutorials/Strength_of_Simulation/Stance/Reference/leg6dof9musc_added_mass.osim",
+      "source_coords_matched": 6,
+      "sign_flipped": [
+        "knee_angle_r"
+      ],
+      "g1_frac_outside_own_model": 0.0,
+      "g1_pairs": 2562,
+      "g1_detail": {},
+      "g2_frac_outside_this_body": 0.0,
+      "g2_pairs": 1708,
+      "g2_detail": {}
+    },
+    {
+      "id": "rra_run_1_pErr",
+      "n_frames": 450,
+      "in_degrees_json": false,
+      "source_model": "data/raw/anatomy/opensim-models/source/Pipelines/Hamner/outputReference/subject02_RRA_Adjusted.osim",
+      "source_coords_matched": 29,
+      "sign_flipped": [
+        "knee_angle_l",
+        "knee_angle_r"
+      ],
+      "g1_frac_outside_own_model": 0.044291187739463604,
+      "g1_pairs": 13050,
+      "g1_detail": {
+        "elbow_flex_l": {
+          "frac_out": 0.3933333333333333,
+          "worst_rad": 0.012433165992800976,
+          "range": [
+            0.0,
+            2.618
+          ],
+          "span": [
+            -0.012433165992800976,
+            0.01281713279152319
+          ]
+        },
+        "elbow_flex_r": {
+          "frac_out": 0.11555555555555555,
+          "worst_rad": 0.00259195936463974,
+          "range": [
+            0.0,
+            2.618
+          ],
+          "span": [
+            -0.00259195936463974,
+            0.03909757970598182
+          ]
+        },
+        "pro_sup_l": {
+          "frac_out": 0.33555555555555555,
+          "worst_rad": 0.0004398054979948274,
+          "range": [
+            0.0,
+            1.57079633
+          ],
+          "span": [
+            -0.0004398054979948274,
+            0.000777935797304341
+          ]
+        },
+        "pro_sup_r": {
+          "frac_out": 0.44,
+          "worst_rad": 0.00034284452577135194,
+          "range": [
+            0.0,
+            1.57079633
+          ],
+          "span": [
+            -0.00034284452577135194,
+            0.0013665403830100398
+          ]
+        }
+      },
+      "g2_frac_outside_this_body": 0.144,
+      "g2_pairs": 9000,
+      "g2_detail": {
+        "elbow_flex_l": {
+          "frac_out": 0.3933333333333333,
+          "worst_rad": 0.012433165992800976,
+          "range": [
+            0.0,
+            2.618
+          ],
+          "span": [
+            -0.012433165992800976,
+            0.01281713279152319
+          ]
+        },
+        "elbow_flex_r": {
+          "frac_out": 0.11555555555555555,
+          "worst_rad": 0.00259195936463974,
+          "range": [
+            0.0,
+            2.618
+          ],
+          "span": [
+            -0.00259195936463974,
+            0.03909757970598182
+          ]
+        },
+        "knee_angle_l": {
+          "frac_out": 0.8911111111111111,
+          "worst_rad": 0.013696762944930163,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.013696762944930163,
+            0.0002874829985595184
+          ]
+        },
+        "knee_angle_r": {
+          "frac_out": 0.7044444444444444,
+          "worst_rad": 0.010008730592316661,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.010008730592316661,
+            0.0021465837859863113
+          ]
+        },
+        "pro_sup_l": {
+          "frac_out": 0.33555555555555555,
+          "worst_rad": 0.0004398054979948274,
+          "range": [
+            0.0,
+            2.09
+          ],
+          "span": [
+            -0.0004398054979948274,
+            0.000777935797304341
+          ]
+        },
+        "pro_sup_r": {
+          "frac_out": 0.44,
+          "worst_rad": 0.00034284452577135194,
+          "range": [
+            0.0,
+            2.09
+          ],
+          "span": [
+            -0.00034284452577135194,
+            0.0013665403830100398
+          ]
+        }
+      }
+    },
+    {
+      "id": "leg6dof9musc_RRA_adjusted_pErr",
+      "n_frames": 450,
+      "in_degrees_json": false,
+      "source_model": "data/raw/anatomy/opensim-models/source/Tutorials/Strength_of_Simulation/Stance/Reference/RRA/leg6dof9musc_RRA_adjusted.osim",
+      "source_coords_matched": 6,
+      "sign_flipped": [
+        "knee_angle_r"
+      ],
+      "g1_frac_outside_own_model": 0.0,
+      "g1_pairs": 2700,
+      "g1_detail": {},
+      "g2_frac_outside_this_body": 0.018333333333333333,
+      "g2_pairs": 1800,
+      "g2_detail": {
+        "knee_angle_r": {
+          "frac_out": 0.07333333333333333,
+          "worst_rad": 0.00096056,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.00096056,
+            0.00294704
+          ]
+        }
+      }
+    },
+    {
+      "id": "subject01_walk1_pErr",
+      "n_frames": 147,
+      "in_degrees_json": false,
+      "source_model": "data/raw/anatomy/opensim-models/source/Pipelines/Gait2392_Simbody/OutputReference/subject01_simbody.osim",
+      "source_coords_matched": 21,
+      "sign_flipped": [
+        "knee_angle_l",
+        "knee_angle_r"
+      ],
+      "g1_frac_outside_own_model": 0.0,
+      "g1_pairs": 3087,
+      "g1_detail": {},
+      "g2_frac_outside_this_body": 0.04195011337868481,
+      "g2_pairs": 2646,
+      "g2_detail": {
+        "knee_angle_l": {
+          "frac_out": 0.3333333333333333,
+          "worst_rad": 0.00664725,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.00664725,
+            0.00315826
+          ]
+        },
+        "knee_angle_r": {
+          "frac_out": 0.4217687074829932,
+          "worst_rad": 0.00182501,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.00182501,
+            0.00513221
+          ]
+        }
+      }
+    },
+    {
+      "id": "subject01_walk1_RRA_pErr",
+      "n_frames": 500,
+      "in_degrees_json": false,
+      "source_model": "data/raw/anatomy/opensim-models/source/Pipelines/Gait2392_Simbody/OutputReference/subject01_simbody.osim",
+      "source_coords_matched": 21,
+      "sign_flipped": [
+        "knee_angle_l",
+        "knee_angle_r"
+      ],
+      "g1_frac_outside_own_model": 0.0,
+      "g1_pairs": 10500,
+      "g1_detail": {},
+      "g2_frac_outside_this_body": 0.03,
+      "g2_pairs": 9000,
+      "g2_detail": {
+        "knee_angle_l": {
+          "frac_out": 0.28,
+          "worst_rad": 0.00067034,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.00067034,
+            0.00153474
+          ]
+        },
+        "knee_angle_r": {
+          "frac_out": 0.26,
+          "worst_rad": 0.00064605,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.00064605,
+            0.00159352
+          ]
+        }
+      }
+    },
+    {
+      "id": "subject_adjusted_pErr",
+      "n_frames": 417,
+      "in_degrees_json": false,
+      "source_model": "data/raw/anatomy/opensim-models/source/Pipelines/Gait10dof18musc/OutputReference/gait10dof18musc.osim",
+      "source_coords_matched": 10,
+      "sign_flipped": [
+        "knee_angle_l",
+        "knee_angle_r"
+      ],
+      "g1_frac_outside_own_model": 0.0,
+      "g1_pairs": 4170,
+      "g1_detail": {},
+      "g2_frac_outside_this_body": 0.0815347721822542,
+      "g2_pairs": 3336,
+      "g2_detail": {
+        "knee_angle_l": {
+          "frac_out": 0.3117505995203837,
+          "worst_rad": 0.0008341147,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.0008341147,
+            0.001502444
+          ]
+        },
+        "knee_angle_r": {
+          "frac_out": 0.3405275779376499,
+          "worst_rad": 0.0006893775,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.0006893775,
+            0.0018745977
+          ]
+        }
+      }
+    },
+    {
+      "id": "walk_subject_pErr",
+      "n_frames": 127,
+      "in_degrees_json": false,
+      "source_model": "data/raw/anatomy/opensim-models/source/Pipelines/Gait10dof18musc/OutputReference/CMC/subject01_metabolics.osim",
+      "source_coords_matched": 10,
+      "sign_flipped": [
+        "knee_angle_l",
+        "knee_angle_r"
+      ],
+      "g1_frac_outside_own_model": 0.0,
+      "g1_pairs": 1270,
+      "g1_detail": {},
+      "g2_frac_outside_this_body": 0.07480314960629922,
+      "g2_pairs": 1016,
+      "g2_detail": {
+        "knee_angle_l": {
+          "frac_out": 0.1732283464566929,
+          "worst_rad": 0.00064711,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.00064711,
+            0.00514423
+          ]
+        },
+        "knee_angle_r": {
+          "frac_out": 0.4251968503937008,
+          "worst_rad": 0.00534057,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.00534057,
+            0.00765525
+          ]
+        }
+      }
+    },
+    {
+      "id": "walk_subject_pErr",
+      "n_frames": 127,
+      "in_degrees_json": false,
+      "source_model": "data/raw/anatomy/opensim-models/source/Pipelines/Gait10dof18musc/OutputReference/CMC/subject01_metabolics.osim",
+      "source_coords_matched": 10,
+      "sign_flipped": [
+        "knee_angle_l",
+        "knee_angle_r"
+      ],
+      "g1_frac_outside_own_model": 0.0,
+      "g1_pairs": 1270,
+      "g1_detail": {},
+      "g2_frac_outside_this_body": 0.07480314960629922,
+      "g2_pairs": 1016,
+      "g2_detail": {
+        "knee_angle_l": {
+          "frac_out": 0.1732283464566929,
+          "worst_rad": 0.00064711,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.00064711,
+            0.00514423
+          ]
+        },
+        "knee_angle_r": {
+          "frac_out": 0.4251968503937008,
+          "worst_rad": 0.00534057,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.00534057,
+            0.00765525
+          ]
+        }
+      }
+    },
+    {
+      "id": "walk_subject_pErr",
+      "n_frames": 127,
+      "in_degrees_json": false,
+      "source_model": "data/raw/anatomy/opensim-models/source/Pipelines/Gait10dof18musc/OutputReference/CMC/subject01_metabolics.osim",
+      "source_coords_matched": 10,
+      "sign_flipped": [
+        "knee_angle_l",
+        "knee_angle_r"
+      ],
+      "g1_frac_outside_own_model": 0.0,
+      "g1_pairs": 1270,
+      "g1_detail": {},
+      "g2_frac_outside_this_body": 0.07480314960629922,
+      "g2_pairs": 1016,
+      "g2_detail": {
+        "knee_angle_l": {
+          "frac_out": 0.1732283464566929,
+          "worst_rad": 0.00064711,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.00064711,
+            0.00514423
+          ]
+        },
+        "knee_angle_r": {
+          "frac_out": 0.4251968503937008,
+          "worst_rad": 0.00534057,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.00534057,
+            0.00765525
+          ]
+        }
+      }
+    },
+    {
+      "id": "subject01_walk1_pErr",
+      "n_frames": 147,
+      "in_degrees_json": false,
+      "source_model": "data/raw/anatomy/opensim-models/source/Pipelines/Gait2354_Simbody/OutputReference/subject01_scaledOnly.osim",
+      "source_coords_matched": 21,
+      "sign_flipped": [
+        "knee_angle_l",
+        "knee_angle_r"
+      ],
+      "g1_frac_outside_own_model": 0.0,
+      "g1_pairs": 3087,
+      "g1_detail": {},
+      "g2_frac_outside_this_body": 0.04195011337868481,
+      "g2_pairs": 2646,
+      "g2_detail": {
+        "knee_angle_l": {
+          "frac_out": 0.3333333333333333,
+          "worst_rad": 0.00664725,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.00664725,
+            0.00315826
+          ]
+        },
+        "knee_angle_r": {
+          "frac_out": 0.4217687074829932,
+          "worst_rad": 0.00182501,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.00182501,
+            0.00513221
+          ]
+        }
+      }
+    },
+    {
+      "id": "subject01_walk1_RRA_pErr",
+      "n_frames": 500,
+      "in_degrees_json": false,
+      "source_model": "data/raw/anatomy/opensim-models/source/Pipelines/Gait2354_Simbody/OutputReference/subject01_scaledOnly.osim",
+      "source_coords_matched": 21,
+      "sign_flipped": [
+        "knee_angle_l",
+        "knee_angle_r"
+      ],
+      "g1_frac_outside_own_model": 0.0,
+      "g1_pairs": 10500,
+      "g1_detail": {},
+      "g2_frac_outside_this_body": 0.03,
+      "g2_pairs": 9000,
+      "g2_detail": {
+        "knee_angle_l": {
+          "frac_out": 0.28,
+          "worst_rad": 0.00067034,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.00067034,
+            0.00153474
+          ]
+        },
+        "knee_angle_r": {
+          "frac_out": 0.26,
+          "worst_rad": 0.00064605,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.00064605,
+            0.00159352
+          ]
+        }
+      }
+    },
+    {
+      "id": "walk_subject_pErr",
+      "n_frames": 127,
+      "in_degrees_json": false,
+      "source_model": "data/raw/anatomy/opensim-models/source/Pipelines/Gait10dof18musc/OutputReference/CMC/subject01_metabolics.osim",
+      "source_coords_matched": 10,
+      "sign_flipped": [
+        "knee_angle_l",
+        "knee_angle_r"
+      ],
+      "g1_frac_outside_own_model": 0.0,
+      "g1_pairs": 1270,
+      "g1_detail": {},
+      "g2_frac_outside_this_body": 0.07480314960629922,
+      "g2_pairs": 1016,
+      "g2_detail": {
+        "knee_angle_l": {
+          "frac_out": 0.1732283464566929,
+          "worst_rad": 0.00064711,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.00064711,
+            0.00514423
+          ]
+        },
+        "knee_angle_r": {
+          "frac_out": 0.4251968503937008,
+          "worst_rad": 0.00534057,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.00534057,
+            0.00765525
+          ]
+        }
+      }
+    },
+    {
+      "id": "leg6dof9musc_CMC_pErr",
+      "n_frames": 42,
+      "in_degrees_json": false,
+      "source_model": "data/raw/anatomy/opensim-models/source/Tutorials/Strength_of_Simulation/Stance/Reference/leg6dof9musc_added_mass.osim",
+      "source_coords_matched": 6,
+      "sign_flipped": [
+        "knee_angle_r"
+      ],
+      "g1_frac_outside_own_model": 0.0,
+      "g1_pairs": 252,
+      "g1_detail": {},
+      "g2_frac_outside_this_body": 0.20238095238095238,
+      "g2_pairs": 168,
+      "g2_detail": {
+        "knee_angle_r": {
+          "frac_out": 0.8095238095238095,
+          "worst_rad": 0.00069798,
+          "range": [
+            0.0,
+            2.44346095279206
+          ],
+          "span": [
+            -0.00069798,
+            5.739e-05
+          ]
+        }
+      }
+    }
+  ]
+}

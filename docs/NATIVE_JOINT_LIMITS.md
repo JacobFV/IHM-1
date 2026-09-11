@@ -81,3 +81,70 @@ passive stops disagree with its declared ranges. Until those two agree, "inside
 the declared range" is not a condition this body can satisfy, and every crawl
 report carries `worst_excursion_past_declared_range_rad` so the number is never
 implicit.
+
+## Recorded human walking also violates the declared knee range, and by 5°
+
+Measured 2026-09-11 by `scripts/measure_recorded_motion_admissibility.py`, against
+gates fixed in IBM-1 `docs/LOG.md` before the script was written. 68 recorded
+motions in `data/derived/pose-corpus/` — walking, running, jumping, crouching —
+already in OpenSim coordinate space with sha256 provenance to their `.mot`.
+
+**The result: 20 of 42 scorable motions are admissible, 47.6%, against a
+pre-registered 90% bar. FAIL.** Real humans produced these trajectories.
+
+Two confounds had to be removed first, and each alone would have manufactured a
+total violation out of nothing:
+
+- **Units.** `runningModel_Kinematics_q` holds *degrees* in the JSON — knee down
+  to −114.0 — while its siblings hold radians. Each file's `in_degrees` flag
+  describes the source `.mot`, not the JSON. Detected by "a radian hinge angle
+  cannot exceed 2π", which does not consult the ranges under test.
+- **Sign.** The gait2392 family declares `knee_angle_r ∈ [−120°, +10°]`; this body
+  declares `[0°, +140°]`. Mirror images — the two disagree on which direction of
+  knee rotation is positive. Uncorrected this reads as a 100% violation, and it
+  did: the first run scored 4.8%.
+
+That second one is worth keeping, because the gate designed to catch exactly this
+class **could not see it**. G1 checks each motion against the model it was
+generated from — but that model shares the motion's convention, so the flip
+cancels on both sides. *A gate that compares like with like is blind to a
+difference between the two likes.* The conventions are now mapped from the two
+models' declarations (the sign of the larger-magnitude bound), never from what
+makes the data fit.
+
+### What survives: one bound, off by 10°
+
+After both corrections, **every residual violation is below a lower bound and not
+one is above an upper bound.**
+
+| coordinate | motions violating | worst excursion |
+|---|---|---|
+| `knee_angle_r` | 25/42 | **−4.92°** |
+| `knee_angle_l` | 24/42 | **−5.19°** |
+| `hip_flexion_r` | 8/42 | −0.56° |
+
+The flexion side is clean — this body allows 140° where gait2392 allows 120, and
+there are zero violations above any upper bound. The whole failure is that **this
+body declares the knee's lower bound at exactly 0, permitting no hyperextension at
+all**, and normal human walking reaches about 5° of it at terminal stance.
+
+Three independent sources disagree with that 0:
+
+| source | permitted knee hyperextension |
+|---|---|
+| this model's own passive stop, `ExpressionBasedCoordinateForceSet` | **7.4°** (−0.13 rad, the table above) |
+| `gait2392`, which produced these motions | **10°** |
+| recorded human walking, measured here | **uses 5.2°** |
+| `engineering_stance_v1` declared `<range>` | **0°** |
+
+The declared range is the only one of the four that says zero, and the model's own
+plant already contradicts it — which is the same disagreement this document opens
+with, now with a second witness and a number attached.
+
+**Not claimed.** That moving the bound to −10° fixes the corpus. A diagnostic sweep
+of the lower bound is indicative only (it is computed with different accounting
+than the gate and reproduces 38% where the gate reports 47.6%); it puts
+admissibility at roughly 95% by −10°, so nearly all of the failure does rest on
+this one number. But the pre-registered G2 threshold is **not** moved, and the
+recorded verdict stands at FAIL until the bound is re-derived against measurement
+rather than adjusted to pass.
