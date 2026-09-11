@@ -1782,7 +1782,40 @@ defined on calcn only. Nothing this line has tried has moved the toes, and the s
 survives untouched: the scaffold's forefoot is a fifth longer than this specimen's, which is a shape
 difference that no correspondence, regularisation or sampling change can reach.
 
-### The toes cannot pass gate 2. Their own ceiling is 0.966 and the bar is 0.99.
+### ~~The toes cannot pass gate 2~~ — **WITHDRAWN. I read a summary row as the gate.**
+
+**Gate 2's bar is `mean >= 0.95; calcn and toes each >= 0.95`.** It is written in this file's own
+result tables and has been since the gate was set. **It is not 0.99.** The `>= 0.99  20/22` line I
+built the entry below on is a convenience statistic in `measure_skin_enclosure_whole.py`'s output —
+a count of segments above an arbitrary round number — and **not gate 2's criterion.** I read the
+script's summary row as the gate without checking the gate.
+
+**So the toes are NOT barred.** Their ceiling of 0.966 **exceeds** the 0.95 bar by 0.016. They read
+0.854 / 0.876, which is a **genuine shortfall of 0.096 and 0.074 against a reachable bar** — an
+ordinary failure of the kind the gate exists to detect, not an artefact of an impossible threshold.
+
+**Retracted in full:** "the toes cannot pass", "barred rather than failed", "12 of 20 reachable",
+and the claim that this is "the third gate on this programme found unreachable by construction".
+The generalisation drawn from it — *a bar set in absolute terms against a quantity whose achievable
+maximum was never compared to the bar* — is a real pattern (`61e5d1c`, `de88ef4`) but **this is not
+an instance of it**, and citing it as a third instance overstated a habit into a law. The reporting
+change ordered on the back of it is reversed: **no segment is reported as BARRED**, and pass counts
+are out of 22.
+
+**What survives, and it is much weaker than what I claimed:**
+
+* the toes' ceiling is **0.966 / 0.968** where every other segment's is **1.000**, so they have
+  0.016 of headroom above the bar against 0.05 for the rest — real, worth knowing, and not
+  disqualifying;
+* the canonical body's own toe bones are **3.4% outside its own toe skin**, which is a scaffold
+  observation independent of any registration and belongs beside the forefoot measurement
+  (per-segment similarity scale 1.22 at calcn, 1.21 at toes).
+
+**This is the fourth time today I have read a number without first checking what it was** — after
+displacement for separation, the error vector for correspondence error, and a re-association
+diagnostic that could not see re-associations. The common shape is not carelessness about
+arithmetic; it is reaching for the nearest number that looks like the one I want. The entry below is
+left in place, struck through, because deleting it would hide the error.
 
 The enclosure table's first column is the ceiling -- *"the body's own anatomical bones against the
 same whole skin, same frame"*, the same `enclosure()` and the same samples, with only the skin's
