@@ -152,7 +152,7 @@ def tangent_frames(n, hint=(0.0, 1.0, 0.0)):
 def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5, max_outer=25,
                 hint=(0.0, 1.0, 0.0), rtol=1e-7, jump_limit_m=0.01, assoc_tol_m=1e-4, move=None,
                 rigid_m=None, freeze_frames=False, project=True, solver_log=None, stop_fraction=1.0,
-                association='persistent', lost_bed='hold', facet_m=1e-3, log=None):
+                association='persistent', lost_bed='hold', facet_m=1e-3, drive_full=False, log=None):
     """The sliding base. base: node indices on the surface facing the bed. closest(points) ->
     (c, n): closest bed points and the bed's outward unit normals there. A base node BEHIND the bed
     in the registered position is HELD: its signed normal gap is ramped to zero over load_steps and
@@ -237,8 +237,16 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
             frames = np.tile(np.eye(3), (N, 1, 1)); frames[base] = tangent_frames(n, hint)
             lo = np.full(X.shape, -np.inf); hi = np.full(X.shape, np.inf)
             on_plane = np.einsum('ij,ij->i', n, c - X[base])                     # n.u that puts the node on the tangent plane
-            lo[base[held], 0] = hi[base[held], 0] = on_plane[held] + target
-            lo[base[~held], 0] = on_plane[~held]
+            if drive_full:
+                # GATE W: the base is driven as a whole, all three components, so a TANGENTIAL motion
+                # is actually imposed. With a normal-only constraint a tangential translation is driven
+                # by nothing -- u = 0 already satisfies n.u = 0 -- and the association would never be
+                # asked to follow the bed, which is the regime every earlier control missed.
+                full = np.einsum('nik,ni->nk', frames[base], np.broadcast_to(fraction * rigid, (len(base), 3)))
+                lo[base] = hi[base] = full
+            else:
+                lo[base[held], 0] = hi[base[held], 0] = on_plane[held] + target
+                lo[base[~held], 0] = on_plane[~held]
             if assoc[2].any():                          # released: no constraint for this step
                 lo[base[assoc[2]]] = -np.inf; hi[base[assoc[2]]] = np.inf
             for node, axis in pins:

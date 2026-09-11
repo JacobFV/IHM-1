@@ -2987,3 +2987,28 @@ What has changed is that the parametrization no longer stops at the scaffold.
      in.** That is the standing condition on this line now, and it outranks the step-control work:
      adaptive stepping that passes on rigid drives would still be untested where it matters.
 
+   **GATE W PASSES: the rule follows a bed. The regime every earlier control missed is now covered.**
+   (`scripts/gate_w_planar_bed.py`.) An analytic plane, driven by a rigid translation TANGENT to it,
+   with the same held set and the all-or-nothing rule under test:
+
+   | | result |
+   |---|---|
+   | completion | fraction 1.0, **one Newton iteration per step** |
+   | min J | **1.0000**, zero inversions, volume ratio 1.00000000 |
+   | **refusal rate** | **0.0%**, 0 of 16 |
+   | association motion per step | **0.9350 mm at every step**, against a translation distance of 0.9350 mm |
+   | solution vs the exact tangential translation | median 0.000000 mm, max 0.000001 mm |
+
+   One design point, because a normal-only constraint cannot express this test: under the sliding
+   boundary condition a TANGENTIAL translation is driven by nothing -- u = 0 already satisfies
+   n.u = 0 -- so the base is driven in all three components here. That is what makes the association
+   follow the bed rather than sit still, and it is why every previous control, all of them normal-only
+   rigid drives, contained almost no legitimate association motion to test.
+
+   **What it separates.** The rule now has both readings on the record: on a smooth bed it follows
+   sliding perfectly, refusing nothing while associations slide by exactly the distance the body
+   moves; on the anatomical bed it refuses 93.8%. So the refusals are a property of THAT BED's
+   features -- the sheets a closest point jumps between -- and not of the rule's ability to follow
+   motion. Before gate W neither this line nor its coordinator could have told those two apart,
+   and three wrong readings came from reasoning about sliding using controls that contained none.
+
