@@ -2521,3 +2521,41 @@ What has changed is that the parametrization no longer stops at the scaffold.
    fraction 1.0 with zero inversions before any breast is judged again**, and R is re-run on every
    later change to the stepping. No seating result from this line is readable until it does.
 
+   **The stepping fix is authorised, with a second gate and three named outcomes (2026-09-10).**
+   Either repair may be built; the second is preferred as removing the bug rather than routing
+   around it, since the active set at line 80 exists to handle exactly this. The choice is the
+   implementer's and must be stated.
+
+   * **Gate R** (unchanged): the rigid translation completes to fraction 1.0 with zero inversions.
+   * **Gate R2, new and equally binding:** the block case must still pass. It agrees between two
+     codes at 1.58% on prescribed displacements, and it passes *because* the clipped start happens
+     to be feasible there. Changing the start can break the one path that already worked, and a fix
+     that trades a broken case for a working one is not a fix. Both numbers reported, before and
+     after.
+   * The message is fixed with the code: `"bounded start inverts N elements; reduce the load step"`
+     asserts a false cause and cost this line five suspects' worth of investigation. It states what
+     was observed and stops.
+
+   **Three outcomes, named before the work so none can be read as a surprise:**
+
+   1. **R still fails** -- the repair did not work. Iterate; the breast is not touched.
+   2. **R passes and the seat completes** -- judge by gates (a)-(d) as written, nothing loosened.
+   3. **R passes and the seat still stalls** -- the important one. Only then is "the field is
+      infeasible for this mesh" an *earned* reading rather than an artefact of the start, and only
+      then do the thirteen elements become interpretable as a property of the mesh. That would
+      restore, on sound footing, the conclusion withdrawn above, and would be the first thing this
+      line has been able to say about the breast itself.
+
+   **No prediction is offered on which outcome obtains**, and the omission is deliberate. Today's
+   record on the neighbouring skin line is five refused predictions against one directional hit,
+   while fixing criteria before the numbers exist has worked without exception. Guessing the number
+   adds nothing here and would only give a result something to be read against.
+
+   **One rule carried over from the skin line, applying the moment a seat completes.** There the fit
+   residual proved flat while the truth error doubled, then fell while the error rose -- not a
+   degraded measure of accuracy but not a measure of it at all -- and a correspondence with 4.4x
+   better targets produced a 26% *worse* warp, three quarters of that 4.4x being the filter
+   declining to answer for the hard points. **So agreement with the prescribed displacements is not
+   to be reported as quality.** Report a quantity with a known truth behind it; where none is
+   available, say so rather than substituting a residual.
+
