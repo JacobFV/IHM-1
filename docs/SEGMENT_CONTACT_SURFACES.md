@@ -2110,6 +2110,45 @@ trajectory, and it does not close the branch.
 body crawling, and **it has no trajectory that does so within the joint ranges the body itself
 declares.** That is now measured across every stored trajectory rather than noted on one.
 
+### Supplementary clearance: the folds never reach the floor, and the crawl never reads the skin
+
+| against `crawl-best`, 1,600 frames | value |
+|---|---|
+| audit | outside declared ranges on **12 of 22** coordinates, worst 11.5° — **inadmissible** |
+| minimum clearance of the 73 folds | **+53.4 mm** at frame 156 |
+| median over frames | +70.6 mm; 5th percentile +61.3 mm |
+| **frames with a fold at or below the floor** | **0 of 1,600** |
+
+**Supplementary, against an inadmissible trajectory, and it does not close the branch** — but it
+shows the standing-pose conclusion is robust to the pose caveat I raised: the folds do not reach the
+floor even with the ankle 11.5° past its limit.
+
+**The sharpest number is the pair at the worst frame.** The folds sit **+53.4 mm above** the floor
+while the plantar skin of those same segments reaches **−70.6 mm below** it. Seven centimetres of
+plantar skin through the floor plane, unopposed.
+
+**And the reason is structural, not a solver failure.** `scripts/crawl.py:18-20`: *"environment
+='upright' gives the source foot contacts plus one inertia-inscribed sphere per non-foot body
+against the floor"*. **The crawl does not use the skin contact bundle at all.** It runs on the source
+foot contacts and inertia-inscribed proxy spheres, which is why nothing stops the skin passing
+through the floor — nothing is reading it.
+
+**That reframes this line's urgency without diminishing it.** `docs/BODY_PARAMETERS.md` already
+records that skin-mediated *stance* is blocked on the continuous-skin problem rather than on the
+contact layer, and that the layer is "built, gated and ready for it". This extends the same fact to
+locomotion: **no existing behaviour consumes the skin contact meshes.** So gates 2 and 4 failing
+matters for the skin-mediated crawl the programme is heading toward, and not for the crawl it has.
+
+* **Option (a) is defensible as an interim on stronger grounds than the geometry alone** — the folds
+  are dorsal, 0.016% of contact area, ≥53 mm clear across a full gait cycle, *and* nothing currently
+  reads them.
+* **It is not a reason to stop caring.** The bundle exists for the direction of travel, and an
+  artefact that nothing consumes yet is exactly the kind that accumulates defects unnoticed until
+  something does.
+* **The honest statement of this line's status:** the warp and the contact bundle are gated
+  instruments awaiting a consumer, and the consumer — skin-mediated contact under a continuous skin
+  — does not exist.
+
 **Why this was worth having from a retired control.** I retired it for firing a threshold at the
 wrong separation, and it then answered a question I had not asked: whether this line's headline
 quality metric measures accuracy at all. It does not. A control kept running after its gate was
