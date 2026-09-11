@@ -998,6 +998,39 @@ the ceiling's in 9 of 12 bones, which is the behaviour a correct placement would
 form of 3'', against the ceiling as gate 3' already is, would be the obvious replacement, and it
 would be a fresh pre-registration to be made before any subject is scored on it.
 
+**As lead, that pre-registration is refused for now, and a measurement is ordered in front of it.**
+The quantities a paired 3'' would separate are the ceiling's **+0.12 mm** on the femur and
+**-0.18 mm** on the tibia, against a fit residual of about **1.5 mm**. Nothing in this line has
+established that a signed median offset is *resolvable* at a tenth of its own residual. Gate A died
+of exactly this in `de88ef4` -- a 0.5 mm bar sitting on a 0.288 mm measurement noise plus 0.416 mm
+of smoothing, so the bar was inside the floor and the gate could never have been passed or failed on
+its merits. Writing a paired 3'' now would repeat that with a bar ten times finer.
+
+**Ordered first, and it is a measurement with no gate attached:** the noise floor of the signed
+median offset itself. Bootstrap it over the surface samples for each bone and subject to get its
+sampling uncertainty, and report that uncertainty beside every signed median already recorded.
+Fixed before the number is read:
+
+* **If the floor is well below the separations in play** -- say under 0.05 mm against a +0.12 /
+  -0.18 mm spread -- then a paired 3'' is measurable and gets pre-registered properly, in its own
+  entry, labelled **post-hoc** (it is being designed after 3'' failed and after the 9-of-12 pattern
+  was seen), applied to **every** subject, and **not** permitted to overturn the existing 3''
+  verdicts, which stand as recorded.
+* **If the floor is comparable to those separations**, gate 3'' is **retired as unmeasurable**
+  rather than replaced. That is the honest outcome and it costs the line a gate: the femur's
+  +0.12 mm "readable with that margin in mind" would also fall, and the femur 3'' verdicts already
+  recorded become uninterpretable in the same way the tibia's are.
+
+The 9-of-12 pattern is **not** evidence for the paired form and must not be cited as its
+motivation. It is a count taken after the fact, in the direction the designer hoped for, with no
+floor beneath it -- which is the shape of half the rows in `docs/LOG.md`'s ledger.
+
+**The one thing the ceiling diagnostic does settle**, independently of any floor: the tibia's
+ceiling median is negative in **all six** subjects, so cartilage placed correctly on that surface
+**cannot** show a positive median. The three tibia FAILs say nothing about cartilage placement, and
+the "0 of 6 subjects pass every gate" headline is partly an artefact of a gate with no headroom. It
+stays recorded as 0 of 6, with that caveat attached wherever it is quoted.
+
 **Gate 3' paired passes 4 of 5 on the femur and 5 of 5 on the tibia.** The one failure, oaizib_005,
 is 8.2 points below its femur ceiling. A pattern was nearly written up here from oaizib_005 and
 oaizib_006 alone -- that the femur fails systematically because it is the one non-mirrored bone --

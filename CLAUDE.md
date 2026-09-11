@@ -61,3 +61,14 @@ report what the crude body did as what the body did.
 - The machine is shared with several agents and with IBM-1 training. Be frugal
   with worker counts.
 - Branch is `feat/integrated-human`. Commit and push as you go.
+- **`git add <file> && git commit` commits the WHOLE INDEX, not your file.** With
+  several agents working in this one checkout, another agent's staged files ride
+  along silently and land under your commit message. It happened in `4386509`,
+  which claims to be a solver finding and carries 53 lines of `TISSUE_MECHANICS.md`
+  and 103 lines of `register_knee_cartilage.py` that its author never touched,
+  while the actual author's own commit `5c35a13` reads as a 5-line change. Nothing
+  was lost and the branch is correct; the attribution is not, and a log that
+  misattributes work is a log you cannot use to find out when something changed.
+  **Always name the paths on the commit itself** — `git commit -- <paths>` (or
+  `--only`) — so the index you did not build cannot follow you in. Do not leave
+  files staged between steps either: stage and commit in one action.
