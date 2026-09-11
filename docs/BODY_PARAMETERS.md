@@ -2213,3 +2213,38 @@ than rescaled is unchanged. The meshes are carried by a transform rather than
 rewritten. And no native run has been accepted on a scaled body.
 
 What has changed is that the parametrization no longer stops at the scaffold.
+
+
+   **The reader works and both subject gates fail. The premise that an SDF has no gaps holds for the
+   FIELD and not for the ANATOMY.**
+
+   The known answer passes: an ellipsoid with 90/60/40 mm semi-axes, displaced by a known scalar field
+   along its own normals at 10 mm separation plus 2 mm of structure, is recovered at 100% coverage
+   with 0.00% error. (Stated plainly: that error is near-exact partly by construction, because the
+   target was built by displacing the same vertices the rays start from, so each crossing passes
+   through a vertex. It tests the reader's mechanics, not its behaviour between vertices.)
+
+   | subject | reader, mean | reference, mean | reader, median | reference, median | coverage |
+   |---|---:|---:|---:|---:|---:|
+   | s0790 | 6.20 mm | 6.55 mm | 4.00 | 5.38 | 40.5% |
+   | s1067 | 6.63 | 11.02 | 5.19 | 10.12 | 41.9% |
+   | s1159 | 5.55 | 10.15 | 3.25 | 6.12 | 33.3% |
+   | s0970 | 5.98 | 9.31 | 3.38 | 7.49 | 30.8% |
+
+   **Gate 0'' fails** (38-68% away as written, and 5-45% like-for-like), and the gate as written
+   compared unlike statistics -- the reference 6.5-10.9 mm was a MEAN over nearest-point pairs, the
+   reader reports a MEDIAN. Compared mean to mean, s0790 agrees within 5% and the other three are
+   36-45% apart, so the 6.5-10.9 figure is corroborated on one subject and not on three.
+
+   **Gate 0''' fails: coverage 30.8-41.9%.** An SDF cannot miss a thin surface, which is what it was
+   brought in for, but a ray along this body's wall normal still finds NO BONE within 25 mm about
+   two thirds of the time -- her ribs are separate bones with air between them, and the field is only
+   crossed where bone lies along that particular ray. So the gap problem was never about the
+   representation of the surface; it is the anatomy, and it has now defeated a pairing, an envelope
+   and a field in turn.
+
+   **And the selection survives too.** The rays that do find bone are the ones where the two walls
+   are aligned, which is why the reader's median (3.3-5.2 mm) sits so far below its own p90
+   (13.8-16.5 mm). Every instrument this line has built reports the aligned minority unless
+   something forces it to account for the rest.
+

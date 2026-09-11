@@ -281,7 +281,7 @@ def _behind(subject, side, Y, F, workdir):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--subject", choices=CW.SUBJECTS); ap.add_argument("--stage", default="all", choices=("all", "gate0", "known-answer", "curve", "scale", "scalar", "subjects", "envelope"))
+    ap.add_argument("--subject", choices=CW.SUBJECTS); ap.add_argument("--stage", default="all", choices=("all", "gate0", "known-answer", "curve", "scale", "scalar", "subjects", "envelope", "sdf"))
     ap.add_argument("--density", type=int)
     a = ap.parse_args()
     OUT.mkdir(parents=True, exist_ok=True)
@@ -289,6 +289,7 @@ def main():
     if a.stage == "curve": stage_curve(body, a.density); return
     if a.stage == "scale": stage_scale(body); return
     if a.stage == "envelope": stage_envelope(body); return
+    if a.stage == "sdf": stage_sdf(body); return
     if a.stage == "subjects": stage_subjects(body); return
     if a.stage == "scalar":
         ok, normals = stage_scalar(body)
@@ -847,6 +848,137 @@ def stage_envelope(body):
         f"(the rib correspondence managed 3.7-8.6%)")
     out["gate0prime_passes"] = bool(worst >= 0.95)
     (OUT / "envelope.json").write_text(json.dumps(out, indent=2) + "\n")
+    return out
+
+
+# ---- reading the offset from a distance field (docs/BODY_PARAMETERS.md, 24763fb) ----------------
+# No pairing at all. For a point x on THIS body's chest wall with smoothed normal n(x), s(x) is the
+# first zero crossing of HER signed distance field along that ray within a cap. Nothing to miss, no
+# round trip, no closing: the raw bones stay as they are, and only the FIELD is smoothed later.
+SDF_CAP_M, SDF_STEP_M = 0.025, 0.0005
+GATE_COV = "0" + "'" * 3          # the gate's name carries apostrophes; keep them out of f-strings
+
+
+def signed_field(meshes):
+    """Signed distance to a union of closed meshes: winding numbers add, so a merged mesh gives the
+    union's sign. Negative inside."""
+    import igl
+    V, F, off = [], [], 0
+    for v, f in meshes:
+        V.append(np.asarray(v, float)); F.append(np.asarray(f, np.int64) + off); off += len(v)
+    V = np.ascontiguousarray(np.vstack(V)); F = np.ascontiguousarray(np.vstack(F))
+    # The sign comes from the WINDING NUMBER, not from igl.signed_distance: on a merged multi-body
+    # mesh that call returned an unsigned distance (minimum exactly 0.0 over this body's whole chest
+    # wall), so no ray ever crossed zero and coverage read 0%. Winding numbers add, so a point inside
+    # ANY component reads inside.
+    def sdf(P):
+        P = np.ascontiguousarray(np.asarray(P, float))
+        d = np.sqrt(np.asarray(igl.point_mesh_squared_distance(P, V, F)[0]).ravel())
+        w = np.asarray(igl.fast_winding_number(V, F, P), float).ravel()
+        return np.where(np.abs(w) > 0.5, -d, d)
+    return sdf, V, F
+
+
+def read_offset(X, N, sdf, cap=SDF_CAP_M, step=SDF_STEP_M, block=400):
+    """s(x): the zero crossing of the field nearest the surface, along +/- n, within the cap."""
+    ts = np.arange(-cap, cap + step, step)
+    s = np.full(len(X), np.nan)
+    for a in range(0, len(X), block):
+        P = X[a:a + block][:, None, :] + ts[None, :, None] * N[a:a + block][:, None, :]
+        v = sdf(P.reshape(-1, 3)).reshape(len(P), len(ts))
+        cross = np.sign(v[:, :-1]) * np.sign(v[:, 1:]) < 0
+        for k in np.flatnonzero(cross.any(1)):
+            j = np.flatnonzero(cross[k])
+            t0 = ts[j] + step * v[k, j] / (v[k, j] - v[k, j + 1])
+            s[a + k] = t0[np.argmin(np.abs(t0))]
+    return s
+
+
+def ellipsoid(n=64, semi=(0.09, 0.06, 0.04)):
+    """Three DISTINCT semi-axes: a sphere is invariant under axis permutation and certified a
+    scrambled marching-cubes grid as correct, which is how that bug survived."""
+    import igl
+    G = np.stack(np.meshgrid(*[np.linspace(-1.35 * r, 1.35 * r, n) for r in semi], indexing="ij"), -1)
+    val = sum((G[..., k] / semi[k]) ** 2 for k in range(3)) - 1.0
+    gv = G.transpose(2, 1, 0, 3).reshape(-1, 3)
+    mc = [np.asarray(o) for o in igl.marching_cubes(np.ascontiguousarray(val.transpose(2, 1, 0).reshape(-1)),
+          np.ascontiguousarray(gv), n, n, n, 0.0) if hasattr(o, "shape")]
+    V = next(o for o in mc if o.dtype.kind == "f" and o.ndim == 2 and o.shape[1] == 3)
+    F = next(o for o in mc if o.dtype.kind in "iu" and o.ndim == 2 and o.shape[1] == 3)
+    return V, F
+
+
+def sdf_known_answer(seed=0):
+    """An ellipsoid displaced by a known scalar field along its own normals, AT 10 mm SEPARATION."""
+    from ihm.anatomy.normal_shooting import vertex_normals
+    V, F = ellipsoid()
+    n = vertex_normals(V, F)
+    k = 2 * np.pi / 0.06
+    known = 0.010 + 0.002 * np.sin(k * V[:, 0] + 0.7) * np.cos(k * V[:, 1] - 0.3)
+    sdf, _, _ = signed_field([(V + known[:, None] * n, F)])
+    s = read_offset(V, n, sdf)
+    found = np.isfinite(s)
+    err = np.abs(s[found] - known[found])
+    rel = float(err.mean() / np.abs(known).mean())
+    ok = bool(rel <= 0.10 and found.mean() >= 0.95)
+    say(f"KNOWN ANSWER (ellipsoid 90/60/40 mm semi-axes, 10 mm separation plus 2 mm structure): "
+        f"{100*found.mean():.1f}% found a crossing, error {1000*err.mean():.3f} mm = {100*rel:.2f}% of the "
+        f"deformation -> {'PASS' if ok else 'FAIL'} (bar 10%)")
+    return ok, dict(coverage=float(found.mean()), mean_error_mm=1000 * float(err.mean()), relative=rel, passes=ok)
+
+
+def chest_wall_samples(body, subject, n_per=1200, base_within_m=0.025):
+    """Points on THIS body's RAW chest wall with Taubin-smoothed normals, restricted to the part
+    under the registered breast."""
+    from ihm.anatomy.normal_shooting import vertex_normals, surface_samples
+    X, N = [], []
+    for i, lab in enumerate(CW.FIT_LABELS + ["sternum"]):
+        V, F = body[lab]
+        ns = vertex_normals(taubin_smooth(V, F), F)
+        P, _, face, bary = surface_samples(V, F, n_per, 11 + i)
+        nb = np.einsum('nk,nkj->nj', bary, ns[F[face]])
+        X.append(P); N.append(nb / np.maximum(np.linalg.norm(nb, axis=1, keepdims=True), 1e-30))
+    X = np.vstack(X); N = np.vstack(N)
+    breast = [SEAT.read_obj(ROOT / "data/derived" / CW.REGISTERED[subject] / f"breast_{s}.obj")[0] for s in ("left", "right")]
+    near = cKDTree(np.vstack(breast)).query(X)[0] <= base_within_m
+    return X[near], N[near]
+
+
+def stage_sdf(body):
+    ka_ok, ka = sdf_known_answer()
+    (OUT / "sdf_known_answer.json").write_text(json.dumps(ka, indent=2) + "\n")
+    if not ka_ok:
+        say("KNOWN ANSWER FAILED: the reader does not recover a known offset; no subject is read.")
+        return
+    out = {}
+    for subject in CW.SUBJECTS:
+        G = np.array(json.loads((ROOT / "data/derived" / CW.REGISTERED[subject] / "manifest.json").read_text())["transform"])
+        src = CW.subject_meshes(subject)
+        hers = [(CW.apply(G, src[l][0]), src[l][1]) for l in CW.FIT_LABELS + ["sternum"] if l in src]
+        sdf, _, _ = signed_field(hers)
+        X, N = chest_wall_samples(body, subject)
+        t0 = time.time(); s = read_offset(X, N, sdf); secs = time.time() - t0
+        found = np.isfinite(s)
+        med = float(1000 * np.median(np.abs(s[found]))) if found.any() else float("nan")
+        out[subject] = dict(samples=int(len(X)), coverage=float(found.mean()), median_abs_mm=med,
+                            p90_abs_mm=float(1000 * np.percentile(np.abs(s[found]), 90)) if found.any() else None,
+                            signed_median_mm=float(1000 * np.median(s[found])) if found.any() else None,
+                            seconds=secs, offsets_mm=(1000 * s[found]).tolist()[:4000])
+        say(f"  {subject}: {len(X)} wall samples over the breast base, coverage {100*found.mean():.1f}%, "
+            f"|s| median {med:.2f} mm, p90 {out[subject]['p90_abs_mm']:.2f} mm, signed median "
+            f"{out[subject]['signed_median_mm']:+.2f} mm ({secs:.0f} s)")
+    reference = {"s0790": 6.49, "s1067": 10.87, "s1159": 10.06, "s0970": 9.27}
+    ok0, rows = True, {}
+    for subject, r in out.items():
+        ref = reference[subject]; rel = abs(r["median_abs_mm"] - ref) / ref
+        rows[subject] = dict(read_mm=r["median_abs_mm"], reference_mm=ref, relative=rel, passes=bool(rel <= 0.20))
+        ok0 &= rel <= 0.20
+        say(f"GATE 0'' {subject}: reads {r['median_abs_mm']:.2f} mm against the measured {ref:.2f} mm "
+            f"({100*rel:.0f}% away) -> {'PASS' if rel <= 0.20 else 'FAIL'} (within 20%)")
+    cov = min(r["coverage"] for r in out.values())
+    say(f"GATE {GATE_COV} coverage: worst {100*cov:.1f}% (bar 95%) -> {'PASS' if cov >= 0.95 else 'FAIL'}")
+    (OUT / "sdf_offsets.json").write_text(json.dumps(dict(known_answer=ka, subjects=out, gate0=rows,
+                                                          coverage_worst=cov), indent=2) + "\n")
     return out
 
 
