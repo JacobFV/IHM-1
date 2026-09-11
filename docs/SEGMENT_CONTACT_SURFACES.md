@@ -2229,3 +2229,30 @@ mixing a slice with an index array **broadcasts** — it set `len(idx)` columns 
 rather than pairing them one to one, making every third vertex hot on all 22 segments. Both were the
 test case rather than the detector, and the gate caught them on its own author before a number
 reached this file.
+
+### The least-certain partition is admitted to the bundle, and it is the knee
+
+The bundle admits **20 of 22** bodies. The two it refuses are **talus_l and talus_r** — which is
+consistent with the partition measurement: the tali have 13 and 75 triangles at median winning
+shares of 0.282 and 0.304, too little skin to close into a mesh at all.
+
+**The patellae are admitted.** `patella_l` and `patella_r` carry 769 and 795 triangles into the
+contact bundle with **100% of them assigned on a winning share below 0.6**, at medians of **0.522 and
+0.498** — the coin-toss line between two competing segments. Nothing refuses them; they are
+watertight after capping and SimTK takes them.
+
+**And the patella is the knee.** In a hands-and-knees crawl — the programme's stated target
+behaviour — the knee is a primary load-bearing contact. So the contact surface whose assignment to
+its segment is least defensible is the one that would carry weight first.
+
+**All 20 admitted meshes are `repaired`**, not merely accepted: `watertight_meshes: 20,
+repaired_meshes: 20, refused_meshes: 2`. Cutting an open surface into pieces leaves every piece open,
+and SimTK will not take an open mesh, so each is capped — the area and volume the capping invents
+are reported per segment by `build_skin_contact_meshes.py` rather than absorbed. **Every contact
+surface in this bundle is a cut piece plus an invented cap.**
+
+**The caveat that keeps this in proportion is the one already recorded:** nothing currently consumes
+this bundle. `crawl.py` runs on source foot contacts plus one inertia-inscribed sphere per non-foot
+body, so the patellar mesh carries no load today. This is a statement about the artefact the
+programme is building toward, not about anything it currently runs — and it is exactly the kind of
+defect that an unconsumed artefact accumulates unnoticed until something reads it.
