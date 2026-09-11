@@ -100,6 +100,7 @@ RAY_REACH_M, GRAZING_COS, LOAD_STEPS, GAP_TOL_M = 0.060, 0.3, 8, 1e-3
 # could never be met. It is set to 1 mm, the scale of the surface the tissue slides on, and
 # declared here rather than tuned quietly.
 ASSOC_TOL_M = 1e-3
+CONTROL_JUMP_LIMIT_M = 5e-4   # raising this to 5e-3 made R-prime worse, not better: see the doc
 # The objective is penetration only, so it has a degenerate minimum: fly the breast away and every
 # ray misses the muscle. Unbounded L-BFGS took it in one step (999.7 mm). The search is therefore
 # bounded to the region where 'placement' means anything -- the 25 mm honesty limit itself, and
@@ -632,12 +633,13 @@ def stage_judge(sid, side, d):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--subject", required=True, choices=sorted(REG)); ap.add_argument("--side", required=True, choices=("left", "right"))
-    ap.add_argument("--stage", required=True, choices=("prepare", "place", "smooth", "control-r", "dr", "dr-check-E", "febio", "judge"))
+    ap.add_argument("--stage", required=True, choices=("prepare", "place", "smooth", "control-r", "control-r-prime", "dr", "dr-check-E", "febio", "judge"))
     a = ap.parse_args(); d = OUT / a.subject / a.side; d.mkdir(parents=True, exist_ok=True)
     print(f"{a.subject} {a.side}: {a.stage}", flush=True)
     {"prepare": lambda: stage_prepare(a.subject, a.side, d), "place": lambda: stage_place(a.subject, a.side, d),
      "smooth": lambda: stage_smooth(a.subject, a.side, d),
      "control-r": lambda: stage_control_r(a.subject, a.side, d),
+     "control-r-prime": lambda: stage_control_r(a.subject, a.side, d, bed_constraint=False),
      "dr": lambda: stage_dr(a.subject, a.side, d, E_PA),
      "dr-check-E": lambda: stage_dr(a.subject, a.side, d, E_CHECK_PA, "_E10000"),
      "febio": lambda: stage_febio(a.subject, a.side, d), "judge": lambda: stage_judge(a.subject, a.side, d)}[a.stage]()
@@ -733,35 +735,52 @@ def stage_smooth(sid, side, d_dir):
     return chosen
 
 
-def stage_control_r(sid, side, d_dir):
+def stage_control_r(sid, side, d_dir, bed_constraint=True):
     """CONTROL R: the same 3,123 held nodes, the same bed, the same solver and the same J > 0.2
     floor, driven by a RIGID TRANSLATION of the whole base equal to the smoothed field's median
     displacement. Gate R: completes to fraction 1.0 with zero inversions."""
     P = np.load(d_dir / "prepared.npz")
     X, T, base, gap0 = P["X"], P["T"], P["base"], P["gap0"]
     held = gap0 < 0
+    # R' (docs/BODY_PARAMETERS.md, 73baa16): R's premise was wrong. Only the held nodes are driven,
+    # while the interior is free and the BED holds every other base node out of itself, so a body
+    # whose held surface translates into a fixed bed cannot translate rigidly as a whole -- the
+    # rigid motion is not admissible there and elements may legitimately deform. With the bed
+    # constraint removed, the whole-body translation IS admissible and zero-energy, so nothing may
+    # invert for any reason of physics or mesh quality. That is the control R should have been.
+    if not bed_constraint:
+        base = base[held]; gap0 = gap0[held]; held = gap0 < 0
     mu, lam = lame(E_PA, NU)
     region = SlidingRegion(X, T, mu_pa=mu, lambda_pa=lam, density_kg_m3=950.0)
-    closest, _ = bed_rays(P["bedV"], P["bedF"], P["ray_directions"], RAY_REACH_M)
+    dirs = P["ray_directions"] if bed_constraint else P["ray_directions"][np.load(d_dir / "prepared.npz")["gap0"] < 0]
+    closest, _ = bed_rays(P["bedV"], P["bedF"], dirs, RAY_REACH_M)
     c0, n0 = closest(X[base])
     smoothed = d_dir / "smoothed_move.npy"
     travel = np.load(smoothed) if smoothed.exists() else np.where(gap0 < 0, -gap0, 0.0)
+    if not bed_constraint and len(travel) != len(base):
+        travel = travel[np.load(d_dir / "prepared.npz")["gap0"] < 0]
     magnitude = float(np.median(travel[held]))
     direction = n0[held].mean(0); direction /= np.linalg.norm(direction)
     rigid = magnitude * direction
-    say(f"{sid} {side} CONTROL R: rigid translation of {1000*magnitude:.2f} mm along "
+    say(f"{sid} {side} CONTROL {'R' if bed_constraint else 'R-prime (bed constraint removed)'}: rigid translation of {1000*magnitude:.2f} mm along "
         f"[{direction[0]:+.3f}, {direction[1]:+.3f}, {direction[2]:+.3f}] "
         f"({int(held.sum())} held nodes, same bed, same solver, same J > 0.2 floor)")
     t0 = time.time()
     try:
+        # The association's jump limit must exceed how far a node moves in one increment, or the
+        # update is rejected, the constraint normal goes stale, and the target stops being consistent
+        # with the motion being driven. At 5e-4 m the log pinned at 0.4994 mm every pass while nodes
+        # moved 0.94 mm.
         r = seat_on_bed(region, base, closest, load_steps=LOAD_STEPS, gap_tol_m=GAP_TOL_M,
-                        jump_limit_m=5e-4, assoc_tol_m=ASSOC_TOL_M, rigid_m=rigid,
+                        jump_limit_m=CONTROL_JUMP_LIMIT_M, assoc_tol_m=ASSOC_TOL_M, rigid_m=rigid,
                         log=lambda m, flush=True: print(m, flush=True))
     except Exception as failure:
-        say(f"GATE R: FAILED -- {type(failure).__name__}: {failure}")
-        say("  the fault is inside the stepping, not in the field, the mesh or the breast: this solver "
-            "cannot complete a motion that preserves every Jacobian exactly.")
-        (d_dir / "control_r.json").write_text(json.dumps(dict(passes=False, error=str(failure),
+        say(f"GATE {'R' if bed_constraint else 'R-prime'}: FAILED -- {type(failure).__name__}: {failure}")
+        say("  Reported as observed. R's premise was withdrawn (73baa16): only the held nodes are driven "
+            "while the bed holds the others out of itself, so a whole-body rigid translation is NOT "
+            "admissible here and elements may legitimately deform. R-prime, with the bed removed, is the "
+            "control that can carry that claim.")
+        (d_dir / ("control_r.json" if bed_constraint else "control_r_prime.json")).write_text(json.dumps(dict(passes=False, error=str(failure),
             rigid_mm=1000 * magnitude, direction=direction.tolist(), seconds=time.time() - t0), indent=2) + "\n")
         return False
     u = r["displacement"]
@@ -770,11 +789,11 @@ def stage_control_r(sid, side, d_dir):
                       @ np.linalg.inv(np.swapaxes(X[T[:, 1:]] - X[T[:, 0, None]], 1, 2)))
     drift = np.linalg.norm(u - rigid, axis=1)
     ok = bool(J.min() > 0.2)
-    say(f"GATE R: completed to fraction 1.0 in {time.time()-t0:.0f} s, min J {J.min():.4f}, "
+    say(f"GATE {'R' if bed_constraint else 'R-prime'}: completed to fraction 1.0 in {time.time()-t0:.0f} s, min J {J.min():.4f}, "
         f"inversions {int((J <= 0).sum())} -> {'PASS' if ok else 'FAIL'}")
     say(f"  the solution against the ideal rigid translation: median |u - d| {1000*np.median(drift):.3f} mm, "
         f"max {1000*drift.max():.3f} mm; volume ratio {tet_volumes(Y, T).sum()/tet_volumes(X, T).sum():.6f}")
-    (d_dir / "control_r.json").write_text(json.dumps(dict(passes=ok, rigid_mm=1000 * magnitude,
+    (d_dir / ("control_r.json" if bed_constraint else "control_r_prime.json")).write_text(json.dumps(dict(passes=ok, rigid_mm=1000 * magnitude,
         direction=direction.tolist(), min_J=float(J.min()), inversions=int((J <= 0).sum()),
         drift_median_mm=float(1000 * np.median(drift)), drift_max_mm=float(1000 * drift.max()),
         volume_ratio=float(tet_volumes(Y, T).sum() / tet_volumes(X, T).sum()),

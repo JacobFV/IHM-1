@@ -65,12 +65,49 @@ class SlidingRegion(DeformableRegion):
         cols = np.broadcast_to(3 * node + np.arange(3)[None, None, :], (N, 3, 3))   # v index 3n+k
         Q = sp.csr_matrix((R.reshape(-1), (rows.reshape(-1), cols.reshape(-1))), shape=(3 * N, 3 * N))   # u = Q v
         u0 = (self.positions - self.reference) if start is None else np.asarray(start, float)
-        v = np.clip(np.einsum('nik,ni->nk', R, u0), lo, hi)
+        v_prev = np.einsum('nik,ni->nk', R, u0)
+        v = np.clip(v_prev, lo, hi)
+        delta = v - v_prev                       # what the changed bounds ask of the constrained DOFs
+        # The bound change enters through the STIFFNESS, not by clipping alone. Clipping moves the
+        # constrained coordinates and leaves every other one at the previous solution, which is
+        # infeasible by construction: that start could not carry even a RIGID TRANSLATION, which
+        # preserves every Jacobian exactly (Control R, docs/BODY_PARAMETERS.md). One linear elastic
+        # response at the previous state carries the free coordinates along with the constrained
+        # ones -- the standard incremental prescribed-displacement step, using the Hessian and the
+        # active set this solver already has.
+        if np.any(delta):
+            y_prev = self.reference + np.einsum('nik,nk->ni', R, v_prev)
+            if np.linalg.det(self.deformation(y_prev)).min() > 0:
+                Kv = (Q.T @ self.hessian(y_prev) @ Q).tocsr()
+                # ACTIVE SET at the start, not a clip after it. The response alone reproduces a rigid
+                # translation exactly (0.0000 mm, zero inversions); clipping it back afterwards threw
+                # 79 one-sided nodes up to 7.34 mm off and inverted 185 elements, because a bound that
+                # the response violates has to be carried BY the solve -- with its neighbours moving
+                # too -- not imposed on the answer afterwards.
+                active = (lo == hi) | (np.abs(delta) > 0)
+                for _ in range(8):
+                    v = np.where(active, np.clip(v_prev + delta, lo, hi), v_prev)
+                    flat = active.ravel()
+                    free = np.flatnonzero(~flat); cols = np.flatnonzero(flat)
+                    if not len(free) or not len(cols): break
+                    Aff = Kv[free][:, free]
+                    Aff = Aff + sp.identity(len(free), format='csr') * (1e-10 * float(Aff.diagonal().mean()))
+                    step = (v - v_prev).ravel()
+                    response = np.zeros(3 * N)
+                    response[free] = spsolve(Aff.tocsc(), -(Kv[free][:, cols] @ step[cols]))
+                    trial = v_prev + step.reshape(N, 3) + response.reshape(N, 3)
+                    violated = (trial < lo - 1e-15) | (trial > hi + 1e-15)
+                    if not violated.any():
+                        v = trial; break
+                    active = active | violated                       # carry the new bounds in the next solve
+                    delta = np.where(active, np.clip(trial, lo, hi) - v_prev, 0.0)
+                else:
+                    v = np.clip(trial, lo, hi)
         j0 = np.linalg.det(self.deformation(self.reference + np.einsum('nik,nk->ni', R, v)))
         if j0.min() <= 0:
-            # clipping the start onto changed bounds moved constrained nodes past their neighbours;
-            # the caller's load step is too large. Say so, rather than failing inside the energy.
-            raise ValueError(f"bounded start inverts {int((j0 <= 0).sum())} elements; reduce the load step")
+            # State what was observed. The previous wording named a cause -- "reduce the load step" --
+            # that was false, and it cost this line five suspects' worth of investigation.
+            raise ValueError(f"the start of this increment has {int((j0 <= 0).sum())} inverted elements")
         tol = rtol * float(np.mean(self.mu)) * self.edge_m ** 2
         fixed = lo == hi; began = time.perf_counter(); res = np.inf
         for it in range(max_newton):
