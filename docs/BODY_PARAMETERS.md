@@ -3778,3 +3778,50 @@ What has changed is that the parametrization no longer stops at the scaffold.
    sitting at **0.21–0.26 of the `d²/2RN` prediction**, so the sagitta behaves as an upper bound with
    the solve compensating part of it rather than as an equality. **Two points are not an exponent**;
    R = 100 and 50 mm are still running.
+
+   **CC-FLAT' PASSES, CC-CURVED CONFIRMS THE SCALING AND FAILS MY BAND, AND THE BAND WAS THE PART
+   THAT WAS WRONG.**
+
+   *CC-flat', the convergence test rather than a new number.* The identical flat case at successively
+   tighter solver tolerances, as a fraction of the 7.48 mm drive:
+
+   | rtol | 1e-4 | 1e-5 | 1e-6 | 1e-7 | 1e-8 | 1e-9 | 1e-10 |
+   |---|---:|---:|---:|---:|---:|---:|---:|
+   | max \|u - d\| / \|d\| | 2.511e-07 | 2.511e-07 | 2.511e-07 | 2.511e-07 | 2.511e-07 | **1.241e-14** | **6.408e-15** |
+
+   Tightening rtol removes the residual entirely, to double precision -- a fall of 3.9e7. **The 2 nm
+   was the convergence floor, not a defect, and the flat case is clean: the cost of staleness on a
+   plane is zero, as the decomposition requires.** CC-flat itself stays FAILED under its declared
+   "exactly zero" and is not rescored.
+
+   A NUMBER OF MINE WITHDRAWN INSIDE THE ROUND: the first version of this sweep fitted a power law
+   and printed "falls as rtol^1.335". The measured shape is a PLATEAU across five decades and then a
+   collapse -- the loose tolerances all stop at the same Newton iterate -- so a fitted exponent is a
+   number without a meaning. It is removed from the script; the verdict now turns on whether the
+   deviation reaches machine precision at all.
+
+   *CC-curved, the full sweep.* Frozen frames against re-linearised ones, the difference being the
+   staleness and nothing else:
+
+   | R | staleness, mm | predicted d^2/2RN, mm | ratio |
+   |---:|---:|---:|---:|
+   | 400 mm | 0.001856 | 0.008742 | 0.212 |
+   | 200 mm | 0.004481 | 0.017484 | 0.256 |
+   | 100 mm | 0.007927 | 0.034969 | 0.227 |
+   | 50 mm | 0.018077 | 0.069938 | 0.258 |
+
+   **The staleness scales as (1/R)^1.068 against the sagitta argument's 1.000.** The exponent is the
+   part of the prediction that has a derivation, and it matches. The prefactor is a constant 0.24 --
+   the measured cost is about four times SMALLER than the sagitta bound, consistently at every
+   radius, which is what an upper bound behaves like when the solve carries part of the offset and
+   the per-step errors partly cancel rather than accumulating as N times one of them.
+
+   **MY DECLARED BAND WAS ratio IN [0.5, 2.0], SO THE GATE PRINTS FAIL, AND I AM NOT REWRITING IT.**
+   The band was mis-designed rather than mis-set: it folded two claims into one test. The derivation
+   supports the EXPONENT; nothing in it fixes the CONSTANT to within a factor of four, and I had no
+   basis for predicting one. A future run should test the two separately. This round's verdict stands
+   as printed, and the finding stands as stated: **on curved geometry the cost of persistent
+   association is staleness, it tracks 1/R, and the sagitta is an upper bound on it by about 4x.**
+   Combined with CC-flat' reading zero on a plane, the decomposition is complete: the degradation is
+   the price of curvature, not a bug.
+
