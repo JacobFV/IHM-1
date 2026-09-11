@@ -52,8 +52,8 @@ if ARGS.warp is not None:
     # the warped skin, beside the ceiling and the map it is built on.  Same capped surface, same
     # frames, same enclosure() and samples: only the skin's vertex positions differ.
     sys.path.insert(0, str(ROOT / 'scripts'))
-    from skin_warp import Warp
-    W = Warp.load(ARGS.warp)
+    from skin_warp import load_warp
+    W = load_warp(ARGS.warp)
     if not np.array_equal(W.base, Tb): sys.exit('the warp\'s base is not the binding map; nothing measured')
     skin_w = W.apply(sv)
     print(f"warp {ARGS.warp}: {len(W.centres)} centres, max |displacement| at skin {1000*np.abs(skin_w-skin_b).max():.2f} mm")

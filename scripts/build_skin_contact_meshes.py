@@ -187,13 +187,16 @@ def build(out_dir,reference_path,minimum_faces,registration_choice,warp=None):
         # One smooth space warp (scripts/skin_warp.py) on top of the binding map, applied to the
         # WHOLE skin before it is cut.  Its base must be exactly the map chosen above, so a zero
         # displacement reproduces the unwarped bundle bit for bit.
-        from skin_warp import Warp
+        from skin_warp import load_warp
         if registration_choice!='binding':raise ValueError('a skin warp is defined on the binding map only')
-        field=Warp.load(ROOT/warp)
+        field=load_warp(ROOT/warp)
         if not np.array_equal(field.base,transform):raise ValueError('the warp\'s base is not the binding map')
         source=field.apply(canonical)
         registration_report['warp']=dict(path=str(warp),sha256=sha(ROOT/warp),centres=int(len(field.centres)),
-            form='W(x) = G x + d(G x), d a regularised 3D thin-plate spline (scripts/skin_warp.py); G the binding map above',
+            steps=getattr(field,'steps',None),
+            form=('W(x) = flow_1(G x), the time-1 flow of a stationary velocity field integrated by scaling and squaring'
+                  if hasattr(field,'steps') else
+                  'W(x) = G x + d(G x), d a regularised 3D thin-plate spline')+' (scripts/skin_warp.py); G the binding map above',
             meta=field.meta)
     bones=bone_clouds()
     binding=json.loads(gzip.decompress((ROOT/BINDING).read_bytes()))

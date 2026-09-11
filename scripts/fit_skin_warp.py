@@ -38,8 +38,12 @@ import trimesh
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT)); sys.path.insert(0, str(ROOT / "scripts"))
-from skin_warp import Warp, phi
+from skin_warp import Warp, FlowWarp, load_warp, phi
 
+FAMILY = "spline"          # rebound in __main__; "flow" is the v2 instrument (3b1526c)
+# The flow's own numerical settings.  The squaring count is not free: it is whatever makes the
+# per-step displacement <= STEP_TARGET_M, which is the numerical statement of "cannot fold".
+STEP_TARGET_M, OUTER, OUTER_TOL = 1e-3, 6, 1e-4
 OUT = ROOT / "data/derived/skin-warp-v1"
 REGISTRATION = ROOT / "data/derived/anatomy-segment-registration/registration.json"
 BUNDLE = "data/derived/segment-contact-meshes/skin-warp-v1"
@@ -165,6 +169,33 @@ def tps_solve(system, D, lam):
 def tps_predict(Y, S, w, a):
     return phi(cdist(Y, S)) @ w + Y @ a[:3] + a[3]
 
+# ------------------------------------------------ the flow (v2 instrument, 3b1526c)
+def make_flow(base, S, w, a, probe):
+    """the field with a squaring count fixed by its own size: per-step displacement <= 1 mm."""
+    speed = FlowWarp(base, S, w, a, 1)
+    points = S if probe is None else np.vstack([S, probe])
+    vmax = float(np.linalg.norm(speed.velocity(points), axis=1).max()) if len(points) else 0.0
+    n = 4 if vmax <= 0 else int(max(4, np.ceil(np.log2(max(vmax / STEP_TARGET_M, 1.0)))))
+    return FlowWarp(base, S, w, a, 1 << min(n, 10)), vmax
+
+def fit_flow(system, S, T, lam, base, probe):
+    """A velocity field whose FLOW hits the correspondences.
+
+    The flow of v is not v, so the field cannot be read off the displacements: each correction is
+    solved by the same regularised system against the residual of the ACTUAL flow, and the
+    corrections are accumulated into one stationary field.  Same lambda, same system, same
+    correspondences as the spline -- only what is being fitted has changed."""
+    w, a, hist = np.zeros((len(S), 3)), np.zeros((4, 3)), []
+    for _ in range(OUTER):
+        F, _ = make_flow(base, S, w, a, probe)
+        R = T - F.flow(S)
+        hist.append(float(np.abs(R).max()))
+        if hist[-1] < OUTER_TOL: break
+        dw, da = tps_solve(system, R, lam)
+        w, a = w + dw, a + da
+    F, vmax = make_flow(base, S, w, a, probe)
+    return F, hist, vmax
+
 # ================================================= stage fit
 def stage_fit():
     t0 = time.time(); OUT.mkdir(parents=True, exist_ok=True)
@@ -180,11 +211,26 @@ def stage_fit():
     skin = next(e for e in mech["entities"] if e["role"] == "skin")
     g = json.loads(gzip.decompress((ROOT / skin["reference_geometry"]["path"]).read_bytes()))
     canonical = np.asarray(g["positions"], float).reshape(-1, 3)
-    Z = Warp.zero(Tb)
+    Z = FlowWarp.zero(Tb, steps=64) if FAMILY == "flow" else Warp.zero(Tb)
     ok = bool(np.array_equal(Z.apply(canonical), canonical @ Tb[:3, :3].T + Tb[:3, 3])); controls["zero_warp_bitwise"] = ok
-    say(f"C2 zero displacement reproduces the binding map on all {len(canonical):,} skin vertices, bit for bit: {ok}")
+    say(f"C2 zero {'flow (64 squaring steps of the identity)' if FAMILY == 'flow' else 'displacement'} reproduces the binding "
+        f"map on all {len(canonical):,} skin vertices, bit for bit: {ok}")
     if not ok: sys.exit("C2 failed")
     Z.save(OUT / "zero.npz")
+    if FAMILY == "flow":
+        # C7, the flow's own known answer: a CONSTANT velocity field flows to a pure translation.
+        c = np.array([0.013, -0.021, 0.007]); A = np.zeros((4, 3)); A[3] = c
+        const = FlowWarp(Tb, np.zeros((0, 3)), np.zeros((0, 3)), A, 64)
+        Y = apply(Tb, canonical[np.random.default_rng(3).choice(len(canonical), 5000, replace=False)])
+        err = float(np.abs(const.flow(Y) - (Y + c)).max())
+        back = float(np.abs(const.flow(const.flow(Y), inverse=True) - Y).max())
+        # 1e-12 m is the double-precision accumulation bound for 2^N additions over metre-scale
+        # ground coordinates, not a tolerance fitted to the answer; the exact result is a translation.
+        controls.update(constant_velocity_translation_max_m=err, constant_velocity_roundtrip_max_m=back)
+        ok = err < 1e-12 and back < 1e-12
+        say(f"C7 constant velocity flows to a pure translation: {err:.1e} m (< 1e-12, roundoff); its own inverse returns "
+            f"{back:.1e} m -> {'PASS' if ok else 'FAIL'}")
+        if not ok: sys.exit("C7 failed")
     if segments != sorted(reg["segments"]) or reg["reference_pose_rad"] != binding["reference_pose_rad"]:
         sys.exit("C3 precondition: segments or reference pose differ from registration.json")
     rest = render.OsimModel(B.MODEL).forward(reg["reference_pose_rad"])
@@ -261,24 +307,44 @@ def stage_fit():
 
     # ---------------------------------------------- the regularisation rule
     say(f"\n== lambda by {FOLDS}-fold cross-validation on the bone correspondences  [{time.time()-t0:.0f}s] ==")
+    probe = apply(G, canonical[np.random.default_rng(11).choice(len(canonical), 20000, replace=False)])
     perm = np.random.default_rng(7).permutation(len(S)); folds = np.array_split(perm, FOLDS)
     sse = np.zeros(len(LAMBDAS))
     for f in folds:
         tr = np.setdiff1d(perm, f); sy = tps_system(S[tr])
         for li, lam in enumerate(LAMBDAS):
-            w, a = tps_solve(sy, D[tr], lam)
-            sse[li] += ((S[f] + tps_predict(S[f], S[tr], w, a) - T[f]) ** 2).sum()
+            if FAMILY == "flow":
+                F, _, _ = fit_flow(sy, S[tr], T[tr], lam, G, probe)
+                sse[li] += ((F.flow(S[f]) - T[f]) ** 2).sum()
+            else:
+                w, a = tps_solve(sy, D[tr], lam)
+                sse[li] += ((S[f] + tps_predict(S[f], S[tr], w, a) - T[f]) ** 2).sum()
         say(f"  fold done [{time.time()-t0:.0f}s]")
     cv = np.sqrt(sse / len(S)); best = cv.min()
     lam = max(l for l, e in zip(LAMBDAS, cv) if e <= best * (1 + TIE))
     for l, e in zip(LAMBDAS, cv): say(f"  lambda {l:9.2e}  CV RMS {1e3*e:7.3f} mm" + ("   <- chosen" if l == lam else ""))
     say(f"  rule: largest lambda within {100*TIE:.0f}% of the minimum CV RMS ({1e3*best:.3f} mm) -> lambda = {lam:.2e}"
         + ("   (the grid's edge)" if lam in (LAMBDAS[0], LAMBDAS[-1]) else ""))
-    sy = tps_system(S); w, a = tps_solve(sy, D, lam)
-    W = Warp(G, S, w, a, dict(kind="thin-plate spline displacement on the binding map", lam=lam, correspondences=int(len(S)),
-                              rule="largest lambda within 1% of the minimum 5-fold CV RMS on the bone correspondences"))
+    sy = tps_system(S)
+    rule = "largest lambda within 1% of the minimum 5-fold CV RMS on the bone correspondences"
+    flow_report = None
+    if FAMILY == "flow":
+        W, hist, vmax = fit_flow(sy, S, T, lam, G, probe)
+        fit_res = np.linalg.norm(W.flow(S) - T, axis=1)
+        step_max = W.maximum_step_displacement(np.vstack([S, apply(G, canonical)]))
+        flow_report = dict(steps=W.steps, squarings=int(np.log2(W.steps)), max_velocity_m=vmax,
+                           max_step_displacement_m=step_max, step_budget_m=STEP_TARGET_M,
+                           outer_max_residual_m=hist, outer_iterations=len(hist))
+        W.meta = dict(kind="flow", lam=lam, correspondences=int(len(S)), steps=W.steps, rule=rule)
+        say(f"  flow: {W.steps} steps (2^{int(np.log2(W.steps))} squarings), max |v| {1e3*vmax:.1f} mm, "
+            f"max per-step displacement {1e3*step_max:.3f} mm (budget {1e3*STEP_TARGET_M:.1f} mm)")
+        say(f"  outer corrections, worst |flow - target| per pass: " + ", ".join(f"{1e3*h:.2f}" for h in hist) + " mm")
+    else:
+        w, a = tps_solve(sy, D, lam)
+        W = Warp(G, S, w, a, dict(kind="thin-plate spline displacement on the binding map", lam=lam,
+                                  correspondences=int(len(S)), rule=rule))
+        fit_res = np.linalg.norm(W.apply(np.linalg.solve(G[:3, :3], (S - G[:3, 3]).T).T) - T, axis=1)
     W.save(OUT / "warp.npz")
-    fit_res = np.linalg.norm(W.apply(np.linalg.solve(G[:3, :3], (S - G[:3, 3]).T).T) - T, axis=1)
     say(f"  fitted: residual at the correspondences RMS {1e3*np.sqrt((fit_res**2).mean()):.3f} mm, max {1e3*fit_res.max():.2f} mm; "
         f"bending energy {W.bending_energy():.4e}")
 
@@ -295,7 +361,18 @@ def stage_fit():
             + ("PASS" if g1[seg]["pass_"] else "FAIL"))
     gate1 = all(v["pass_"] for v in g1.values())
     say(f"GATE 1 -> {'PASS' if gate1 else 'FAIL'} ({sum(v['pass_'] for v in g1.values())}/{len(g1)} segments)")
-    (OUT / "fit.json").write_text(json.dumps(dict(schema="ihm.skin-warp-fit.v1", controls=controls,
+    if FAMILY == "flow":
+        # C8, required because a flow is not a spline: forward then inverse must return EVERY skin
+        # vertex to itself.  The inverse is the exact inverse of each step, not a second field.
+        say(f"\n== C8: forward then inverse on all {len(canonical):,} skin vertices  [{time.time()-t0:.0f}s] ==")
+        there = W.apply(canonical)
+        back = W.flow(there, inverse=True)
+        err = float(np.abs(back - W.ground(canonical)).max())
+        controls["forward_inverse_max_m"] = err
+        ok = err < 1e-9
+        say(f"C8 max |inverse(forward(x)) - x| = {err:.2e} m (< 1e-9) -> {'PASS' if ok else 'FAIL'}   [{time.time()-t0:.0f}s]")
+        if not ok: sys.exit("C8 failed")
+    (OUT / "fit.json").write_text(json.dumps(dict(schema="ihm.skin-warp-fit.v1", family=FAMILY, flow=flow_report, controls=controls,
         correspondences=per, n_correspondences=int(len(S)), cv=dict(lambdas=LAMBDAS, rms_m=cv.tolist(), chosen=lam, tie=TIE, folds=FOLDS),
         bending_energy=W.bending_energy(), gate1=dict(passed=gate1, margin_m=GATE1_MARGIN_M, segments=g1),
         provenance=dict(script=str(Path(__file__).relative_to(ROOT)), script_sha256=sha(__file__),
@@ -305,7 +382,7 @@ def stage_fit():
 
 # ================================================= stage score
 def stage_score():
-    fit = json.loads((OUT / "fit.json").read_text()); W = Warp.load(OUT / "warp.npz")
+    fit = json.loads((OUT / "fit.json").read_text()); W = load_warp(OUT / "warp.npz")
     mech = json.loads((ROOT / "data/derived/canonical/mechanics.json").read_text())
     skin = next(e for e in mech["entities"] if e["role"] == "skin")
     g = json.loads(gzip.decompress((ROOT / skin["reference_geometry"]["path"]).read_bytes()))
@@ -313,8 +390,14 @@ def stage_score():
     ext = np.asarray(json.loads((ROOT / bscm.EVIDENCE).read_text())["contact_eligible_triangle_ids"], np.int64)
     used = np.unique(F[ext])
     # gate 4: Jacobian determinant at every exterior skin vertex; triangle orientation before/after
-    det = np.concatenate([np.linalg.det(W.jacobian(V[used[s:s + 2048]])) for s in range(0, len(used), 2048)])
     det0 = np.linalg.det(W.base[:3, :3])
+    if hasattr(W, "steps"):
+        # the flow's determinant is the product of its per-step determinants; the smallest single
+        # step is the numerical statement that the squaring is fine enough to forbid a fold
+        det, worst_step = W.jacobian_determinant(V[used])
+    else:
+        det = np.concatenate([np.linalg.det(W.jacobian(V[used[s:s + 2048]])) for s in range(0, len(used), 2048)])
+        worst_step = None
     Y0, Y1 = np.zeros_like(V), np.zeros_like(V); Y0[used] = W.ground(V[used]); Y1[used] = W.apply(V[used])
     def normals(Y, f): t = Y[f]; return np.cross(t[:, 1] - t[:, 0], t[:, 2] - t[:, 0])
     dots = (normals(Y0, F[ext]) * normals(Y1, F[ext])).sum(1)
@@ -357,6 +440,11 @@ def stage_score():
     say(f"  3 heel: " + ", ".join(f"{s} {1e3*v:+.1f} mm" for s, v in heel.items()) + f" (in [{1e3*HEEL_RANGE_M[0]:.0f}, {1e3*HEEL_RANGE_M[1]:.0f}] mm) -> {'PASS' if gate3 else 'FAIL'}")
     say(f"  4 folding: det J <= 0 at {folds_v} of {len(det):,} skin vertices (min det {det.min():.4f}, global map {det0:.4f}); "
         f"{folds_t} of {len(dots):,} skin triangles inverted -> {'PASS' if gate4 else 'FAIL'}")
+    if worst_step is not None:
+        f_ = fit.get("flow") or {}
+        say(f"     flow: {W.steps} steps (2^{int(np.log2(W.steps))} squarings), smallest single-step det "
+            f"{worst_step:.6f} (> 0 is what forbids the fold), max per-step displacement "
+            f"{1e3*(f_.get('max_step_displacement_m') or 0):.3f} mm")
     say(f"     caps (invented surface, not gated): {int((cdots < 0).sum())} of {len(cdots)} inverted")
     # where the folds are (reported after the verdict, not gated): by partition segment, and how far from
     # the nearest spline centre -- a fold pulled into the skin by the bones under it sits close to them
@@ -379,7 +467,8 @@ def stage_score():
         gate1=dict(passed=gate1, worst=g1w[0]), gate2=dict(passed=gate2, mean=ew["mean"]["warped"], segments=ew["warped"]),
         gate3=dict(passed=gate3, skin_minus_bone_minimum_y_m=heel, range_m=HEEL_RANGE_M),
         gate4=dict(passed=gate4, vertices=len(det), nonpositive_det=folds_v, min_det=float(det.min()), global_det=float(det0),
-                   triangles=len(dots), inverted=folds_t, caps=len(cdots), caps_inverted=int((cdots < 0).sum())),
+                   triangles=len(dots), inverted=folds_t, caps=len(cdots), caps_inverted=int((cdots < 0).sum()),
+                   steps=getattr(W, "steps", None), min_step_det=worst_step, folds=fold_where),
         reported=dict(bending_energy=W.bending_energy(), area=area, area_total_before_m2=float(a0.sum()), area_total_after_m2=float(a1.sum()))),
         indent=2) + "\n")
 
@@ -406,7 +495,7 @@ def inside_mask(skin_vertices, skin_faces, bone_points, samples=500, seed=0):
 def stage_diagnose():
     """Where the bone points that are NOT inside the skin sit, in their own segment's frame
     (OpenSim: x anterior/distal along the foot, y superior, z right), and how far outside."""
-    W = Warp.load(OUT / "warp.npz"); Tb, frames_b, _ = bscm.binding_registration()
+    W = load_warp(OUT / "warp.npz"); Tb, frames_b, _ = bscm.binding_registration()
     ew = json.loads((OUT / "enclosure_warp.json").read_text())
     mech = json.loads((ROOT / "data/derived/canonical/mechanics.json").read_text())
     skin = next(e for e in mech["entities"] if e["role"] == "skin")
@@ -443,7 +532,60 @@ def stage_diagnose():
                    f"z {rec['outside_z_mm'][0]:+.0f}/{rec['outside_z_mm'][1]:+.0f}/{rec['outside_z_mm'][2]:+.0f} mm (min/median/max)"))
     (OUT / "diagnose.json").write_text(json.dumps(out, indent=2) + "\n")
 
+def stage_slivers():
+    """The triangles gate 4 caught: slivers in the SOURCE mesh, or ordinary triangles?
+
+    det J > 0 everywhere is LOCAL invertibility, at a point.  A triangle of finite size can still
+    come out with a reversed normal under a map that is locally orientation-preserving at each of
+    its three corners, and the thinner the triangle the smaller the rotation needed.  So the
+    question is not whether the flow folded (it cannot) but whether these triangles are degenerate
+    to begin with, which their aspect ratio against the whole mesh's answers."""
+    W = load_warp(OUT / "warp.npz")
+    mech = json.loads((ROOT / "data/derived/canonical/mechanics.json").read_text())
+    skin = next(e for e in mech["entities"] if e["role"] == "skin")
+    g = json.loads(gzip.decompress((ROOT / skin["reference_geometry"]["path"]).read_bytes()))
+    V = np.asarray(g["positions"], float).reshape(-1, 3); F = np.asarray(g["indices"], np.int64).reshape(-1, 3)
+    ext = np.asarray(json.loads((ROOT / bscm.EVIDENCE).read_text())["contact_eligible_triangle_ids"], np.int64)
+    used = np.unique(F[ext]); loc = np.searchsorted(used, F[ext])
+    Y0, Y1 = W.ground(V[used]), W.apply(V[used])
+    def nrm(Y): t = Y[loc]; return np.cross(t[:, 1] - t[:, 0], t[:, 2] - t[:, 0])
+    n0, n1 = nrm(Y0), nrm(Y1); dots = (n0 * n1).sum(1)
+    tri = V[F[ext]]
+    edges = np.stack([np.linalg.norm(tri[:, 1] - tri[:, 0], axis=1), np.linalg.norm(tri[:, 2] - tri[:, 1], axis=1),
+                      np.linalg.norm(tri[:, 0] - tri[:, 2], axis=1)], axis=1)
+    area = np.linalg.norm(np.cross(tri[:, 1] - tri[:, 0], tri[:, 2] - tri[:, 0]), axis=1) / 2
+    inradius = np.where(area > 0, 2 * area / edges.sum(1), 0.0)
+    aspect = np.where(inradius > 0, edges.max(1) / (2 * inradius), np.inf)   # 1 = equilateral
+    sb = json.loads(gzip.decompress((ROOT / bscm.BINDING).read_bytes())); names = [s["id"] for s in sb["segments"]]
+    Wt = np.asarray(sb["weights"], np.float32); owner = ((Wt[F[:, 0]] + Wt[F[:, 1]] + Wt[F[:, 2]]) / 3).argmax(1)[ext]
+    bad = np.where(dots < 0)[0]
+    say(f"exterior triangles {len(ext):,}; aspect ratio (longest edge / 2*inradius, 1 = equilateral): "
+        f"median {np.median(aspect):.2f}, 99% {np.quantile(aspect, .99):.2f}, 99.99% {np.quantile(aspect, .9999):.2f}, max {aspect.max():.1f}")
+    out = []
+    for i in bad:
+        pct = 100.0 * float((aspect < aspect[i]).mean())
+        rank = int((aspect > aspect[i]).sum()) + 1
+        out.append(dict(triangle=int(ext[i]), segment=names[owner[i]], aspect_ratio=float(aspect[i]),
+                        percentile=pct, rank_worst=rank, area_mm2=1e6 * float(area[i]),
+                        edges_mm=[1e3 * float(x) for x in edges[i]], normal_dot=float(dots[i]),
+                        area_ratio_after=float(np.linalg.norm(n1[i]) / max(np.linalg.norm(n0[i]), 1e-30))))
+        say(f"  triangle {ext[i]} on {names[owner[i]]}: aspect {aspect[i]:.1f} (worse than {pct:.4f}% of the mesh; "
+            f"rank {rank} of {len(ext):,}), area {1e6*area[i]:.4f} mm2, edges {edges[i][0]*1e3:.2f}/{edges[i][1]*1e3:.2f}/"
+            f"{edges[i][2]*1e3:.2f} mm, normal dot {dots[i]:.3e}")
+    (OUT / "slivers.json").write_text(json.dumps(dict(inverted=out, exterior_triangles=int(len(ext)),
+        aspect_median=float(np.median(aspect)), aspect_p99=float(np.quantile(aspect, .99)),
+        aspect_p9999=float(np.quantile(aspect, .9999)), aspect_max=float(aspect.max())), indent=2) + "\n")
+
 if __name__ == "__main__":
-    ap = argparse.ArgumentParser(); ap.add_argument("--stage", choices=("fit", "score", "diagnose"), required=True)
-    stage = ap.parse_args().stage
-    {"fit": stage_fit, "score": stage_score, "diagnose": stage_diagnose}[stage]()
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--stage", choices=("fit", "score", "diagnose", "slivers"), required=True)
+    ap.add_argument("--family", choices=("spline", "flow"), default="spline",
+                    help="spline: the v1 thin-plate warp (data/derived/skin-warp-v1). "
+                         "flow: the v2 stationary-velocity-field flow, which cannot fold (skin-warp-v2).")
+    args = ap.parse_args()
+    # module-level rebinding, so every stage reads the family's own directories
+    FAMILY = args.family
+    if FAMILY == "flow":
+        OUT = ROOT / "data/derived/skin-warp-v2"
+        BUNDLE = "data/derived/segment-contact-meshes/skin-warp-v2"
+    {"fit": stage_fit, "score": stage_score, "diagnose": stage_diagnose, "slivers": stage_slivers}[args.stage]()

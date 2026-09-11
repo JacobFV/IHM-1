@@ -789,3 +789,79 @@ fitted to, which a different smoothness class does not supply. If the folds go a
 read ~0.87, the remaining problem is correspondence coverage, not the warp family, and the next
 step is anchors for skin that has no bone under it. If the toes instead reach 0.95, the fold and
 the coverage story were one thing, and this note was wrong about it.
+
+#### Result: FAIL on all four. The fold-free family is not a trade, it is worse (2026-09-10)
+
+`fit_skin_warp.py --stage fit --family flow`, then the same three instruments. The velocity field
+is the same RBF family on the same 4,410 correspondences (identical per-segment kept counts and
+medians to the spline's, so only the warp family changed), integrated to its time-1 flow.
+
+**The flow's own known answers, both required by the pre-registration:**
+
+* a **constant** velocity field flows to a pure translation: **1.7e-15 m** (threshold 1e-12, the
+  double-precision accumulation bound for 2^7 additions over metre-scale coordinates, not a
+  tolerance picked after seeing the number); its own inverse returns 2.8e-17 m;
+* **forward then inverse returns every one of the 102,467 skin vertices to itself: 1.31e-14 m**
+  (threshold 1e-9).
+* Integration: **128 steps, 2^7 squarings**, max |v| 96.7 mm, **max per-step displacement 0.755 mm**
+  against a 1.0 mm budget; smallest single-step determinant 0.9727.
+
+The squaring is done by composing the analytic half-step map, not by interpolating a stored field
+on a grid: the field is parametric, so squaring N times is exactly 2^N applications of it. That is
+also why the inverse is exact to 1e-14 instead of to a grid's interpolation error.
+
+| gate | spline (v1) | flow (v2) | threshold |
+|---|---|---|---|
+| zero-warp control | 0.888 / ceiling 0.997 / calcn +20.1, +20.0 mm | identical | reproduce exactly |
+| 1 bones | 22 / 22 **PASS** | **20 / 22 FAIL** -- patella_l 4.02 mm vs limit 3.47, patella_r 4.10 vs 3.52 | <= per-segment + 1 mm |
+| 2 enclosure | mean 0.954; calcn 0.926 / 0.920, toes 0.868 / 0.880 **FAIL** | mean **0.959**; calcn **0.922 / 0.914**, toes **0.872 / 0.878** **FAIL** | mean >= 0.95; calcn, toes each >= 0.95 |
+| 3 heel | -6.7 / -6.6 mm **PASS** | **-5.7 / -4.1 mm FAIL** (calcn_r 0.9 mm short of the -5 mm edge) | both in [-25, -5] mm |
+| 4 no folding | 45 vertices det J <= 0, 72 triangles **FAIL** | **0 of 54,949 vertices** (min det 0.108); **2 of 109,183 triangles FAIL** | none |
+| | **2 of 4** | **0 of 4** | |
+
+**The verdict is FAIL on all four, and the two instruments are not a trade-off.** The spline passes
+gates 1 and 3; the flow passes none. Outside vertex-level det J the flow is worse or equal
+everywhere the gates look.
+
+**Gate 4 is the informative failure.** The flow delivered exactly what a diffeomorphism promises:
+not one negative Jacobian determinant anywhere on the skin, against 45 for the spline, and every
+single integration step orientation-preserving (worst 0.973). **Two finite triangles still
+inverted**, because det J > 0 is local invertibility AT A POINT and a triangle has size. Both are
+slivers in the source mesh: aspect ratio (longest edge / 2x inradius; 1 is equilateral) **12.4 on
+toes_r and 16.6 on tibia_r, ranks 430 and 123 worst of 109,183, against a mesh median of 2.42**. A
+sliver's normal is the cross product of two nearly parallel edges, so it is ill-conditioned by
+construction, and these two span 15 and 52 mm -- far enough for the flow's rotation to vary across
+them. The turns are not marginal: **156 deg and 147 deg**, and the tibia_r triangle also collapses
+to 0.20 of its area. So this is two degenerate triangles in the canonical mesh, not a folding warp
+(`--stage slivers`).
+
+**The prediction in 3b1526c was half wrong, twice.** It said folds go to zero and calcn and toes
+improve but still fail. Folds went to zero at the VERTICES and not at the triangles. And calcn and
+toes did not improve: 0.922 / 0.914 and 0.872 / 0.878 against the spline's 0.926 / 0.920 and
+0.868 / 0.880 -- calcn slightly worse, toes a wash. The mean moved (0.954 -> 0.959, 12 -> 14
+segments at >= 0.99, on hands 0.79-0.81 -> 0.81-0.84, humerus to 1.000, torso 0.922 -> 0.940) and
+the two segments the gate actually names did not.
+
+**What the fold-free family cost, mechanically.** The same CV rule chose **lambda = 1e-1**, two
+orders of magnitude smoother than the spline's 1e-3, because the flow's held-out error is
+minimised there: 6.585 mm flat from 0 to 1e-4, then 6.432 (1e-3), 5.843 (1e-2), **5.522 (1e-1,
+chosen)**, 5.720 (3.16e-1), 6.335 (1). The spline's minimum was 4.570 mm. The fit is
+correspondingly loose -- residual at the correspondences **4.043 mm RMS, 34.11 mm max**, against the
+spline's 0.571 and 8.45 -- and the greedy correction of the velocity field **did not converge**:
+worst |flow - target| per pass 67.11, 26.94, 31.29, 30.25, 28.37, 28.51 mm. That looseness is
+exactly what gates 1 and 3 then caught: the patellae need the largest local change of any segment
+(per-segment scale 1.35) and come out 0.55-0.58 mm past their margin, and the heel is pushed 2.5 mm
+less far down than the spline pushed it, which leaves calcn_r 0.9 mm outside the pad window.
+
+**No variant in the sweep was scored on enclosure**, and none can be quoted as reaching 0.95: the
+CV curve above is held-out error on the bone correspondences only, which is what the rule allows it
+to see, and only the rule's own lambda was carried to gate 2. Running the other lambdas through the
+enclosure gate would be choosing the instrument on the gate it is judged by.
+
+**Both families now fail gate 2 at the same two segments and nearly the same numbers**, with
+smoothness classes as different as a spline and a diffeomorphic flow. That is evidence about the
+correspondences, not the warp: the spline's diagnosis said the toe tips and the lateral forefoot
+are skin with no bone under them, extrapolated rather than carried, and a different smoothness
+class has now confirmed it does not supply what is missing. The visible fix is anchors for skin
+that has no correspondence beneath it -- and that is a new instrument, so it is a new
+pre-registration and not a refit of this one.
