@@ -1968,6 +1968,59 @@ compression**: compare folded triangles against non-folded triangles **matched o
 * **No prediction offered.** I have just had the direction of a mapping wrong, and the agent's
   measurement is what caught it.
 
+### The seam adds ~3 mm of 80. Compression explains the folds; the MTP attribution does not survive.
+
+| | toes_l | toes_r |
+|---|---:|---:|
+| raw: folded vs unfolded distance to seam | 79.7 vs 103.3 mm (**−23.6**) | 76.0 vs 105.4 mm (**−29.4**) |
+| **matched on local area ratio** | **79.7 vs 82.5 mm (−2.8)** | **76.0 vs 79.1 mm (−3.0)** |
+| matched pairs | 31 of 31 | 41 of 41 |
+
+**Matching on compression removes 88–90% of the raw effect.** What remains is ~3 mm out of ~80, same
+sign on both feet. By the branch as written that is the first outcome — seam proximity does carry
+information beyond compression — but **a 3 mm residual is a weak positive, not the direct
+confirmation the branch anticipated**, and the pre-registration's two outcomes were drawn too
+coarsely to hold a result of this size.
+
+**Two qualifications the agent raised against its own inference, and both matter:**
+
+1. **The folds are not at the seam in any ordinary sense.** They sit **76–80 mm** from it. The toe
+   skin piece runs out to ~105 mm, so folds are proximal *relative to the segment's own average* —
+   but 8 cm is not "at the MTP boundary". They are in **mid-to-distal toe skin**.
+2. **The t-values are optimistic and should not be quoted as significance.** The folds are spatially
+   clustered in a few patches (31 and 41 triangles) and matched controls are shared between them, so
+   the paired test's independence assumption fails. −2.07 and −4.04 describe direction, not
+   calibrated significance.
+
+**So my rotation-conflict attribution is withdrawn, and the distinction is worth keeping.** `43a63e4`
+said "the mechanism is a rotation conflict, not a scale conflict" and tied it to the 17° MTP swing.
+**The shear finding survives on its own** — the third principal extent contracting to 0.847 / 0.828
+while the other two expand is shear whatever causes it. **The MTP attribution does not**: I inferred
+the source from a number that measures the deformation's *shape*, and the one test able to
+corroborate that source through geometry says the failure is in distal toe skin rather than at the
+joint boundary. Shear is measured; *rotation disagreement across the MTP* was my inference and is
+unsupported.
+
+### What the toes question closes on
+
+**Established:** folds occur only in locally compressed material (73 of 73, median ratio 0.238);
+uniform compression does not fold skin (hands at 97–99% compressed, 0 folds); the toes' failure is
+the **tail** of the compression distribution (0.19–0.28 against the hands' 10th percentile of 0.60);
+the deformation there is shear; and it happens in **distal toe skin**, in a segment expanding
+overall.
+
+**The mechanism, stated at the confidence the evidence supports:** extreme *local* compression in
+distal toe skin, which a rigidly-carried skin cannot absorb. Not material excess, not the map's
+scale, not the MTP seam — all three tested and all three refuted or unsupported.
+
+**The consequence stands and is now the useful output of this whole line.** No warp family, no
+correspondence rule, no regularisation and no sampling change reaches this, because the carrier is
+the limit rather than the field. Of the three options, **(b) — the skin carrying its own deformation
+rather than riding rigidly on the bone frame — is the one the evidence points at**, and it is the
+continuous-skin problem this file named at the outset. **(a)** accepting folded toe skin is viable
+only if the folds do not corrupt the contact layer, which is a separate measurement nobody has made;
+**(c)** excluding the toes costs the forefoot contact that a crawl needs most.
+
 **Why this was worth having from a retired control.** I retired it for firing a threshold at the
 wrong separation, and it then answered a question I had not asked: whether this line's headline
 quality metric measures accuracy at all. It does not. A control kept running after its gate was
