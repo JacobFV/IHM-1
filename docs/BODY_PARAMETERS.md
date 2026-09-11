@@ -3012,3 +3012,39 @@ What has changed is that the parametrization no longer stops at the scaffold.
    motion. Before gate W neither this line nor its coordinator could have told those two apart,
    and three wrong readings came from reasoning about sliding using controls that contained none.
 
+   ### A weakness in my derived threshold that gate W could not expose
+
+   In W **every association moved by the same 0.9350 mm**, because the drive is rigid. So the
+   threshold's first term — *"the step's node motion"* — was a single well-defined scalar. **Under a
+   non-rigid motion there is no such scalar:** different nodes move different amounts within one
+   step, and a global bar is then either too tight for the fast nodes or too loose for the slow ones.
+   My derivation quietly assumed the regime it happened to be tested in.
+
+   **The generalisation, pre-registered, and forced rather than chosen:**
+
+   > **threshold_i = |node i's own motion this step| + the bed's facet scale**
+
+   The refuse-or-take decision stays **global** — that is what keeps the constraint set in one epoch —
+   while the bar it is measured against becomes per-node. **It reduces exactly to the current rule
+   when all nodes move equally**, so it is a generalisation, not a loosening. Gates T, U and W must
+   be **re-run under it and must return their existing numbers unchanged**: a change that alters a
+   passed control's result is a different rule, not a generalisation of one.
+
+   ### Gate X: non-rigid, sliding, and still exact
+
+   **A homogeneous deformation of the held base against an analytic plane.** Non-rigid and sliding,
+   yet closed-form: a homogeneous field is the exact solution for a homogeneous neo-Hookean material
+   under compatible boundary conditions — the same class gate R2 already validates against platens.
+   It is the first control in which **association motion varies from node to node**, which is the
+   only untested property left in the rule.
+
+   * **Pass:** fraction 1.0, `min J ≥ 0.99`, refusal rate 0, solution matching the exact homogeneous
+     field to solver tolerance.
+   * **Fail:** the per-node threshold does not survive a spatially varying field, and the
+     all-or-nothing decision needs rethinking rather than regeneralising.
+   * **Ordering, proposed by the agent and adopted:** run gate V on the **plane** first, where any
+     refusal is a defect in the stepping, before the anatomical bed, where refusals are the bed's
+     doing. That stops the same confusion recurring one level up.
+   * **The standing condition is unchanged and X does not satisfy it.** X is on a plane; the breast
+     is non-rigid motion against the *anatomical* bed. X is necessary, not sufficient.
+
