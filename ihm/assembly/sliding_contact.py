@@ -328,8 +328,14 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
             # so the load fraction was measuring load APPLIED and not distance CLOSED, and there
             # was no way to tell from the log whether one node or the whole sheet was stuck.
             held_mid = float(np.median(to_aim))
+            # HOW MANY HELD NODES HAVE GONE BACKWARDS. Each one started |travel| from the aim,
+            # so this is the count that separates 'one stuck node' from 'a stuck sheet' -- the
+            # thing neither a max nor a median can answer on its own.
+            start_to_aim = np.abs(travel)
+            worse = int((to_aim > start_to_aim + 1e-12).sum()) if held.any() else 0
+            closed = float(np.median(start_to_aim - to_aim)) if held.any() else 0.0
             pen = float(max(0.0, -gap[~held].min())) if (~held).any() else 0.0
-            if log: log(f"  fraction {fraction:.4f} pass {outer}: Newton {r['iterations']}{'' if r['converged'] else ' UNCONVERGED'}, held gap to the aim {held_err*1e3:.4f} mm max / {held_mid*1e3:.4f} median, "
+            if log: log(f"  fraction {fraction:.4f} pass {outer}: Newton {r['iterations']}{'' if r['converged'] else ' UNCONVERGED'}, held gap to the aim {held_err*1e3:.4f} mm max / {held_mid*1e3:.4f} median, closed {closed*1e3:+.4f} mm median with {worse} of {int(held.sum())} held nodes further away than they started, "
                         f"unilateral penetration {pen*1e3:.4f} mm, min J {r['minimum_jacobian']:.3f}, "
                         + (f"association moved {moved*1e3:.4f} mm" if association != 'adaptive'
                            else "association held for the step (adaptive updates after it)"), flush=True)

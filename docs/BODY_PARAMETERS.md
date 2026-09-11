@@ -4094,3 +4094,30 @@ What has changed is that the parametrization no longer stops at the scaffold.
    metric meant what its name said*. **Those are two different audits**, and passing the first says
    nothing about the second — which is how a number that had gone backwards survived a clean audit
    and three separate quotations.
+
+   **IT IS 39 NODES OF 3,123, NOT THE SHEET. THE DRIVE IS SEATING, AT THE MEDIAN, AT THE SCHEDULED
+   RATE.**
+
+   The step line now reports the median beside the maximum, the median distance CLOSED, and the count
+   of held nodes further from the aim than they started. Each held node begins exactly |travel| away,
+   so that count is what separates one stuck node from a stuck sheet -- which neither a maximum nor a
+   median can do alone, since a flat median is equally consistent with nothing moving and with half
+   moving each way. At the first accepted step:
+
+   | fraction 0.0625 | value |
+   |---|---:|
+   | distance to full seating, max | 14.8039 mm |
+   | distance to full seating, median | **7.0196 mm** |
+   | distance CLOSED, median | **+0.4540 mm** |
+   | held nodes further away than they started | **39 of 3,123 (1.25%)** |
+
+   Median travel is 7.484 mm, so the nominal closure at fraction 0.0625 is 0.468 mm and the measured
+   is 0.454 mm -- **97% of the scheduled rate**. The alarming maximum was one of about 39 outliers.
+
+   **SO "THE DRIVE GOES BACKWARDS" IS REFUTED, AND THE CAUTION THAT PREVENTED IT FROM BEING RECORDED
+   WAS WORTH MORE THAN THE OBSERVATION THAT PROMPTED IT.** The scope was declared unestablished
+   rather than asserted, and the scope is what the answer turned on. What remains true and unchanged:
+   the load fraction still measures load applied rather than distance closed, the reach still stands
+   at fraction 0.1094 as a statement about load carried, and about 39 held nodes ARE moving away from
+   their target and are now a named, bounded problem instead of an unbounded one.
+
