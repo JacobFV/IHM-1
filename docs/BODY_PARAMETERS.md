@@ -1942,6 +1942,55 @@ done; the others have moved.
    and 3.995x**, with the deficit one-signed as an inscribed polyhedron requires. That is a sharper
    test than the absolute bar could ever have been: a sign error, a factor of two, or a winding bug
    does not produce clean second-order convergence toward the analytic value.
+
+   **The census across all 4,000 meshes, and the correction it forced on my own framing**
+   (`scripts/audit_mesh_watertightness.py`). **1,311 of 4,000 (32.8%) are closed**; 2,651 are open
+   and 37 non-manifold. By class: lymphatic 98.2% closed, integumentary 81.4%, connective 77.6%,
+   skeletal **31.8%**, muscular 22.6%, arterial 7.8%, venous 6.7%, respiratory 2.9%. The largest
+   holes are sheet-like structures where openness is the shape rather than a defect -- external
+   intercostal 62,748 boundary edges, mesentery of small intestine 54,232.
+
+   **I wrote the census up as showing that mass properties were reading meaningless volumes. That
+   was wrong and is withdrawn.** `mechanics.json` already carries a `volume_basis` on every entity
+   and already distinguishes these cases -- 1,068 are labelled "unclosed-surface signed integral
+   volume prior; open boundaries and orientation are unresolved", 1,425 use "surface area times
+   assumed wall thickness", and so on. The ledger knows. A census alone was never going to find an
+   unhandled defect, because the handling is declared per entity.
+
+   **What the census IS good for is a cross-check, and that found something specific.** Two
+   independent determinations of the same property -- the ledger's declared basis against edge
+   incidence measured from the mesh:
+
+   | | count |
+   |---|---:|
+   | agree, both say closed | 1,197 |
+   | agree, both say open | 1,163 |
+   | basis makes no closedness claim | 1,577 |
+   | **DISAGREE: ledger says closed, the edges say open** | **62** |
+
+   **All 62 sit in one basis class**, and it is the one whose claim is load-bearing: *"a BodyParts3D
+   viscus is one closed surface enclosing wall AND lumen, so the enclosed volume carries gas or
+   chyme at tissue density. Tissue volume is surface area times an assumed wall thickness; the
+   remainder is lumen."* They are the hollow viscera -- **trachea, oesophagus, stomach, duodenum,
+   ileum, ascending / transverse / descending colon, rectum**. Of the 65 entities carrying this
+   basis, **62 are not closed surfaces**.
+
+   **Why it matters, and how much.** The wall-versus-lumen split is derived from an enclosed volume,
+   and an open surface does not enclose one -- the signed integral returns a number governed by
+   where the holes are. The basis rests on a premise its meshes do not satisfy. The scale is bounded
+   and should not be overstated: this class carries **1.581 L** of allocated tissue volume, roughly
+   **2%** of the 70.77 kg target. A real defect in a declared basis, not a crisis in the ledger --
+   and exactly the kind that survives because the sentence asserting it reads like a measurement.
+
+   **This also explains a row in the organ audit above**: the stomach read UNMEASURABLE there at 22
+   boundary edges while the ledger treats it as a closed viscus. The same fact from two directions.
+
+   **A known answer failed here too, and the expectation was the wrong side.** The detector was asked
+   for "2 open, 1 non-manifold" from a cube with one duplicated face. Duplicating a triangle raises
+   each of its three edges from two uses to three, so the right answer is **3 non-manifold and 0
+   open** -- which is what the detector printed. The expectation was corrected, the detector was
+   not, and the census had not yet run, so nothing was tuned to a result. A failed known answer is
+   only as useful as the care taken to find out which side of it was wrong.
 5. **Seven measured female `shaft_bearing_fraction` values.** Sharper than
    "measured female values for the hair fields": the parameter exists on every
    field already, six of the seven androgen-dependent ones assume 1.0, and 1.0 is
