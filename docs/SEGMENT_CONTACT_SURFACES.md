@@ -1435,6 +1435,58 @@ discipline earned its keep today; the predictions did not, and the honest readin
 intuitions about this instrument are not calibrated and should be used to generate controls rather
 than to anticipate their results.
 
+### Control C: coverage is the mechanism, and it outweighs the rule ten to one
+
+**Predicted 2.5-2.9 mm. Got 2.758 mm.** The first prediction of mine on this line to land inside
+its band, and it settles the question `0213dfc` opened:
+
+| at the operating amplitude | full-coverage nearest | **Control C** (nearest, shooting's coverage) | shooting |
+|---|---:|---:|---:|
+| to-surface recovery | **2.138 mm** | **2.758 mm** | 2.697 mm |
+| same-population normal error | 0.529 mm | 0.529 mm | 0.444 mm |
+
+**The whole trade, measured: coverage costs 0.620 mm of recovery; the rule buys 0.061 mm back.**
+Shooting is very slightly *better* than the nearest rule at matched coverage (2.697 against 2.758),
+so the 26% degradation in `0213dfc` is explained entirely by coverage and not at all by the
+targets. The correspondence rule was never the problem and is not the solution either -- it is a
+tenth the size of the effect that is.
+
+**Correcting a number I propagated into two commits.** `ded65bf` and `0213dfc` say the shooting rule
+keeps **27.1%**. It does not: the rule keeps **62.8%** at the operating amplitude and **33.5%** at
+the largest. The 27.1% was measured *after* count-matched subsampling -- an artefact of the fitting
+procedure, not the correspondence's behaviour -- and I wrote it up as the rule's loss rate. The
+conclusions in those entries survive because they turned on coverage being reduced, which it is;
+the magnitude of the loss was overstated by more than a factor of two.
+
+**And my specific worry was exactly backwards.** `ded65bf` warned that "a 27% average that is 60% on
+the torso and 5% on the calcaneus would leave exactly the failing segments unconstrained." The
+measured per-segment rates invert that: at the operating amplitude **torso 6.8%** and **pelvis
+29.7%** are the starved ones, while **calcn 51.8%**, **toes 40.8%** and **patella 79.8%** stay well
+covered. The segments that fail gate 2 are **not** the ones shooting starves. Torso and pelvis are,
+and at the largest amplitude the starvation spreads to the long bones (tibia_l 6.8%, humerus_r 10%,
+femur_l 10.7%).
+
+**That inversion is coherent rather than puzzling.** The torso is where every thin-sheet hit
+occurred. Ribs and scapulae both defeat the shot -- producing `no_hit` and `return_too_far` -- and
+inflate the nearest rule's tail through far-wall matches. One geometry causes both failures, which
+is why the filter that fixes the tail is the same thing that starves the coverage.
+
+**So the repair is neither rule, and it is pre-registered here before it is built.** Since coverage
+outweighs targets ten to one, a **hybrid** -- shooting's target where the shot is kept, the nearest
+rule's target where it is dropped -- should beat both, *despite* reintroducing the nearest rule's
+bad targets on exactly the worst geometry. That is a counterintuitive consequence of the measured
+trade and is worth testing precisely because it is counterintuitive.
+
+* **Predicted: the hybrid recovers 2.00-2.13 mm** -- at or slightly better than full-coverage
+  nearest's 2.138, since it restores 100% coverage and improves the targets on 62.8% of it.
+* **If it lands below 2.00**, the two effects combine better than additively and the line has a
+  real repair.
+* **If it lands above 2.20**, reintroducing far-wall targets on the torso costs more than the
+  coverage it buys, and coverage and target quality are not separable the way this table implies.
+* Either way, **the entire normal-shooting exercise is then worth under 0.15 mm**, which is the
+  honest scale of what a correspondence change can do for this line, and is worth stating before
+  anyone builds a third one.
+
 **Why this was worth having from a retired control.** I retired it for firing a threshold at the
 wrong separation, and it then answered a question I had not asked: whether this line's headline
 quality metric measures accuracy at all. It does not. A control kept running after its gate was
