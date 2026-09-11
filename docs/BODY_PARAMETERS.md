@@ -3863,3 +3863,34 @@ What has changed is that the parametrization no longer stops at the scaffold.
    stalled before the repair. Not quoted as final, and when it is, it must say what it was
    exercising: an association **refused** at 0.4999 mm against a 0.5 mm jump limit, not a converged
    one.
+
+   ### Acceptance does not test convergence, and that gap reaches past the affordability number
+
+   The drive reached fraction **0.3115** and stopped on the **wall-clock cap, not a stall** — but the
+   last three accepted steps each ran **`Newton 300`, which is `max_newton`.** They exhausted the
+   iteration budget rather than converging, and **`settled` checks only association motion and
+   penetration**. So a step can be *accepted while unconverged*, and part of the extra reach may have
+   been bought that way.
+
+   **0.3115 is therefore not quotable.** The honest statement is that the repair took the drive past
+   the 0.0625 where it stalled, and it was still advancing when the clock ran out. `UNCONVERGED` is
+   now printed on the step line and the run relaunched.
+
+   **The gap is in the acceptance rule, so it is not confined to the affordability number.** Every
+   verdict on this line that rests on *accepted steps* inherits the question, and they do not all
+   inherit it equally:
+
+   * **T-none, W, X, V-on-plane are safe by inspection** — they report **one Newton iteration per
+     step**, which cannot be an exhausted budget.
+   * **R′ completing to 1.0 and the anatomical runs are not**, and R′-completes-where-pre-repair-
+     stalls is the headline evidence that the repair is good.
+   * **Pre-registered:** re-check every recorded verdict for accepted-but-unconverged steps and
+     report which verdicts rest on any. A verdict with none stands as recorded; a verdict with some
+     is **re-run**, not re-read.
+   * **Predicted: R′ is clean and the anatomical runs are not.** R′ has no bed, so its steps are
+     easy; the anatomical bed is where the iteration budget would be exhausted. Stated with the usual
+     caveat about my record here.
+
+   **This is the same shape as the jump limit printing `0.0000 mm` for "refused".** An acceptance
+   criterion that omits the solve's own convergence reports success for a step that did not finish —
+   a green result from a check that never looked at the thing it is named for.
