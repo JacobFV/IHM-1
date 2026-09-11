@@ -3084,3 +3084,42 @@ What has changed is that the parametrization no longer stops at the scaffold.
    line is unchanged: no result about the breast is readable until a control exercises that regime.
    A passing X is not clearance.
 
+   ### The standing-condition control has no analytic answer. Two known answers that need none.
+
+   On the anatomical bed with a non-rigid motion there is no closed form to compare against, and the
+   obvious repair — prescribe the whole boundary, as X does — **removes the bed's role entirely**,
+   since a fully prescribed boundary leaves the constraint nothing to do. That is the same bind the
+   skin line hit: the regime that matters is the one where no truth exists. Two known answers do not
+   require one.
+
+   **Gate Y — reversibility.** Drive the base forward through the anatomical bed by a non-rigid
+   motion, then drive it back. For frictionless unilateral contact on a hyperelastic body the
+   quasi-static solution is a property of the configuration, not of the path taken to it, so the
+   return must reproduce the start.
+
+   **Gate Z — path independence.** Reach the *same* final configuration by two different step
+   sequences (16 increments against 64). The two answers must agree.
+
+   **Z is the sharper of the two**, because the failure mechanism this line has identified is
+   *association staleness*, and staleness is exactly what a change of step count varies while holding
+   everything else fixed. A stale-association error is a path-dependent error by construction.
+
+   **Tolerance, derived not chosen: the bed's facet scale, 1 mm** — the same measured quantity the
+   threshold already uses. The association is discrete, so two step counts may legitimately select
+   different bed facets and differ at that scale; anything larger is path dependence the
+   discretisation cannot excuse.
+
+   * **Both pass:** the stepping is path-independent on the real bed under a real motion, which is
+     the property every earlier control was built to approach and none could reach.
+   * **Either fails:** the failure is quantified in millimetres on the geometry that matters, and it
+     is the first such number this line has had.
+   * **Honest limit, recorded now so a pass is not over-read:** path independence and reversibility
+     are **necessary, not sufficient.** A consistently wrong answer is reversible and path
+     independent too. They bound the *solver's* contribution to the error; they say nothing about
+     whether the seated breast is anatomically right, which remains judged by gates (a)–(d) and by
+     nothing else.
+   * **Expectation, and it is the agent's rather than mine:** refusals reappear, since the anatomical
+     bed produced 93.8% under a *rigid* drive while X's 0% came from a surface with no features to
+     jump between. If they do, gate V's adaptive stepping is not an optimisation but the mechanism
+     that makes this regime tractable at all.
+
