@@ -279,7 +279,9 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
             held_err = float(np.abs(gap[held] - target).max()) if held.any() else 0.0
             pen = float(max(0.0, -gap[~held].min())) if (~held).any() else 0.0
             if log: log(f"  fraction {fraction:.4f} pass {outer}: Newton {r['iterations']}, held gap error {held_err*1e3:.4f} mm, "
-                        f"unilateral penetration {pen*1e3:.4f} mm, min J {r['minimum_jacobian']:.3f}, association moved {moved*1e3:.4f} mm", flush=True)
+                        f"unilateral penetration {pen*1e3:.4f} mm, min J {r['minimum_jacobian']:.3f}, "
+                        + (f"association moved {moved*1e3:.4f} mm" if association != 'adaptive'
+                           else "association held for the step (adaptive updates after it)"), flush=True)
             settled = moved <= assoc_tol_m and pen <= gap_tol_m
             if freeze_frames or (settled and (fraction < 1.0 - 1e-12 or held_err <= gap_tol_m)):
                 return u_local, dict(passes=outer + 1, held_gap_error_m=held_err, unilateral_penetration_m=pen,
