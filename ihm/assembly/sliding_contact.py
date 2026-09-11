@@ -112,7 +112,7 @@ def tangent_frames(n, hint=(0.0, 1.0, 0.0)):
 
 
 def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5, max_outer=25,
-                hint=(0.0, 1.0, 0.0), rtol=1e-7, jump_limit_m=0.01, assoc_tol_m=1e-4, log=None):
+                hint=(0.0, 1.0, 0.0), rtol=1e-7, jump_limit_m=0.01, assoc_tol_m=1e-4, move=None, log=None):
     """The sliding base. base: node indices on the surface facing the bed. closest(points) ->
     (c, n): closest bed points and the bed's outward unit normals there. A base node BEHIND the bed
     in the registered position is HELD: its signed normal gap is ramped to zero over load_steps and
@@ -141,11 +141,16 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
         assoc[0], assoc[1] = c_new, n_new
         return c_new, n_new, int(teleport.sum()), moved
 
+    # How far each held node is asked to travel along the bed normal. By default it closes its own
+    # gap exactly; `move` supplies a different per-node distance -- the DECLARED modelling choice of
+    # a smoothed depth field, where closing each gap exactly would fold the tissue through itself.
+    travel = -gap0[held] if move is None else np.asarray(move, float)[held]
+
     def advance(fraction, u_start):
-        """Re-linearise and solve at this fraction of the held nodes' gap closure."""
+        """Re-linearise and solve at this fraction of the held nodes' travel."""
         u_local = u_start
         for outer in range(max_outer):
-            target = (1 - fraction) * gap0[held]
+            target = gap0[held] + fraction * travel
             c, n, kept, _ = associate((X + u_local)[base])
             frames = np.tile(np.eye(3), (N, 1, 1)); frames[base] = tangent_frames(n, hint)
             lo = np.full(X.shape, -np.inf); hi = np.full(X.shape, np.inf)

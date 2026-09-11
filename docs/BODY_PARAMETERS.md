@@ -2373,3 +2373,40 @@ What has changed is that the parametrization no longer stops at the scaffold.
    the female-torso work needs a female body rather than a male one corrected -- which is the
    conclusion `data/sources/visible-human-lower-extremity.json` was catalogued against.
 
+   **The smoothing costs almost nothing and the seating still does not complete.**
+
+   | bandwidth (s1159 left, 4,097 base nodes) | worst gradient | edges over 1.0 | magnitude removed | depth median | depth p90 |
+   |---:|---:|---:|---:|---:|---:|
+   | 0 mm (raw) | **74.71** | 1,311 | 0.0% | 7.38 mm | 16.06 mm |
+   | 5 mm | 1.47 | 71 | -0.4% | 7.14 | -- |
+   | 10 mm | 0.72 | 0 | -0.4% | 6.74 | -- |
+   | 12 mm | 0.56 | 0 | -0.2% | 6.81 | -- |
+   | **20 mm (first at the bar)** | **0.39** | **0** | **0.3%** | **7.48** | **11.87** |
+
+   **The bandwidth required is 20 mm and it removes 0.3% of the field's magnitude** -- not the 20-40%
+   predicted, and nowhere near the half that would have stopped the run. The roughness that made the
+   field impossible to apply carries almost none of its size: smoothing takes the worst neighbour
+   gradient from 74.71 to 0.39 and the edges that had to fold through themselves from 1,311 to zero,
+   while the median depth moves 7.38 -> 7.48 mm and the p90 16.06 -> 11.87 mm. (The worst gradient is
+   not monotonic in bandwidth -- 0.56 at 12 mm, 0.74 at 15, 0.39 at 20 -- so "the first bandwidth at
+   the bar" is 20 mm by the rule as written.)
+
+   **And it still does not seat.** With the smoothed field the solve reaches a fraction of **0.0156**
+   -- 1.6% of the seating -- and then stops: the same **13 elements** invert at every step size tried,
+   down to 9e-5 of the travel, so the increment is no longer what limits it. Those elements are not
+   slivers: their reference quality is a median 0.478 against the mesh's own 0.487. Gates (a)-(d)
+   were therefore not reached and no artefact was written.
+
+   Two convergence tolerances were declared at the bed's facet scale (1 mm) on the way, because
+   0.05 mm asks the solver to resolve the muscular wall finer than the wall is defined: its normals
+   turn several degrees over 2-4 mm, so a sliding node's hit point moves ~0.5 mm per pass and its
+   measured gap wanders ~0.2 mm. They are convergence criteria, not gates.
+
+   **What this does and does not establish.** It does not establish the fallback reading -- this chest
+   is NOT reshaping the breast, because the smoothing that makes the field appliable costs 0.3% of it.
+   The obstruction is no longer the registration's roughness, which is now measured and removed at
+   negligible cost; it is that a base of 3,123 held nodes driven along their own normals into a
+   faceted anatomical bed drives a handful of ordinary elements to degeneracy, and the solver's own
+   J > 0.2 floor then blocks every further step. That is the fifth suspect this line has isolated by
+   measurement, and the first that lies inside the solver rather than in the data.
+

@@ -57,6 +57,7 @@ sternum still sits outside it (the separate skin-envelope problem).
 import argparse, gzip, importlib.util, json, subprocess, sys, time
 from pathlib import Path
 import numpy as np
+from scipy.spatial import cKDTree
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -87,7 +88,18 @@ DECIMATE_FACES, DECIMATE_VOLUME_TOL, MESH_LR = 8000, 0.005, 0.08
 # A ray that meets the bed at a shallow angle has no well-defined bed direction: a micrometre of
 # motion slides its hit point millimetres along the surface, which reads as the constraint moving.
 # Those nodes are free, like the ones with no muscle on their line.
-RAY_REACH_M, GRAZING_COS, LOAD_STEPS, GAP_TOL_M = 0.060, 0.3, 8, 5e-5
+# Both convergence tolerances are set to the BED's facet scale, ~1 mm, and declared together: the
+# muscular wall is a faceted anatomical mesh whose normals turn several degrees over 2-4 mm, so a
+# sliding node's hit point moves ~0.5 mm per pass and its measured gap wanders by ~0.2 mm. Asking
+# either to settle to 0.05 mm asks the solver to resolve the bed finer than the bed is defined.
+# These are convergence criteria, not gates: (a)-(d) are unchanged and the contact gap is reported.
+RAY_REACH_M, GRAZING_COS, LOAD_STEPS, GAP_TOL_M = 0.060, 0.3, 8, 1e-3
+# The re-linearisation is called self-consistent when the association stops moving. 0.1 mm was
+# below the BED's own facet scale -- the muscular wall's normals turn several degrees over
+# 2-4 mm, so a sliding node's hit point genuinely moves ~0.5 mm per pass and the criterion
+# could never be met. It is set to 1 mm, the scale of the surface the tissue slides on, and
+# declared here rather than tuned quietly.
+ASSOC_TOL_M = 1e-3
 # The objective is penetration only, so it has a degenerate minimum: fly the breast away and every
 # ray misses the muscle. Unbounded L-BFGS took it in one step (999.7 mm). The search is therefore
 # bounded to the region where 'placement' means anything -- the 25 mm honesty limit itself, and
@@ -113,6 +125,9 @@ CAVEATS = ["one clinical subject per breast, as a segmentation model drew it",
            "nu = 0.49 is assumed (adipose is nearly incompressible)",
            "gravity and the unloaded supine reference shape are out of scope",
            "the mapped female TRUNK is not changed; this body's sternum still sits outside it (skin-envelope problem)"]
+
+
+def say(*a): print(*a, flush=True)
 
 
 def read_obj(p):
@@ -192,7 +207,6 @@ def build_bed_index(V, F):
     """Two tiers, because one oversized triangle would set the query radius for every ray: the bed's
     face radii run 1.6 mm median but 28.9 mm max, and querying with the max pulls 3,079 candidates
     per ray instead of 374. Small faces go in a KD-tree; the 1% oversized ones are tested in bulk."""
-    from scipy.spatial import cKDTree
     cent = V[F].mean(1); rad = np.linalg.norm(V[F] - cent[:, None, :], axis=2).max(1)
     cut = float(np.percentile(rad, 99))
     small = np.flatnonzero(rad <= cut); large = np.flatnonzero(rad > cut)
@@ -506,7 +520,12 @@ def stage_dr(sid, side, d, young, tag=""):
     region = SlidingRegion(P["X"], P["T"], mu_pa=mu, lambda_pa=lam, density_kg_m3=950.0)
     closest, _ = bed_rays(P["bedV"], P["bedF"], P["ray_directions"], RAY_REACH_M)
     t0 = time.time()
-    r = seat_on_bed(region, P["base"], closest, load_steps=LOAD_STEPS, gap_tol_m=GAP_TOL_M, jump_limit_m=5e-4,
+    smoothed = d / "smoothed_move.npy"
+    move = np.load(smoothed) if smoothed.exists() else None
+    if move is not None:
+        print(f"  seating with the SMOOTHED depth field (declared modelling choice): "
+              f"median travel {1000*np.median(move[move>0]):.2f} mm", flush=True)
+    r = seat_on_bed(region, P["base"], closest, load_steps=LOAD_STEPS, gap_tol_m=GAP_TOL_M, jump_limit_m=5e-4, move=move, assoc_tol_m=ASSOC_TOL_M,
                     log=lambda m, flush=True: print(m, flush=True))
     np.save(d / f"dr_displacement{tag}.npy", r["displacement"])
     (d / f"dr{tag}.json").write_text(json.dumps(dict(
@@ -613,13 +632,104 @@ def stage_judge(sid, side, d):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--subject", required=True, choices=sorted(REG)); ap.add_argument("--side", required=True, choices=("left", "right"))
-    ap.add_argument("--stage", required=True, choices=("prepare", "place", "dr", "dr-check-E", "febio", "judge"))
+    ap.add_argument("--stage", required=True, choices=("prepare", "place", "smooth", "dr", "dr-check-E", "febio", "judge"))
     a = ap.parse_args(); d = OUT / a.subject / a.side; d.mkdir(parents=True, exist_ok=True)
     print(f"{a.subject} {a.side}: {a.stage}", flush=True)
     {"prepare": lambda: stage_prepare(a.subject, a.side, d), "place": lambda: stage_place(a.subject, a.side, d),
+     "smooth": lambda: stage_smooth(a.subject, a.side, d),
      "dr": lambda: stage_dr(a.subject, a.side, d, E_PA),
      "dr-check-E": lambda: stage_dr(a.subject, a.side, d, E_CHECK_PA, "_E10000"),
      "febio": lambda: stage_febio(a.subject, a.side, d), "judge": lambda: stage_judge(a.subject, a.side, d)}[a.stage]()
+
+
+# ---- the declared modelling choice: smooth the DEPTH FIELD, bounded by invertibility ------------
+# (docs/BODY_PARAMETERS.md, 2a2ac9c.) 11% of base edges require their ends to slide past each other
+# by more than the edge's own length, so the field the seating must apply is not a deformation. The
+# field is therefore smoothed ON the base surface -- never the geometry -- with the bandwidth raised
+# from zero and stopped at the FIRST value where the worst neighbour gradient reaches GRADIENT_BAR.
+# Nothing here is chosen to make a number come out: the stopping point is what the solver needs to
+# keep elements from inverting, and if reaching it costs more than half the field's magnitude the
+# breast is being reshaped by the chest rather than seated on it, and the run stops.
+GRADIENT_BAR = 0.5
+SMOOTH_BANDWIDTHS_MM = (0., 1., 2., 3., 4., 5., 6., 8., 10., 12., 15., 20., 25., 30., 40., 50.)
+MAGNITUDE_STOP = 0.5
+ADAPTED_LABEL = ("a female breast adapted to this body's chest wall, derived from subject {sid}, "
+                 "not a model of her anatomy")
+
+
+def smooth_on_surface(X, nodes, values, sigma_m):
+    """Gaussian averaging over the base surface: one number per node, geometry untouched."""
+    if sigma_m <= 0: return values.copy()
+    P = X[nodes]; tree = cKDTree(P)
+    out = np.empty_like(values)
+    for a, neigh in enumerate(tree.query_ball_point(P, r=3 * sigma_m, workers=-1)):
+        j = np.asarray(neigh)
+        w = np.exp(-((np.linalg.norm(P[j] - P[a], axis=1) / sigma_m) ** 2) / 2)
+        out[a] = float((w * values[j]).sum() / w.sum())
+    return out
+
+
+def base_edges(X, T, base):
+    isb = np.zeros(len(X), bool); isb[base] = True
+    E = np.vstack([T[:, [a, b]] for a in range(4) for b in range(a + 1, 4)])
+    E = np.unique(np.sort(E, 1), axis=0)
+    E = E[isb[E[:, 0]] & isb[E[:, 1]]]
+    order = -np.ones(len(X), np.int64); order[base] = np.arange(len(base))
+    return order[E], np.linalg.norm(X[E[:, 0]] - X[E[:, 1]], axis=1)
+
+
+def bandwidth_sweep(X, T, base, depth):
+    """Raise the bandwidth until the worst neighbour gradient reaches the bar; report the cost."""
+    E, L = base_edges(X, T, base)
+    raw_mag = float(np.abs(depth).mean())
+    rows = []
+    chosen = None
+    for sig in SMOOTH_BANDWIDTHS_MM:
+        d = smooth_on_surface(X, base, depth, sig * 1e-3)
+        g = np.abs(d[E[:, 0]] - d[E[:, 1]]) / np.maximum(L, 1e-9)
+        removed = 1.0 - float(np.abs(d).mean()) / raw_mag
+        rows.append(dict(bandwidth_mm=sig, max_gradient=float(g.max()), p90_gradient=float(np.percentile(g, 90)),
+                         over_one=int((g > 1).sum()), magnitude_removed=removed,
+                         median_mm=float(1000 * np.median(d[depth > 0])), p90_mm=float(1000 * np.percentile(d, 90))))
+        say(f"  bandwidth {sig:5.1f} mm: worst gradient {g.max():8.2f}, p90 {np.percentile(g,90):5.2f}, "
+            f"edges over 1.0: {int((g>1).sum()):5d}, magnitude removed {100*removed:5.1f}%, "
+            f"depth median {1000*np.median(d[depth>0]):5.2f} mm")
+        if chosen is None and g.max() <= GRADIENT_BAR:
+            chosen = dict(rows[-1]); chosen["field"] = d
+            break
+    return chosen, rows, raw_mag
+
+
+def stage_smooth(sid, side, d_dir):
+    P = np.load(d_dir / "prepared.npz")
+    X, T, base, gap0 = P["X"], P["T"], P["base"], P["gap0"]
+    depth = np.where(gap0 < 0, -gap0, 0.0)
+    say(f"{sid} {side}: raw field over {len(base)} base nodes, median {1000*np.median(depth[depth>0]):.2f} mm, "
+        f"p90 {1000*np.percentile(depth,90):.2f}, max {1000*depth.max():.2f}")
+    chosen, rows, raw_mag = bandwidth_sweep(X, T, base, depth)
+    rec = dict(subject=sid, side=side, sweep=rows, gradient_bar=GRADIENT_BAR,
+               raw=dict(median_mm=float(1000 * np.median(depth[depth > 0])),
+                        p90_mm=float(1000 * np.percentile(depth, 90)), max_mm=float(1000 * depth.max()),
+                        mean_magnitude_mm=1000 * raw_mag))
+    if chosen is None:
+        say(f"NO BANDWIDTH within {SMOOTH_BANDWIDTHS_MM[-1]:.0f} mm brings the worst gradient to {GRADIENT_BAR}")
+        rec["stopped"] = "no bandwidth reached the bar"
+        (d_dir / "smoothing.json").write_text(json.dumps(rec, indent=2) + "\n")
+        return None
+    removed = chosen["magnitude_removed"]
+    say(f"BANDWIDTH REQUIRED: {chosen['bandwidth_mm']:.0f} mm; it removes {100*removed:.1f}% of the field's "
+        f"magnitude; depth median {rec['raw']['median_mm']:.2f} -> {chosen['median_mm']:.2f} mm, "
+        f"p90 {rec['raw']['p90_mm']:.2f} -> {chosen['p90_mm']:.2f} mm")
+    rec["chosen"] = {k: v for k, v in chosen.items() if k != "field"}
+    if removed > MAGNITUDE_STOP:
+        say(f"STOP: reaching the bar removes {100*removed:.1f}% of the field, more than half. The breast is being "
+            f"reshaped by the chest rather than seated on it; no seating is run.")
+        rec["stopped"] = "more than half the field's magnitude removed"
+        (d_dir / "smoothing.json").write_text(json.dumps(rec, indent=2) + "\n")
+        return None
+    np.save(d_dir / "smoothed_move.npy", chosen["field"])
+    (d_dir / "smoothing.json").write_text(json.dumps(rec, indent=2) + "\n")
+    return chosen
 
 
 if __name__ == "__main__": main()
