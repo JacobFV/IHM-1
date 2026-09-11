@@ -1437,6 +1437,41 @@ done; the others have moved.
    plausible wrong answer rather than an error, which is what makes the known-answer gates worth
    their cost.
 
+   **Stop corresponding ribs. Pre-registered 2026-09-10, before it is built.** The whole line has
+   been trying to match two rib cages bone to bone, and a rib is a few millimetres thick with 5-10 mm
+   of air beside it: a ray that misses by 3 mm finds nothing, which is why 2,100 of 3,600 samples
+   found no target at all. But a breast does not rest on a rib. It rests on the CHEST WALL -- a
+   continuous sheet of muscle over bone over intercostal -- and that surface has no gaps to miss.
+
+   * **The instrument.** For each body, build the chest-wall ENVELOPE over the breast base: the
+     outward surface of the union of ribs 2-7, their costal cartilage, the sternum and the muscular
+     wall already used as the seating bed, closed by a morphological closing with a **10 mm** ball
+     (fixed here) so that inter-rib gaps are spanned rather than entered, and smoothed by the same
+     20 Taubin iterations. Correspondence is normal shooting between the two envelopes; the scalar
+     offset field of `de88ef4` is then fitted on the envelope, where it was always the right object.
+   * **Gate 0', the correspondence at a REAL separation -- the lesson this line paid for.** The old
+     gate 0 scored a surface against itself displaced, which is why 0.078 mm meant nothing at a
+     centimetre. The new one scores it between THIS body's envelope and each subject's, and it is
+     a coverage gate first: **>= 95% of samples must find a target within 20 mm**, against the
+     3.7-8.6% the rib correspondence managed. Only then is accuracy read, on the synthetic case, at
+     a separation of 10 mm rather than zero.
+   * **Gate A', accuracy.** The standing relative criterion: recovery residual <= 10% of the normal
+     deformation carried.
+   * **Gates 2-4 unchanged.**
+   * **Reported:** how far the closing moves the surface, since a 10 mm ball spanning a 10 mm gap
+     invents surface where the body has none, and that invention is exactly where the breast sits.
+
+   **Predicted:** coverage clears 95% easily, because a closed envelope has no gaps to miss;
+   the offsets the correspondence sees then match the 6.5-10.9 mm the decomposition measured,
+   rather than the 0.37-0.45 mm the rib pairs saw. If coverage clears and gate 4 still fails, the
+   obstacle is not correspondence either, and the remaining explanation is that this body's chest
+   is the wrong shape to carry these breasts at all -- which would be a statement about the body,
+   and the end of this line.
+
+   **And a rule that outlives this line:** a correspondence's known answer must be scored at the
+   separation it will be used at. A surface against itself displaced is a test of arithmetic; two
+   different bodies a centimetre apart is the test of the instrument.
+
    **A normal-only model gives up 6-9% of the deformation**, far inside the 50% that would have
    ended the line, and the normal part -- 6.5 to 10.9 mm -- is the chest-wall offset this file has
    recorded all along. A chest wall differs from another chest wall mostly in how far forward it
