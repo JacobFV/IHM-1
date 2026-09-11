@@ -1245,6 +1245,31 @@ done; the others have moved.
    p90, both without any filter), and what remains is a thin-sheet failure with a known cause, a
    measured size, and a one-line remedy.
 
+   **Normal agreement is adopted, on the argument and not on the score (2026-09-10).** A hit whose
+   surface faces away from the source is on the far wall of the rib: it is not the partner of the
+   source point, it is a different part of the bone that happens to lie along the ray, and the
+   return test cannot see it because the two cortical walls are parallel. That is a correctness
+   condition on what a correspondence IS, and it would have been right to specify it before the
+   numbers existed -- the pre-registration simply did not anticipate a surface thin enough to shoot
+   through. It is adopted for that reason, with the reason stated, and **its gate-0 numbers are
+   reported rather than claimed as a pass**: 0.078 mm mean and 0.157 mm p90 were seen before the
+   rule was adopted, so they are evidence about the instrument and not a verdict on it. The agent
+   that found this implemented it OFF by default and refused to claim the pass, which is why the
+   distinction is available to make at all.
+
+   **What the instrument is now judged on is gate 1, which has not been run with it**, at the same
+   1 mm RMS and with both readings reported; then gates 2-4 unchanged. Gate 0 stands as written for
+   any future correspondence -- <= 0.2 mm mean, <= 0.5 mm p90 against a known preimage -- and a
+   correspondence that needs a filter to reach it declares the filter.
+
+   **Also reported, not judged:** 319 of 4,800 samples are dropped by the agreement test, and where
+   they fall is the finding rather than a nuisance -- right ribs 2 and 3 carry means of 1.548 and
+   1.396 mm against about 0.12 mm on the other ten, because those are the thinnest sheets in the
+   set. **The skin line inherits this**: `ihm/anatomy/normal_shooting.py` is written as a reusable
+   instrument with its own sphere known answer (recovering a 2%-inflated copy's radial partner to
+   4.9e-4 of the radius), and any line that shoots normals at ribs or scapulae meets the same
+   thin-sheet case.
+
    **Seat it in two steps: place, then conform. Fixed 2026-09-10, before it runs.** 45 mm of
    overlap is not tissue deformation, it is placement -- the breast is another woman's tissue where
    a similarity registration put it, and a quasi-static solve pushing 45 mm of interpenetration out
