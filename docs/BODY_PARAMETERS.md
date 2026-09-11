@@ -2925,3 +2925,36 @@ What has changed is that the parametrization no longer stops at the scaffold.
    which is exactly the regime neither this control nor its predecessors exercise, and I have been
    wrong twice today on this line by reasoning past the end of what the controls actually cover.
 
+   **GATE U: the consistency check passes and the REFUSAL RATE is 93.8%. The single switch has
+   degenerated to T-none, and the answer is the step size.**
+
+   Threshold, derived and not chosen: the step's own node motion plus the bed's 1 mm facet scale --
+   1.935 mm on this drive, against a median association move of 0.4499 mm and teleports of 46.6 mm.
+   It separates the two populations by a factor of 24.
+
+   **Consistency check (not a new result):** under the rule R' completes to fraction 1.0 with min J
+   1.0000, zero inversions and the exact rigid translation, 0.000 mm -- exactly as T-none does, which
+   is what a correct rule must do and shows only that it did not break what already worked.
+
+   **The real number: 15 of 16 updates refused (93.8%).** Some association exceeds the bar at nearly
+   every step, the whole update is refused, and the rule reduces to never updating. So a single
+   all-or-nothing switch cannot give both consistency and bed-following, stated plainly rather than
+   tuned: lowering the bar refuses more, raising it re-admits the 46.6 mm teleports that deformed the
+   body in the first place.
+
+   **But the step size can, and this is measured rather than argued.** For the same rigid drive, with
+   the association compared against the same threshold:
+
+   | rigid step | threshold | association move, median | over the bar | lost the bed |
+   |---:|---:|---:|---:|---:|
+   | 0.007 mm | 1.007 mm | 0.0036 mm | **0** | 0 |
+   | 0.075 mm | 1.075 mm | 0.0361 mm | 6 | 0 |
+   | 0.374 mm | 1.374 mm | 0.1797 mm | 25 | 3 |
+   | 0.935 mm | 1.935 mm | 0.4499 mm | 98 | 5 |
+
+   There is **no floor**: the count over the bar falls to zero as the increment shrinks, and the nodes
+   that lose the bed go with it. A consistent update is therefore always available at a small enough
+   step, so the next instrument is adaptive step control driven by ASSOCIATION MOTION rather than by
+   min J -- the quantity that actually breaks -- and it needs no constant that is not already
+   measured here. It is not built: it needs its gate first.
+

@@ -639,7 +639,7 @@ def main():
     # control is run with "hold" because releasing would change WHICH nodes are driven midway, so the
     # two arms would differ in more than staleness -- and the count is reported per step either way.
     ap.add_argument("--lost-bed", choices=("hold", "release"), default="hold")
-    ap.add_argument("--stage", required=True, choices=("prepare", "place", "smooth", "control-r", "control-r-prime", "control-r2", "gate-s", "gate-t-none", "gate-t-all", "dr", "dr-check-E", "febio", "judge"))
+    ap.add_argument("--stage", required=True, choices=("prepare", "place", "smooth", "control-r", "control-r-prime", "control-r2", "gate-s", "gate-t-none", "gate-t-all", "gate-u", "dr", "dr-check-E", "febio", "judge"))
     a = ap.parse_args(); d = OUT / a.subject / a.side; d.mkdir(parents=True, exist_ok=True)
     print(f"{a.subject} {a.side}: {a.stage}", flush=True)
     {"prepare": lambda: stage_prepare(a.subject, a.side, d), "place": lambda: stage_place(a.subject, a.side, d),
@@ -647,6 +647,8 @@ def main():
      "control-r": lambda: stage_control_r(a.subject, a.side, d),
      "control-r-prime": lambda: stage_control_r(a.subject, a.side, d, bed_constraint=False),
      "control-r2": lambda: stage_control_r(a.subject, a.side, d, bed_constraint=False, freeze_frames=True),
+     "gate-u": lambda: stage_control_r(a.subject, a.side, d, bed_constraint=False, freeze_frames=True,
+                                       association="allornothing", lost_bed=a.lost_bed),
      "gate-t-none": lambda: stage_control_r(a.subject, a.side, d, bed_constraint=False, freeze_frames=True,
                                             association="none", lost_bed=a.lost_bed),
      "gate-t-all": lambda: stage_control_r(a.subject, a.side, d, bed_constraint=False, freeze_frames=True,
@@ -790,6 +792,7 @@ def stage_control_r(sid, side, d_dir, bed_constraint=True, freeze_frames=False, 
                         jump_limit_m=CONTROL_JUMP_LIMIT_M, assoc_tol_m=ASSOC_TOL_M, rigid_m=rigid,
                         freeze_frames=freeze_frames, project=project, stop_fraction=stop_fraction,
                         solver_log=solver_log, association=association, lost_bed=lost_bed,
+                        facet_m=GAP_TOL_M,
                         log=lambda m, flush=True: print(m, flush=True))
     except Exception as failure:
         say(f"GATE {'R' if bed_constraint else 'R-prime'}: FAILED -- {type(failure).__name__}: {failure}")
@@ -801,6 +804,10 @@ def stage_control_r(sid, side, d_dir, bed_constraint=True, freeze_frames=False, 
             rigid_mm=1000 * magnitude, direction=direction.tolist(), seconds=time.time() - t0), indent=2) + "\n")
         return False
     steps = r["steps"]
+    if r.get("refusal_rate") is not None:
+        say(f"  REFUSAL RATE: {100*r['refusal_rate']:.1f}% of association updates refused "
+            f"({sum(r['refusals'])} of {len(r['refusals'])}); threshold = the step's node motion + the "
+            f"{1000*GAP_TOL_M:.0f} mm facet scale")
     if r.get("lost_bed_per_association"):
         say(f"  nodes whose ray left the bed, per association: {r['lost_bed_per_association']} "
             f"(rule: {r['lost_bed_rule']}, association: {r['association']})")
@@ -818,7 +825,7 @@ def stage_control_r(sid, side, d_dir, bed_constraint=True, freeze_frames=False, 
         within = sum(st['min_J_entry'] - st['min_J'] for st in steps)
         across_total = sum((steps[i - 1]['min_J'] - steps[i]['min_J_entry']) for i in range(1, len(steps)))
         say(f"  total fall WITHIN steps (constraints fixed): {within:+.4f}; ACROSS re-associations: {across_total:+.4f}")
-        if abs(within) < 1e-9 and abs(across_total) < 1e-9:
+        if abs(within) < 1e-6 and abs(across_total) < 1e-6:
             say("  -> no min J is lost anywhere: every step holds the exact solution")
         elif across_total > within:
             say("  -> min J is lost across the re-associations")

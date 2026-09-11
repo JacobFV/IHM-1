@@ -152,7 +152,7 @@ def tangent_frames(n, hint=(0.0, 1.0, 0.0)):
 def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5, max_outer=25,
                 hint=(0.0, 1.0, 0.0), rtol=1e-7, jump_limit_m=0.01, assoc_tol_m=1e-4, move=None,
                 rigid_m=None, freeze_frames=False, project=True, solver_log=None, stop_fraction=1.0,
-                association='persistent', lost_bed='hold', log=None):
+                association='persistent', lost_bed='hold', facet_m=1e-3, log=None):
     """The sliding base. base: node indices on the surface facing the bed. closest(points) ->
     (c, n): closest bed points and the bed's outward unit normals there. A base node BEHIND the bed
     in the registered position is HELD: its signed normal gap is ramped to zero over load_steps and
@@ -164,8 +164,8 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
     c0, n0 = closest(X[base]); gap0 = np.einsum('ij,ij->i', n0, X[base] - c0)   # signed; < 0 behind the bed
     held = gap0 < 0
     u = np.zeros_like(X); record = []
-    assoc = [c0.copy(), n0.copy(), np.zeros(len(base), bool)]   # third entry: released this step
-    lost_history = []          # persistent association, snapshotted per accepted step
+    assoc = [c0.copy(), n0.copy(), np.zeros(len(base), bool), X[base].copy()]   # ..., positions when it was last taken
+    lost_history = []; refusals = []          # persistent association, snapshotted per accepted step
 
     def associate(points):
         """Update each base node's bed patch, rejecting a teleport. The bed is three overlapping
@@ -182,6 +182,23 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
         if association == 'none' and lost_history:
             return assoc[0], assoc[1], 0, 0.0
         c_new, n_new = closest(points)
+        if association == 'allornothing':
+            # THRESHOLD, derived rather than chosen: the step's own node motion plus the bed's facet
+            # scale. A closest point on a locally smooth bed cannot outrun the node that owns it by
+            # more than the surface's own resolution; anything further has changed FEATURE, which is
+            # what a teleport is. An update is taken WHOLE or refused WHOLE, because mixing updated
+            # and stale constraints is what deformed the body (gate S).
+            motion = float(np.linalg.norm(points - assoc[3], axis=1).max())
+            bar = motion + facet_m
+            move = np.linalg.norm(np.nan_to_num(c_new - assoc[0]), axis=1)
+            invalid = ~np.isfinite(c_new).all(1) | ~np.isfinite(n_new).all(1)
+            over = int((move > bar).sum()) + int(invalid.sum())
+            lost_history.append(int(invalid.sum()))
+            refusals.append(bool(over))
+            if over:                                   # refuse the whole update; every constraint stays in one epoch
+                return assoc[0], assoc[1], over, 0.0
+            assoc[0], assoc[1], assoc[3] = c_new, n_new, points.copy()
+            return c_new, n_new, 0, float(move.max())
         invalid = ~np.isfinite(c_new).all(1) | ~np.isfinite(n_new).all(1)
         rejected = invalid if association == 'all' else (
             invalid | (np.linalg.norm(np.nan_to_num(c_new - assoc[0]), axis=1) > jump_limit_m))
@@ -265,4 +282,5 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
         ds = min(ds * 1.5, 1.0 / load_steps)
     return dict(displacement=u, gap_m=gap, held=held, initial_gap_m=gap0, closest_m=c, normal=n, steps=record,
                 cutbacks=cutbacks, lost_bed_per_association=lost_history, association=association,
+                refusals=refusals, refusal_rate=(float(np.mean(refusals)) if refusals else None),
                 lost_bed_rule=lost_bed, minimum_jacobian=record[-1]['min_J'], converged=record[-1]['converged'])
