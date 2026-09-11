@@ -54,7 +54,7 @@ class SlidingRegion(DeformableRegion):
         n = 3 * len(self.reference)
         return sp.csr_matrix((K.reshape(-1), (self._rows, self._cols)), shape=(n, n))
 
-    def solve_sliding(self, frames, lo, hi, *, start=None, rtol=1e-7, max_newton=300, log=None):
+    def solve_sliding(self, frames, lo, hi, *, start=None, rtol=1e-7, max_newton=300, project=True, log=None):
         """frames (N,3,3): columns are each node's local axes, u = frames @ v. lo, hi (N,3): bounds
         on v (lo == hi fixes a component). start (N,3): initial displacement u (default: current).
         Returns the displacement, iterations, the projected-force residual and its tolerance."""
@@ -116,9 +116,10 @@ class SlidingRegion(DeformableRegion):
             gv = np.einsum('nik,ni->nk', R, gu)
             active = fixed | ((v <= lo) & (gv > 0)) | ((v >= hi) & (gv < 0))
             res = float(np.abs(np.where(active, 0.0, gv)).max())
-            if log: log(f"    newton {it:3d}  E {E:.6e}  projected force {res:.3e} (tol {tol:.1e})  active {int(active.sum())}")
+            if log: log(f"    newton {it:3d}  E {E:.6e}  projected force {res:.3e} (tol {tol:.1e})  "
+                        f"active {int(active.sum())}  min J {float(np.linalg.det(self.deformation(y)).min()):.4f}")
             if res <= tol: break
-            Kv = (Q.T @ self.hessian(y) @ Q).tocsr()
+            Kv = (Q.T @ self.hessian(y, project=project) @ Q).tocsr()
             free = np.flatnonzero(~active.ravel())
             Af = Kv[free][:, free]
             Af = Af + sp.identity(len(free), format='csr') * (1e-10 * float(Af.diagonal().mean()))
@@ -150,7 +151,7 @@ def tangent_frames(n, hint=(0.0, 1.0, 0.0)):
 
 def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5, max_outer=25,
                 hint=(0.0, 1.0, 0.0), rtol=1e-7, jump_limit_m=0.01, assoc_tol_m=1e-4, move=None,
-                rigid_m=None, freeze_frames=False, log=None):
+                rigid_m=None, freeze_frames=False, project=True, solver_log=None, stop_fraction=1.0, log=None):
     """The sliding base. base: node indices on the surface facing the bed. closest(points) ->
     (c, n): closest bed points and the bed's outward unit normals there. A base node BEHIND the bed
     in the registered position is HELD: its signed normal gap is ramped to zero over load_steps and
@@ -213,7 +214,8 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
                 if len(col) != 1: raise ValueError(f"pin on node {node}, axis {axis}, is not along one of its frame axes")
                 lo[node, col[0]] = hi[node, col[0]] = 0.0
             j_entry = float(np.linalg.det(region.deformation(X + u_local)).min())
-            r = region.solve_sliding(frames, lo, hi, start=u_local, rtol=rtol); u_local = r['displacement']
+            r = region.solve_sliding(frames, lo, hi, start=u_local, rtol=rtol, project=project,
+                                     log=solver_log); u_local = r['displacement']
             c, n, kept, moved = associate((X + u_local)[base]); gap = np.einsum('ij,ij->i', n, (X + u_local)[base] - c)
             step = travel if rigid is None else n[held] @ rigid
             target = gap0[held] + fraction * step
@@ -233,7 +235,7 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
     # nodes past their free neighbours and inverts surface tets before the first Newton iteration.
     # On failure the increment is halved and retried, then allowed to grow back.
     fraction, ds, cutbacks = 0.0, 1.0 / load_steps, 0
-    while fraction < 1.0 - 1e-12:
+    while fraction < min(stop_fraction, 1.0) - 1e-12:
         trial = min(1.0, fraction + ds)
         saved = [assoc[0].copy(), assoc[1].copy()]      # a failed step must not leave a stale association
         try:

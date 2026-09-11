@@ -633,7 +633,8 @@ def stage_judge(sid, side, d):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--subject", required=True, choices=sorted(REG)); ap.add_argument("--side", required=True, choices=("left", "right"))
-    ap.add_argument("--stage", required=True, choices=("prepare", "place", "smooth", "control-r", "control-r-prime", "control-r2", "dr", "dr-check-E", "febio", "judge"))
+    ap.add_argument("--no-project", action="store_true")
+    ap.add_argument("--stage", required=True, choices=("prepare", "place", "smooth", "control-r", "control-r-prime", "control-r2", "gate-s", "dr", "dr-check-E", "febio", "judge"))
     a = ap.parse_args(); d = OUT / a.subject / a.side; d.mkdir(parents=True, exist_ok=True)
     print(f"{a.subject} {a.side}: {a.stage}", flush=True)
     {"prepare": lambda: stage_prepare(a.subject, a.side, d), "place": lambda: stage_place(a.subject, a.side, d),
@@ -641,6 +642,9 @@ def main():
      "control-r": lambda: stage_control_r(a.subject, a.side, d),
      "control-r-prime": lambda: stage_control_r(a.subject, a.side, d, bed_constraint=False),
      "control-r2": lambda: stage_control_r(a.subject, a.side, d, bed_constraint=False, freeze_frames=True),
+     "gate-s": lambda: stage_control_r(a.subject, a.side, d, bed_constraint=False, freeze_frames=True,
+                                       project=not a.no_project, stop_fraction=0.25,
+                                       solver_log=(lambda m: print(m, flush=True))),
      "dr": lambda: stage_dr(a.subject, a.side, d, E_PA),
      "dr-check-E": lambda: stage_dr(a.subject, a.side, d, E_CHECK_PA, "_E10000"),
      "febio": lambda: stage_febio(a.subject, a.side, d), "judge": lambda: stage_judge(a.subject, a.side, d)}[a.stage]()
@@ -736,7 +740,8 @@ def stage_smooth(sid, side, d_dir):
     return chosen
 
 
-def stage_control_r(sid, side, d_dir, bed_constraint=True, freeze_frames=False):
+def stage_control_r(sid, side, d_dir, bed_constraint=True, freeze_frames=False, project=True,
+                    stop_fraction=1.0, solver_log=None):
     """CONTROL R: the same 3,123 held nodes, the same bed, the same solver and the same J > 0.2
     floor, driven by a RIGID TRANSLATION of the whole base equal to the smoothed field's median
     displacement. Gate R: completes to fraction 1.0 with zero inversions."""
@@ -774,7 +779,8 @@ def stage_control_r(sid, side, d_dir, bed_constraint=True, freeze_frames=False):
         # moved 0.94 mm.
         r = seat_on_bed(region, base, closest, load_steps=LOAD_STEPS, gap_tol_m=GAP_TOL_M,
                         jump_limit_m=CONTROL_JUMP_LIMIT_M, assoc_tol_m=ASSOC_TOL_M, rigid_m=rigid,
-                        freeze_frames=freeze_frames,
+                        freeze_frames=freeze_frames, project=project, stop_fraction=stop_fraction,
+                        solver_log=solver_log,
                         log=lambda m, flush=True: print(m, flush=True))
     except Exception as failure:
         say(f"GATE {'R' if bed_constraint else 'R-prime'}: FAILED -- {type(failure).__name__}: {failure}")

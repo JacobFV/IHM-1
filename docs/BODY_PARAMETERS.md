@@ -2799,3 +2799,29 @@ What has changed is that the parametrization no longer stops at the scaffold.
    discrete event, not an accumulation: the iteration leaves the zero-energy branch in one step and
    the subsequent steps merely carry that state along. The breast stays untouched.
 
+   **GATE S fails at min J 0.7098, and the evidence supports NONE of the three named causes. The
+   cause is the re-association, which R'' appeared to clear.**
+
+   | cause | test | result |
+   |---|---|---|
+   | 1, the Hessian projection | step 2 with `project=False` | **cleared**: the same converged state, E 3.664278e-04 and min J 0.7098, in 13 Newton iterations instead of 142. The projection costs speed, not correctness. |
+   | 2, the line search | total energy at every accepted step | **cleared**: monotone within the solve (4.82e-04 -> 3.66e-04). The one energy RISE is across the step boundary -- the start construction -- not an accepted step. |
+   | 3, a second branch in the formulation | step 2 with the association untouched | **cleared**: the same step, same solver, same bounds arithmetic converges to **min J 1.0000** and the exact translation, error **0.0000 mm**. No second branch: the zero-energy solution is found when the constraints are consistent. |
+
+   **What it is.** Step 2's first Newton iteration already begins at min J 0.4245 -- the state is
+   deformed before the iteration runs -- and Newton then IMPROVES it to 0.7098. The damage is in the
+   start, and the start is built from the re-associated bounds. Measured directly, after one 0.935 mm
+   rigid step: 5 of 3,123 held nodes (0.2%) lose the bed entirely, their ray no longer meeting it
+   within the 60 mm reach; for the rest the closest point moves a median 0.4499 mm but up to
+   **46.6 mm**; and the persistence rule then freezes **1,455 of 3,123 (46.6%)** of the associations
+   while the others update. Half the constraint set then refers to new bed points and half to old, and
+   the difference enters as a bound change of up to **5.80 mm** for a step whose true motion is
+   0.935 mm. The solve lands 4.79 mm from the exact answer.
+
+   **This corrects the previous entry.** R'''s reading -- all the loss inside a step, none across a
+   re-association -- was measured correctly and interpreted too coarsely. The re-association moves no
+   nodes, so nothing changes AT the boundary; its effect materialises in the next step's start, which
+   is inside the step. The cause sits at the boundary and the symptom appears after it. The
+   association is not exonerated: it is the cause, and the jump limit that masked it is part of the
+   mechanism rather than a protection against it.
+
