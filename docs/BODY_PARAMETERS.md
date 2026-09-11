@@ -3671,3 +3671,76 @@ What has changed is that the parametrization no longer stops at the scaffold.
    script, and it fired on all five cases of construction 1. The lesson is the standing one in a new
    place: ask whether the mechanism can do anything at all, not only whether it can fail.
 
+   ### BB′ fails into my bad branch: the contact is cycling at a fixed load
+
+   Six zero-sized steps at one fixed fraction, each from the last one's answer, in mm:
+
+   > **0.335152 → 0.122123 → 0.034554 → 0.036361 → 0.037410 → 0.036119**
+
+   It decays for three repeats and then **plateaus at ~36 µm**. That is not one-time relaxation into
+   a loosened feasible set; it is the branch `f3b7c08` named as the bad one — **at a fixed load the
+   association and the solve are chasing each other.** The motion is almost entirely on the base
+   (36.1 µm against 6.0 µm interior), so it is the contact cycling, and **the repair does not touch
+   it.** BB's bounds half is closed (0.000e+00 mm over 0 nodes, against 7.19 mm over 26 nodes and 4
+   inversions); BB′ is a separate, open defect.
+
+   ### R2: the repair is good, not merely neutral
+
+   | same stage, same data, only the code differs | outcome |
+   |---|---|
+   | pre-repair (`50e7583`, worktree) | **stalls at fraction 0.6250**, 1 inverted |
+   | with the repair | **completes to 1.0**, 0 inversions, `min J` 0.4174, median \|u−d\| 0.256 mm |
+
+   **This supersedes the 0.710-vs-0.920 comparison, which must not be quoted** — it was one fraction
+   in two runs that took different paths. A stall-versus-completion on the identical stage is a real
+   comparison. Regressions all pass: T-none (0.000 mm median and max, `min J` 1.0000), W, X,
+   V-on-plane.
+
+   ### A jump limit that silently disabled the thing it protects
+
+   At `jump_limit = 0.5 mm` against a per-step slide of **0.935 mm**, the association is refused
+   **every step**:
+
+   | limit | association moved per step |
+   |---|---|
+   | 0.5 mm | **0.0000 mm ×8** |
+   | raised clear | 0.9233 … 0.9406 (slide 0.9350) |
+
+   **"association moved 0.0000 mm" reads as settled and means refused.** Persistent association was
+   not being exercised at all — **which is why frozen and re-linearised came back bit-identical.**
+   That comparison is void: it compared two runs that were both frozen. And the anatomical runs print
+   **0.4999 mm against the same 0.5 mm limit** — one step from binding, which is not a margin.
+
+   ### CC-flat FAILS as written, and the bar is not being moved
+
+   CC-flat reads **0.000002 mm, `min J` 1.000000** — 2 nm, 2.7e-7 of the motion, against a declared
+   criterion of *exactly zero*. **The script prints FAIL and that stands.** This programme records a
+   bar below the noise floor as FAILED and does not rescore it: gate A did exactly this in `de88ef4`.
+   My criterion was unachievable in floating point for any nontrivial computation, which is my error
+   in writing it, not a reason to rewrite it now.
+
+   **And the replacement is not a new bar — it is a convergence test**, which needs no chosen number:
+
+   > **CC-flat′: re-run CC-flat at successively tighter solver tolerances.** If the deviation falls
+   > with `rtol`, it is the convergence floor and the flat case is clean. If it plateaus, it is a
+   > defect and the 2 nm is real.
+
+   That is the same move as BB′ — turn a threshold question into a convergence question — and it is
+   the only form that can distinguish "at the solver's floor" from "small but wrong". Noting against
+   it: 2.7e-7 is about **3× the declared rtol of 1e-7**, so a principled bar at rtol would also have
+   failed. The measurement is the honest instrument here, not any threshold.
+
+   ### Four wrong constructions, three of which returned a plausible number
+
+   Building CC went wrong four times: a tangential drive that moved nothing (`u = 0` already
+   satisfies `n·u = 0` — **the exact trap gate W exists for, quoted in a comment the agent had read
+   aloud earlier in the same session**); a tilted drive where `|u−d|` came back as exactly the
+   tangential component; a default `travel = -gap0` that seated the face as well as dragging it; and
+   `travel = 0` still tilted, which stretched the block. **Only one of the four produced an error;
+   three produced numbers that looked like results.**
+
+   The fix is a guard, not the knowledge: a check that prints **"NOTHING MOVED — the drive is not
+   driving; this case is void"**, which fired on all five cases of the first construction. **Knowing
+   a trap does not protect against it** — the agent had the tangential-drive trap in front of it and
+   walked into it anyway. Only the assertion does.
+
