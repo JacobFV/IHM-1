@@ -1782,6 +1782,44 @@ defined on calcn only. Nothing this line has tried has moved the toes, and the s
 survives untouched: the scaffold's forefoot is a fifth longer than this specimen's, which is a shape
 difference that no correspondence, regularisation or sampling change can reach.
 
+### The toes cannot pass gate 2. Their own ceiling is 0.966 and the bar is 0.99.
+
+The enclosure table's first column is the ceiling -- *"the body's own anatomical bones against the
+same whole skin, same frame"*, the same `enclosure()` and the same samples, with only the skin's
+vertex positions differing between columns. It reads **1.000 for twenty segments and 0.966 / 0.968
+for toes_l / toes_r.**
+
+**Gate 2's bar is ≥ 0.99. The toes' ceiling is 0.966. They cannot pass, and never could.** The
+script has been printing this all along, in its own summary row: **`>= 0.99   20/22`** *on the
+ceiling column*. Two segments fail at ceiling, and the two are the toes. Nobody read that row --
+including me, through four rounds in which the toes were the headline failure.
+
+**So every round of work aimed at the toes was aimed at a gate they are barred from.** The anchor
+rule, the correspondence rule, the trim removal, a 28% better warp: all of it was measured against
+a bar that the canonical anatomy itself misses by 2.4 points. The toes' 0.854 / 0.876 is a real
+shortfall against their own 0.966 ceiling -- 0.11 and 0.09 of genuine gap -- but "toes FAIL gate 2"
+was never the informative statement, and the count that matters is **12 of 20 reachable**, not 12
+of 22.
+
+**This is the third gate on this programme found to be unreachable by construction**, after gate 3's
+"inside ≤ 1%" against a 42-53% ceiling (`61e5d1c`) and gate A's 0.5 mm bar on a 0.51 mm noise floor
+(`de88ef4`). The shape is identical each time: **a bar set in absolute terms, against a quantity
+whose achievable maximum was measured but never compared to the bar.** The ceiling column existed
+from the start; it simply sat next to the bar without anyone subtracting.
+
+**Fixed here, and NOT applied retroactively.** Gate 2's bar stays at 0.99 and every recorded verdict
+stands as recorded -- the toes' FAILs are not rescored into passes, because a gate is not loosened
+after a result. What changes is the *reporting*: the ceiling is quoted beside the bar wherever gate 2
+appears, the pass count is given as **n of 20 reachable** with the two barred segments named, and a
+segment whose ceiling is below the bar is reported as **BARRED** rather than FAILED. That is a
+statement about what the number means, not a change to the number.
+
+**And the scaffold defect underneath it is now the finding.** The canonical body's own toe bones are
+**3.4% outside its own toe skin**. That is not a registration error and no warp can be blamed for
+it: this body's toe skin does not contain its toe bones. It belongs with the forefoot measurement
+already recorded -- per-segment similarity scale **1.22** at calcn and **1.21** at toes against the
+global map -- as a property of the scaffold's foot rather than of anything fitted to it.
+
 **Why this was worth having from a retired control.** I retired it for firing a threshold at the
 wrong separation, and it then answered a question I had not asked: whether this line's headline
 quality metric measures accuracy at all. It does not. A control kept running after its gate was
