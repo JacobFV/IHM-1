@@ -2720,3 +2720,55 @@ What has changed is that the parametrization no longer stops at the scaffold.
      nothing may invert. That is the control R should have been, and it is pre-registered here as
      R′ before either result is read.
 
+   ### Outcome 1: the repair works, R2 passes, and R′ still fails — on a solution it has already found
+
+   **Gate R2 passes and the converged block answers are identical: the repair changed the path, not
+   the result.** Platens against the exact homogeneous field go 0.00004% → **0.00000%** against a 1%
+   bar; the cylinder holds at 6.382 µm. **R improved 24-fold** on an identical target, 0.0312 →
+   **0.7500**, reported as that and not as a gate, since `73baa16` withdrew its premise before the
+   number landed. That withdrawal was right for the reason given: the agent's own log showed the bed
+   penetration that makes a whole-body translation inadmissible.
+
+   The second half of the repair was earned by measurement rather than assumed — the bound change
+   enters through the **stiffness**, and the bounds that response violates are carried by an
+   **active set inside that solve** rather than clipped onto the answer afterwards:
+
+   | start of an increment | distance from the rigid translation | inverted elements |
+   |---|---:|---:|
+   | clip alone (the bug) | median 7.48 mm | **9,865** |
+   | linear response alone | **0.0000 mm** median and max | **0** |
+   | response, then clipped | max 7.34 mm on 79 one-sided nodes | 185 |
+
+   **R′ is the one that counts, and it fails at 0.6250 on a single element.** Its first increment is
+   *exactly* right — one Newton iteration, `min J` **1.000**, the translation reproduced — then
+   `min J` falls 1.000 → 0.710 → the 0.2 floor. **The solver finds an exact zero-energy solution and
+   then drifts off it.** With the bed removed that solution provably exists, so this is not a
+   feasibility question dressed as a solver question, which is the mistake that cost Control R its
+   premise. Here the premise is **demonstrated by increment 1** rather than asserted.
+
+   **A guess tested and refuted, worth recording because it inverts the obvious reading.** The
+   association pinned at 0.4994 mm every pass against a 0.5 mm jump limit while nodes moved 0.94 mm
+   per increment, so updates were being refused and the constraint normals went stale. Raising the
+   limit to 5 mm made it **worse**: R′ then stalled at fraction **0.0010**, association jumping
+   3.9 mm per pass, 16.4 mm gap error. **The limit was masking an unstable association, not causing
+   it.**
+
+   **Pre-registered before it is built: freeze the frames within a load step**, re-associating only
+   *between* steps, which makes each step a fixed-constraint problem whose zero-energy answer under
+   R′ is the translation itself.
+
+   * **Gate R″:** R′ with frames frozen within each step completes at fraction **1.0**, zero
+     inversions, `min J ≥ 0.99` at **every** increment. Unlike R, this premise is not asserted —
+     increment 1 already reaches `min J` 1.000, so a findable zero-energy solution is demonstrated.
+   * **Localise the drift in time, which a pass/fail cannot:** report `min J` immediately **before
+     and after each re-association**. Falling at the re-association boundaries implicates the
+     association; falling *within* a step whose constraints are fixed puts the cause elsewhere and
+     makes the association a red herring twice over.
+   * **No prediction offered.** My last four calls across these two lines were one hit, two refusals
+     and one premise found false before its own result. The design is worth more than the guess, and
+     both outcomes of the before/after `min J` reading are informative.
+
+   **What this does not license.** The breast stays untouched. Outcome 3 — "the field is infeasible
+   for this mesh" — requires a stepping that can carry a motion known to be feasible, and R′ says we
+   do not have one yet.
+
