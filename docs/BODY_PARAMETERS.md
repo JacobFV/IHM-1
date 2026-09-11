@@ -2825,3 +2825,32 @@ What has changed is that the parametrization no longer stops at the scaffold.
    association is not exonerated: it is the cause, and the jump limit that masked it is part of the
    mechanism rather than a protection against it.
 
+   **The coarse interpretation was mine, and it was made twice.** `04f32a0` took "all loss inside a
+   step, none across a re-association" and concluded the association was "cleared twice, once by a
+   refuted guess and once by design". The measurement was right and the inference was wrong, for a
+   reason I should have seen when designing the diagnostic: **a re-association moves no nodes, so it
+   cannot show up at the boundary — only in the next step's start.** I built a before/after reading
+   around a boundary and then read the absence of a jump at that boundary as absence of a cause.
+   And `73baa16` compounded it, recording the jump limit as "masking an unstable association, not
+   causing it"; freezing 47% of constraints while updating the rest **is** the inconsistency, so the
+   limit is a mechanism, not a bystander. Both of my three named causes for gate S, and my reading
+   of R″, were wrong; the agent's direct measurement of what the bounds actually do is what settled
+   it.
+
+   **Pre-registered before the fix: consistency is all-or-nothing per step.** Two arms, both
+   internally consistent, differing only in whether staleness accumulates:
+
+   * **T-none** — no association update for the whole drive.
+   * **T-all** — every association updated at every step boundary.
+   * **Gate T:** R′ completes at fraction **1.0**, zero inversions, `min J ≥ 0.99` at every
+     increment.
+   * **The 5 nodes that lose the bed need a declared rule** — released, or held at their last valid
+     association — stated in the artefact with the count reported per step. Chosen silently, it
+     would be the next borrowed constant, which this programme has just paid for once in `CORR_TRIM`.
+   * **A structured expectation rather than a point prediction:** T-none should pass, a rigid
+     translation requiring no re-association at all. T-all may fail, some associations genuinely
+     teleporting 46.6 mm. **If T-none passes and T-all fails, "update everything" is not the fix for
+     real seating** — where the motion is not rigid and the bed is present — and a teleport-rejection
+     rule is needed, which is exactly where the 46.6 mm outliers live. That is the outcome worth
+     preparing for, because it is the one that does not transfer from this control to the breast.
+
