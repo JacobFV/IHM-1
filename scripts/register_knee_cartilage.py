@@ -38,6 +38,7 @@ ROOT = Path(__file__).resolve().parents[1]
 RAW = ROOT / "data/raw/anatomy/oaizib-cm"
 OUT_DEFAULT = ROOT / "data/derived/knee-cartilage-registered-v2"
 CANONICAL_OUT = ROOT / "data/derived/knee-cartilage-registered-v1"
+MIRRORED_OUT = ROOT / "data/derived/knee-cartilage-registered-v3-mirrored-femur"
 LICENCE = ("OAIZIB-CM, CC-BY-NC-4.0 (non-commercial); cite CartiMorph doi:10.1016/j.media.2023.103035 "
            "and OAIZIB doi:10.1016/j.media.2018.11.009")
 BONE_ENT = {"right": {"femur": "right femur", "tibia": "right tibia"},
@@ -58,6 +59,11 @@ N_ROT, SCREEN_ITERS, SCREEN_KEEP, FINAL_KEEP = 2048, 10, 40, 3
 # the large-rotation femur known answer at 100% scale error. Candidates outside a plainly anatomical scale
 # range are therefore not eligible. The range is wide on purpose -- every fit so far sits within 0.90-1.08.
 SCALE_MIN, SCALE_MAX = 0.5, 2.0
+# The bounds admit a fit that is degenerate in practice: oaizib_006's tibia collapsed to 0.529 against an
+# IDENTICAL target that every other subject fitted at 0.96-1.11, taking its cartilage volume down eightfold.
+# One knee's two bones come from one person, so their scales should agree; a fit whose two scales differ by
+# more than this is reported as suspect. REPORTED, NOT GATED, and not tuned: no verdict depends on it.
+SCALE_DISAGREE = 0.20
 FRAMES = {"scaffold": "ground (supine-support-5ma720yd t=0)", "canonical": "canonical"}
 
 def _load(name, rel):
@@ -70,7 +76,20 @@ inside = PO.CW.inside
 
 def say(*a): print(*a, flush=True)
 
-def scaffold_bones():
+MIRROR_AXIS = 2          # in the mesh frame; the model's own left/right pairs fix it, and check_mirror() proves it
+
+def check_mirror(read_surface, geometry):
+    """l_tibia against r_tibia and l_patella against r_patella are exact reflections about MIRROR_AXIS.
+    They are the known answer for the mirroring itself: if this stops holding, the femur mirror is not trustworthy."""
+    out = {}
+    for l, r in (("l_tibia.vtp", "r_tibia.vtp"), ("l_patella.vtp", "r_patella.vtp")):
+        lv, _ = read_surface(geometry / l); rv, _ = read_surface(geometry / r)
+        m = lv.copy(); m[:, MIRROR_AXIS] *= -1
+        out[f"{l}->{r}"] = 1000 * float(np.linalg.norm(np.sort(m, 0) - np.sort(rv, 0), axis=1).max())
+    if max(out.values()) > 1e-6: raise SystemExit(f"the model's left/right pairs are not reflections about axis {MIRROR_AXIS}: {out}")
+    return out
+
+def scaffold_bones(right_femur="model"):
     """the SCAFFOLD's femur and tibia, in ground at the reference run's t=0 pose.
 
     Mirrors build_skin_contact_meshes.bone_clouds() -- same model, same meshes, same scale factors
@@ -82,6 +101,7 @@ def scaffold_bones():
     root = ET.parse(ROOT / "data/models/engineering_stance_v1/model.osim").getroot().find("Model")
     ref = json.loads((ROOT / "data/derived/supine-support-5ma720yd/initial_native.json").read_text())["bodies"]
     want = {"femur_r": ("right", "femur"), "tibia_r": ("right", "tibia"), "femur_l": ("left", "femur"), "tibia_l": ("left", "tibia")}
+    mirror_check = check_mirror(read_surface, geometry) if right_femur == "mirrored-left" else None
     out = {}
     for b in root.iter("Body"):
         key = want.get(b.get("name"))
@@ -89,13 +109,17 @@ def scaffold_bones():
         Vs, Fs, n = [], [], 0
         for mesh in b.iter("Mesh"):
             factors = np.fromstring(mesh.findtext("scale_factors"), sep=" ")
-            v, f = read_surface(geometry / mesh.findtext("mesh_file"))
+            name = mesh.findtext("mesh_file")
+            mirror = right_femur == "mirrored-left" and b.get("name") == "femur_r"
+            if mirror: name = "l_femur.vtp"          # this body's own left femur, reflected, as every other pair already is
+            v, f = read_surface(geometry / name)
+            if mirror: v = v.copy(); v[:, MIRROR_AXIS] *= -1; f = f[:, ::-1]
             Vs.append(v * factors); Fs.append(f + n); n += len(v)
         M = np.asarray(ref[b.get("name")]["transform_ground"], float)
         out[key] = (apply(M, np.concatenate(Vs)), np.concatenate(Fs))
     missing = [k for k in want.values() if k not in out]
     if missing: raise SystemExit(f"scaffold bones missing from the model: {missing}")
-    return out
+    return out, mirror_check
 
 def body_bones():
     ents = json.loads((ROOT / "data/derived/canonical/anatomy.json").read_text())["entities"]
@@ -254,6 +278,12 @@ def register(sid, arr, affine, meta, body, out, target, axes):
     rec = dict(subject=sid, **meta, residual_right_mm=1000 * resid["right"], residual_left_mm=1000 * resid["left"],
                side_winner=lo, side_margin=margin, gate_which_knee=side_ok,
                scale_femur=scale_of(fits[("right", "femur")][0]), scale_tibia=scale_of(fits[("right", "tibia")][0]))
+    sf, st = scale_of(fits[("right", "femur")][0]), scale_of(fits[("right", "tibia")][0])
+    rec["scale_disagreement"] = float(abs(np.log(sf / st)))
+    rec["fit_suspect"] = bool(rec["scale_disagreement"] > SCALE_DISAGREE)
+    if rec["fit_suspect"]:
+        say(f"  SUSPECT FIT: femur scale {sf:.3f} against tibia scale {st:.3f} -- one knee, one person, so these should "
+            f"agree; everything below for this subject is reported but should not be read as a measurement")
     d = out / sid; d.mkdir(parents=True, exist_ok=True)
     mapped, place_ok, void = {}, True, False
     for labs, bone, bl in (((2,), "femur", 1), ((4, 5), "tibia", 3)):
@@ -348,7 +378,7 @@ def register(sid, arr, affine, meta, body, out, target, axes):
         rec["medial_nearer_midline"] = bool(med)
     say(f"  volume femoral {1e6*vol[2]:.1f} mL, tibial {1e6*(vol.get(4,0)+vol.get(5,0)):.1f} mL; "
         f"mean thickness {', '.join(f'{k}: {1000*v:.2f} mm' for k, v in thick.items())}; medial nearer midline: {rec.get('medial_nearer_midline')}")
-    rec["passes"] = bool(side_ok and place_ok and js_ok)
+    rec["passes"] = bool(side_ok and place_ok and js_ok and not rec["fit_suspect"])
     return rec
 
 def sex_coding():
@@ -379,6 +409,9 @@ def subject_info():
 def main():
     import nibabel as nib
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--right-femur", choices=("model", "mirrored-left"), default="model", dest="right_femur",
+                    help="model: r_femur.vtp, 265 faces, which is NOT the left femur mirrored. mirrored-left: this "
+                         "body's own left femur reflected, which is what every other left/right pair in the model is")
     ap.add_argument("--target", choices=("scaffold", "canonical"), default="scaffold",
                     help="scaffold: the plant's own femur and tibia, 3.0 mm apart (the second attempt). "
                          "canonical: this body's atlas bones, 0.6 mm apart (the first pilot)")
@@ -386,15 +419,19 @@ def main():
     ap.add_argument("--subjects", nargs="*", default=None)
     ap.add_argument("--pilot", type=int, default=0, help="take the first N KL-grade-0 knees of EACH gender code")
     a = ap.parse_args()
-    out = (a.out or (OUT_DEFAULT if a.target == "scaffold" else CANONICAL_OUT)).resolve(); out.mkdir(parents=True, exist_ok=True)
-    body = scaffold_bones() if a.target == "scaffold" else body_bones()
-    say(f"target: the {a.target} femur and tibia, {FRAMES[a.target]} frame")
+    out = (a.out or (MIRRORED_OUT if a.right_femur == "mirrored-left" else OUT_DEFAULT if a.target == "scaffold" else CANONICAL_OUT)).resolve(); out.mkdir(parents=True, exist_ok=True)
+    mirror_check = None
+    if a.target == "scaffold": body, mirror_check = scaffold_bones(a.right_femur)
+    else: body = body_bones()
+    say(f"target: the {a.target} femur and tibia, {FRAMES[a.target]} frame; right femur from {a.right_femur}")
+    if mirror_check is not None: say(f"  mirror known answer (max vertex difference, must be 0): {mirror_check}")
     say("== known answer ==")
     axes = frame_axes(body)
     ok, ka = known_answer(body, axes)
     man = out / "manifest.json"
     report = json.loads(man.read_text()) if man.exists() else dict(schema="ihm.knee-cartilage-registered.v2", licence=LICENCE, subjects={})
-    report["target"] = dict(bones=a.target, frame=FRAMES[a.target], axes_lr_si_ap=list(axes)); report["known_answer"] = ka; report["licence"] = LICENCE
+    report["target"] = dict(bones=a.target, frame=FRAMES[a.target], axes_lr_si_ap=list(axes),
+                            right_femur=a.right_femur, mirror_known_answer_mm=mirror_check); report["known_answer"] = ka; report["licence"] = LICENCE
     report["body_joint_gap_mm"] = {side: body_gap(body, side) for side in ("right", "left")}
     say(f"  this body's femur-tibia surface gap (min, 1st percentile): {report['body_joint_gap_mm']}")          # MERGE: earlier subjects are kept
     if not ok:
