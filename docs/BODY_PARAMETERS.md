@@ -4121,3 +4121,40 @@ What has changed is that the parametrization no longer stops at the scaffold.
    at fraction 0.1094 as a statement about load carried, and about 39 held nodes ARE moving away from
    their target and are now a named, bounded problem instead of an unbounded one.
 
+
+   ### Scope: 39 nodes of 3,123. "The drive goes backwards" is REFUTED.
+
+   | at fraction 0.0625 | |
+   |---|---:|
+   | distance to full seating, max | 14.8039 mm |
+   | distance to full seating, **median** | **7.0196 mm** |
+   | distance **closed**, median | **+0.4540 mm** |
+   | held nodes further away than they started | **39 of 3,123 (1.25%)** |
+
+   Median travel is 7.484 mm, so the scheduled closure at fraction 0.0625 is 0.468 mm against
+   **0.454 mm measured — 97% of the scheduled rate.** The drive is closing the gap at very nearly
+   the rate the schedule asks for. **The alarming maximum was one of about 39 outliers.**
+
+   **The caution was worth more than the observation that prompted it.** The previous entry recorded
+   the max going backwards and said in terms that the scope was unestablished and must not be
+   overstated — and the scope is exactly what the answer turned on. Had "the drive goes backwards"
+   gone in as a finding it would have been the sixth withdrawn claim on this line.
+
+   **And it would have been withdrawn from the harder direction.** The other five came from numbers
+   that flattered, which invite re-examination. This one was alarming, and an alarming number is the
+   one least likely to be checked again — it already agrees with the pessimism a hard week
+   generates. Worth naming as its own hazard: **a bad number gets less scrutiny than a good one, and
+   for the wrong reason.**
+
+   **What survives unchanged:**
+
+   * the load fraction measures **load applied**, not distance closed — that finding stands on its
+     own and was not what the scope question touched;
+   * the reach stands at **fraction 0.1094**, as a statement about load carried;
+   * **about 39 held nodes are genuinely moving away from their target.** That is now a named,
+     bounded problem rather than an unbounded one, and **1.25% sits close enough to this line's own
+     1% gates that it should be sized properly rather than waved through.**
+
+   **Next, and it separates the two behaviours:** whether the median keeps closing at ~97% of
+   schedule at 0.1094 and beyond while those 39 diverge. If it does, the outliers can be
+   characterised on their own without contaminating the closure measurement.
