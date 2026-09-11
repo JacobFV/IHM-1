@@ -865,3 +865,41 @@ are skin with no bone under them, extrapolated rather than carried, and a differ
 class has now confirmed it does not supply what is missing. The visible fix is anchors for skin
 that has no correspondence beneath it -- and that is a new instrument, so it is a new
 pre-registration and not a refit of this one.
+
+#### Third attempt: anchors where the skin has no bone under it. Fixed before it is built (2026-09-10)
+
+Two smoothness classes, one that fits the bones to 0.571 mm and one that cannot fold, fail gate 2
+at the same two segments within 0.006. The warp family is not what is missing; correspondences
+are. Every correspondence today is a bone sample, so skin over the toe tips, the lateral forefoot
+and the hands is extrapolated from bone that is elsewhere.
+
+**The instrument.** The SPLINE of 96e5f1b, unchanged -- it passed gates 1 and 3, and the flow is
+set aside as strictly worse on this evidence -- with its correspondence set extended by ANCHORS:
+
+* an anchor is added for every exterior skin vertex whose distance in atlas space to the nearest
+  existing bone correspondence exceeds **20 mm**, fixed now and not tuned: this body's median
+  skin-to-bone/muscle depth is 11.0 mm, so a skin vertex 20 mm from every bone sample has no bone
+  under it in any sense the warp can use;
+* its target is that vertex's image under **its own segment's per-segment similarity** -- the map
+  that already fits that segment's bones best, and the only local statement available where no
+  bone is beneath the skin;
+* anchors carry the same weight as bone correspondences, stated rather than fitted;
+* `lambda` is chosen by the SAME rule (5-fold CV, largest within 1% of the minimum), computed on
+  the BONE correspondences only. Anchors are a modelling assumption, not measurements, and a rule
+  that cross-validates on them would be scoring the assumption against itself.
+
+**Known answers, before any gate is read:** with the anchor set empty the pipeline must reproduce
+the spline warp of 96e5f1b on all 102,467 skin vertices to floating point, and the zero-warp
+control must still return the binding map's 0.888 and calcn +20.1 / +20.0 mm.
+
+**The gates do not move.** 1-4 exactly as in 93d3d57, including gate 4, which the spline failed with
+72 inverted triangles -- of which the flow has now shown at least two are slivers in the canonical
+mesh (aspect 12.4 and 16.6) that a fold-free map still inverts. Sliver triangles are reported
+alongside the count; they are not excused from it.
+
+**Predicted here, before it runs:** calcn and toes rise above 0.95 and gate 2 passes; gate 1 holds,
+because anchors add constraints where there were none rather than moving the bone targets; and
+folds fall well below 72 without necessarily reaching zero, since the two slivers are a property of
+the mesh. If calcn and toes stay near 0.92 and 0.87 with anchors under them, extrapolation is NOT
+what is wrong, and what remains is the hard partition itself -- the seam at the MTP where the toes'
+and calcn's maps disagree across skin thinner than the joint.
