@@ -4292,3 +4292,45 @@ What has changed is that the parametrization no longer stops at the scaffold.
    * **No prediction.** The refused nodes are refused *because* their associations want to move
      furthest, so they are the worst-case population by construction — which is an argument that this
      could be large, not a forecast that it is.
+
+   ### The ratchet: a prediction with a mechanism, recorded before the distribution lands
+
+   The agent's argument, which cuts against the "worst-case population" framing by making it
+   sharper: **a node is refused when its association wants to move more than 0.5 mm in one step — and
+   the refusal freezes the association, so the next step measures the wanted displacement from the
+   same frozen point.** If the node keeps sliding, the wanted displacement keeps growing, and it is
+   refused again. **Permanently.**
+
+   That predicts a **heavy tail** rather than a modest median: a small set of sliding nodes whose
+   staleness grows without bound, not a population all slightly behind. It is a mechanism rather than
+   a guess, and it is testable from `refused_steps`, which records how many times each node was
+   refused — a node refused at every step is distinguishable from one refused once.
+
+   **Weak evidence already on the record, recorded now so it is not claimed as confirmation later:**
+   the refusal counts run **963 → 982 → 1,144** across fractions 0.0625, 0.1094 and 0.1797. The set
+   is growing. But the first two are only 2% apart and the third is an **unconverged** step, so this
+   is consistent with the ratchet without being evidence for it. The distribution decides.
+
+   **Three figures, not one**, because any single one misrepresents the others: the median over *all*
+   held nodes (flattered by the ~65% never refused), the median over the *ever-refused* nodes (what
+   the affected population suffers), and the maximum (one node).
+
+   **The boundary is 1 mm, declared in the file before the run** — where the two branches meet, and
+   the bed's own facet scale, the length below which this surface cannot distinguish anything. A
+   staleness under it cannot point a constraint at a different feature; one over it can. The
+   derivation is the reason for the number, not a justification found afterwards.
+
+   **Two accounting decisions, stated so they can be disputed rather than buried:**
+
+   * **Refusals inside a step that was later cut back are not counted.** The accumulator is saved and
+     restored alongside the association, so only refusals on accepted steps contribute. Without it,
+     every discarded attempt in the cut-back loop would inflate the total — and with four cut-backs
+     before the first accepted step, that inflation would have been large and invisible.
+   * **Nodes whose ray finds no bed at all are counted as a count, never as a distance.** "No bed to
+     move to" is not a displacement, and folding it in as one would put a fabricated number into the
+     very distribution the decision rests on.
+
+   **If the ratchet holds, the earlier statement understates the problem.** "31–37% of constraints are
+   stale each step" describes a fixed lag. A ratchet means a *growing* set of *permanently* frozen
+   constraints, which is a different and worse fact, and it would make re-running the anatomical
+   results the only option rather than one of two.
