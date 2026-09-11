@@ -1154,6 +1154,37 @@ done; the others have moved.
    are an atlas, and two rib surfaces that do not mean the same thing cannot be made to agree by
    any map.
 
+   **Gate 1 fails, no subject is fitted, and the reason is the correspondences -- shown on this
+   body's OWN bones, with no segmentation mismatch anywhere near it**
+   (`scripts/fit_chest_wall_warp.py`, importing `scripts/skin_warp.py` unchanged).
+
+   | gate 1, a warp recovered from a warp | result | bar |
+   |---|---:|---:|
+   | surface recovery, random smooth field (3.1 mm: 1.4 normal, 2.6 tangential) | 1.194 mm RMS | 1 mm -- **FAIL** |
+   | pointwise recovery, same field | 3.062 mm RMS | -- |
+   | surface recovery, purely NORMAL control field (1.5 mm mean, 4.0 max) | 1.274 mm RMS | 1 mm -- **FAIL** |
+   | the warp's own fit residual at its correspondences (normal field) | **0.01 mm** | -- |
+
+   Two readings of "recover it to 1 mm RMS" were measured rather than one chosen: the field
+   POINTWISE, and the SURFACES. They differ because nearest-point correspondences cannot see motion
+   ALONG a surface -- 2.6 of the 3.1 mm here is tangential and unidentifiable by any surface-matching
+   transform. That alone would have been a weak excuse, so it was tested: a field applied purely
+   along the surface normals, identifiable by construction, recovers no better (1.274 mm).
+
+   **What it is.** The warp reproduces its targets to 0.01 mm and still lands 1.27 mm from the true
+   surface, so the targets are what is wrong. Measured directly against the known true preimage, the
+   nearest-point target is off by a mean of 0.671 mm, p90 2.281 mm and max 7.152 mm for displacements
+   averaging 1.53 mm -- the bias of order d^2/R that nearest-point matching carries on a curved
+   surface, here ribs a few millimetres thick. Its RMS is the 1.27 mm the gate measured.
+
+   **So the constraint named as the fallback is real, and it is not about her data.** It was reached
+   with this body's own bones on both sides of the fit and a field of the fitted family; no CT, no
+   atlas mismatch, no segmentation. Nearest-point correspondence cannot support a 1 mm bar on these
+   surfaces, and no increase in the transform's freedom changes that -- a warp fitted to biased
+   targets reproduces the bias. The next instrument is a CORRESPONDENCE, not a transform: arc-length
+   or landmark parameterisation along each rib, normal shooting, or a symmetric matching that is
+   unbiased on curvature, with this same known-answer gate to prove it before any subject is fitted.
+
    **Seat it in two steps: place, then conform. Fixed 2026-09-10, before it runs.** 45 mm of
    overlap is not tissue deformation, it is placement -- the breast is another woman's tissue where
    a similarity registration put it, and a quasi-static solve pushing 45 mm of interpenetration out

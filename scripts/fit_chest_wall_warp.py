@@ -1,0 +1,283 @@
+"""A deformable chest-wall fit: W(x) = Gx + d(Gx), d a regularised thin-plate spline on her ribs.
+
+WHY. One similarity cannot place these breasts. The whole-torso fit leaves 2.0-7.7% of every breast
+more than 20 mm behind this body's muscular chest wall; a chest-local similarity fitted to ribs 2-7
+halves that but fails the held-out gate on every subject, pushing ribs 9-12 out by 17-27 mm
+(docs/BODY_PARAMETERS.md). The difference is shape, not size or pose, so the transform needs the
+freedom a similarity lacks.
+
+THE INSTRUMENT IS NOT NEW. The skin line hit the same wall from the other side and built it:
+scripts/skin_warp.py, a thin-plate spline (phi(r) = -r) with a fixed cross-validation rule, a
+zero-warp control and a matrix-free solver checked against the direct one. That module is imported
+here for evaluation, Jacobian and bending energy; it is not edited (another agent owns it). The
+fitting is done here because its driver, scripts/fit_skin_warp.py, is that agent's and does work at
+import time. The regularisation rule is theirs, followed deliberately: 5-fold cross-validation over
+a lambda grid, and the chosen lambda is the LARGEST whose cross-validated RMS is within 1% of the
+minimum -- ties go to the smoother warp.
+
+CORRESPONDENCES. Her ribs 2-7, both sides -- the set the chest-local similarity used -- sampled on
+her PARTIAL surfaces and matched to the nearest point on this body's COMPLETE ribs, one way, never
+the reverse, with the worst TRIM fraction dropped. Two passes: the second re-corresponds through the
+warp fitted by the first.
+
+GATES (docs/BODY_PARAMETERS.md, "The deformable chest-wall fit", fixed before this was built):
+  1 known answer  a warp recovered from a warp: displace this body's own chest bones by a KNOWN
+                  smooth field of the same family and recover it to 1 mm RMS. This depends on
+                  nothing about where her labels stop -- the assumption the similarity's known
+                  answer needed, and which was flagged rather than hidden.
+  2 laterality    her left ribs map nearer this body's left ribs than its right
+  3 held out      fit ribs 2-7; sternum, clavicles, rib 1, ribs 8-12 and T1-T12 are held out, and
+                  the median nearest-surface distance there must be no worse than the whole-torso
+                  similarity's: 4.55, 5.18, 5.52, 5.60 mm for s0790, s1067, s1159, s0970
+  4 consequence   breast volume more than 20 mm behind the muscular chest wall <= 1% per subject
+Reported: bending energy, the warp's displacement at the breast base and at ribs 9-12, and the
+chest-wall offset recomputed.
+"""
+import argparse, importlib.util, json, subprocess, sys, time
+from pathlib import Path
+import numpy as np
+from scipy.spatial import cKDTree
+from scipy.spatial.distance import cdist
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+
+def _load(name, rel):
+    spec = importlib.util.spec_from_file_location(name, ROOT / rel)
+    m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m); return m
+
+
+SW = _load("skin_warp", "scripts/skin_warp.py")          # imported, never edited: another agent owns it
+CW = _load("chestwall", "scripts/register_female_chest_wall.py")
+SEAT = CW.SEAT
+
+OUT = ROOT / "data/derived/female-chest-wall-warp-v1"
+WHOLE_TORSO_HELD_OUT_MM = {"s0790": 4.55, "s1067": 5.18, "s1159": 5.52, "s0970": 5.60}
+LAMBDA_GRID = (1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 1.0)
+FOLDS, TRIM, PASSES, PER_RIB = 5, 0.2, 2, 300
+KA_RMS_M = 1e-3
+TRIM_DEPTH_M, TRIM_VOLUME_TOL = 0.020, 0.01
+
+
+def say(*a): print(*a, flush=True)
+
+
+def tps_system(S):
+    """Built ONCE per training set and reused for every lambda -- the split
+    scripts/fit_skin_warp.py makes, and the reason cross-validation over a grid is affordable."""
+    K = SW.phi(cdist(S, S)); P = np.hstack([S, np.ones((len(S), 1))])
+    Q, R = np.linalg.qr(P, mode="complete"); Q1, Q2 = Q[:, :4], Q[:, 4:]
+    ev, V = np.linalg.eigh(Q2.T @ K @ Q2)
+    return K, Q1, Q2, R[:4], ev, V
+
+
+def tps_solve(system, D, lam):
+    K, Q1, Q2, R, ev, V = system
+    w = Q2 @ (V @ ((V.T @ (Q2.T @ D)) / (ev + lam)[:, None]))
+    a = np.linalg.solve(R, Q1.T @ (D - K @ w - lam * w))
+    return w, a
+
+
+def tps_fit(S, D, lam):
+    return tps_solve(tps_system(S), D, lam)
+
+
+def tps_predict(Y, S, w, a): return SW.phi(cdist(Y, S)) @ w + Y @ a[:3] + a[3]
+
+
+def choose_lambda(S, D, seed=0):
+    """Their rule: the LARGEST lambda whose 5-fold cross-validated RMS is within 1% of the best."""
+    fold = np.random.default_rng(seed).integers(0, FOLDS, len(S))
+    err = {lam: [] for lam in LAMBDA_GRID}
+    for f in range(FOLDS):
+        tr, te = fold != f, fold == f
+        if te.sum() == 0 or tr.sum() < 8: continue
+        system = tps_system(S[tr])                       # one kernel system per fold, every lambda off it
+        for lam in LAMBDA_GRID:
+            w, a = tps_solve(system, D[tr], lam)
+            err[lam].append(np.linalg.norm(tps_predict(S[te], S[tr], w, a) - D[te], axis=1))
+    rms = [float(np.sqrt((np.concatenate(err[lam]) ** 2).mean())) for lam in LAMBDA_GRID]
+    best = min(rms); ok = [l for l, r in zip(LAMBDA_GRID, rms) if r <= best * 1.01]
+    return max(ok), dict(grid=list(LAMBDA_GRID), cv_rms_mm=[1000 * r for r in rms], chosen=max(ok))
+
+
+def correspondences(src, body, G, warp=None, seed=0):
+    """her partial rib surfaces onto this body's complete ribs, one way, worst TRIM dropped."""
+    S, T = [], []
+    for i, lab in enumerate(CW.FIT_LABELS):
+        if lab not in src or lab not in body: continue
+        P = CW.area_samples(*src[lab], PER_RIB, seed + i)
+        y = warp.apply(P) if warp is not None else CW.apply(G, P)
+        tree = cKDTree(CW.area_samples(*body[lab], 40000, 100 + i))
+        d, j = tree.query(y)
+        S.append(CW.apply(G, P)); T.append(tree.data[j]); 
+    S, T = np.vstack(S), np.vstack(T)
+    d = np.linalg.norm(T - S, axis=1)
+    keep = d <= np.quantile(d, 1 - TRIM)
+    return S[keep], T[keep]
+
+
+def fit_warp(src, body, G, seed=0):
+    warp = None; report = []
+    for p in range(PASSES):
+        S, T = correspondences(src, body, G, warp, seed)
+        D = T - S
+        lam, cv = choose_lambda(S, D, seed)
+        w, a = tps_fit(S, D, lam)
+        warp = SW.Warp(G, S, w, np.vstack([a[:3], a[3]]), dict(kind="chest wall ribs 2-7", lam=lam, pass_=p + 1))
+        resid = np.linalg.norm(tps_predict(S, S, w, a) - D, axis=1)
+        report.append(dict(pass_=p + 1, centres=int(len(S)), lam=float(lam), cv=cv,
+                           residual_median_mm=float(1000 * np.median(resid)), bending_energy=warp.bending_energy()))
+        say(f"    pass {p+1}: {len(S)} correspondences, lambda {lam:g}, fit residual median "
+            f"{1000*np.median(resid):.2f} mm, bending energy {warp.bending_energy():.4f}")
+    return warp, report
+
+
+def known_answer(body, seed=0):
+    """A warp recovered from a warp: displace this body's own chest bones by a known smooth field of
+    the same family, then fit and require 1 mm RMS recovery. Nothing here depends on her labels."""
+    rng = np.random.default_rng(seed)
+    chest = {l: body[l] for l in CW.FIT_LABELS}
+    anchors = np.vstack([CW.area_samples(*chest[l], 60, 17 + i) for i, l in enumerate(chest)])
+    P = np.hstack([anchors, np.ones((len(anchors), 1))])
+    Q, _ = np.linalg.qr(P, mode="complete"); Q2 = Q[:, 4:]
+    w_true = Q2 @ (0.004 * rng.standard_normal((Q2.shape[1], 3)))          # P^T w = 0, ~ centimetre field
+    truth = SW.Warp(np.eye(4), anchors, w_true, np.zeros((4, 3)), dict(kind="known field"))
+    moved = {l: (truth.apply(V), F) for l, (V, F) in chest.items()}
+    warp, rep = fit_warp(moved, chest, np.eye(4), seed)
+    test, normals = [], []
+    for i, l in enumerate(chest):
+        V, F = chest[l]
+        fa = CW.areas(V, F); rng2 = np.random.default_rng(900 + i)
+        f = rng2.choice(len(F), 800, p=fa / fa.sum())
+        tri = V[F[f]]; u = rng2.random((800, 1)); v = rng2.random((800, 1))
+        over = (u + v > 1); u[over] = 1 - u[over]; v[over] = 1 - v[over]
+        test.append(tri[:, 0] + u * (tri[:, 1] - tri[:, 0]) + v * (tri[:, 2] - tri[:, 0]))
+        n = np.cross(tri[:, 1] - tri[:, 0], tri[:, 2] - tri[:, 0]); normals.append(n / np.linalg.norm(n, axis=1, keepdims=True))
+    test = np.vstack(test); normals = np.vstack(normals)
+    back = truth.apply(test)                                                # where the known field put them
+    field = back - test
+    along = np.abs(np.einsum('ij,ij->i', field, normals)); across = np.linalg.norm(field - np.einsum('ij,ij->i', field, normals)[:, None] * normals, axis=1)
+    pointwise = float(np.sqrt(((warp.apply(back) - test) ** 2).sum(1).mean()))
+    trees = {l: cKDTree(CW.area_samples(*chest[l], 40000, 300 + i)) for i, l in enumerate(chest)}
+    surf = []
+    for i, l in enumerate(chest):
+        P = CW.area_samples(*moved[l], 1500, 500 + i)
+        surf.append(trees[l].query(warp.apply(P))[0])
+    surface = float(np.sqrt((np.concatenate(surf) ** 2).mean()))
+    disp = float(np.linalg.norm(field, axis=1).mean())
+    ok = surface <= KA_RMS_M
+    say(f"GATE 1 known answer: the known field moves the bones {1000*disp:.1f} mm on average "
+        f"({1000*np.mean(along):.1f} mm along the surface normal, {1000*np.mean(across):.1f} mm tangential).")
+    say(f"  recovered: SURFACE {1000*surface:.3f} mm RMS (<= {1000*KA_RMS_M:.0f}) -> {'PASS' if ok else 'FAIL'}; "
+        f"POINTWISE {1000*pointwise:.3f} mm RMS")
+    say("  the two readings differ because nearest-point correspondences cannot see motion ALONG a surface: "
+        "the tangential part of any field is unidentifiable from surface matching, whatever the transform.")
+    return ok, dict(known_field_mean_displacement_mm=1000 * disp, normal_component_mm=1000 * float(np.mean(along)),
+                    tangential_component_mm=1000 * float(np.mean(across)), recovery_surface_rms_mm=1000 * surface,
+                    recovery_pointwise_rms_mm=1000 * pointwise, gated_on="surface", passes=ok, passes_report=rep)
+
+
+def held_out(warp, M_whole, src, body, subject):
+    rows = {}
+    for lab in CW.HELD_OUT:
+        if lab not in src or lab not in body: continue
+        P = CW.area_samples(*src[lab], 3000, 7)
+        tree = cKDTree(CW.area_samples(*body[lab], 30000, 11))
+        rows[lab] = (float(np.median(tree.query(warp.apply(P))[0])), float(np.median(tree.query(CW.apply(M_whole, P))[0])))
+    warped = float(np.median([v[0] for v in rows.values()])); whole = float(np.median([v[1] for v in rows.values()]))
+    bar = WHOLE_TORSO_HELD_OUT_MM[subject] / 1000
+    ok = warped <= bar
+    say(f"GATE 3 held out ({len(rows)} structures): median {1000*warped:.2f} mm vs the whole-torso similarity's "
+        f"{1000*bar:.2f} mm -> {'PASS' if ok else 'FAIL'}  (recomputed here: {1000*whole:.2f} mm)")
+    worst = sorted(((v[0] - v[1]) * 1000, l) for l, v in rows.items())[-3:]
+    say("  worst three relative to whole-torso: " + ", ".join(f"{l} {d:+.1f} mm" for d, l in reversed(worst)))
+    return ok, dict(warp_median_mm=1000 * warped, whole_torso_median_mm=1000 * whole, bar_mm=1000 * bar,
+                    per_structure_mm={l: dict(warp=1000 * v[0], whole_torso=1000 * v[1]) for l, v in rows.items()})
+
+
+def _behind(subject, side, Y, F, workdir):
+    import igl
+    workdir.mkdir(parents=True, exist_ok=True)
+    out = [np.asarray(o) for o in igl.qslim(np.ascontiguousarray(Y), np.ascontiguousarray(F), SEAT.DECIMATE_FACES) if hasattr(o, "shape")]
+    U = next(o for o in out if o.dtype.kind == "f" and o.ndim == 2 and o.shape[1] == 3)
+    G_ = next(o for o in out if o.dtype.kind in "iu" and o.ndim == 2 and o.shape[1] == 3)
+    SEAT.write_obj(workdir / "breast.obj", U, G_, [f"{subject} {side} breast under the chest-wall warp"])
+    msh = workdir / "breast.msh"
+    if not msh.exists():
+        cmd = [str(SEAT.FTETWILD), "-i", str(workdir / "breast.obj"), "-o", str(msh), "--no-binary",
+               "-e", "1e-3", "-l", str(SEAT.MESH_LR), "--max-threads", "12"]
+        p = subprocess.run(cmd, capture_output=True, text=True, timeout=3600)
+        (workdir / "ftetwild.log").write_text(p.stdout[-3000:] + p.stderr[-3000:])
+        if p.returncode != 0 or not msh.exists(): raise SystemExit(f"fTetWild failed on {subject} {side}")
+    X, T = SEAT.read_msh_tets(msh)
+    used = np.unique(T); remap = -np.ones(len(X), np.int64); remap[used] = np.arange(len(used)); X, T = X[used], remap[T]
+    v = SEAT.tet_volumes(X, T); T[v < 0] = T[v < 0][:, [0, 2, 1, 3]]
+    B = SEAT.boundary_faces(T)
+    bV, bF, _ = SEAT.bed(side, near=X)
+    idx, pen, _, _ = SEAT.penetration_of(X, B, bV, bF)
+    deep = idx[pen > TRIM_DEPTH_M]
+    total = SEAT.tet_volumes(X, T).sum()
+    if not len(deep): return 0.0, float(pen.max() * 1e3), 0
+    isdeep = np.zeros(len(X), bool); isdeep[deep] = True
+    keep = ~isdeep[T].any(1)
+    return float(1.0 - SEAT.tet_volumes(X, T[keep]).sum() / total), float(pen.max() * 1e3), int(len(deep))
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--subject", choices=CW.SUBJECTS); ap.add_argument("--stage", default="all", choices=("all", "known-answer"))
+    a = ap.parse_args()
+    OUT.mkdir(parents=True, exist_ok=True)
+    body = CW.body_meshes()
+    ka_ok, ka = known_answer(body)
+    (OUT / "known_answer.json").write_text(json.dumps(ka, indent=2) + "\n")
+    if a.stage == "known-answer" or not ka_ok:
+        if not ka_ok: say("GATE 1 FAILED: the instrument does not recover a known warp; no subject is fitted.")
+        return
+    results = {}
+    for subject in ([a.subject] if a.subject else list(CW.SUBJECTS)):
+        say(f"\n=== {subject} ===")
+        src = CW.subject_meshes(subject)
+        G = np.array(json.loads((ROOT / "data/derived" / CW.REGISTERED[subject] / "manifest.json").read_text())["transform"])
+        t0 = time.time(); warp, rep = fit_warp(src, body, G); secs = time.time() - t0
+        warp.save(OUT / f"{subject}_warp.npz")
+        g3, ho = held_out(warp, G, src, body, subject)
+        # reported: where the warp actually moves things
+        base = np.vstack([CW.area_samples(*src[f"rib_{s}_{i}"], 1500) for s in ("left", "right") for i in range(2, 8) if f"rib_{s}_{i}" in src])
+        low = np.vstack([CW.area_samples(*src[f"rib_{s}_{i}"], 1500) for s in ("left", "right") for i in range(9, 13) if f"rib_{s}_{i}" in src])
+        br, _ = SEAT.read_obj(CW.SRC / subject / "meshes" / "breast_left.obj")
+        d_base = np.linalg.norm(warp.apply(base) - CW.apply(G, base), axis=1)
+        d_low = np.linalg.norm(warp.apply(low) - CW.apply(G, low), axis=1)
+        d_breast = np.linalg.norm(warp.apply(br) - CW.apply(G, br), axis=1)
+        say(f"  reported: bending energy {warp.bending_energy():.4f}; the warp moves ribs 2-7 by "
+            f"{1000*np.median(d_base):.1f} mm median, ribs 9-12 by {1000*np.median(d_low):.1f} mm, the breast by "
+            f"{1000*np.median(d_breast):.1f} mm (max {1000*d_breast.max():.1f})")
+        g4 = {}
+        for side in ("left", "right"):
+            frac, pmax, ndeep = _behind(subject, side, warp.apply(SEAT.read_obj(CW.SRC / subject / "meshes" / f"breast_{side}.obj")[0]),
+                                        SEAT.read_obj(CW.SRC / subject / "meshes" / f"breast_{side}.obj")[1], OUT / subject / side)
+            g4[side] = dict(volume_behind_wall=frac, deepest_mm=pmax, deep_vertices=ndeep)
+            say(f"GATE 4 {side}: {100*frac:.3f}% more than {TRIM_DEPTH_M*1e3:.0f} mm behind the wall "
+                f"(deepest {pmax:.1f} mm) -> {'PASS' if frac <= TRIM_VOLUME_TOL else 'FAIL'}")
+        g4_ok = all(v["volume_behind_wall"] <= TRIM_VOLUME_TOL for v in g4.values())
+        results[subject] = dict(passes=bool(g3 and g4_ok), fit=rep, seconds=secs,
+                                gate3_held_out=dict(passes=g3, **ho), gate4_behind_wall=dict(passes=g4_ok, **g4),
+                                reported=dict(bending_energy=warp.bending_energy(),
+                                              ribs_2_7_median_mm=1000 * float(np.median(d_base)),
+                                              ribs_9_12_median_mm=1000 * float(np.median(d_low)),
+                                              breast_median_mm=1000 * float(np.median(d_breast)),
+                                              breast_max_mm=1000 * float(d_breast.max())))
+        (OUT / f"{subject}.json").write_text(json.dumps(results[subject], indent=2) + "\n")
+    (OUT / "summary.json").write_text(json.dumps({"known_answer": ka, "subjects": results}, indent=2) + "\n")
+    say("\n=== gate table ===")
+    for s, r in results.items():
+        say(f"  {s}: held out {'pass' if r['gate3_held_out']['passes'] else 'FAIL'} "
+            f"({r['gate3_held_out']['warp_median_mm']:.2f} vs {r['gate3_held_out']['bar_mm']:.2f} mm) | behind the wall "
+            f"{100*r['gate4_behind_wall']['left']['volume_behind_wall']:.2f}% / "
+            f"{100*r['gate4_behind_wall']['right']['volume_behind_wall']:.2f}% "
+            f"{'pass' if r['gate4_behind_wall']['passes'] else 'FAIL'} -> {'PASS' if r['passes'] else 'FAIL'}")
+
+
+if __name__ == "__main__": main()
