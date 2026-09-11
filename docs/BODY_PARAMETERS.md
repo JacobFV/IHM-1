@@ -4417,8 +4417,14 @@ What has changed is that the parametrization no longer stops at the scaffold.
      10.7 expected by chance, anti-correlated.
 
    **OPEN, and honestly so.**
-   * The INSTANTANEOUS staleness -- how far a refused constraint is from the bed right now -- was
-     never measured. It is the number that would have decided whether the 31-37% costs anything.
+   * The INSTANTANEOUS staleness was measured at ONE fraction only, 0.0625, before the line was
+     stopped, and the single reading is recorded here rather than discarded: over the 963 nodes
+     refused at that step, **median 0.8174 mm, p90 1.4379 mm, max 47.8232 mm**. At one accepted step
+     the accumulated and instantaneous figures necessarily coincide, so this reading carries none of
+     the artefact -- and equally it CANNOT distinguish the ratchet, since separating them needs two
+     or more steps. One point is not a trend: it says a typical refused constraint was about 0.8 mm
+     from the bed after the first step, and says nothing about whether that grows. The measurement
+     that would have decided the question was not taken.
    * The RATCHET is neither confirmed nor refuted: a refused node measures its next wanted
      displacement from the same frozen point, so refusal may compound. Its apparent confirmation in
      the accumulated figures was the artefact above.
