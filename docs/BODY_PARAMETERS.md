@@ -3123,3 +3123,26 @@ What has changed is that the parametrization no longer stops at the scaffold.
      jump between. If they do, gate V's adaptive stepping is not an optimisation but the mechanism
      that makes this regime tractable at all.
 
+   **Gates Z and Y are built and running; no numbers yet, and the runtime is itself the first
+   measurement of this regime.** (`scripts/gate_zy_anatomical.py`, standalone like W and X.)
+
+   Z drives the same non-rigid motion on the ANATOMICAL bed in 16 increments and in 64 and requires
+   the final configurations to agree; Y drives forward and back in one schedule and requires the
+   return to reproduce the start. Tolerance for both is the bed's facet scale, 1 mm -- the same
+   measured quantity the refusal threshold uses -- because the association is discrete and two step
+   counts may legitimately select different facets at that scale.
+
+   **What is already measured: cost.** The 16-increment leg alone has run **37 minutes without
+   completing**, against **36 s** for the rigid drive on the same mesh (T-none), seconds for the
+   planar gate W and 30 s for the homogeneous gate X. The regime the breast is actually in is at least
+   60x more expensive per leg than every control that has been used to reason about it, and Z needs
+   three such legs. That is a property of a non-rigid motion against a bed whose association is
+   contested at nearly every step, and it is worth knowing before anything is planned around a full
+   seating run.
+
+   **Stated in advance, as required, so a pass cannot be over-read:** reversibility and path
+   independence are **NECESSARY, NOT SUFFICIENT**. A consistently wrong answer is reversible and
+   path-independent too. They bound the SOLVER's contribution to the error and say nothing about
+   whether the seated breast is anatomically right, which is judged by gates (a)-(d) and by nothing
+   else.
+

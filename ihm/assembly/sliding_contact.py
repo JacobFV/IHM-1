@@ -153,7 +153,7 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
                 hint=(0.0, 1.0, 0.0), rtol=1e-7, jump_limit_m=0.01, assoc_tol_m=1e-4, move=None,
                 rigid_m=None, freeze_frames=False, project=True, solver_log=None, stop_fraction=1.0,
                 association='persistent', lost_bed='hold', facet_m=1e-3, drive_full=False,
-                prescribe=None, log=None):
+                prescribe=None, phases=(1.0,), log=None):
     """The sliding base. base: node indices on the surface facing the bed. closest(points) ->
     (c, n): closest bed points and the bed's outward unit normals there. A base node BEHIND the bed
     in the registered position is HELD: its signed normal gap is ramped to zero over load_steps and
@@ -287,9 +287,18 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
     # Adaptive load stepping: closing tens of millimetres of penetration in equal steps moves held
     # nodes past their free neighbours and inverts surface tets before the first Newton iteration.
     # On failure the increment is halved and retried, then allowed to grow back.
+    # phases: the schedule of target fractions. (1.0,) drives forward; (1.0, 0.0) drives forward and
+    # back for the reversibility gate, in ONE call so the association history stays continuous.
     fraction, ds, cutbacks = 0.0, 1.0 / load_steps, 0
-    while fraction < min(stop_fraction, 1.0) - 1e-12:
-        trial = min(1.0, fraction + ds)
+    targets = [min(t, stop_fraction) for t in phases]
+    target = targets.pop(0)
+    while True:
+        if abs(fraction - target) <= 1e-12:
+            if not targets: break
+            target = targets.pop(0); ds = 1.0 / load_steps
+            if abs(fraction - target) <= 1e-12: continue
+        direction = 1.0 if target > fraction else -1.0
+        trial = fraction + direction * min(ds, abs(target - fraction))
         saved = [assoc[0].copy(), assoc[1].copy()]      # a failed step must not leave a stale association
         try:
             u_new, info, gap, c, n = advance(trial, u)
