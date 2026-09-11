@@ -3208,3 +3208,29 @@ What has changed is that the parametrization no longer stops at the scaffold.
    the regime affordable, and gate Z continues on the current stepping so that today's path
    dependence is measured for what exists rather than for what replaces it.
 
+   **GATE V FAILS ON THE ANATOMICAL BED, and the failure has a floor that the rigid drive did not.**
+
+   | gate V, anatomical bed, the smoothed seating drive | result |
+   |---|---|
+   | completion | **stalled at fraction 0.0002** after 705 s |
+   | furthest fraction reached | 0.0625, then backwards |
+   | rejection rate | **48.6%** (17 of 35 proposals) |
+   | associations over their own bar at a rejection | **median 1**, min 1, max 79, of 3,123 held |
+   | increment at the stall | below 1e-6 of the drive |
+
+   **Adaptive stepping does not make this regime affordable**, and the reason is that median of ONE.
+   The bar is |node motion| + 1 mm, so as the increment shrinks the bar tends to the facet scale; an
+   association that jumps more than 1 mm under an ARBITRARILY SMALL motion can never be accommodated
+   by a smaller step. On the rigid drive the over-bar count fell to zero as the step shrank -- that
+   was the "no floor" measurement -- and under the seating drive on this bed it does not. The earlier
+   table generalised from a rigid motion, which is the same failure this line has now made at four
+   levels: the controls removed the feature that costs.
+
+   So the affordability question is answered and the answer is no: 705 seconds bought 0.02% of one
+   breast's drive, against gate Z's current stepping which passed 42 minutes unfinished on the same
+   drive. Neither stepping makes a full seating run reachable, let alone eight breasts.
+
+   One log line was corrected rather than reported: in adaptive mode the per-step line printed
+   "association moved 0.0000 mm", which is the PRE-step call that by construction returns zero, not
+   evidence that associations fail to update. It now says the association is held for the step.
+
