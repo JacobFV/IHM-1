@@ -1148,6 +1148,44 @@ shooting shares and the agreement filter exists to remove, so it strengthens rat
 the queued instrument -- and it is now visible as a correspondence fault rather than buried inside
 a number that was 93% floor.
 
+### The retired control's real finding: fitting the targets is not recovering the truth
+
+The retired 20 mm control ran to completion. Its verdict on this line is **not read** -- it is
+retired for the reason in `73dfc35`, it operates at separations the pipeline never presents, and
+the separation control supersedes it. But it measured one thing that does not depend on separation
+at all, and that thing is the most useful number the control produced:
+
+| | 1.50 mm field | 20.00 mm field |
+|---|---:|---:|
+| residual at the correspondences (**agreement with the TARGETS**) | 0.149 mm RMS | 0.437 mm RMS |
+| recovery vs the TRUTH, pointwise | 1.510 mm RMS | 19.478 mm RMS |
+| recovery to the SURFACE (the identifiable part) | 0.510 mm RMS | 3.345 mm RMS |
+| **understatement factor, residual -> to-surface truth** | **3.4x** | **7.7x** |
+| understatement factor, residual -> pointwise truth | 10.1x | 44.6x |
+
+**The warp fits its targets beautifully and recovers the truth badly, at both scales.** It agrees
+with the targets to 0.149 mm while sitting 0.510 mm from the truth on the identifiable component
+and 1.510 mm away pointwise. The fit residual is not a small version of the error; it is a
+different quantity, and it is optimistic by 3.4x at best and 45x at worst.
+
+**This applies to a number this line has been quoting.** The correspondence residual of **0.571 mm**
+has been carried as though it described fit quality. On this evidence it understates the
+to-surface error by something like 3-8x, so the honest reading of that 0.571 mm is a to-surface
+accuracy of **roughly 2-4 mm**, not half a millimetre. Every place a correspondence residual is
+quoted as an accuracy on this line is affected. Nothing is restated as a corrected number yet,
+because the understatement factor is measured here at the wrong separations; the separation
+control reports the factor at the operating point, and only then is a corrected figure written.
+
+**What it does NOT touch.** The chest-wall line's 0.078 mm came from normal shooting with the
+agreement filter, a different instrument from nearest-point TPS, and this control says nothing
+about it. And the factor is not a constant to divide by -- it moves 3.4x to 7.7x across the two
+scales measured, so it is a warning that the quantity is wrong, not a conversion.
+
+**Why this was worth having from a retired control.** I retired it for firing a threshold at the
+wrong separation, and it then answered a question I had not asked: whether this line's headline
+quality metric measures accuracy at all. It does not. A control kept running after its gate was
+withdrawn is how that surfaced.
+
 #### A known answer this line has never had, and what the chest wall found without it
 
 Every gate above compares a fit to another fit. Gate 1 asks whether the warped bone group sits no
