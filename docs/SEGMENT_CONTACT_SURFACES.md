@@ -1702,6 +1702,46 @@ separations are hard but genuine. On a real subject-to-scaffold registration the
 correspondences, where a trim could be protective. No ground truth exists on real data -- that is
 why the control exists. The only evidence available says remove the trim and none says keep it.
 
+### Gate 1 at CORR_TRIM = 0: PASS 22/22, better on every segment — and that is not evidence
+
+| segment | per-seg similarity | trimmed | **untrimmed** | change | | segment | per-seg | trimmed | **untrimmed** | change |
+|---|---:|---:|---:|---:|---|---|---:|---:|---:|---:|
+| calcn_l | 6.09 | 5.37 | **4.59** | −14.5% | | pelvis | 10.41 | 9.05 | **7.84** | −13.4% |
+| calcn_r | 6.00 | 5.10 | **4.69** | −8.0% | | radius_l | 1.77 | 1.40 | **1.17** | −16.4% |
+| femur_l | 3.88 | 3.92 | **3.19** | −18.6% | | radius_r | 1.65 | 1.58 | **1.37** | −13.3% |
+| femur_r | 3.94 | 3.90 | **3.51** | −10.0% | | talus_l | 3.23 | 2.62 | **2.09** | −20.2% |
+| hand_l | 3.96 | 3.39 | **2.99** | −11.8% | | talus_r | 3.12 | 1.78 | **1.67** | −6.2% |
+| hand_r | 3.98 | 3.20 | **2.73** | −14.7% | | tibia_l | 5.28 | 4.59 | **4.30** | −6.3% |
+| humerus_l | 5.38 | 3.77 | **3.21** | −14.9% | | tibia_r | 5.29 | 4.46 | **4.16** | −6.7% |
+| humerus_r | 4.91 | 3.41 | **2.71** | −20.5% | | toes_l | 4.15 | 3.89 | **3.80** | −2.3% |
+| patella_l | 2.47 | 1.26 | **1.04** | −17.5% | | toes_r | 4.15 | 3.85 | **3.75** | −2.6% |
+| patella_r | 2.52 | 1.32 | **0.95** | −28.0% | | torso | 15.65 | 11.28 | **9.84** | −12.8% |
+| ulna_l | 1.97 | 1.81 | **1.56** | −13.8% | | ulna_r | 2.01 | 1.81 | **1.60** | −11.6% |
+
+**PASS 22/22, mean −12.9%, and not one segment worse.** `femur_l`, which was 0.04 mm *over* the
+per-segment similarity at trim 0.10 and passed only on the 1 mm margin, is now 0.69 mm under it.
+
+**And by `8caf15b` this is not evidence that removing the trim was right.** That entry fixed, before
+any fit ran, that gate 1 measures agreement with what the fit aimed at and that neither an
+improvement nor a degradation counts. A clean sweep across 22 segments is precisely the result that
+would tempt a reclassification of gate 1 as more meaningful than it was declared to be, and the
+reclassification is refused. The trim decision rests on the control, which has a truth. **Gate 1's
+pass means the shipped instrument satisfies its gate — nothing more.**
+
+**One observation recorded without being interpreted.** Two agreement-type quantities moved in
+*opposite* directions on the same change: cross-validated correspondence RMS **worsened** 4.588 →
+5.284 mm (+15%), while gate 1 **improved** on every segment. If both were simply "agreement with
+targets" they should have moved together. They did not, so they are not measuring the same thing --
+but working out which is which needs its own control, and no conclusion is drawn here. Noting it
+because it is the kind of fact that gets quietly used later as an argument that gate 1 is
+trustworthy after all.
+
+**A limitation the agent stated and I am carrying forward.** In the 2×2, the *rows* isolate the trim
+exactly, but the *columns* also differ in sampler, which was stated and not controlled. So
+"the correspondence rule is worth ±0.02 mm" carries an uncontrolled difference and should be read as
+"no effect was detectable against a sampler difference of unknown size", not as a measured zero. The
+trim result, which is the row comparison, is unaffected.
+
 **Why this was worth having from a retired control.** I retired it for firing a threshold at the
 wrong separation, and it then answered a question I had not asked: whether this line's headline
 quality metric measures accuracy at all. It does not. A control kept running after its gate was
