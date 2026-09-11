@@ -3183,3 +3183,28 @@ What has changed is that the parametrization no longer stops at the scaffold.
    be made blind. Same class as the wording bugs this line has removed — **not a wrong number, but no
    number where one was needed** — and on today's evidence it is the more expensive of the two.
 
+   **GATE V PASSES ON THE PLANE, and the harness nearly reported a false pass.**
+
+   | gate V, adaptive stepping on the plane, closed-form field | result |
+   |---|---|
+   | completion | fraction 1.0, min J **1.0000**, zero inversions |
+   | steps rejected | **0 of 8** |
+   | associations actually updated | **9** -- the conjunction, since a rule that never updates shows 0 |
+   | solution vs the exact homogeneous field | median **0.000000 mm**, max **0.000000 mm** |
+
+   Adaptive stepping rejects the STEP and shrinks it when an update would exceed any node's own bar,
+   rather than refusing the update and carrying stale constraints forward. The step size is then
+   driven by association motion -- the quantity that actually breaks -- instead of by min J.
+
+   **The near-miss, recorded because it is the same class as the silent 37-minute run.** The first
+   `--adaptive` run reported a pass while its own header read `stepping: allornothing`: the script
+   sets `sys.argv = ["x"]` before loading the seat module, which wiped the flag before the mode was
+   read. It was checked rather than assumed, and the flag is now read before anything overwrites
+   argv. The adaptive path was then verified to DISCRIMINATE rather than merely run: with the derived
+   1 mm facet scale it completes with zero rejections, and with a 0 mm facet -- no slack at all -- it
+   rejects and stalls, which is what a live mechanism must do.
+
+   **Still only the plane.** V has not been run on the anatomical bed, which is where it might make
+   the regime affordable, and gate Z continues on the current stepping so that today's path
+   dependence is measured for what exists rather than for what replaces it.
+

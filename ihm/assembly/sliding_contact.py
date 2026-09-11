@@ -180,7 +180,11 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
         # lost_bed names what happens to a node whose ray no longer meets the bed within the reach:
         # 'hold' keeps its last valid association, 'release' drops its constraint for that step. Declared,
         # not chosen silently, and counted per association.
-        if association == 'none' and lost_history:
+        if association in ('none', 'adaptive') and lost_history:
+            # 'adaptive' never updates DURING a step: the update is attempted after the step, and a
+            # step whose update would exceed any node's bar is rejected and shrunk (gate V). The
+            # quantity driving the step size is then association motion -- the thing that actually
+            # breaks -- rather than min J.
             return assoc[0], assoc[1], 0, 0.0
         c_new, n_new = closest(points)
         if association == 'allornothing':
@@ -308,6 +312,24 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
             if log: log(f"  cut back to {ds:.5f} at fraction {trial:.4f}: {failure}", flush=True)
             if ds < 1e-4: raise RuntimeError(f"load stepping stalled at fraction {fraction:.4f}: {failure}")
             continue
+        if association == 'adaptive':
+            points = (X + u_new)[base]
+            c_new, n_new = closest(points)
+            bar = np.linalg.norm(points - assoc[3], axis=1) + facet_m
+            invalid = ~np.isfinite(c_new).all(1) | ~np.isfinite(n_new).all(1)
+            over = int(((np.linalg.norm(np.nan_to_num(c_new - assoc[0]), axis=1) > bar) | invalid).sum())
+            refusals.append(bool(over))
+            if over:                                  # the STEP is rejected, not the update
+                assoc[0], assoc[1] = saved
+                ds *= 0.5; cutbacks += 1
+                if log: log(f"  step rejected at fraction {trial:.4f}: {over} associations would exceed "
+                            f"their own bar; shrinking to {ds:.5f}", flush=True)
+                if ds < 1e-6: raise RuntimeError(f"association-driven stepping stalled at {fraction:.4f}")
+                continue
+            moved_now = float(np.linalg.norm(c_new - assoc[0], axis=1).max())
+            assoc[0], assoc[1], assoc[3] = c_new, n_new, points.copy()
+            lost_history.append(int(invalid.sum()))
+            info = dict(info, association_moved_m=moved_now)
         u = u_new; fraction = trial; record.append(dict(fraction=fraction, **info))
         ds = min(ds * 1.5, 1.0 / load_steps)
     return dict(displacement=u, gap_m=gap, held=held, initial_gap_m=gap0, closest_m=c, normal=n, steps=record,

@@ -1,4 +1,4 @@
-"""GATE X: a homogeneous deformation of the held base against an analytic plane.
+"""GATE X (and, with --adaptive, GATE V on the plane): a homogeneous deformation of the held base against an analytic plane.
 
 Non-rigid and sliding, yet closed-form. A simple shear TANGENT to the plane is isochoric (det F = 1)
 and, being homogeneous, satisfies equilibrium exactly for a homogeneous neo-Hookean material -- the
@@ -14,6 +14,10 @@ the standing condition on this line is unchanged -- a passing X is not clearance
 """
 import sys, importlib.util
 sys.path.insert(0, "/home/brandonin/Documents/IHM-1")
+# read the flag BEFORE anything overwrites sys.argv: loading the seat module below sets
+# sys.argv = ["x"], which silently turned a --adaptive run into an allornothing one and
+# reported it as gate V passing.
+ADAPTIVE = "--adaptive" in sys.argv
 import numpy as np
 from ihm.assembly.sliding_contact import SlidingRegion, seat_on_bed
 from ihm.assembly.prescribed_deformation import lame, tet_volumes
@@ -47,8 +51,10 @@ print(f"simple shear tangent to the plane: gamma {gamma:.5f}, det F {np.linalg.d
 u_exact = field(X)
 print(f"association motion will VARY across the base: per full drive, min {1000*np.linalg.norm(field(X[base]),axis=1).min():.3f} mm, "
       f"median {1000*np.median(np.linalg.norm(field(X[base]),axis=1)):.3f}, max {1000*np.linalg.norm(field(X[base]),axis=1).max():.3f}")
+MODE = "adaptive" if ADAPTIVE else "allornothing"
+print(f"stepping: {MODE}" + ("  (GATE V: a rejected step shrinks rather than refusing the update)" if MODE == "adaptive" else ""))
 r = seat_on_bed(region, base, plane_closest, load_steps=8, gap_tol_m=1e-3, jump_limit_m=5e-4,
-                assoc_tol_m=1e-3, freeze_frames=True, association="allornothing", lost_bed="hold",
+                assoc_tol_m=1e-3, freeze_frames=True, association=MODE, lost_bed="hold",
                 facet_m=1e-3, prescribe=(boundary_nodes, field(X[boundary_nodes])),
                 log=lambda m, flush=True: print(m, flush=True))
 u = r["displacement"]; Y = X + u
@@ -60,6 +66,9 @@ print(f"\nGATE X: completed to 1.0, min J {J.min():.4f} (exact 1.0000), inversio
 print(f"  refusal rate {100*r['refusal_rate']:.1f}% ({sum(r['refusals'])} of {len(r['refusals'])})")
 print(f"  solution vs the exact homogeneous field: median {1000*np.median(err):.6f} mm, max {1000*err.max():.6f} mm")
 print(f"  volume ratio {tet_volumes(Y, T).sum()/tet_volumes(X, T).sum():.8f} (isochoric shear: 1.0)")
-print(f"  -> {'PASS' if ok else 'FAIL'} (fraction 1.0, min J >= 0.99, refusal rate 0, exact field)")
+updates = len(r.get("lost_bed_per_association", []))
+print(f"  associations actually updated: {updates} (a rule that never updates would show 0)")
+print(f"  -> {'PASS' if ok else 'FAIL'} (fraction 1.0, min J >= 0.99, refusal rate 0, exact field"
+      + (", associations updating)" if MODE == "adaptive" else ")"))
 print("  NOT SUFFICIENT: this is a plane. The standing condition -- non-rigid motion against the")
 print("  ANATOMICAL bed -- is unchanged, and a passing X is not clearance for the breast.")
