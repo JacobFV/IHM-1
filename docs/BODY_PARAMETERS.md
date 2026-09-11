@@ -4537,3 +4537,45 @@ What has changed is that the parametrization no longer stops at the scaffold.
    under which 31–37% of held nodes (963–1,144 of 3,123) have their association refused every step
    and held stale. `association moved 0.4999 mm` is a maximum over ACCEPTED updates and does not
    show it.
+
+   ### A SEAT ASSEMBLED FROM UNCONVERGED STEPS IS NOT A SEAT — rule fixed before this drive ends
+
+   Written 2026-09-11 while the post-repair drive on s1159-left is still running, so it cannot be
+   chosen to suit the outcome.
+
+   **`converged` recorded only the last step.** `ihm/assembly/sliding_contact.py:447` returned
+   `converged=record[-1]['converged']`. A drive that pushed through several
+   `Newton 300 UNCONVERGED` steps and happened to converge on its final one reported
+   `converged: true`, and nothing downstream could tell the difference. **The per-breast gates
+   (a)–(d) — volume, min J, solver agreement, flipped base triangles — never ask about
+   convergence at all**, so a state assembled through unconverged steps can pass all four.
+
+   This is live, not hypothetical. The drive running now:
+
+   | fraction | Newton | min J | held gap median | nodes worse |
+   |---:|---|---:|---:|---:|
+   | 0.0625 | 30 | 0.800 | 7.0196 mm | 39 |
+   | **0.1094** | **77 (converged)** | 0.667 | 6.6579 mm | 34 |
+   | 0.1797 | **300 UNCONVERGED** | 0.509 | 6.1297 mm | 27 |
+   | 0.2324 | **300 UNCONVERGED** | 0.406 | 5.7416 mm | 16 |
+
+   The gap closes and the "nodes worse" count falls as the fraction rises — which reads as
+   progress and is why this needs saying in advance. But min J is falling monotonically
+   (0.800 → 0.667 → 0.509 → 0.406) toward gate (b)'s bar of 0.2, and the last two states are not
+   equilibria of anything. **The honest reach of this drive is fraction 0.1094**, the last
+   converged step — which is precisely the affordability number already on record, now reproduced
+   by the production code post-repair.
+
+   **THE RULE, fixed now:** a fraction reached through an unconverged Newton step is reported as
+   reached, never as seated, whatever gates (a)–(d) say about the state there. A `judge.json`
+   whose displacement came from such a state is labelled with the last converged fraction, and a
+   seat is claimed only for a drive with `all_steps_converged`.
+
+   `seat_on_bed` now returns `all_steps_converged`, `n_unconverged_steps`,
+   `last_converged_fraction` and `max_fraction_reached` alongside the old flag, so this is
+   readable from the artefact instead of requiring someone to re-read a log. **The drive running
+   now was launched before that change and will write the old single flag**; its numbers are taken
+   from `logs/dr_s1159_left_postrepair.log`, which prints convergence per step.
+
+   This does not touch the prediction made before the run — *past fraction 0.0005* — which is
+   confirmed either way: 0.1094 converged is 219× the pre-repair stall.

@@ -444,4 +444,19 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
     return dict(displacement=u, gap_m=gap, held=held, initial_gap_m=gap0, closest_m=c, normal=n, steps=record,
                 cutbacks=cutbacks, lost_bed_per_association=lost_history, association=association,
                 refusals=refusals, refusal_rate=(float(np.mean(refusals)) if refusals else None),
-                lost_bed_rule=lost_bed, minimum_jacobian=record[-1]['min_J'], converged=record[-1]['converged'])
+                lost_bed_rule=lost_bed, minimum_jacobian=record[-1]['min_J'],
+                # `converged` USED TO BE `record[-1]['converged']` ALONE -- the LAST step's flag.
+                # A drive that pushed through several Newton-300-UNCONVERGED steps and happened to
+                # converge on its final one reported `converged: true`, and nothing downstream
+                # could tell. The per-breast gates (a)-(d) never ask about convergence at all, so
+                # a state assembled through unconverged steps can pass all four. The 2026-09-11
+                # production drive on s1159-left has exactly this shape: converged at fraction
+                # 0.1094 (Newton 77), then UNCONVERGED at 0.1797 and 0.2324 (Newton 300 each).
+                # The honest reach of a drive is the LAST CONVERGED FRACTION, and all three
+                # numbers are now recorded so no one has to re-read a log to find out.
+                converged=record[-1]['converged'],
+                all_steps_converged=all(bool(s['converged']) for s in record),
+                n_unconverged_steps=sum(1 for s in record if not s['converged']),
+                last_converged_fraction=max([s['fraction'] for s in record if s['converged']],
+                                            default=None),
+                max_fraction_reached=max([s['fraction'] for s in record], default=None))
