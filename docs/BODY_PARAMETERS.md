@@ -4334,3 +4334,47 @@ What has changed is that the parametrization no longer stops at the scaffold.
    stale each step" describes a fixed lag. A ratchet means a *growing* set of *permanently* frozen
    constraints, which is a different and worse fact, and it would make re-running the anatomical
    results the only option rather than one of two.
+
+   ### The pre-registered measurement confirmed the pre-registered hypothesis — through its own artefact
+
+   | | 0.0625 | 0.1094 |
+   |---|---:|---:|
+   | refused ≥ once | 963 (30.8%), max 1 time | 982 (31.4%), max **3** times |
+   | median over affected | 0.8174 mm | **3.0842 mm** |
+   | max | 47.8232 mm | **143.1322 mm** |
+
+   On its face: the "millimetres" branch, catastrophically. **But 143.1322 ≈ 47.82 × 3** — the same
+   ~47 mm teleport, refused three times, summed as though it were accumulated drift.
+
+   **The accumulator cannot distinguish an association falling slightly further behind each step from
+   one large jump rejected repeatedly**, and only the first is staleness. A 46.6 mm teleport is
+   precisely what the jump limit exists to reject. **Counting a successful rejection as accumulated
+   error credits the mechanism's correct behaviour to its failure mode.**
+
+   **This is the day's sharpest failure, and none of the standing rules would have caught it.** The
+   measurement was pre-registered with its boundary, its three figures and its accounting decisions
+   declared in the file before the run. The hypothesis it appeared to confirm — the ratchet — was
+   also pre-registered, with a mechanism, one message earlier. **Everything was in the right order and
+   the answer was still an artefact of the instrument's own summation.** Pre-registration protects
+   against choosing a threshold to fit a result; it does nothing about a quantity that is
+   ill-defined for the question.
+
+   **It was caught by a ratio being too clean**: 143.13 / 47.82 = 2.99. The median alone — 0.82 →
+   3.08 across two steps — looked like an ordinary ratchet and would have passed. Had the numbers
+   been reported, they would have triggered a re-run of every anatomical result on this line, and the
+   re-runs would have been chasing a figure that partly measures the jump limit working as intended.
+
+   > **The rule, recorded in `CLAUDE.md`: a sum over repeated events cannot tell "accumulating" from
+   > "the same event, repeated". And confirmation is the moment to check the instrument, not the
+   > moment to stop** — a result that agrees with the hypothesis you pre-registered is the one you
+   > are least likely to take apart.
+
+   **The repair, and it keeps both quantities.** The verdict moves to the **instantaneous** wanted
+   displacement — how far each refused constraint is from the bed *right now* — which is what the
+   question actually asks. The accumulated figures stay in the output, because **the ratio between
+   them is itself the diagnostic**: accumulation ≫ instantaneous means the same teleport rejected
+   repeatedly; accumulation ≈ instantaneous × refusal count means genuine drift.
+
+   **The ratchet is neither confirmed nor refuted.** It may still hold — the instantaneous numbers
+   will say — but the confirmation that appeared to arrive was produced by the summation, not by the
+   body.

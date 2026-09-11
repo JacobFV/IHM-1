@@ -144,3 +144,28 @@ derived half and fail the guessed half; it only ever reports the guess.**
 
 So: gate the exponent, and *measure and report* the prefactor rather than predicting it. If you
 cannot say where a constant in your bar comes from, it does not belong in the bar.
+
+## A sum over repeated events cannot tell drift from a rejected jump
+
+An accumulator measuring "how stale is this constraint" added up every *refused* association update.
+It returned a median of 3.08 mm and a maximum of **143.13 mm** — the "catastrophic" branch of a
+pre-registered decision. Then: **143.1322 / 47.8232 = 2.99.** It was one ~47 mm teleport, refused
+three times, summed as though the constraint had drifted 143 mm.
+
+A jump limit exists to reject teleports. **Counting a successful rejection as accumulated error
+credits the mechanism's correct behaviour to its failure mode.** The fix was the *instantaneous*
+wanted displacement, with the accumulated figure kept beside it because the RATIO is the diagnostic:
+accumulation ≫ instantaneous means the same jump rejected repeatedly; accumulation ≈ instantaneous ×
+count means real drift.
+
+**Two things about how it nearly got through, and neither is covered by the other rules here.**
+
+The measurement was pre-registered — boundary, three figures, accounting decisions, all declared in
+the file before the run. The hypothesis it appeared to confirm was pre-registered too, with a
+mechanism. Everything was in the right order. **Pre-registration protects against choosing a
+threshold to fit a result; it does nothing about a quantity that is ill-defined for the question.**
+
+And it was caught only because a ratio was suspiciously close to an integer. The median alone, 0.82
+→ 3.08 over two steps, looked like exactly the ratchet that had been predicted. **A result that
+agrees with the hypothesis you pre-registered is the one you are least likely to take apart** — so
+confirmation is the moment to check the instrument, not the moment to stop.
