@@ -1461,6 +1461,45 @@ done; the others have moved.
    * **Reported:** how far the closing moves the surface, since a 10 mm ball spanning a 10 mm gap
      invents surface where the body has none, and that invention is exactly where the breast sits.
 
+   **Gate 0' FAILS: coverage 13.5-22.1%, against >= 95%.** Better than the rib correspondence's
+   3.7-8.6%, and nowhere near enough, so no field was fitted and gates A', 2-4 were not reached.
+
+   | subject | coverage | no hit | no return | return too far | normals disagreed | offsets seen |
+   |---|---:|---:|---:|---:|---:|---:|
+   | s0790 | 13.5% | 1189 | 161 | 1456 | 308 | 1.23 mm median |
+   | s1067 | 16.1% | 983 | 139 | 1585 | 315 | 1.01 mm |
+   | s1159 | 22.1% | 848 | 125 | 1551 | 282 | 1.14 mm |
+   | s0970 | 15.4% | 1069 | 165 | 1565 | 247 | 1.11 mm |
+
+   **Two reasons, and the second is about the instrument rather than the bodies.** A quarter of rays
+   miss the other envelope entirely and a wider cap does not help (75.8% hit at 20 mm, 77.0% at
+   40 mm): the two envelopes span different extents, so rays near their edges leave the far surface
+   altogether. And the round-trip test rejects 40-44% more; loosening it tenfold, to 10 mm, raises
+   coverage only to 52.1% (diagnostic, not the gate). At a real separation the return has a lever
+   arm -- two surfaces whose normals differ by 10 deg over an 8 mm gap miss the round trip by
+   1.4 mm -- so a 1 mm tolerance set at zero separation is doing something different here.
+
+   **And the envelope shrinks what it was built to carry.** The two envelopes stand a median 3.0 mm
+   apart where the rib-to-rib deformation is 6.5-10.9 mm, and the offsets the surviving pairs see are
+   1.0-1.2 mm. A 10 mm ball closing both walls into their own inter-rib gaps inflates each toward the
+   other, so the very offset the scalar field is meant to represent is largely absorbed by the
+   closing. **Reported as required:** the closing moves this body's wall 1.85 mm median, 2.14 mean,
+   8.45 mm max, and **6.7% of the envelope stands more than 5 mm from any real surface** -- invented
+   surface, in the place the breast sits.
+
+   **Deviation, recorded.** The envelope is built from ribs 2-7 and the sternum on BOTH sides, not
+   from the muscular wall: neither body has a costal-cartilage label, and her CT has no muscle labels
+   at all. Including this body's muscle on one side only would bias every offset outward by the
+   muscle's thickness, flattering the breast gate and corrupting the held-out one.
+
+   **A known-answer lesson, paid for again.** `igl.marching_cubes` enumerates its grid with x
+   FASTEST; C-ordered values scramble against their positions and shatter the surface -- 9,743
+   components here. A sphere could not catch it, because a sphere is invariant under axis
+   permutation and the wrong ordering still returns a sphere of the right radius. The check that
+   caught it uses an ellipsoid with three distinct semi-axes. **A known answer must break the
+   symmetry it is testing**, the same way a correspondence's must be scored at the separation it
+   will be used at.
+
    **Predicted:** coverage clears 95% easily, because a closed envelope has no gaps to miss;
    the offsets the correspondence sees then match the 6.5-10.9 mm the decomposition measured,
    rather than the 0.37-0.45 mm the rib pairs saw. If coverage clears and gate 4 still fails, the

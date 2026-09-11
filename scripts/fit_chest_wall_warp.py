@@ -281,13 +281,14 @@ def _behind(subject, side, Y, F, workdir):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--subject", choices=CW.SUBJECTS); ap.add_argument("--stage", default="all", choices=("all", "gate0", "known-answer", "curve", "scale", "scalar", "subjects"))
+    ap.add_argument("--subject", choices=CW.SUBJECTS); ap.add_argument("--stage", default="all", choices=("all", "gate0", "known-answer", "curve", "scale", "scalar", "subjects", "envelope"))
     ap.add_argument("--density", type=int)
     a = ap.parse_args()
     OUT.mkdir(parents=True, exist_ok=True)
     body = CW.body_meshes()
     if a.stage == "curve": stage_curve(body, a.density); return
     if a.stage == "scale": stage_scale(body); return
+    if a.stage == "envelope": stage_envelope(body); return
     if a.stage == "subjects": stage_subjects(body); return
     if a.stage == "scalar":
         ok, normals = stage_scalar(body)
@@ -723,6 +724,130 @@ def stage_subjects(body):
             f"{'pass' if r['gate4']['passes'] else 'FAIL'} -> {'PASS' if r['passes'] else 'FAIL'}")
     (OUT / "scalar_subjects.json").write_text(json.dumps(results, indent=2) + "\n")
     return results
+
+
+# ---- the chest-wall envelope (docs/BODY_PARAMETERS.md, 2380fef) ---------------------------------
+# A breast does not rest on a rib, it rests on the chest WALL, and a wall has no gaps to miss. The
+# envelope is the outward surface of the union, closed by a 10 mm ball so inter-rib gaps are spanned
+# rather than entered, then the same 20 Taubin iterations.
+#
+# DEVIATION, recorded: the pre-registration lists ribs, costal cartilage, sternum AND the muscular
+# wall. Neither body has a costal-cartilage label, and HER CT has no muscle labels at all (ribs,
+# clavicles, sternum, vertebrae, breasts, skin). Including muscle on this body's side only would bias
+# every offset outward by the muscle's thickness -- corrupting the held-out gate and flattering the
+# breast gate -- so both envelopes are built from what both bodies have: ribs 2-7 and the sternum,
+# with the 10 mm closing doing the job the intercostals would.
+ENVELOPE_BALL_M, ENVELOPE_VOXEL_M = 0.010, 0.002
+
+
+def chest_envelope(meshes, ball_m=ENVELOPE_BALL_M, voxel_m=ENVELOPE_VOXEL_M, samples_per_mesh=150000):
+    """Morphological closing of the union, as a surface. Returns (V, F, report)."""
+    import igl
+    from scipy import ndimage as ndi
+    P = np.vstack([CW.area_samples(V, F, samples_per_mesh, 7 + i) for i, (V, F) in enumerate(meshes)])
+    pad = ball_m * 2 + 4 * voxel_m
+    lo = P.min(0) - pad; hi = P.max(0) + pad
+    dims = np.ceil((hi - lo) / voxel_m).astype(int) + 1
+    occ = np.zeros(dims, bool)
+    idx = np.floor((P - lo) / voxel_m).astype(int)
+    occ[idx[:, 0], idx[:, 1], idx[:, 2]] = True
+    # The union must be SOLID before it is closed: dilating and eroding a surface SHELL returns the
+    # shell, and marching cubes then finds both of its sides as disconnected fragments (478 vertices
+    # spanning 3 mm, normals outward on 45% of them). So dilate, flood the exterior in from the grid
+    # boundary, and call everything else solid -- which also fills each bone's interior and any
+    # cavity -- and only then erode.
+    dilated = ndi.distance_transform_edt(~occ, sampling=voxel_m) <= ball_m
+    lab, _ = ndi.label(~dilated)
+    outside_labels = set(np.unique(np.concatenate([lab[0].ravel(), lab[-1].ravel(), lab[:, 0].ravel(),
+                                                   lab[:, -1].ravel(), lab[:, :, 0].ravel(), lab[:, :, -1].ravel()])))
+    outside_labels.discard(0)
+    exterior = np.isin(lab, list(outside_labels))
+    solid = ~exterior
+    closed = ndi.distance_transform_edt(solid, sampling=voxel_m) > ball_m         # erosion of the filled dilation
+    sdf = (ndi.distance_transform_edt(~closed, sampling=voxel_m)
+           - ndi.distance_transform_edt(closed, sampling=voxel_m))
+    # igl.marching_cubes enumerates its grid with X FASTEST. Passing C-order ("ij") values scrambles
+    # them against their positions and shatters the surface -- 9,743 components on this envelope, 344
+    # on a test ellipsoid. A SPHERE cannot catch that (it is invariant under axis permutation), which
+    # is why the check that found it uses distinct semi-axes.
+    g = np.stack(np.meshgrid(*[lo[k] + voxel_m * np.arange(dims[k]) for k in range(3)], indexing="ij"), -1)
+    g = g.transpose(2, 1, 0, 3).reshape(-1, 3)
+    mc = [np.asarray(o) for o in igl.marching_cubes(
+        np.ascontiguousarray(sdf.transpose(2, 1, 0).reshape(-1)), np.ascontiguousarray(g),
+        int(dims[0]), int(dims[1]), int(dims[2]), 0.0) if hasattr(o, "shape")]
+    V = next(o for o in mc if o.dtype.kind == "f" and o.ndim == 2 and o.shape[1] == 3)
+    F = next(o for o in mc if o.dtype.kind in "iu" and o.ndim == 2 and o.shape[1] == 3)
+    keep = largest_surface_component(V, F)
+    V, F = compact(V, F[keep])
+    Vs = taubin_smooth(V, F)
+    invented = cKDTree(P).query(Vs)[0]
+    report = dict(voxels=int(np.prod(dims)), vertices=int(len(Vs)), faces=int(len(F)),
+                  closing_moves_surface_mean_mm=float(1000 * invented.mean()),
+                  closing_moves_surface_median_mm=float(1000 * np.median(invented)),
+                  closing_moves_surface_max_mm=float(1000 * invented.max()),
+                  invented_share_over_5mm=float((invented > 0.005).mean()))
+    return Vs, F, report
+
+
+def largest_surface_component(V, F):
+    from scipy.sparse import coo_matrix
+    from scipy.sparse.csgraph import connected_components
+    e = np.vstack([F[:, [0, 1]], F[:, [1, 2]], F[:, [2, 0]]])
+    A = coo_matrix((np.ones(len(e)), (e[:, 0], e[:, 1])), shape=(len(V), len(V)))
+    n, lab = connected_components(A, directed=False)
+    if n == 1: return np.ones(len(F), bool)
+    big = np.argmax(np.bincount(lab))
+    return lab[F[:, 0]] == big
+
+
+def compact(V, F):
+    used = np.unique(F); remap = -np.ones(len(V), np.int64); remap[used] = np.arange(len(used))
+    return V[used], remap[F]
+
+
+def envelope_meshes(body, subject=None, G=None):
+    """ribs 2-7 and the sternum, in body space."""
+    if subject is None:
+        return [body[l] for l in CW.FIT_LABELS] + [body["sternum"]]
+    src = CW.subject_meshes(subject)
+    out = []
+    for l in CW.FIT_LABELS + ["sternum"]:
+        if l in src: V, F = src[l]; out.append((CW.apply(G, V), F))
+    return out
+
+
+def stage_envelope(body):
+    from ihm.anatomy.normal_shooting import shoot_pairs
+    t0 = time.time()
+    bV, bF, brep = chest_envelope(envelope_meshes(body))
+    say(f"this body's envelope: {len(bV)} vertices, {len(bF)} faces, {time.time()-t0:.0f} s")
+    say(f"  the 10 mm closing moves the surface it closes by {brep['closing_moves_surface_median_mm']:.2f} mm median, "
+        f"{brep['closing_moves_surface_mean_mm']:.2f} mean, {brep['closing_moves_surface_max_mm']:.2f} max; "
+        f"{100*brep['invented_share_over_5mm']:.1f}% of it stands more than 5 mm from any real surface")
+    say("  that invented surface is where the breast sits, so it is reported, not buried")
+    out = dict(body=brep, subjects={})
+    for subject in CW.SUBJECTS:
+        G = np.array(json.loads((ROOT / "data/derived" / CW.REGISTERED[subject] / "manifest.json").read_text())["transform"])
+        sV, sF, srep = chest_envelope(envelope_meshes(body, subject, G))
+        r = shoot_pairs(sV, sF, bV, bF, n=3600, cap_m=0.020, return_tol_m=SHOOT_RETURN_TOL_M,
+                        seed=0, min_normal_agreement=SHOOT_AGREEMENT)
+        cover = float(r["keep"].sum() / r["sampled"])
+        offs = np.abs(np.einsum('ij,ij->i', r["target"] - r["source"], r["normal"]))
+        say(f"  {subject}: envelope {len(sV)} vertices (closing moves it {srep['closing_moves_surface_median_mm']:.2f} mm median); "
+            f"coverage {100*cover:.1f}% of 3600 (no hit {r['no_hit']}, no return {r['no_return']}, "
+            f"return too far {r['return_too_far']}, normals disagreed {r['normal_disagreed']}); "
+            f"offsets |s| median {1000*np.median(offs):.2f} mm, p90 {1000*np.percentile(offs,90):.2f}")
+        out["subjects"][subject] = dict(envelope=srep, coverage=cover, samples=int(r["sampled"]),
+                                        no_hit=r["no_hit"], no_return=r["no_return"],
+                                        return_too_far=r["return_too_far"], normal_disagreed=r["normal_disagreed"],
+                                        offset_median_mm=float(1000 * np.median(offs)),
+                                        offset_p90_mm=float(1000 * np.percentile(offs, 90)))
+    worst = min(v["coverage"] for v in out["subjects"].values())
+    say(f"GATE 0' coverage: worst {100*worst:.1f}% (>= 95%) -> {'PASS' if worst >= 0.95 else 'FAIL'} "
+        f"(the rib correspondence managed 3.7-8.6%)")
+    out["gate0prime_passes"] = bool(worst >= 0.95)
+    (OUT / "envelope.json").write_text(json.dumps(out, indent=2) + "\n")
+    return out
 
 
 if __name__ == "__main__": main()
