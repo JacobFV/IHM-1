@@ -116,9 +116,11 @@ def shoot_pairs(src_V, src_F, tgt_V, tgt_F, *, n=2000, cap_m=0.02, return_tol_m=
         M = np.einsum('nk,nkj->nj', w, tgt_vn[tgt_F[f[hit]]])
         M /= np.maximum(np.linalg.norm(M, axis=1, keepdims=True), 1e-30)
         d2, f2, s2 = first_hit(Q[hit], M, src_V, src_F, src_index, cap_m)
-        R = Q[hit] + (s2 * d2)[:, None] * M
         good = f2 >= 0
-        r = np.full(len(R), np.inf); r[good] = np.linalg.norm(R[good] - P[hit][good], axis=1)
+        r = np.full(len(good), np.inf)
+        if good.any():                                    # a miss leaves d2 = inf; never multiply it
+            R = Q[hit][good] + (s2[good] * d2[good])[:, None] * M[good]
+            r[good] = np.linalg.norm(R - P[hit][good], axis=1)
         ret[hit] = r; back[hit] = good
     keep = hit & back & (ret <= return_tol_m)
     disagree = np.zeros(len(P), bool)

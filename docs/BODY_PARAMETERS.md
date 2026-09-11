@@ -1245,6 +1245,46 @@ done; the others have moved.
    p90, both without any filter), and what remains is a thin-sheet failure with a known cause, a
    measured size, and a one-line remedy.
 
+   **With agreement adopted and turned on, gate 0 is clean and GATE 1 STILL FAILS. The correspondence
+   is at its discretisation floor; the warp is not what the correspondence limits.**
+
+   | | mean | p90 | worst rib |
+   |---|---:|---:|---|
+   | gate 0, agreement on (REPORTED, not claimed -- the rule was adopted on its argument after these were seen) | 0.078 mm | 0.157 mm | right rib 3, 0.133 mm |
+   | gate 0, agreement off, as pre-registered | 0.299 mm | 0.194 mm | right rib 2, 1.548 mm |
+   | nearest point | 0.671 mm | 2.281 mm | -- |
+
+   The far-side hits are gone: the ten good ribs were near 0.12 mm before and the two bad ones at
+   1.548 and 1.396; now every rib is between 0.10 and 0.133 mm. Of 4,800 samples, 4,382 are kept --
+   319 dropped for disagreeing normals, 98 for a return further than 1 mm, 1 for no hit.
+
+   | gate 1, a warp recovered from a known field (3.1 mm: 1.4 normal, 2.6 tangential) | surface | pointwise |
+   |---|---:|---:|
+   | with the unbiased correspondence (agreement on) | **1.512 mm RMS** | 3.147 mm |
+   | with the biased nearest-point targets, for comparison | 1.194 mm RMS | 3.062 mm |
+   | the bar | 1 mm | -- |
+
+   **An 8.6x more accurate correspondence made the recovery slightly WORSE, which is the finding.**
+   The warp's cross-validated error at held-out correspondences is 0.434 mm (0.735 in the first pass)
+   and is FLAT from lambda 1e-6 to 1e-4 -- an almost-interpolating fit predicts an unseen point no
+   better than a smoothed one. So the limit is not regularisation and not correspondence accuracy: it
+   is that the field between samples is not predictable from the samples. In the fit, 3,437 of 3,600
+   samples were kept (0 disagreeing normals, 90 returns too far, 63 no hit), spaced about 3.6 mm.
+
+   **What the geometry can support, measured.** On spheres at three resolutions the correspondence
+   error tracks the faceting exactly -- 0.135 x edge^2, ratio 0.134 / 0.135 / 0.137 as the edge
+   halves -- so it is discretisation, not the instrument. This body's ribs 2-7 have a mean edge of
+   1.94 mm (median 1.44, p90 4.05), and at rib-scale curvature that law predicts about 0.07 mm
+   against the 0.078 mm measured. The correspondence is therefore AT its floor and cannot improve
+   without denser bone meshes, while the warp sits 20x above it.
+
+   **One caveat on gate 1 that belongs with any re-derivation of its bar:** the known field's spatial
+   scale is an implementer's choice that was never pre-registered -- 720 anchors over ribs 2-7 with
+   ~4 mm random weights, which varies at roughly a centimetre. A field that varied at anatomical
+   scales would be easier to recover from 3.6 mm samples, and a finer one harder. Whatever bar
+   replaces 1 mm should fix that scale explicitly, or gate 1 measures the test field as much as the
+   instrument.
+
    **Normal agreement is adopted, on the argument and not on the score (2026-09-10).** A hit whose
    surface faces away from the source is on the far wall of the rib: it is not the partner of the
    source point, it is a different part of the bone that happens to lie along the ray, and the
