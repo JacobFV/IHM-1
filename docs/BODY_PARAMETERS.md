@@ -4645,3 +4645,36 @@ What has changed is that the parametrization no longer stops at the scaffold.
 
    Every fraction past **0.1094** is reached through `Newton 300 UNCONVERGED` steps in any case,
    so by the rule recorded above none of this is a seat regardless of what the gates say.
+
+   ### CONFIRMED: min J crossed the gate at fraction 0.5939
+
+   The prediction committed in `9f1060f`, an hour before it resolved, said the drive does not
+   complete a seat: either min J crosses 0.2 and **gate (b) FAILS**, or the load stepping stalls
+   first. It is the first branch.
+
+   `... 0.260  0.254  0.215  0.232  0.215  0.184`
+
+   **min J = 0.184 at fraction 0.5939**, against gate (b)'s bar of `every tet J > 0.2`. With 41%
+   of the load still unapplied, the mesh contains an element compressed past the threshold the
+   backend itself rejects at.
+
+   This is a FAIL recorded as a FAIL. The bar is not moved, and the gate is not re-run at a
+   different threshold: `docs/BODY_PARAMETERS.md` has carried `J > 0.2` as the backend's own
+   rejection threshold since the first per-breast judge was written, and the drive that just
+   crossed it is the production one.
+
+   **What it is not.** Not a solver defect — `seat_on_bed`'s known-answer gates pass, and gates
+   T-none, W, X and V-on-a-plane all converge at one Newton iteration per step. The elements are
+   being driven toward inversion by the boundary condition, which asks 3,123 held base nodes to
+   slide onto a curved bed through tissue that resists.
+
+   **What it points at, and it is upstream of everything on this line.** This breast begins
+   **41.82 mm deep in the chest wall** (`prepared.json`, `deepest_penetration_mm`). The drive is
+   not seating a breast onto a wall; it is pushing 42 mm of registration error out through the
+   material, and the material inverts before it gets there. **The registration is what to fix.**
+   That reading is independently supported: `docs/SEGMENT_CONTACT_SURFACES.md` measures s1067 at
+   **32.7%** of breast vertices behind the chest wall against s1159's **47.5%**, and every solver
+   run on this line to date has used s1159 — the second-worst-buried of the four subjects.
+
+   And every fraction past **0.1094** was reached through `Newton 300 UNCONVERGED` steps, so by
+   the rule recorded above none of this was a seat before gate (b) failed either.
