@@ -1225,6 +1225,62 @@ curvature law. This is the first test this line has run that can speak to d^2/R 
 improved; near 5 mm and the bias is an angular error that a better correspondence can remove. No
 gate attaches to this -- it is a structural question, and it decides which repair is worth building.
 
+### VERDICT: the bias is an angular error, not a curvature law. Normal shooting is the repair.
+
+The third amplitude landed at an achieved separation of **2.20 mm** (0.61-12.32 across segments),
+residual displacement 8.21 mm. Normal error **4.724 mm**, p90 12.710.
+
+| achieved separation | normal error | fit residual | to-surface recovery | understatement |
+|---:|---:|---:|---:|---:|
+| 0.39 mm *(below the operating range)* | 0.494 mm | 0.242 mm | 0.984 mm | 4.1x |
+| 1.05 mm | 1.933 mm | 0.258 mm | 2.138 mm | **8.3x** |
+| 2.20 mm | **4.724 mm** | pending | pending | pending |
+
+**Exponents, computed and reported separately rather than fitted:** 1->2 is **1.378**, 2->3 is
+**1.208**, and across the full 5.6x span 1.305. Against the brackets of `bd3151c`, recomputed at
+the achieved ratio because the run reached 2.20 mm rather than the 2.7 mm I assumed:
+
+| hypothesis | exponent | predicted | measured 4.724 is |
+|---|---:|---:|---|
+| fixed angular error | 1.00 | 4.05 mm | +17% |
+| the 1->2 exponent continuing | 1.378 | 5.36 mm | **-12%** |
+| **d^2/R curvature bias** | 2.00 | 8.49 mm | **-44%** |
+
+**By the rule fixed before the number existed, this decides the repair: normal shooting, not a
+better starting map.** Two exponents of 1.208 and 1.378 across a 5.6x span of separation are not a
+quadratic. `bd3151c` said "near 12.8 and d^2/R is supported... near 5 and the bias is an angular
+error that a better correspondence can remove" -- it is 4.724, so the correspondence is the thing
+to fix.
+
+**Scoring my own prediction honestly: directionally right, centrally wrong.** I predicted "nearer
+7 than 13", i.e. that the 1->2 exponent would continue rather than steepen. The non-quadratic call
+is confirmed. But the exponent did not continue -- it **fell**, 1.378 to 1.208 -- and the measured
+value sits 12% **below** my central bracket and only 17% above the linear one. The honest summary
+is that I called the hypothesis correctly and the magnitude slightly wrong, in the direction of the
+bias being even more benign than I expected. This is also the first prediction of mine today that
+was not simply refused.
+
+### The fit residual carries almost no information about accuracy
+
+This is the sharpest form of `d4ce65e`'s finding, and it is stronger than "optimistic by a factor":
+
+| between amplitudes 1 and 2 | change |
+|---|---:|
+| achieved separation | **+169%** |
+| to-surface error against the truth | **+117%** |
+| **fit residual at the correspondences** | **+6.6%** |
+
+**The error more than doubles while the residual moves by a fifteenth.** The residual is not a
+compressed version of the error, nor a constant multiple of it -- the understatement factor itself
+goes 4.1x to 8.3x. It is close to uninformative about accuracy across the range this pipeline
+operates in.
+
+**Consequence for this line's quoted numbers.** The **0.571 mm** correspondence residual cannot be
+converted into an accuracy by any factor, because the relationship is not a factor. It should stop
+being quoted as fit quality entirely, and be replaced by the to-surface recovery where a truth is
+available and by nothing at all where one is not. A residual this flat is a statement about how
+well the spline interpolates its own targets, which was never in doubt.
+
 **Why this was worth having from a retired control.** I retired it for firing a threshold at the
 wrong separation, and it then answered a question I had not asked: whether this line's headline
 quality metric measures accuracy at all. It does not. A control kept running after its gate was
