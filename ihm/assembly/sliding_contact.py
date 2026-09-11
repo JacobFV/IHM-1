@@ -150,7 +150,7 @@ def tangent_frames(n, hint=(0.0, 1.0, 0.0)):
 
 def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5, max_outer=25,
                 hint=(0.0, 1.0, 0.0), rtol=1e-7, jump_limit_m=0.01, assoc_tol_m=1e-4, move=None,
-                rigid_m=None, log=None):
+                rigid_m=None, freeze_frames=False, log=None):
     """The sliding base. base: node indices on the surface facing the bed. closest(points) ->
     (c, n): closest bed points and the bed's outward unit normals there. A base node BEHIND the bed
     in the registered position is HELD: its signed normal gap is ramped to zero over load_steps and
@@ -191,9 +191,15 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
     rigid = None if rigid_m is None else np.asarray(rigid_m, float)
 
     def advance(fraction, u_start):
-        """Re-linearise and solve at this fraction of the held nodes' travel."""
+        """Re-linearise and solve at this fraction of the held nodes' travel.
+
+        With freeze_frames, the association is taken ONCE at the head of the step and the constraint
+        directions are held fixed while the solve runs, so a drift inside a step cannot be the
+        association's doing; re-association happens only between steps (gate R'', 04f32a0).
+        """
         u_local = u_start
-        for outer in range(max_outer):
+        passes = 1 if freeze_frames else max_outer
+        for outer in range(passes):
             c, n, kept, _ = associate((X + u_local)[base])
             step = travel if rigid is None else n[held] @ rigid      # rigid: the normal part of one vector
             target = gap0[held] + fraction * step
@@ -206,6 +212,7 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
                 col = np.flatnonzero(np.abs(frames[node][axis, :]) > 1 - 1e-9)
                 if len(col) != 1: raise ValueError(f"pin on node {node}, axis {axis}, is not along one of its frame axes")
                 lo[node, col[0]] = hi[node, col[0]] = 0.0
+            j_entry = float(np.linalg.det(region.deformation(X + u_local)).min())
             r = region.solve_sliding(frames, lo, hi, start=u_local, rtol=rtol); u_local = r['displacement']
             c, n, kept, moved = associate((X + u_local)[base]); gap = np.einsum('ij,ij->i', n, (X + u_local)[base] - c)
             step = travel if rigid is None else n[held] @ rigid
@@ -215,9 +222,11 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
             if log: log(f"  fraction {fraction:.4f} pass {outer}: Newton {r['iterations']}, held gap error {held_err*1e3:.4f} mm, "
                         f"unilateral penetration {pen*1e3:.4f} mm, min J {r['minimum_jacobian']:.3f}, association moved {moved*1e3:.4f} mm", flush=True)
             settled = moved <= assoc_tol_m and pen <= gap_tol_m
-            if settled and (fraction < 1.0 - 1e-12 or held_err <= gap_tol_m):
+            if freeze_frames or (settled and (fraction < 1.0 - 1e-12 or held_err <= gap_tol_m)):
                 return u_local, dict(passes=outer + 1, held_gap_error_m=held_err, unilateral_penetration_m=pen,
-                                     newton_last=r['iterations'], min_J=r['minimum_jacobian'], converged=bool(r['converged'])), gap, c, n
+                                     newton_last=r['iterations'], min_J=r['minimum_jacobian'],
+                                     min_J_entry=j_entry, association_moved_m=moved,
+                                     converged=bool(r['converged'])), gap, c, n
         raise RuntimeError("re-linearisation did not converge")
 
     # Adaptive load stepping: closing tens of millimetres of penetration in equal steps moves held

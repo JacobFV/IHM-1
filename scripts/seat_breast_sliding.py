@@ -633,13 +633,14 @@ def stage_judge(sid, side, d):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--subject", required=True, choices=sorted(REG)); ap.add_argument("--side", required=True, choices=("left", "right"))
-    ap.add_argument("--stage", required=True, choices=("prepare", "place", "smooth", "control-r", "control-r-prime", "dr", "dr-check-E", "febio", "judge"))
+    ap.add_argument("--stage", required=True, choices=("prepare", "place", "smooth", "control-r", "control-r-prime", "control-r2", "dr", "dr-check-E", "febio", "judge"))
     a = ap.parse_args(); d = OUT / a.subject / a.side; d.mkdir(parents=True, exist_ok=True)
     print(f"{a.subject} {a.side}: {a.stage}", flush=True)
     {"prepare": lambda: stage_prepare(a.subject, a.side, d), "place": lambda: stage_place(a.subject, a.side, d),
      "smooth": lambda: stage_smooth(a.subject, a.side, d),
      "control-r": lambda: stage_control_r(a.subject, a.side, d),
      "control-r-prime": lambda: stage_control_r(a.subject, a.side, d, bed_constraint=False),
+     "control-r2": lambda: stage_control_r(a.subject, a.side, d, bed_constraint=False, freeze_frames=True),
      "dr": lambda: stage_dr(a.subject, a.side, d, E_PA),
      "dr-check-E": lambda: stage_dr(a.subject, a.side, d, E_CHECK_PA, "_E10000"),
      "febio": lambda: stage_febio(a.subject, a.side, d), "judge": lambda: stage_judge(a.subject, a.side, d)}[a.stage]()
@@ -735,7 +736,7 @@ def stage_smooth(sid, side, d_dir):
     return chosen
 
 
-def stage_control_r(sid, side, d_dir, bed_constraint=True):
+def stage_control_r(sid, side, d_dir, bed_constraint=True, freeze_frames=False):
     """CONTROL R: the same 3,123 held nodes, the same bed, the same solver and the same J > 0.2
     floor, driven by a RIGID TRANSLATION of the whole base equal to the smoothed field's median
     displacement. Gate R: completes to fraction 1.0 with zero inversions."""
@@ -773,6 +774,7 @@ def stage_control_r(sid, side, d_dir, bed_constraint=True):
         # moved 0.94 mm.
         r = seat_on_bed(region, base, closest, load_steps=LOAD_STEPS, gap_tol_m=GAP_TOL_M,
                         jump_limit_m=CONTROL_JUMP_LIMIT_M, assoc_tol_m=ASSOC_TOL_M, rigid_m=rigid,
+                        freeze_frames=freeze_frames,
                         log=lambda m, flush=True: print(m, flush=True))
     except Exception as failure:
         say(f"GATE {'R' if bed_constraint else 'R-prime'}: FAILED -- {type(failure).__name__}: {failure}")
@@ -783,6 +785,23 @@ def stage_control_r(sid, side, d_dir, bed_constraint=True):
         (d_dir / ("control_r.json" if bed_constraint else "control_r_prime.json")).write_text(json.dumps(dict(passes=False, error=str(failure),
             rigid_mm=1000 * magnitude, direction=direction.tolist(), seconds=time.time() - t0), indent=2) + "\n")
         return False
+    steps = r["steps"]
+    if freeze_frames:
+        say("  min J across the run, with the association frozen inside each step:")
+        say(f"    {'step':>5} {'fraction':>9} {'min J at entry':>15} {'min J at exit':>14} {'drop in step':>13} "
+            f"{'association moved before it':>28}")
+        prev_exit = None
+        for k, st in enumerate(steps, 1):
+            drop_in = st['min_J_entry'] - st['min_J']
+            across = "" if prev_exit is None else f"{prev_exit - st['min_J_entry']:+.4f}"
+            say(f"    {k:5d} {st['fraction']:9.4f} {st['min_J_entry']:15.4f} {st['min_J']:14.4f} {drop_in:+13.4f} "
+                f"{1000*st['association_moved_m']:9.3f} mm, J across it {across:>9}")
+            prev_exit = st['min_J']
+        within = sum(st['min_J_entry'] - st['min_J'] for st in steps)
+        across_total = sum((steps[i - 1]['min_J'] - steps[i]['min_J_entry']) for i in range(1, len(steps)))
+        say(f"  total fall WITHIN steps (constraints fixed): {within:+.4f}; ACROSS re-associations: {across_total:+.4f}")
+        say("  -> " + ("the association is where min J is lost" if across_total > within else
+                       "min J is lost inside steps whose constraints are fixed: the association is not the cause"))
     u = r["displacement"]
     Y = X + u
     J = np.linalg.det(np.swapaxes(Y[T[:, 1:]] - Y[T[:, 0, None]], 1, 2)
@@ -793,7 +812,7 @@ def stage_control_r(sid, side, d_dir, bed_constraint=True):
         f"inversions {int((J <= 0).sum())} -> {'PASS' if ok else 'FAIL'}")
     say(f"  the solution against the ideal rigid translation: median |u - d| {1000*np.median(drift):.3f} mm, "
         f"max {1000*drift.max():.3f} mm; volume ratio {tet_volumes(Y, T).sum()/tet_volumes(X, T).sum():.6f}")
-    (d_dir / ("control_r.json" if bed_constraint else "control_r_prime.json")).write_text(json.dumps(dict(passes=ok, rigid_mm=1000 * magnitude,
+    (d_dir / ("control_r.json" if bed_constraint else ("control_r_double_prime.json" if freeze_frames else "control_r_prime.json"))).write_text(json.dumps(dict(passes=ok, steps=steps, rigid_mm=1000 * magnitude,
         direction=direction.tolist(), min_J=float(J.min()), inversions=int((J <= 0).sum()),
         drift_median_mm=float(1000 * np.median(drift)), drift_max_mm=float(1000 * drift.max()),
         volume_ratio=float(tet_volumes(Y, T).sum() / tet_volumes(X, T).sum()),

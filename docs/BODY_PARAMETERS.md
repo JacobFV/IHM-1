@@ -2772,3 +2772,30 @@ What has changed is that the parametrization no longer stops at the scaffold.
    for this mesh" — requires a stepping that can carry a motion known to be feasible, and R′ says we
    do not have one yet.
 
+   **GATE R'' FAILS at the same fraction as R', and its reading exonerates the association.**
+   With the frames frozen inside each load step and re-association only between steps, the rigid
+   drive with the bed removed still stalls at **0.6250** on one element. But freezing changed the
+   TRACE, which is what the gate was built to read. Re-association moves no nodes, so each step's
+   entry min J is the previous step's exit:
+
+   | step | fraction | min J at entry | min J at exit | change inside the step (constraints fixed) |
+   |---:|---:|---:|---:|---:|
+   | 1 | 0.125 | 1.000 | 1.000 | 0.000 |
+   | 2 | 0.250 | 1.000 | **0.710** | **-0.290** |
+   | 3 | 0.375 | 0.710 | 0.712 | +0.002 |
+   | 4 | 0.500 | 0.712 | 0.710 | -0.002 |
+   | 5 | 0.625 | 0.710 | 0.712 | +0.002 |
+
+   **Every bit of the loss happens inside one step whose constraints were fixed, and none of it across
+   a re-association.** Under R' the same drive fell 1.000 -> 0.710 -> 0.307 -> 0.275 -> 0.226 to the
+   floor; frozen, it falls once and then holds to within 0.002 for three more steps. So freezing the
+   frames stopped the progressive drift and did not stop the stall, and the association -- suspected
+   through the jump-limit test and again here -- is not the cause of either. It is exonerated twice.
+
+   What remains is sharper than "the stepping is broken". Step 1 solves the increment exactly: one
+   Newton iteration, min J 1.000, the translation reproduced to 0.0000 mm. Step 2 is the same problem
+   with the same fixed constraints and an exact zero-energy solution available -- and the solver takes
+   142 Newton iterations to arrive somewhere else, at min J 0.710, and never recovers. A single
+   discrete event, not an accumulation: the iteration leaves the zero-energy branch in one step and
+   the subsequent steps merely carry that state along. The breast stays untouched.
+
