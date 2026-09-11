@@ -36,14 +36,29 @@ from scipy.spatial.transform import Rotation
 
 ROOT = Path(__file__).resolve().parents[1]
 RAW = ROOT / "data/raw/anatomy/oaizib-cm"
-OUT_DEFAULT = ROOT / "data/derived/knee-cartilage-registered-v1"
+OUT_DEFAULT = ROOT / "data/derived/knee-cartilage-registered-v2"
+CANONICAL_OUT = ROOT / "data/derived/knee-cartilage-registered-v1"
 LICENCE = ("OAIZIB-CM, CC-BY-NC-4.0 (non-commercial); cite CartiMorph doi:10.1016/j.media.2023.103035 "
            "and OAIZIB doi:10.1016/j.media.2018.11.009")
 BONE_ENT = {"right": {"femur": "right femur", "tibia": "right tibia"},
             "left": {"femur": "left femur", "tibia": "left tibia"}}
 FOV_M = (0.112, 0.140, 0.140)            # canonical x (left-right), y (superior), z (anterior)
 SIDE_MARGIN, PLACE_MM, PLACE_MIN, INSIDE_MAX, OVERLAP_MAX = 0.20, 3.0, 0.95, 0.01, 0.01
-SHORT_ITERS, N_TGT = 25, 80000
+SHORT_ITERS, N_TGT, N_PLACE = 25, 80000, 1200
+# Principal-axis starts alone put the scaffold's tibia 129 deg out, and rolling them about the target's first
+# axis did not help: not one of those 288 starts came within 40 deg of the truth. The two clouds' principal
+# frames disagree -- the scaffold's tibia BODY carries the fibula, which the scan's tibia label does not, and
+# the target crop and the scan's field of view keep different parts of the shaft. So rotation is searched over
+# a fixed uniform set instead of being read off the axes, and only the translation is anchored, at the joint
+# centre, which is the one landmark both clouds have. A start at the true rotation reaches 0.46 mm, so the
+# basin exists; this is about reaching it.
+N_ROT, SCREEN_ITERS, SCREEN_KEEP, FINAL_KEEP = 2048, 10, 40, 3
+# A one-way residual has a degenerate global minimum: shrink the source onto a single target point and it
+# reads 0.00 mm. The principal-axis starts never went near it; a uniform rotation search finds it, and it won
+# the large-rotation femur known answer at 100% scale error. Candidates outside a plainly anatomical scale
+# range are therefore not eligible. The range is wide on purpose -- every fit so far sits within 0.90-1.08.
+SCALE_MIN, SCALE_MAX = 0.5, 2.0
+FRAMES = {"scaffold": "ground (supine-support-5ma720yd t=0)", "canonical": "canonical"}
 
 def _load(name, rel):
     s = importlib.util.spec_from_file_location(name, ROOT / rel); m = importlib.util.module_from_spec(s); s.loader.exec_module(m); return m
@@ -54,6 +69,33 @@ KA_T_MM, KA_R_DEG, KA_S = PO.KA_T_MM, PO.KA_R_DEG, PO.KA_S
 inside = PO.CW.inside
 
 def say(*a): print(*a, flush=True)
+
+def scaffold_bones():
+    """the SCAFFOLD's femur and tibia, in ground at the reference run's t=0 pose.
+
+    Mirrors build_skin_contact_meshes.bone_clouds() -- same model, same meshes, same scale factors
+    -- but keeps the faces, which the gates need, and carries each body by its transform_ground."""
+    import xml.etree.ElementTree as ET
+    sys.path.insert(0, str(ROOT))
+    from ihm.spatial.vtk import surface as read_surface
+    geometry = ROOT / "data/raw/anatomy/opensim-models/source/Geometry"
+    root = ET.parse(ROOT / "data/models/engineering_stance_v1/model.osim").getroot().find("Model")
+    ref = json.loads((ROOT / "data/derived/supine-support-5ma720yd/initial_native.json").read_text())["bodies"]
+    want = {"femur_r": ("right", "femur"), "tibia_r": ("right", "tibia"), "femur_l": ("left", "femur"), "tibia_l": ("left", "tibia")}
+    out = {}
+    for b in root.iter("Body"):
+        key = want.get(b.get("name"))
+        if key is None: continue
+        Vs, Fs, n = [], [], 0
+        for mesh in b.iter("Mesh"):
+            factors = np.fromstring(mesh.findtext("scale_factors"), sep=" ")
+            v, f = read_surface(geometry / mesh.findtext("mesh_file"))
+            Vs.append(v * factors); Fs.append(f + n); n += len(v)
+        M = np.asarray(ref[b.get("name")]["transform_ground"], float)
+        out[key] = (apply(M, np.concatenate(Vs)), np.concatenate(Fs))
+    missing = [k for k in want.values() if k not in out]
+    if missing: raise SystemExit(f"scaffold bones missing from the model: {missing}")
+    return out
 
 def body_bones():
     ents = json.loads((ROOT / "data/derived/canonical/anatomy.json").read_text())["entities"]
@@ -80,6 +122,9 @@ def pca(P):
 
 SIGNED_PERMS = [np.diag(s) @ np.eye(3)[list(p)] for p in itertools.permutations(range(3))
                 for s in itertools.product((1, -1), repeat=3)]
+SCREEN_ROT = np.concatenate([np.stack([P for P in SIGNED_PERMS if np.linalg.det(P) > 0]),
+                             Rotation.random(N_ROT, random_state=0).as_matrix()])
+
 
 def icp(S, tree, M, iters):
     for it in range(1, iters + 1):
@@ -98,14 +143,24 @@ def fit_bone(src, src_jc, tgt, tgt_jc, seed=0):
     Tc = T[np.linalg.norm(T - tgt_jc, axis=1) <= r]
     ms, Vs = pca(S); mt, Vt = pca(Tc)
     s0 = float(np.sqrt(((Tc - mt) ** 2).sum(1).mean() / ((S - ms) ** 2).sum(1).mean()))
-    best = None
-    for P in SIGNED_PERMS:
-        R = Vt @ P @ Vs.T
-        if np.linalg.det(R) < 0: continue
-        M, rms, _ = icp(S, tree, sim(s0, R, mt - s0 * R @ ms), SHORT_ITERS)
-        if best is None or rms < best[1]: best = (M, rms)
-    M, rms, it = icp(S, tree, best[0], ITERS)
-    return M, rms, it
+    Ssc, Tsc = S[::5], T[::4]; tsc = cKDTree(Tsc)          # a cheap screen over every start
+    cands = []
+    for R0 in SCREEN_ROT:
+        R = Vt @ R0 @ Vs.T                                  # the perms align the axes; the random set covers the rest
+        M, rms, _ = icp(Ssc, tsc, sim(s0, R, tgt_jc - s0 * R @ src_jc), SCREEN_ITERS)
+        if SCALE_MIN <= scale_of(M) <= SCALE_MAX: cands.append((rms, M))
+    if not cands: raise SystemExit("every start collapsed: no candidate inside the anatomical scale range")
+    refined = []
+    for _, M0 in sorted(cands, key=lambda c: c[0])[:SCREEN_KEEP]:
+        M, rms, _ = icp(S, tree, M0, SHORT_ITERS)
+        if SCALE_MIN <= scale_of(M) <= SCALE_MAX: refined.append((rms, M))
+    if not refined: raise SystemExit("every refined start collapsed: no candidate inside the anatomical scale range")
+    best = None                                             # the screen is only a proxy, so several finish the full fit
+    for _, M0 in sorted(refined, key=lambda c: c[0])[:FINAL_KEEP]:
+        M, rms, it = icp(S, tree, M0, ITERS)
+        if SCALE_MIN <= scale_of(M) <= SCALE_MAX and (best is None or rms < best[1]): best = (M, rms, it)
+    if best is None: raise SystemExit("every full fit collapsed: no candidate inside the anatomical scale range")
+    return best
 
 def label_meshes(arr, affine):
     from skimage import measure
@@ -117,10 +172,34 @@ def label_meshes(arr, affine):
         out[lab] = ((v @ affine[:3, :3].T + affine[:3, 3]) / 1000.0, f.astype(np.int64))
     return out
 
-def truncate(V, F, centre):
-    half = np.array(FOV_M) / 2
+def frame_axes(body):
+    """which axis is left-right, superior-inferior, anterior-posterior -- read off the target, not assumed.
+    The canonical frame and the scaffold's ground frame do NOT agree: left-right is x in one and z in the other."""
+    c = lambda k: area_samples(*body[k], 20000, 4).mean(0)
+    rf, lf, rt = c(("right", "femur")), c(("left", "femur")), c(("right", "tibia"))
+    lr = int(np.argmax(np.abs(rf - lf))); si = int(np.argmax(np.abs(rf - rt)))
+    if lr == si: raise SystemExit("cannot tell the target's left-right axis from its superior-inferior axis")
+    return lr, si, ({0, 1, 2} - {lr, si}).pop()
+
+def fov_half(axes):
+    lr, si, ap = axes; h = np.empty(3)
+    h[lr], h[si], h[ap] = FOV_M[0] / 2, FOV_M[1] / 2, FOV_M[2] / 2
+    return h
+
+def truncate(V, F, centre, half):
     keep = np.all(np.all(np.abs(V[F] - centre) <= half, axis=2), axis=1)
     return V, F[keep]
+
+def outward_normals(V, F):
+    tri = V[F]; n = np.cross(tri[:, 1] - tri[:, 0], tri[:, 2] - tri[:, 0])
+    ln = np.linalg.norm(n, axis=1, keepdims=True); n = n / np.where(ln == 0, 1, ln)
+    return n if float((tri[:, 0] * np.cross(tri[:, 1], tri[:, 2])).sum()) > 0 else -n
+
+def bone_facing(cV, cF, bone_samples):
+    """the half of the cartilage shell whose outward normal points AT the bone: the subchondral face.
+    Classified by DIRECTION, in the subject's own frame, so it does not presuppose the 3 mm test."""
+    n = outward_normals(cV, cF); c = cV[cF].mean(1)
+    return ((bone_samples[cKDTree(bone_samples).query(c)[1]] - c) * n).sum(1) > 0
 
 def body_gap(body, side):
     f = area_samples(*body[(side, "femur")], 60000, 1); d = cKDTree(area_samples(*body[(side, "tibia")], 60000, 2)).query(f)[0]
@@ -130,12 +209,14 @@ def rot_err(M, Minv):
     Rf = M[:3, :3] / scale_of(M); Ri = Minv[:3, :3] / scale_of(Minv)
     return float(np.degrees(np.arccos(np.clip((np.trace(Rf.T @ Ri) - 1) / 2, -1, 1))))
 
-def known_answer(body):
+def known_answer(body, axes):
     fV, fF = body[("right", "femur")]; tV, tF = body[("right", "tibia")]
     jc = joint_centre(fV, fF, tV, tF)
-    cut = {"femur": truncate(fV, fF, jc), "tibia": truncate(tV, tF, jc)}
+    half = fov_half(axes)
+    cut = {"femur": truncate(fV, fF, jc, half), "tibia": truncate(tV, tF, jc, half)}
     share = {k: round(float(areas(*v).sum() / areas(*body[("right", k)]).sum()), 3) for k, v in cut.items()}
-    say(f"  right knee joint centre {np.round(jc, 4)} m; surface kept inside the 112x140x140 mm FOV: {share}")
+    say(f"  right knee joint centre {np.round(jc, 4)} m; axes (left-right, superior-inferior, anterior-posterior) = {axes}; "
+        f"surface kept inside the 112x140x140 mm FOV: {share}")
     cases = {"small": sim(1.06, Rotation.from_rotvec(np.deg2rad(9) * np.array([1, -2, 1.5]) / np.linalg.norm([1, -2, 1.5])).as_matrix(), np.array([0.04, -0.03, 0.05])),
              "large": sim(0.95, Rotation.from_rotvec(np.deg2rad(110) * np.array([0.3, 1, -0.6]) / np.linalg.norm([0.3, 1, -0.6])).as_matrix(), np.array([-0.2, 0.1, 0.3]))}
     ok_all, rec = True, {}
@@ -154,7 +235,7 @@ def known_answer(body):
                 f"(<= {KA_R_DEG}), scale {100*serr:.3f}% (<= {100*KA_S:.0f}%), {it} iterations, residual {1000*rms:.2f} mm -> {'PASS' if ok else 'FAIL'}")
     return ok_all, dict(kept_share=share, cases=rec)
 
-def register(sid, arr, affine, meta, body, out):
+def register(sid, arr, affine, meta, body, out, target, axes):
     say(f"\n=== {sid} ({meta.get('sex')}, gender code {meta['gender']}, KL {meta['kl']}) ===")
     src = label_meshes(arr, affine)
     if 1 not in src or 3 not in src: return dict(subject=sid, error="femur or tibia label missing", passes=False, **meta)
@@ -174,28 +255,48 @@ def register(sid, arr, affine, meta, body, out):
                side_winner=lo, side_margin=margin, gate_which_knee=side_ok,
                scale_femur=scale_of(fits[("right", "femur")][0]), scale_tibia=scale_of(fits[("right", "tibia")][0]))
     d = out / sid; d.mkdir(parents=True, exist_ok=True)
-    mapped, place_ok = {}, True
-    for labs, bone in (((2,), "femur"), ((4, 5), "tibia")):
-        M = fits[("right", bone)][0]; bV, bF = body[("right", bone)]
-        btree = cKDTree(area_samples(bV, bF, 200000, 21))
+    mapped, place_ok, void = {}, True, False
+    for labs, bone, bl in (((2,), "femur", 1), ((4, 5), "tibia", 3)):
+        M = fits[("right", bone)][0]; tV, tF = body[("right", bone)]
+        ttree = cKDTree(area_samples(tV, tF, 200000, 21))
+        sV, sF = src[bl]; ssamp = area_samples(sV, sF, 200000, 22); stree = cKDTree(ssamp)
         for lab in labs:
             if lab not in src: continue
             V, F = src[lab]; Vm = apply(M, V); mapped[lab] = (Vm, F, M)
             name = {2: "femoral_cartilage", 4: "medial_tibial_cartilage", 5: "lateral_tibial_cartilage"}[lab]
             with open(d / f"{name}.obj", "w") as h:
-                h.write(f"# {sid} {name}, registered onto this body's right {bone}, canonical frame, metres\n# {LICENCE}\n")
+                h.write(f"# {sid} {name}, registered onto the {target} right {bone}, {FRAMES[target]} frame, metres\n# {LICENCE}\n")
                 for v in Vm: h.write("v %.9g %.9g %.9g\n" % tuple(v))
                 for f in F: h.write("f %d %d %d\n" % (f[0] + 1, f[1] + 1, f[2] + 1))
-        cart = [mapped[l] for l in labs if l in mapped]
-        if not cart: place_ok = False; continue
-        P = np.vstack([area_samples(Vm, F, 3000, 5 + i) for i, (Vm, F, _) in enumerate(cart)])
-        near = float(np.mean(btree.query(P)[0] <= PLACE_MM / 1000))
-        inb = float(np.mean(inside(bV, bF, P)))
-        ok = near >= PLACE_MIN and inb <= INSIDE_MAX; place_ok &= ok
-        rec[f"placement_{bone}"] = dict(within_3mm=near, inside_bone=inb, ok=ok)
-        say(f"  placement [{bone} cartilage]: {100*near:.1f}% within {PLACE_MM:g} mm (>= 95), {100*inb:.2f}% inside the {bone} (<= 1) "
-            f"-> {'PASS' if ok else 'FAIL'}")
-    rec["gate_placement"] = place_ok
+        present = [l for l in labs if l in mapped]
+        if not present: place_ok = False; continue
+        # the SAME points in both frames: classified bone-facing in the subject's own frame, then carried by the map
+        Ps = np.vstack([area_samples(src[l][0], src[l][1][bone_facing(src[l][0], src[l][1], ssamp)], N_PLACE, 30 + l) for l in present])
+        src_near = float(np.mean(stree.query(Ps)[0] <= PLACE_MM / 1000)); src_in = float(np.mean(inside(sV, sF, Ps)))
+        Pm = apply(M, Ps)
+        near = float(np.mean(ttree.query(Pm)[0] <= PLACE_MM / 1000)); inb = float(np.mean(inside(tV, tF, Pm)))
+        Pb = apply(M, area_samples(sV, sF, N_PLACE, 40 + bl))               # the ceiling: the scan's own bone surface, mapped
+        rec[f"bone_ceiling_{bone}"] = dict(within_3mm=float(np.mean(ttree.query(Pb)[0] <= PLACE_MM / 1000)),
+                                           inside_bone=float(np.mean(inside(tV, tF, Pb))))
+        rec[f"transform_{bone}"] = M.tolist()
+        ok_near = src_near >= PLACE_MIN; ok_in = src_in <= INSIDE_MAX      # the criterion validated on the SOURCE
+        rec[f"placement_{bone}"] = dict(source_within_3mm=src_near, source_inside_bone=src_in,
+                                        criterion_valid_within=ok_near, criterion_valid_inside=ok_in,
+                                        within_3mm=near, inside_bone=inb,
+                                        within_verdict=(near >= PLACE_MIN) if ok_near else None,
+                                        inside_verdict=(inb <= INSIDE_MAX) if ok_in else None)
+        say(f"  criterion on the SOURCE [{bone} cartilage, bone-facing surface]: {100*src_near:.1f}% within {PLACE_MM:g} mm (needs >= 95), "
+            f"{100*src_in:.2f}% inside its own bone (needs <= 1) -> {'VALID' if ok_near and ok_in else 'VOID'}")
+        say(f"  ceiling [{bone}: the scan's own bone surface carried by the same map]: {100*rec[f'bone_ceiling_{bone}']['within_3mm']:.1f}% "
+            f"within {PLACE_MM:g} mm, {100*rec[f'bone_ceiling_{bone}']['inside_bone']:.1f}% inside -- no cartilage on it can do better")
+        say(f"  placement [{bone} cartilage, bone-facing surface]: {100*near:.1f}% within {PLACE_MM:g} mm, {100*inb:.2f}% inside the {bone} -> "
+            + (" ".join(x for x in ((f"within {'PASS' if near >= PLACE_MIN else 'FAIL'}" if ok_near else "within VOID"),
+                                    (f"inside {'PASS' if inb <= INSIDE_MAX else 'FAIL'}" if ok_in else "inside VOID")))))
+        for valid, val, lim, ge in ((ok_near, near, PLACE_MIN, True), (ok_in, inb, INSIDE_MAX, False)):
+            if not valid: void = True
+            elif (val < lim) if ge else (val > lim): place_ok = False
+    rec["gate_placement"] = None if void else place_ok
+    rec["placement_criterion_void"] = void
     vox_m3 = float(np.prod(np.abs(np.diag(affine)[:3]))) / 1e9     # m^3 per voxel
     vol = {}
     for lab, bone in ((2, "femur"), (4, "tibia"), (5, "tibia")):
@@ -241,8 +342,9 @@ def register(sid, arr, affine, meta, body, out):
             Vm, F, _ = mapped[lab]; thick[lab] = 2 * vol[lab] / float(areas(Vm, F).sum())
     rec["mean_thickness_mm"] = {k: 1000 * v for k, v in thick.items()}
     if 4 in mapped and 5 in mapped:
-        mid = 0.5 * (body[("right", "femur")][0][:, 0].mean() + body[("left", "femur")][0][:, 0].mean())
-        med = abs(mapped[4][0][:, 0].mean() - mid) < abs(mapped[5][0][:, 0].mean() - mid)
+        lr = axes[0]
+        mid = 0.5 * (area_samples(*body[("right", "femur")], 20000, 4)[:, lr].mean() + area_samples(*body[("left", "femur")], 20000, 4)[:, lr].mean())
+        med = abs(mapped[4][0][:, lr].mean() - mid) < abs(mapped[5][0][:, lr].mean() - mid)
         rec["medial_nearer_midline"] = bool(med)
     say(f"  volume femoral {1e6*vol[2]:.1f} mL, tibial {1e6*(vol.get(4,0)+vol.get(5,0)):.1f} mL; "
         f"mean thickness {', '.join(f'{k}: {1000*v:.2f} mm' for k, v in thick.items())}; medial nearer midline: {rec.get('medial_nearer_midline')}")
@@ -277,17 +379,22 @@ def subject_info():
 def main():
     import nibabel as nib
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--out", type=Path, default=OUT_DEFAULT)
+    ap.add_argument("--target", choices=("scaffold", "canonical"), default="scaffold",
+                    help="scaffold: the plant's own femur and tibia, 3.0 mm apart (the second attempt). "
+                         "canonical: this body's atlas bones, 0.6 mm apart (the first pilot)")
+    ap.add_argument("--out", type=Path, default=None)
     ap.add_argument("--subjects", nargs="*", default=None)
     ap.add_argument("--pilot", type=int, default=0, help="take the first N KL-grade-0 knees of EACH gender code")
     a = ap.parse_args()
-    out = a.out.resolve(); out.mkdir(parents=True, exist_ok=True)
-    body = body_bones()
+    out = (a.out or (OUT_DEFAULT if a.target == "scaffold" else CANONICAL_OUT)).resolve(); out.mkdir(parents=True, exist_ok=True)
+    body = scaffold_bones() if a.target == "scaffold" else body_bones()
+    say(f"target: the {a.target} femur and tibia, {FRAMES[a.target]} frame")
     say("== known answer ==")
-    ok, ka = known_answer(body)
+    axes = frame_axes(body)
+    ok, ka = known_answer(body, axes)
     man = out / "manifest.json"
-    report = json.loads(man.read_text()) if man.exists() else dict(schema="ihm.knee-cartilage-registered.v1", licence=LICENCE, subjects={})
-    report["known_answer"] = ka; report["licence"] = LICENCE
+    report = json.loads(man.read_text()) if man.exists() else dict(schema="ihm.knee-cartilage-registered.v2", licence=LICENCE, subjects={})
+    report["target"] = dict(bones=a.target, frame=FRAMES[a.target], axes_lr_si_ap=list(axes)); report["known_answer"] = ka; report["licence"] = LICENCE
     report["body_joint_gap_mm"] = {side: body_gap(body, side) for side in ("right", "left")}
     say(f"  this body's femur-tibia surface gap (min, 1st percentile): {report['body_joint_gap_mm']}")          # MERGE: earlier subjects are kept
     if not ok:
@@ -303,7 +410,7 @@ def main():
         zf, n = zips[sid]; img = nib.Nifti1Image.from_bytes(gzip.decompress(zf.read(n)))
         meta = dict(gender=info[sid]["gender"], sex=sex.get(info[sid]["gender"]), kl=info[sid]["kl"], age=info[sid]["age"], knee_side_recorded=side.get(sid))
         prev = report["subjects"].get(sid)
-        rec = register(sid, np.asanyarray(img.dataobj), img.affine, meta, body, out)
+        rec = register(sid, np.asanyarray(img.dataobj), img.affine, meta, body, out, a.target, axes)
         if prev: rec["superseded"] = prev.pop("superseded", []) + [prev]
         report["subjects"][sid] = rec
         man.write_text(json.dumps(report, indent=2, default=float) + "\n")
