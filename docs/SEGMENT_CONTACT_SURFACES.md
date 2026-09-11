@@ -903,3 +903,22 @@ folds fall well below 72 without necessarily reaching zero, since the two sliver
 the mesh. If calcn and toes stay near 0.92 and 0.87 with anchors under them, extrapolation is NOT
 what is wrong, and what remains is the hard partition itself -- the seam at the MTP where the toes'
 and calcn's maps disagree across skin thinner than the joint.
+
+**A flaw in that rule, recorded BEFORE any gate of it was computed.** The fit reports **34,411
+anchors of 54,949 exterior skin vertices -- 62.6%**, with a median skin-to-nearest-correspondence
+distance of 27.3 mm. That is not what the rule was for. The correspondences are sparse SAMPLES
+(4,410 over the whole skeleton, 200 per segment), so a skin vertex can be 27 mm from the nearest
+sample with bone squarely beneath it; I wrote "far from a bone sample" and meant "no bone under
+it". At 62.6% the warp is largely driven by per-segment similarities, which is close to the blended
+per-segment maps this file already measured as WORSE than the global map (0.873 against 0.888).
+
+The run is not stopped and its verdict stands as the rule's own result: the rule was fixed, and
+amending it because an intermediate count looked wrong would be exactly the move this structure
+forbids -- the more so since no gate of it has been read. **A second instrument is pre-registered
+here instead, to be built after that verdict is recorded and reported beside it:** identical in
+every respect except that a vertex is anchored when it is more than 20 mm from the nearest point on
+any atlas BONE SURFACE, rather than from the nearest sampled correspondence. This body's median
+skin-to-bone/muscle depth is 11.0 mm, so 20 mm from bone surface is genuinely skin with no bone
+under it. Gates 1-4 unchanged; the anchor count is reported for both. **Predicted:** the corrected
+measure anchors a small fraction -- the toe tips, the lateral forefoot, the hands and the fleshy
+trunk -- rather than two thirds of the body.
