@@ -4158,3 +4158,34 @@ What has changed is that the parametrization no longer stops at the scaffold.
    **Next, and it separates the two behaviours:** whether the median keeps closing at ~97% of
    schedule at 0.1094 and beyond while those 39 diverge. If it does, the outliers can be
    characterised on their own without contaminating the closure measurement.
+
+   ### One jump limit, three ways of being invisible
+
+   The 0.5 mm association jump limit has now produced three distinct failures of observability, and
+   they are worth listing together because each was found separately and read as its own problem:
+
+   1. **It disabled what it protects, silently.** Against a 0.935 mm per-step slide it refused the
+      update *every step*, so persistent association was never exercised — which is why frozen and
+      re-linearised runs came back bit-identical. That comparison was void.
+   2. **It reported refusal as settlement.** `association moved 0.0000 mm` reads as *converged* and
+      means *refused*. The anatomical runs print 0.4999–0.5000 mm against the same limit, one step
+      from binding.
+   3. **It hid which nodes it acted on.** `association moved` is the maximum over **accepted**
+      updates, so a refused node contributes nothing to it and vanishes from the log entirely. The
+      refused set was **unobservable from outside the solver** until a per-node mask was added to ask
+      the current question. A quantity reported only over the accepted population cannot describe the
+      rejected one, and nothing in the log said so.
+
+   **The guard built into the characterisation, and its lineage.** The question "are the diverging
+   nodes the refused ones?" is an overlap, and an overlap between two sets drawn from 3,123 has a
+   chance level: with *b* diverging and *R* refused, agreement by coincidence is `b·R/3123`. The
+   instrument reports the overlap **beside that chance level**, and its verdict line says "the
+   refusal is implicated" only above **twice chance** — declared in the file before the numbers,
+   not chosen after.
+
+   That is `docs/LOG.md` row 5 in a new domain: a cross-modal association read 4.4× baseline because
+   the metric averaged over 10⁹ *pairs* when only 187,484 were *edges*, diluted 5000:1. Same shape as
+   today's error message reporting 5,660 nodes when only 4,097 are bounded — which was caught only
+   because that number was arithmetically impossible. **An overlap without its chance level, and a
+   count without its denominator, are the same mistake**, and the second one is caught by luck
+   whenever the arithmetic happens not to be absurd.
