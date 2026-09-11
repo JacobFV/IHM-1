@@ -1415,6 +1415,27 @@ done; the others have moved.
    0.9 mm the instrument is roughly twice a bar that is itself at the geometry's noise level. Said
    here, as with the 1 mm bar before it, so nobody quotes the gap without it.
 
+   **Gate A stands FAILED, and the bar was mine and unachievable (2026-09-10).** 0.5 mm was set by
+   halving a number that was itself arbitrary. Against the floors now measured -- 0.288 mm for the
+   measure and 0.416 mm mean for the smoothing the instrument requires -- a recovery cannot do
+   better than about **0.51 mm** on these meshes by construction, so the gate could not have been
+   passed by any implementation. That is a defect in the gate, and the result is recorded as a
+   failure against it rather than quietly rescored. What the run does establish stands on its own:
+   the scalar representation beats the vector warp everywhere (1.5 mm to about 1.0) and, unlike it,
+   **improves with scale** -- 0.897 at L = 40 against 1.046 at L = 5 -- which is the signature of a
+   representation that matches its deformation. The flat curve is gone.
+
+   **What replaces it, and what it does NOT certify.** An absolute bar at the noise floor asks the
+   wrong question; what matters is whether the error left behind is small against the correction
+   being made. So: **the recovery residual must be at most 10% of the normal deformation it
+   carries** -- 6.5 to 10.9 mm here, so 0.65 to 1.09 mm. That is derived from the deformation, not
+   from any score. **But the current numbers were seen before this was written, and 0.9 mm is about
+   10% of 9 mm, so this criterion certifies nothing by itself.** It is recorded as the standing
+   criterion for future fits, and **the verdict on this line rests on gates 2-4**, which are unseen:
+   laterality, the held-out ribs at the whole-torso fit's own 4.55-5.60 mm, and breast volume more
+   than 20 mm behind the muscular wall at 1% per subject. If those pass, the chest wall is carried;
+   if they do not, a 10% representation error was not the thing standing in the way.
+
    **Normal agreement is adopted, on the argument and not on the score (2026-09-10).** A hit whose
    surface faces away from the source is on the far wall of the rib: it is not the partner of the
    source point, it is a different part of the bone that happens to lie along the ray, and the
