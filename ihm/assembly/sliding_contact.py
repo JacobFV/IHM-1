@@ -151,7 +151,8 @@ def tangent_frames(n, hint=(0.0, 1.0, 0.0)):
 
 def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5, max_outer=25,
                 hint=(0.0, 1.0, 0.0), rtol=1e-7, jump_limit_m=0.01, assoc_tol_m=1e-4, move=None,
-                rigid_m=None, freeze_frames=False, project=True, solver_log=None, stop_fraction=1.0, log=None):
+                rigid_m=None, freeze_frames=False, project=True, solver_log=None, stop_fraction=1.0,
+                association='persistent', lost_bed='hold', log=None):
     """The sliding base. base: node indices on the surface facing the bed. closest(points) ->
     (c, n): closest bed points and the bed's outward unit normals there. A base node BEHIND the bed
     in the registered position is HELD: its signed normal gap is ramped to zero over load_steps and
@@ -163,21 +164,33 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
     c0, n0 = closest(X[base]); gap0 = np.einsum('ij,ij->i', n0, X[base] - c0)   # signed; < 0 behind the bed
     held = gap0 < 0
     u = np.zeros_like(X); record = []
-    assoc = [c0.copy(), n0.copy()]          # persistent association, snapshotted per accepted step
+    assoc = [c0.copy(), n0.copy(), np.zeros(len(base), bool)]   # third entry: released this step
+    lost_history = []          # persistent association, snapshotted per accepted step
 
     def associate(points):
         """Update each base node's bed patch, rejecting a teleport. The bed is three overlapping
         pectoralis parts: a node sliding tangentially can find a different sheet nearest, and against
         that sheet its gap flips sign -- tens of millimetres of apparent penetration through a
         constraint that forbids any. Real sliding moves the association ~0.02 mm per pass."""
+        # association: 'persistent' rejects a teleport or an invalid update and keeps the previous one
+        # (the original behaviour); 'none' never updates after the first; 'all' takes every valid update.
+        # MIXING the two -- freezing 46.6% of constraints while updating the rest -- is what made the
+        # constraint set inconsistent and deformed the body (gate S).
+        # lost_bed names what happens to a node whose ray no longer meets the bed within the reach:
+        # 'hold' keeps its last valid association, 'release' drops its constraint for that step. Declared,
+        # not chosen silently, and counted per association.
+        if association == 'none' and lost_history:
+            return assoc[0], assoc[1], 0, 0.0
         c_new, n_new = closest(points)
-        # An association is rejected if it teleports, or if the bed function reports none (NaN):
-        # either way the node keeps the patch it had.
-        teleport = ~np.isfinite(c_new).all(1) | ~np.isfinite(n_new).all(1) | \
-                   (np.linalg.norm(np.nan_to_num(c_new - assoc[0]), axis=1) > jump_limit_m)
-        c_new[teleport] = assoc[0][teleport]; n_new[teleport] = assoc[1][teleport]
+        invalid = ~np.isfinite(c_new).all(1) | ~np.isfinite(n_new).all(1)
+        rejected = invalid if association == 'all' else (
+            invalid | (np.linalg.norm(np.nan_to_num(c_new - assoc[0]), axis=1) > jump_limit_m))
+        c_new[rejected] = assoc[0][rejected]; n_new[rejected] = assoc[1][rejected]
         moved = float(np.linalg.norm(c_new - assoc[0], axis=1).max())
         assoc[0], assoc[1] = c_new, n_new
+        assoc[2] = invalid if lost_bed == 'release' else np.zeros(len(invalid), bool)
+        lost_history.append(int(invalid.sum()))
+        teleport = rejected
         return c_new, n_new, int(teleport.sum()), moved
 
     # How far each held node is asked to travel along the bed normal. By default it closes its own
@@ -209,6 +222,8 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
             on_plane = np.einsum('ij,ij->i', n, c - X[base])                     # n.u that puts the node on the tangent plane
             lo[base[held], 0] = hi[base[held], 0] = on_plane[held] + target
             lo[base[~held], 0] = on_plane[~held]
+            if assoc[2].any():                          # released: no constraint for this step
+                lo[base[assoc[2]]] = -np.inf; hi[base[assoc[2]]] = np.inf
             for node, axis in pins:
                 col = np.flatnonzero(np.abs(frames[node][axis, :]) > 1 - 1e-9)
                 if len(col) != 1: raise ValueError(f"pin on node {node}, axis {axis}, is not along one of its frame axes")
@@ -249,4 +264,5 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
         u = u_new; fraction = trial; record.append(dict(fraction=fraction, **info))
         ds = min(ds * 1.5, 1.0 / load_steps)
     return dict(displacement=u, gap_m=gap, held=held, initial_gap_m=gap0, closest_m=c, normal=n, steps=record,
-                cutbacks=cutbacks, minimum_jacobian=record[-1]['min_J'], converged=record[-1]['converged'])
+                cutbacks=cutbacks, lost_bed_per_association=lost_history, association=association,
+                lost_bed_rule=lost_bed, minimum_jacobian=record[-1]['min_J'], converged=record[-1]['converged'])

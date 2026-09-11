@@ -2854,3 +2854,35 @@ What has changed is that the parametrization no longer stops at the scaffold.
      rule is needed, which is exactly where the 46.6 mm outliers live. That is the outcome worth
      preparing for, because it is the one that does not transfer from this control to the breast.
 
+   **GATE T: T-none PASSES, T-all FAILS, and the solver is sound.**
+
+   | arm | association | result |
+   |---|---|---|
+   | **T-none** | never updated after the first | **PASS**: fraction 1.0, min J **1.0000**, zero inversions, the exact rigid translation -- median and max \|u - d\| **0.000 mm**, volume ratio 1.000000 -- in 36 s, **one Newton iteration per step**, gap error 0.0000 mm at every step |
+   | **T-all** | every association updated at every step | **FAIL**: stalls at fraction 0.1250 with **548** inverted elements, worse than the mixed rule's 0.6250 |
+
+   **The stepping and the solver are sound.** Given a constraint set that stays internally consistent,
+   R' completes exactly: nothing is lost anywhere, every increment is solved in one Newton iteration,
+   and the answer is the known one to 0.000 mm. That is the claim gate R was built for and could not
+   make, and it is now measured rather than assumed.
+
+   **And "update everything" is not the fix.** T-all is worse than the per-node jump limit it was
+   meant to replace -- 0.1250 against 0.6250 -- because some associations genuinely teleport 46.6 mm
+   after a sub-millimetre step, and taking those updates wholesale wrecks the constraint set in one
+   move rather than in halves. Both extremes fail for real seating: 'none' cannot follow a bed that a
+   non-rigid motion slides along, and 'all' imports the teleports.
+
+   **Declared rule for the nodes that lose the bed:** HOLD at the last valid association, with the
+   count reported per association (T-none: [0], since it associates once). The alternative --
+   RELEASE, dropping the constraint for that step -- is implemented and named in the code, and was not
+   used here: releasing would change WHICH nodes are driven midway, so the two arms would have
+   differed in more than staleness.
+
+   **What follows for the breast.** Gate S showed the damage comes from MIXING updated and stale
+   constraints; gate T shows that neither pure extreme works for a motion that needs the bed followed.
+   The rule that satisfies both readings is all-or-nothing PER STEP: if any association would move
+   further than a declared threshold, refuse the whole update for that step and keep every previous
+   association; otherwise take them all. Every step then has an internally consistent constraint set,
+   which is the property the solver needs, and no step mixes epochs. That threshold is a number that
+   must be pre-registered rather than chosen by analogy.
+

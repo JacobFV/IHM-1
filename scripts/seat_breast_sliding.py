@@ -634,7 +634,12 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--subject", required=True, choices=sorted(REG)); ap.add_argument("--side", required=True, choices=("left", "right"))
     ap.add_argument("--no-project", action="store_true")
-    ap.add_argument("--stage", required=True, choices=("prepare", "place", "smooth", "control-r", "control-r-prime", "control-r2", "gate-s", "dr", "dr-check-E", "febio", "judge"))
+    # DECLARED, not chosen silently: what happens to a node whose ray leaves the bed. "hold" keeps its
+    # last valid association and keeps driving it; "release" drops its constraint for that step. The
+    # control is run with "hold" because releasing would change WHICH nodes are driven midway, so the
+    # two arms would differ in more than staleness -- and the count is reported per step either way.
+    ap.add_argument("--lost-bed", choices=("hold", "release"), default="hold")
+    ap.add_argument("--stage", required=True, choices=("prepare", "place", "smooth", "control-r", "control-r-prime", "control-r2", "gate-s", "gate-t-none", "gate-t-all", "dr", "dr-check-E", "febio", "judge"))
     a = ap.parse_args(); d = OUT / a.subject / a.side; d.mkdir(parents=True, exist_ok=True)
     print(f"{a.subject} {a.side}: {a.stage}", flush=True)
     {"prepare": lambda: stage_prepare(a.subject, a.side, d), "place": lambda: stage_place(a.subject, a.side, d),
@@ -642,6 +647,10 @@ def main():
      "control-r": lambda: stage_control_r(a.subject, a.side, d),
      "control-r-prime": lambda: stage_control_r(a.subject, a.side, d, bed_constraint=False),
      "control-r2": lambda: stage_control_r(a.subject, a.side, d, bed_constraint=False, freeze_frames=True),
+     "gate-t-none": lambda: stage_control_r(a.subject, a.side, d, bed_constraint=False, freeze_frames=True,
+                                            association="none", lost_bed=a.lost_bed),
+     "gate-t-all": lambda: stage_control_r(a.subject, a.side, d, bed_constraint=False, freeze_frames=True,
+                                           association="all", lost_bed=a.lost_bed),
      "gate-s": lambda: stage_control_r(a.subject, a.side, d, bed_constraint=False, freeze_frames=True,
                                        project=not a.no_project, stop_fraction=0.25,
                                        solver_log=(lambda m: print(m, flush=True))),
@@ -741,7 +750,7 @@ def stage_smooth(sid, side, d_dir):
 
 
 def stage_control_r(sid, side, d_dir, bed_constraint=True, freeze_frames=False, project=True,
-                    stop_fraction=1.0, solver_log=None):
+                    stop_fraction=1.0, solver_log=None, association='persistent', lost_bed='hold'):
     """CONTROL R: the same 3,123 held nodes, the same bed, the same solver and the same J > 0.2
     floor, driven by a RIGID TRANSLATION of the whole base equal to the smoothed field's median
     displacement. Gate R: completes to fraction 1.0 with zero inversions."""
@@ -780,7 +789,7 @@ def stage_control_r(sid, side, d_dir, bed_constraint=True, freeze_frames=False, 
         r = seat_on_bed(region, base, closest, load_steps=LOAD_STEPS, gap_tol_m=GAP_TOL_M,
                         jump_limit_m=CONTROL_JUMP_LIMIT_M, assoc_tol_m=ASSOC_TOL_M, rigid_m=rigid,
                         freeze_frames=freeze_frames, project=project, stop_fraction=stop_fraction,
-                        solver_log=solver_log,
+                        solver_log=solver_log, association=association, lost_bed=lost_bed,
                         log=lambda m, flush=True: print(m, flush=True))
     except Exception as failure:
         say(f"GATE {'R' if bed_constraint else 'R-prime'}: FAILED -- {type(failure).__name__}: {failure}")
@@ -792,6 +801,9 @@ def stage_control_r(sid, side, d_dir, bed_constraint=True, freeze_frames=False, 
             rigid_mm=1000 * magnitude, direction=direction.tolist(), seconds=time.time() - t0), indent=2) + "\n")
         return False
     steps = r["steps"]
+    if r.get("lost_bed_per_association"):
+        say(f"  nodes whose ray left the bed, per association: {r['lost_bed_per_association']} "
+            f"(rule: {r['lost_bed_rule']}, association: {r['association']})")
     if freeze_frames:
         say("  min J across the run, with the association frozen inside each step:")
         say(f"    {'step':>5} {'fraction':>9} {'min J at entry':>15} {'min J at exit':>14} {'drop in step':>13} "
@@ -806,8 +818,13 @@ def stage_control_r(sid, side, d_dir, bed_constraint=True, freeze_frames=False, 
         within = sum(st['min_J_entry'] - st['min_J'] for st in steps)
         across_total = sum((steps[i - 1]['min_J'] - steps[i]['min_J_entry']) for i in range(1, len(steps)))
         say(f"  total fall WITHIN steps (constraints fixed): {within:+.4f}; ACROSS re-associations: {across_total:+.4f}")
-        say("  -> " + ("the association is where min J is lost" if across_total > within else
-                       "min J is lost inside steps whose constraints are fixed: the association is not the cause"))
+        if abs(within) < 1e-9 and abs(across_total) < 1e-9:
+            say("  -> no min J is lost anywhere: every step holds the exact solution")
+        elif across_total > within:
+            say("  -> min J is lost across the re-associations")
+        else:
+            say("  -> min J is lost inside steps; note that a re-association moves no nodes, so its effect "
+                "appears in the NEXT step's start, which is inside a step (gate S)")
     u = r["displacement"]
     Y = X + u
     J = np.linalg.det(np.swapaxes(Y[T[:, 1:]] - Y[T[:, 0, None]], 1, 2)
