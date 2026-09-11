@@ -1020,6 +1020,33 @@ done; the others have moved.
    exceeds 1% on a subject, that subject's breast is misplaced rather than mislabelled, and saying
    so is the result.
 
+   **Run on all eight breasts: every one fails the trim gate. All four subjects are registration
+   failures, and no seating was attempted on any of them.** The prediction is refused -- the trim
+   takes 2.0% to 7.7%, not "well under 1%" -- and by the rule fixed above that verdict is not about
+   the labels but about where the registration puts them.
+
+   | breast | vertices > 20 mm behind the wall | deepest | tets removed | volume removed |
+   |---|---:|---:|---:|---:|
+   | s1159 left | 301 | 41.8 mm | 1,603 | **1.99%** |
+   | s1159 right | 314 | 33.6 mm | 1,832 | **2.26%** |
+   | s1067 left | 643 | 46.4 mm | 3,469 | **3.70%** |
+   | s0790 right | 833 | 45.3 mm | 4,526 | **4.73%** |
+   | s0790 left | 1,042 | 47.7 mm | 5,636 | **4.86%** |
+   | s1067 right | 1,218 | 45.1 mm | 6,545 | **5.25%** |
+   | s0970 left | 1,645 | 42.6 mm | 8,895 | **7.56%** |
+   | s0970 right | 1,605 | 40.8 mm | 8,416 | **7.73%** |
+
+   The amount scales by subject -- s1159 ~2%, s1067 and s0790 ~4-5%, s0970 ~7.6% -- in the same
+   order as the twofold spread in chest-wall offset this file already measured between these women.
+   A segmentation error would not be systematic across four subjects, eight breasts and both sides,
+   nor would it scale with the subject's own offset. **What is wrong is upstream of every seating
+   attempt: one similarity transform per subject, fitted to the whole torso, cannot place the breast
+   against this body's chest wall.** Four seating instruments have now been built and judged against
+   it -- prescribed closest-point, the sliding base, rigid placement, and this trim -- and the
+   solver gate passed in two independent codes while no breast was ever seated. The next instrument
+   belongs on the REGISTRATION, not on the tissue: a fit that is local to the chest wall, or a
+   per-subject correction with its own known answer, before any seating is judged again.
+
    **Seat it in two steps: place, then conform. Fixed 2026-09-10, before it runs.** 45 mm of
    overlap is not tissue deformation, it is placement -- the breast is another woman's tissue where
    a similarity registration put it, and a quasi-static solve pushing 45 mm of interpenetration out

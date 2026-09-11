@@ -96,6 +96,14 @@ RAY_REACH_M, GRAZING_COS, LOAD_STEPS, GAP_TOL_M = 0.060, 0.3, 8, 5e-5
 # and a finer step reads as noise (the search stalled after 2 iterations). Several starts are tried,
 # including pure anterior offsets -- lifting the breast off the chest is the obvious direction -- and
 # the best is kept.
+# THE TRIM (docs/BODY_PARAMETERS.md, fourth attempt, fixed before it ran): breast tissue does not
+# lie behind pectoralis major, so a label that does is a segmentation error -- these labels come
+# from a model run on a clinical scan. Every boundary vertex more than TRIM_DEPTH_M behind the
+# muscular wall along its own outward ray is removed with the tets it belongs to, and the rest is
+# re-meshed. 20 mm sits below the measured p99 of 24.7 mm, so the trim is a real test. If it takes
+# more than TRIM_VOLUME_TOL of the breast, the label is not locally wrong -- the breast is in the
+# wrong place -- and the subject is a registration failure with no seating attempted.
+TRIM_DEPTH_M, TRIM_VOLUME_TOL = 0.020, 0.01
 PLACEMENT_LIMIT_M, PLACEMENT_SAMPLE = 0.025, 1200
 PLACEMENT_CAP_M, PLACEMENT_TURN_CAP_RAD = 0.100, 0.524
 PLACEMENT_EPS_M, PLACEMENT_STARTS_MM = 5e-4, (0.0, 8.0, 16.0, 22.0)
@@ -267,6 +275,34 @@ def bed_rays(V, F, directions, reach_m=0.060):
     return association, has_bed
 
 
+def largest_component(T):
+    """Keep only the largest tet component: trimming can leave islands."""
+    from scipy.sparse import coo_matrix
+    from scipy.sparse.csgraph import connected_components
+    f = np.vstack([T[:, [1, 2, 3]], T[:, [0, 3, 2]], T[:, [0, 1, 3]], T[:, [0, 2, 1]]])
+    _, inv = np.unique(np.sort(f, 1), axis=0, return_inverse=True)
+    tet_of = np.tile(np.arange(len(T)), 4)
+    order = np.argsort(inv, kind="stable"); inv_s, tet_s = inv[order], tet_of[order]
+    shared = np.flatnonzero(np.bincount(inv) == 2)
+    if not len(shared): return np.ones(len(T), bool)
+    start = np.searchsorted(inv_s, shared)
+    A = coo_matrix((np.ones(len(shared)), (tet_s[start], tet_s[start + 1])), shape=(len(T), len(T)))
+    ncomp, label = connected_components(A, directed=False)
+    return np.ones(len(T), bool) if ncomp == 1 else label == np.argmax(np.bincount(label))
+
+
+def penetration_of(X, B, bV, bF, nodes=None):
+    """Depth behind the muscular wall along each boundary vertex's own outward ray."""
+    vn = np.zeros_like(X)
+    for k in range(3): np.add.at(vn, B[:, k], np.cross(X[B[:, 1]] - X[B[:, 0]], X[B[:, 2]] - X[B[:, 0]]))
+    idx = np.unique(B) if nodes is None else np.asarray(nodes)
+    dirs = vn[idx] / np.maximum(np.linalg.norm(vn[idx], axis=1, keepdims=True), 1e-30)
+    association, has = bed_rays(bV, bF, dirs, RAY_REACH_M)
+    c, n = association(X[idx])
+    gap = np.einsum('ij,ij->i', n, X[idx] - c)
+    return idx, np.where(np.isfinite(gap), np.maximum(0.0, -gap), 0.0), dirs, has
+
+
 def stage_prepare(sid, side, d):
     import igl
     src = ROOT / "data/derived" / REG[sid] / f"breast_{side}.obj"
@@ -292,9 +328,49 @@ def stage_prepare(sid, side, d):
     X, T = read_msh_tets(msh)
     used = np.unique(T); remap = -np.ones(len(X), np.int64); remap[used] = np.arange(len(used)); X, T = X[used], remap[T]
     v = tet_volumes(X, T); T[v < 0] = T[v < 0][:, [0, 2, 1, 3]]
-    B = boundary_faces(T); nb = face_normals(X, B)
-    posterior = np.unique(B[nb[:, 2] < 0]); anterior = np.unique(B[nb[:, 2] > 0])
+    B = boundary_faces(T)
     bV, bF, rim = bed(side, near=X)
+    # --- the trim, gated before any seating ---
+    idx, pen, _, _ = penetration_of(X, B, bV, bF)
+    deep = idx[pen > TRIM_DEPTH_M]
+    volume_all = tet_volumes(X, T).sum()
+    trim = dict(depth_mm=TRIM_DEPTH_M * 1e3, deep_vertices=int(len(deep)),
+                penetration_before_mm=dict(max=float(pen.max() * 1e3), p99=float(np.percentile(pen, 99) * 1e3)))
+    if len(deep):
+        isdeep = np.zeros(len(X), bool); isdeep[deep] = True
+        keep = ~isdeep[T].any(1)
+        keep &= largest_component(T[keep])[np.cumsum(keep) - 1] if keep.any() else keep
+        removed = 1.0 - tet_volumes(X, T[keep]).sum() / volume_all
+        trim.update(tets_removed=int((~keep).sum()), removed_volume_fraction=float(removed))
+        print(f"  trim: {len(deep)} vertices deeper than {TRIM_DEPTH_M*1e3:.0f} mm (max {pen.max()*1e3:.1f} mm), "
+              f"{int((~keep).sum())} tets, {100*removed:.3f}% of the breast's volume")
+        if removed > TRIM_VOLUME_TOL:
+            (d / "trim.json").write_text(json.dumps({**trim, "registration_failure": True}, indent=2) + "\n")
+            raise SystemExit(f"REGISTRATION FAILURE for {sid} {side}: the trim takes {100*removed:.2f}% > "
+                             f"{100*TRIM_VOLUME_TOL:.0f}%; the breast is misplaced, not mislabelled; no seating attempted")
+        # re-mesh the trimmed body
+        Bk = boundary_faces(T[keep]); kv = np.unique(Bk); kmap = -np.ones(len(X), np.int64); kmap[kv] = np.arange(len(kv))
+        write_obj(md / "trimmed.obj", X[kv], kmap[Bk], [f"{sid} {side} breast, trimmed {100*removed:.3f}% behind the muscular wall"])
+        tmsh = md / "trimmed.msh"
+        if not tmsh.exists():
+            cmd = [str(FTETWILD), "-i", str(md / "trimmed.obj"), "-o", str(tmsh), "--no-binary", "-e", "1e-3",
+                   "-l", str(MESH_LR), "--max-threads", "12"]
+            t0 = time.time(); pr = subprocess.run(cmd, capture_output=True, text=True, timeout=3600)
+            (md / "ftetwild_trimmed.log").write_text(pr.stdout[-4000:] + pr.stderr[-4000:])
+            if pr.returncode != 0 or not tmsh.exists(): raise SystemExit(f"fTetWild failed on the trimmed {sid} {side}")
+            print(f"  re-meshed the trimmed breast in {time.time()-t0:.0f} s")
+        X, T = read_msh_tets(tmsh)
+        used = np.unique(T); remap = -np.ones(len(X), np.int64); remap[used] = np.arange(len(used)); X, T = X[used], remap[T]
+        v = tet_volumes(X, T); T[v < 0] = T[v < 0][:, [0, 2, 1, 3]]
+        B = boundary_faces(T)
+        trim["volume_after_remesh_ml"] = float(tet_volumes(X, T).sum() * 1e6)
+        trim["removed_volume_fraction_after_remesh"] = float(1.0 - tet_volumes(X, T).sum() / volume_all)
+        _, pen2, _, _ = penetration_of(X, B, bV, bF)
+        trim["penetration_after_mm"] = dict(max=float(pen2.max() * 1e3), p99=float(np.percentile(pen2, 99) * 1e3))
+        print(f"  after the trim and re-mesh: {len(X)} nodes, {len(T)} tets, penetration max {pen2.max()*1e3:.1f} mm")
+    (d / "trim.json").write_text(json.dumps(trim, indent=2) + "\n")
+    nb = face_normals(X, B)
+    posterior = np.unique(B[nb[:, 2] < 0]); anterior = np.unique(B[nb[:, 2] > 0])
     vn = np.zeros_like(X)
     for k in range(3): np.add.at(vn, B[:, k], np.cross(X[B[:, 1]] - X[B[:, 0]], X[B[:, 2]] - X[B[:, 0]]))
     dirs = vn[posterior] / np.maximum(np.linalg.norm(vn[posterior], axis=1, keepdims=True), 1e-30)
@@ -309,7 +385,7 @@ def stage_prepare(sid, side, d):
     info = dict(nodes=len(X), tets=len(T), mesh_ml=tet_volumes(X, T).sum() * 1e6, surface_ml=vol_o * 1e6,
                 posterior_nodes=len(posterior), base_nodes=len(base), held=int((gap0 < 0).sum()),
                 unilateral=int((gap0 >= 0).sum()), free_no_bed_on_the_line=int((~on_line).sum()), grazing_excluded=int((~facing).sum()),
-                deepest_penetration_mm=float(-gap0.min() * 1e3))
+                deepest_penetration_mm=float(-gap0.min() * 1e3), trim=trim)
     (d / "prepared.json").write_text(json.dumps(info, indent=2) + "\n")
     print(f"  {len(X)} nodes, {len(T)} tets; base {len(base)} of {len(posterior)} posterior nodes "
           f"({int((~on_line).sum())} free: no muscle along their ray): {info['held']} held, {info['unilateral']} unilateral; "
