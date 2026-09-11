@@ -1648,6 +1648,60 @@ evidence available says remove the trim, and no evidence says keep it. That is a
 than it looks, and what would overturn it is a real registration with independent truth, which this
 programme does not have.
 
+### The sweep is monotone: CORR_TRIM goes to 0 and the parameter is deleted
+
+| CORR_TRIM | points fitted | **to-surface recovery** | normal target error |
+|---:|---:|---:|---:|
+| **0%** | 4,410 | **1.666 mm** | 2.036 mm |
+| 2% | 4,410 | 1.729 mm | 2.027 mm |
+| 5% | 4,410 | 1.847 mm | 1.968 mm |
+| 10% | 4,410 | **2.138 mm** | **1.925 mm** |
+
+**Predicted monotone to 0. It is monotone to 0**, with no interior optimum, and the fitted count is
+identical at every step -- so this is purely *which* points are kept, not how many. The shipped
+setting is the worst of the four, costing **0.472 mm, 28%**. The 10% row reproduces the original
+nearest arm's 2.138 mm to the last digit, confirming the sweep is the same instrument.
+
+**The two columns move in opposite directions**, and that is the day's theme in its final form:
+trimming makes target error look **5.8% better** while making the recovered map **28% worse**. The
+trim removes the points where the correspondence is least certain, which are exactly the points
+carrying the information about where the surfaces disagree. **A metric that improves as the map
+degrades** -- the same failure found earlier in the fit residual, now in a second quantity.
+
+**Adopted: `CORR_TRIM = 0`, and the parameter is deleted rather than retuned.** A tuned constant
+invites the next person to tune it; there is nothing here to tune.
+
+### The gate-1 re-runs, and why their outcome is NOT evidence about the trim
+
+Fixed before a single fit is re-run, because this is exactly where a favourable reading could be
+taken later. **Gate 1 measures the warped bone group's RMS against the per-segment similarity, on
+the per-segment fit's own evaluation samples.** Structurally that is *agreement with what the fit
+aimed at* -- the same class of quantity as the fit residual and the target error, both of which
+this line has now shown can move **opposite** to accuracy.
+
+* The re-runs are a **compliance check on the shipped instrument**: whatever ships must satisfy its
+  gates. They are **not** a test of the trim decision, which rests on the control, which is the only
+  place a truth exists.
+* **A gate-1 improvement is not confirmation** that removing the trim was right, and **a gate-1
+  degradation is not refutation.** Both are stated now so neither can be claimed later.
+* Gate 1's threshold and its 1 mm margin are **unchanged**. Only the instrument changes, which is
+  the permitted move.
+* Old and new numbers are reported **side by side, all 22 segments**, not as a summary.
+
+**The conflict case, named in advance and not resolved by preference.** If gate 1 **fails** at
+`CORR_TRIM = 0` where it passed at 0.10, the honest position is that this programme has an
+instrument that is **more accurate on the only data with a truth** and **fails a gate on the data
+without one**. That conflict is reported as a conflict. It is not resolved by shipping whichever
+setting passes, and it is not resolved by declaring gate 1 unfit because we dislike its answer --
+gate 1 caught real things and its 22/22 pass was earned. **Predicted: gate 1 holds at 0**, with low
+confidence stated; my record on this line is two and a half hits in ten.
+
+**The caveat carried on every artefact from this**, restated because the monotonicity makes it look
+stronger than it is: the control's truth is a known field on the *same body*, so its largest
+separations are hard but genuine. On a real subject-to-scaffold registration they may be **wrong**
+correspondences, where a trim could be protective. No ground truth exists on real data -- that is
+why the control exists. The only evidence available says remove the trim and none says keep it.
+
 **Why this was worth having from a retired control.** I retired it for firing a threshold at the
 wrong separation, and it then answered a question I had not asked: whether this line's headline
 quality metric measures accuracy at all. It does not. A control kept running after its gate was
