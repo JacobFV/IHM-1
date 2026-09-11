@@ -4496,3 +4496,44 @@ What has changed is that the parametrization no longer stops at the scaffold.
    in the manifest under `gate_semantics`. Neither gate was wrong; neither was readable from the
    thing it was stamped on. *A caution that lives only in a script header is one revision from
    being lost.*
+
+   ## THE PRODUCTION DRIVE HAS NEVER RUN SINCE THE REPAIR — prediction fixed before it does
+
+   Found 2026-09-11 while resuming this line. `data/derived/female-breast-sliding-v1/s1159/left/dr.log`
+   is timestamped **Sep 10 21:50**; the `theta` bound repair landed in
+   `ihm/assembly/sliding_contact.py` on **Sep 11 ~03:31** (`6d1fb89`…`025b09a`). `stage_dr` calls
+   the repaired `seat_on_bed`. **So the only recorded production failure on the anatomical bed —
+   `load stepping stalled at fraction 0.0005: bounded start inverts 2 elements` — is a
+   PRE-REPAIR number, and it has been reasoned from since as though it were current.**
+
+   That matters because the repair addresses exactly this mechanism. The bound was
+   `on_plane + gap0 + fraction*travel`, which scaled `travel` but not `on_plane`, so a drifted
+   association demanded its whole drift **instantly, however small the step** — 7.19 mm over 26
+   nodes at a step of size zero. "Bounded start inverts elements at fraction 0.0005" is what that
+   bug looks like on a real bed: the tiny step is not the problem, the bound is.
+
+   **PREDICTED, before the re-run:** the production drive gets **past fraction 0.0005**. If it
+   stalls there again with the same message, the repair does not reach this failure and the 1.75×
+   it is worth on control R′ does not transfer to the anatomical bed — which would be worth more
+   than a seat, because every subsequent plan on this line assumes it does.
+
+   **Not predicted, and not to be read into a pass:** how far it gets. Affordability is a separate
+   question and the last converged anatomical step is fraction 0.1094. A drive that passes 0.0005
+   and then stalls at 0.002 has still refuted the pre-repair reading and still not seated a breast.
+
+   **Also recorded, because it was being planned around:** no breast has ever been seated. There
+   is no `judge.json` anywhere in `data/derived/`, so per-breast gates (a)–(d) have **never once
+   been evaluated on a real breast** in either the closest-point or the sliding line.
+
+   **And the judge in force is the one at lines 862–871**, not the earlier one: (a) volume within
+   1%, (b) every tet J > 0.2, (c) the two solvers within 5% of maximum displacement, (d) no
+   flipped base triangle, plus the seat completing. **Base contact (median ≤ 3 mm) and rib points
+   inside are REPORTED, not judged** — the sliding boundary condition enforces them by
+   construction — and the *fitted-on-some, tested-on-held-out* fold belongs to the rigid-correction
+   branch that ended at line 2384. Judging the base deformation by a held-out gate would apply a
+   superseded judge.
+
+   **The caveat that travels with whatever this produces:** `stage_dr` runs `jump_limit_m = 5e-4`,
+   under which 31–37% of held nodes (963–1,144 of 3,123) have their association refused every step
+   and held stale. `association moved 0.4999 mm` is a maximum over ACCEPTED updates and does not
+   show it.
