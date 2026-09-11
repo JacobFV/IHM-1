@@ -3744,3 +3744,37 @@ What has changed is that the parametrization no longer stops at the scaffold.
    a trap does not protect against it** — the agent had the tangential-drive trap in front of it and
    walked into it anyway. Only the assertion does.
 
+
+   ### CC-flat′ passes: staleness costs exactly zero on a plane
+
+   | rtol | max \|u − d\| as a fraction of \|d\| |
+   |---|---:|
+   | 1e-4 … 1e-8 | 2.511e-07, **identical at all five** |
+   | 1e-9 | **1.241e-14** |
+   | 1e-10 | **6.408e-15** |
+
+   Tightening `rtol` removes the residual entirely, to double precision. **The 2 nm was the
+   convergence floor, and the flat case is clean** — the cost of staleness on a surface whose normal
+   never rotates is zero, exactly as the decomposition requires. CC-flat stays recorded as FAILED
+   against its as-written criterion; CC-flat′ is what establishes the fact.
+
+   **So the decomposition has done its job on the half that separates a bug from a cost.** The
+   platens are clean, therefore R2's degradation under persistent association is **not** a defect in
+   the association — it is the price of staleness on curved geometry, which CC-curved is measuring.
+
+   **A statistic fitted to a shape it does not have**, caught by the agent against its own script.
+   The first version fitted a power law and reported *"falls as rtol^1.335"*. That number is
+   meaningless: the measured shape is a **plateau across five decades and then a collapse**, because
+   the loose tolerances all stop at the same Newton iterate. A slope through a plateau-plus-cliff is
+   a number with no referent. The slope is gone and the verdict now turns on what actually decides
+   it — whether the deviation reaches machine precision at all. It does, by seven orders.
+
+   **And it vindicates running the sweep rather than reasoning about it.** 2.7e-7 is ~3× the declared
+   rtol, so a principled bar at rtol would also have failed; the plateau is why. No threshold could
+   have separated "at the floor" from "small but wrong" here — only varying the tolerance could.
+
+   **CC-curved, interim and not to be read as a result:** staleness **0.001856 mm at R = 400 mm** and
+   **0.004481 mm at R = 200 mm** — a factor **2.41** for a halving of R against a predicted 2, and
+   sitting at **0.21–0.26 of the `d²/2RN` prediction**, so the sagitta behaves as an upper bound with
+   the solve compensating part of it rather than as an equality. **Two points are not an exponent**;
+   R = 100 and 50 mm are still running.
