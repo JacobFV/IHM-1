@@ -989,14 +989,37 @@ on the tibia in all six subjects (-0.09 to -0.30 mm, median **-0.18**). The regi
 itself sits inside the plant's tibia, so cartilage correctly placed on that bone cannot show a
 positive median: the gate has no headroom there and its three tibia FAILs (001, 003, 004) say
 nothing about the cartilage. On the femur the ceiling's median is **+0.12 mm** (min -0.12, max
-+0.45), thin but positive, so the femur verdicts are readable with that margin in mind. The gate is
-NOT changed here and the FAILs stand on the record as FAILs; this is a diagnostic of whether they
-can be interpreted, computed from the transforms in the manifest without refitting.
++0.45). The FAILs stand on the record as FAILs; this is a diagnostic of whether they can be
+interpreted, computed from the transforms in the manifest without refitting.
 
-Observed while measuring it, and not adopted as anything: the cartilage's signed median sits above
-the ceiling's in 9 of 12 bones, which is the behaviour a correct placement would show. A paired
-form of 3'', against the ceiling as gate 3' already is, would be the obvious replacement, and it
-would be a fresh pre-registration to be made before any subject is scored on it.
+#### Gate 3'' is RETIRED as unmeasurable, and the femur's margin goes with it
+
+Ordered before the numbers were read, with the decision rule fixed in advance: bootstrap the signed
+median's OWN sampling uncertainty over the surface samples, per subject and per bone. Under 0.05 mm
+and a paired form of 3'' would be measurable; comparable to the separations in play and 3'' is
+retired rather than replaced.
+
+**The floor is 0.103 mm** (median 95% interval half-width across all 24 subject-bone cells; per-cell
+half-widths 0.041-0.160). The separations it would have to resolve are the ceiling's own medians,
++0.12 mm on the femur and -0.18 on the tibia. They are the same size. Two independent estimates
+agree -- resampling the recorded draw and 30 fresh area-weighted draws give the same spread per cell
+(0.048 against 0.056, 0.029 against 0.028) -- so this is the quantity's own resolution, not an
+artefact of the bootstrap.
+
+So gate 3'' is retired as unmeasurable, and the femur's "+0.12 mm, readable with that margin in
+mind" falls with it: the femur verdicts are uninterpretable in exactly the way the tibia's are. This
+is the same death as gate A in de88ef4 -- a bar quoted finer than the floor beneath it. A signed
+median resolved to about 0.1 mm cannot adjudicate a placement whose fit residual is ~1.5 mm.
+
+**The recorded tally of 0 of 6 passing every gate is therefore partly an artefact of a gate with no
+headroom, and that caveat travels wherever the tally is quoted.** Setting 3'' aside, 3 of the 5
+sound fits pass gates 1, 2, 3' and 4' -- a count taken after a gate was retired, not a new result.
+
+Not adopted, and not to be cited as motivation for any replacement: the cartilage's signed median
+sits above the ceiling's in 9 of 12 bones. That is a count taken after the fact, in the direction
+its designer hoped for, with no floor beneath it -- the shape of half the rows in the ledger. The
+script now records `median_signed_floor_mm` beside every signed median, so no successor to 3'' can
+be quoted without its own resolution beside it.
 
 **As lead, that pre-registration is refused for now, and a measurement is ordered in front of it.**
 The quantities a paired 3'' would separate are the ceiling's **+0.12 mm** on the femur and
