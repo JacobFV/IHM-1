@@ -526,9 +526,34 @@ def stage_dr(sid, side, d, young, tag=""):
     if move is not None:
         print(f"  seating with the SMOOTHED depth field (declared modelling choice): "
               f"median travel {1000*np.median(move[move>0]):.2f} mm", flush=True)
-    r = seat_on_bed(region, P["base"], closest, load_steps=LOAD_STEPS, gap_tol_m=GAP_TOL_M, jump_limit_m=5e-4, move=move, assoc_tol_m=ASSOC_TOL_M,
-                    log=lambda m, flush=True: print(m, flush=True))
+    # A STALL IS A RESULT -- it is the affordability measurement -- so it is written, not lost.
+    # Before this a stalled drive raised through stage_dr and left only a log; the 2026-09-11
+    # anatomical run spent three hours reaching fraction 0.4652 that way. The artefact is marked
+    # `stalled` and carries last_converged_fraction, so nothing downstream can mistake it for a
+    # completed seat.
+    stalled = None
+    try:
+        r = seat_on_bed(region, P["base"], closest, load_steps=LOAD_STEPS, gap_tol_m=GAP_TOL_M, jump_limit_m=5e-4, move=move, assoc_tol_m=ASSOC_TOL_M,
+                        log=lambda m, flush=True: print(m, flush=True))
+    except RuntimeError as e:
+        if not hasattr(e, "partial"):
+            raise
+        r, stalled = e.partial, e
+        print(f"  STALLED: {e}", flush=True)
+        print(f"  writing the partial state anyway. last CONVERGED fraction "
+              f"{r['last_converged_fraction']}, reached {r['max_fraction_reached']}, "
+              f"{r['n_unconverged_steps']} unconverged step(s). NOT a seat.", flush=True)
     np.save(d / f"dr_displacement{tag}.npy", r["displacement"])
+    if stalled is not None:
+        (d / f"dr{tag}_STALLED.json").write_text(json.dumps(dict(
+            stalled=True, stalled_at_fraction=r["stalled_at_fraction"],
+            stall_reason=r["stall_reason"], last_converged_fraction=r["last_converged_fraction"],
+            max_fraction_reached=r["max_fraction_reached"],
+            n_unconverged_steps=r["n_unconverged_steps"],
+            all_steps_converged=r["all_steps_converged"], cutbacks=r["cutbacks"],
+            minimum_jacobian=r["minimum_jacobian"], caveats=CAVEATS,
+            note="NOT A SEAT. The drive did not complete; this is the affordability measurement."),
+            indent=2) + "\n")
     (d / f"dr{tag}.json").write_text(json.dumps(dict(
         steps=r["steps"], cutbacks=r["cutbacks"], minimum_jacobian=r["minimum_jacobian"], converged=bool(r["converged"]),
         held=int(r["held"].sum()), young_pa=young, wall_seconds=time.time() - t0), indent=2) + "\n")

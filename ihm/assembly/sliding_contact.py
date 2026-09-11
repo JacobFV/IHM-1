@@ -415,7 +415,32 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
                 # the RE-ASSOCIATION acting on an already-deformed state rather than the increment.
                 # It is the only way to separate the two, since every cut-back keeps re-associating.
                 if on_stall is not None: on_stall(fraction, advance, u, target)
-                raise RuntimeError(f"load stepping stalled at fraction {fraction:.4f}: {failure}")
+                # THE STALL USED TO DESTROY THE RUN'S OWN EVIDENCE. This raised a bare
+                # RuntimeError, so `stage_dr` never reached its write and a drive that stalled
+                # produced NO artefact at all -- the 2026-09-11 anatomical run spent three hours
+                # reaching fraction 0.4652 and would have left only a log. IBM-1's CLAUDE.md has
+                # the rule: a negative result without a checkpoint is an anecdote. A stall is a
+                # result -- it is the affordability measurement -- so the partial state now rides
+                # on the exception and the caller can write it.
+                err = RuntimeError(f"load stepping stalled at fraction {fraction:.4f}: {failure}")
+                err.partial = dict(displacement=u, gap_m=gap, held=held, initial_gap_m=gap0,
+                                   closest_m=c, normal=n, steps=record, cutbacks=cutbacks,
+                                   stalled=True, stalled_at_fraction=float(fraction),
+                                   stall_reason=str(failure),
+                                   lost_bed_per_association=lost_history, association=association,
+                                   refusals=refusals,
+                                   refusal_rate=(float(np.mean(refusals)) if refusals else None),
+                                   lost_bed_rule=lost_bed,
+                                   minimum_jacobian=record[-1]['min_J'] if record else None,
+                                   converged=record[-1]['converged'] if record else False,
+                                   all_steps_converged=all(bool(s['converged']) for s in record),
+                                   n_unconverged_steps=sum(1 for s in record if not s['converged']),
+                                   last_converged_fraction=max(
+                                       [s['fraction'] for s in record if s['converged']],
+                                       default=None),
+                                   max_fraction_reached=max([s['fraction'] for s in record],
+                                                            default=None))
+                raise err
             continue
         if association == 'adaptive':
             points = (X + u_new)[base]
