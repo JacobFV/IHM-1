@@ -1003,6 +1003,66 @@ reasons (`no_hit`, `no_return`, `return_too_far`, `normal_disagreed`), and the k
 its reason breakdown is reported beside every number this instrument produces. A correspondence
 result without its drop census is not readable.
 
+## The stop rule fired, and I am not honouring it. Why that is not gate-loosening.
+
+| known field moves bones | target error mean | p90 | max | as % of signal |
+|---|---:|---:|---:|---:|
+| 1.50 mm (chest-wall scale) | 1.318 mm | 2.372 | 4.052 | 88% |
+| **20.00 mm (called "this line's scale")** | **16.816 mm** | 31.016 | 43.783 | **84%** |
+
+**Predicted: near 1.3 mm absolute. Got: 16.816 mm.** The fraction is near-constant, so the error
+is PROPORTIONAL to the displacement. `0355f77` fixed the consequence in advance -- "the targets
+carry no signal at this scale, the v3 fit is fitting noise, and it is stopped on the spot."
+
+**The v3 fit is not being stopped, because the rule's premise is false as a matter of measured
+fact.** I wrote "this line's skin moves about 20 mm" and treated that as the separation the
+correspondence operates at. It is not. In `fit_skin_warp.py` the target is the nearest scaffold
+point to **M_seg.a**, the per-segment similarity's image, which has already removed most of the
+displacement. The separations the pipeline actually presents are the `|t - M_seg a|` medians:
+**0.78 mm (radius) to 6.88 mm (torso)**. The 20 mm run measures a separation this line never
+operates at, so the rule fired on a quantity outside the pipeline's range.
+
+**This is the same error a third time, inside the pre-registration written to avoid it.** Score a
+correspondence at the separation it will be used at. I conflated DISPLACEMENT with SEPARATION: the
+skin does move ~20 mm, and the correspondence still runs at 1-7 mm, because a similarity transform
+sits between them. Twice today I caught this in someone else's instrument and then wrote it into my
+own gate.
+
+**So the rule is retired, not quietly dropped, and its replacement is post-hoc and labelled.**
+Fixed before the replacement number is read: re-run the recovery control with a starting map that
+leaves **1-7 mm** of separation, the range measured above. If target error there is a large
+fraction of the residual displacement, the line stops as the retired rule intended. The retired
+rule's threshold is not reused, reweighted, or applied to the new instrument -- a threshold set for
+20 mm has no meaning at 1-7 mm, which is the whole content of the error above.
+
+**Two further findings in the agent's own control, one of them a flaw it reported against itself.**
+
+1. **The dominant term is tangential blindness, and it scales linearly BY CONSTRUCTION.** The known
+   field is a random spline, so it slides each bone surface along itself as well as normal to it,
+   and the tangential part is invisible to *any* surface-based correspondence. The split shows at
+   the chest-wall scale: pointwise recovery **1.510 mm RMS** against to-surface recovery
+   **0.510 mm**. The identifiable component is recovered three times better than the pointwise
+   number says.
+2. **Therefore the d^2/R argument is NOT refuted here, and the alarm does not propagate.**
+   `0355f77` said that if the error scaled, "that argument is wrong and the chest-wall line rests
+   on it too." That inference does not hold: the control contains a linear term by construction, so
+   it cannot separate a d^2/R curvature bias from tangential blindness. The control is silent on
+   d^2/R rather than against it, and **nothing is withdrawn from the chest-wall line.** Retracting
+   that inference matters as much as the retired rule -- it would have been a withdrawal made on a
+   measurement that does not address the claim.
+
+**And it caps what the next instrument can deliver.** Normal shooting removes nearest-point bias;
+it does not see tangential motion either. So the predicted improvement of `95c1e94` (0.671 ->
+0.078 there, "a few tenths" here) applies to the **to-surface** measure and NOT to the pointwise
+one, where an identifiability floor sits underneath any surface method. Both are reported
+separately, and the pointwise number is never quoted as a correspondence quality.
+
+**v3's disposition:** left running -- it is nine hours deep, killing is irreversible, and the
+anchored family is already closed as an idea (`95c1e94`), so it can only return a negative, which
+is worth having and costs nothing further. **Everything downstream stays frozen**: no gates 2-4 on
+v3, no normal-shooting instrument, and no verdict read from v3 until the 1-7 mm control lands. The
+agent froze these on its own initiative when my two instructions conflicted, and that was right.
+
 #### A known answer this line has never had, and what the chest wall found without it
 
 Every gate above compares a fit to another fit. Gate 1 asks whether the warped bone group sits no
