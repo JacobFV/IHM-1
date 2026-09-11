@@ -923,6 +923,37 @@ under it. Gates 1-4 unchanged; the anchor count is reported for both. **Predicte
 measure anchors a small fraction -- the toe tips, the lateral forefoot, the hands and the fleshy
 trunk -- rather than two thirds of the body.
 
+**Both anchor rules are wrong, and the second one refutes the idea rather than the threshold
+(2026-09-10).** The corrected measure anchors **27,209 vertices, 49.5%** -- not a small fraction.
+The reason is arithmetic: this body's median skin-to-bone-SURFACE distance is **19.7 mm**, so a
+20 mm threshold selects about half the skin by construction. The threshold was doing the selecting
+in both versions; only the direction of the error changed.
+
+And it anchors the wrong places. Hands fall from 1,360 anchors to **47**, toes from 243 to 142,
+while pelvis keeps 6,608 and torso 6,249. **Gate 2 fails at calcn, toes and hands** -- exactly the
+segments the corrected rule strips anchors from, because hand and toe skin sits CLOSE to bone.
+Anchoring "skin with no bone under it" was never a description of the failure: those segments fail
+because the scaffold's foot is a fifth larger than this specimen's, not because their skin is
+unsupported. No anchor rule of this kind addresses that, and none is pre-registered.
+
+**What the failure probably is, now that the missing control has a first number.** The recovery
+control of `d626af3` reports that for a known field displacing this body's bones **1.50 mm** on
+average, the nearest-point targets miss the truth by **mean 1.318 mm, p90 2.372, max 4.052** --
+roughly twice the chest-wall line's 0.671 mm on the equivalent test, and **of the same order as the
+displacement being fitted**. A warp fitted to targets that wrong is fitting noise the size of its
+signal, which is a sufficient explanation for calcn and toes sitting at 0.92 and 0.87 under two
+unrelated smoothness classes.
+
+**So the next instrument here is a correspondence, as it was for the chest wall.** Fixed before it
+is built: replace nearest-point targets with `ihm/anatomy/normal_shooting.py` -- shooting along the
+source surface's own normal, with the normal-agreement filter ON and declared, which the chest-wall
+line adopted on the argument that a hit whose surface faces away is not that point's partner. Then
+**re-run the recovery control first**, and only judge a warp family afterwards. **Predicted:** the
+target error falls from 1.318 mm to a few tenths, as it did there (0.671 to 0.078); calcn and toes
+improve but do not reach 0.95, because a fifth of a foot is a shape difference and not a
+correspondence error. The thin-sheet failure applies squarely -- these correspondences include ribs,
+scapulae and the sternum -- so the agreement filter is not optional here.
+
 #### A known answer this line has never had, and what the chest wall found without it
 
 Every gate above compares a fit to another fit. Gate 1 asks whether the warped bone group sits no
