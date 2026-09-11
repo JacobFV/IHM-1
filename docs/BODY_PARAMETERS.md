@@ -1078,6 +1078,47 @@ done; the others have moved.
    no similarity will place it, and the honest next step is a deformable chest-wall fit or dropping
    that subject with the reason stated.
 
+   **Built and run on all four (`scripts/register_female_chest_wall.py`). The instrument works; the
+   chest-local similarity improves every breast and still fails, on the held-out gate, for every
+   subject.** The prediction is half refused: gate 4 passes for s1159 alone, not s1067.
+
+   | subject | 1 known answer | 2 laterality | 3 held out (chest-local vs whole-torso) | 4 behind the wall, left / right (was) | overall |
+   |---|---|---|---|---|---|
+   | s0790 | pass, 0.218 mm | pass | **FAIL** 5.81 vs 4.55 mm | 3.28% / 4.01% (4.86 / 4.73) | **FAIL** |
+   | s1067 | pass, 0.143 mm | pass | **FAIL** 6.47 vs 5.18 mm | 1.76% / 3.24% (3.70 / 5.25) | **FAIL** |
+   | s1159 | pass, 0.023 mm | pass | **FAIL** 8.24 vs 5.52 mm | **0.75% / 0.06%** (1.99 / 2.26) pass | **FAIL** |
+   | s0970 | pass, 0.051 mm | pass | **FAIL** 8.70 vs 5.60 mm | 2.75% / 3.67% (7.56 / 7.73) | **FAIL** |
+
+   Gate 1 holds to the pelvic standard -- 0.023-0.218 mm, 0.029-0.345 deg, <= 0.012% scale -- with
+   this body's ribs truncated to the 0.76-0.89 of each rib her labels actually carry. Laterality is
+   unambiguous: her ribs land 3-4 mm from this body's ribs on their own side and 123-127 mm from the
+   other. The fit itself is good where it was fitted: trimmed residual 3.6-6.2 mm on ribs 2-7.
+
+   **The chest-local fit helps the breast everywhere.** Volume more than 20 mm behind the muscular
+   wall falls on all eight breasts, most of all where it was worst: s0970 7.6/7.7% -> 2.8/3.7%,
+   s1159 2.0/2.3% -> 0.8/0.1%. So the diagnosis was right -- the breast sat inside the chest because
+   of the fit, not because of the label.
+
+   **And it costs the rest of the torso, which is what the held-out gate was for.** On the 27 held-out
+   structures the median nearest-surface distance is WORSE than the whole-torso similarity for every
+   subject, and the damage is concentrated in the lower ribcage: ribs 9-12 move 17-27 mm further from
+   this body's own. The chest-local transform also scales her systematically less than the whole-torso
+   one (s1067 1.032 vs 1.098; s1159 1.009 vs 1.060) and moves her breast centroid 8.6-19.2 mm.
+
+   **So the conclusion the prediction reserved for s0970 holds for all four: the difference is SHAPE,
+   not size or pose.** One similarity cannot serve the chest wall and the rest of the torso at once --
+   what it buys at the breast it loses at the lower ribs -- and that is now measured rather than
+   argued. A deformable chest-wall fit, or per-region fits with an explicit blend and its own
+   held-out gate, is the next instrument; a fifth similarity is not.
+
+   One note on the known answer, because two versions of it were wrong before this one. Cutting this
+   body's ribs to her field of view's superior-inferior band removed NOTHING (her 369 mm band spans
+   ribs 2-7 whole, and it is her segmentation, not her field of view, that leaves them partial).
+   Cutting them to what her mapped label lies within removed far too much (a median 0.27-0.46 of each
+   rib) because it measures the whole-torso misalignment under investigation. The cut that is neither
+   is calibrated by AREA RATIO, which depends on the scale and not the pose, taken from the anterior
+   costal-cartilage end where a CT rib label stops.
+
    **Seat it in two steps: place, then conform. Fixed 2026-09-10, before it runs.** 45 mm of
    overlap is not tissue deformation, it is placement -- the breast is another woman's tissue where
    a similarity registration put it, and a quasi-static solve pushing 45 mm of interpenetration out
