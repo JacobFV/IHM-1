@@ -1327,6 +1327,72 @@ fraction PER SEGMENT at the largest amplitude**, because a 27% average that is 6
 5% on the calcaneus would leave exactly the failing segments unconstrained, and the headline number
 would not show it.
 
+### FOUR TIMES BETTER TARGETS PRODUCE A WORSE WARP. Target error is not a proxy for warp quality either.
+
+| amplitude | normal error, nearest -> shooting | **to-surface recovery, nearest -> shooting** |
+|---|---:|---:|
+| 1 (below the operating range) | 0.494 -> 0.199 mm | 0.984 -> 0.908 mm |
+| **2 (the operating point)** | 1.933 -> **0.444 mm (4.4x better)** | 2.138 -> **2.697 mm (26% WORSE)** |
+| 3 | 4.724 -> 0.901 mm | 2.985 -> pending |
+
+At amplitude 2 the separations are comparable (1.05 against 0.96 mm), the targets are **4.4 times
+more accurate**, and the warp recovers the truth **26% worse**. **This inverts `5239b2a` and
+`ded65bf`.** I authorised normal shooting on the strength of target error, and target error turns
+out to point the wrong way.
+
+**So the line now has three quantities that do not measure what they look like:**
+
+1. the **fit residual** is nearly flat while the error doubles (`5239b2a`) -- uninformative;
+2. the **target error** is 4.4x better while recovery is 26% worse -- **anti-correlated** at the
+   operating point;
+3. only **recovery to the surface against a known truth** has tracked anything, and it exists only
+   because a control manufactures the truth.
+
+Every number this line quoted before the recovery control was one of the first two. That is the
+strongest possible argument for the order that was imposed -- *run the recovery control first,
+judge no warp family until it lands* -- and it is the only reason this was caught rather than
+shipped as a 4.4x improvement.
+
+**The understatement ratio makes it worse, and in the informative direction.** It is **larger** for
+shooting (10.7x, 15.6x) than for nearest point (4.1x, 8.3x, 6.0x): better targets lower the
+residual without lowering the error, so the residual's optimism *grows* exactly when the
+correspondence improves. A better instrument makes the bad metric look better and the warp worse.
+
+**The proposed mechanism is coverage, and it is a hypothesis with a control, not a conclusion.**
+Shooting keeps 27.1% and the fit is subsampled to an equal count, so the two fits have the same
+number of constraints but not the same *spatial* coverage: whole regions where the surfaces are
+awkward drop out, and those are where a warp most needs constraining.
+
+**Control C, fixed before it runs.** Hold the correspondence rule constant and vary only coverage:
+fit the warp from **nearest-point targets subsampled to shooting's kept SET** -- same rule, same
+count, same spatial pattern as the shooting fit. Compare its to-surface recovery against the
+full-coverage nearest fit's 2.138 mm.
+
+* **Degrades to near 2.7 mm** -> coverage is the mechanism, the correspondence rule is exonerated,
+  and the repair is to raise coverage (cap and filter are declared settings, not thresholds, so
+  they may be changed after a FAIL; no gate attaches to recovery).
+* **Stays near 2.1 mm** -> coverage is not the mechanism and something about the shooting targets
+  themselves harms the fit, which would be a far more interesting and more troubling result.
+* **Predicted: it degrades to 2.5-2.9 mm** and coverage carries it. Recorded so a confirmation is
+  not read as more than the gate allows.
+
+**A separate flaw in the shooting arm that must be fixed before its exponent is quoted again.** The
+kept separation barely moves across amplitudes -- 0.45, 0.96, **1.08 mm** -- while the field
+amplitude more than doubles between aims 3 and 7 (62.7 to 146.3 mm mean displacement), because
+`return_too_far` and the cap preferentially discard the large-separation samples. **The kept set is
+separation-biased**, so the 2->3 exponent of 6.01 is an artefact of a denominator that did not move
+and must not be quoted as a scaling. Only the 1->2 value of 1.059 is defensible, and the nearest
+rule's exponents stand unaffected because it keeps everything.
+
+**Scoring my predictions, which is the uncomfortable part.** All three of my shooting predictions
+landed: normal error fell substantially at every amplitude (2.5x, 4.4x, 5.2x), the exponent did not
+collapse to zero, and the thin-sheet maxima improved most (32.5 -> 15.8, 54.8 -> 34.3). **I was
+right about everything except whether it would help.** I forecast the correspondence accurately and
+never asked the question that mattered, because I had accepted target error as the thing to
+improve. Being right about three sub-quantities of a metric that turned out to be
+anti-correlated with the outcome is not a good record; it is a demonstration that forecasting skill
+on the wrong quantity is worth nothing.
+
 **Why this was worth having from a retired control.** I retired it for firing a threshold at the
 wrong separation, and it then answered a question I had not asked: whether this line's headline
 quality metric measures accuracy at all. It does not. A control kept running after its gate was
