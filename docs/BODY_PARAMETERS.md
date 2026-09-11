@@ -1500,6 +1500,41 @@ done; the others have moved.
    symmetry it is testing**, the same way a correspondence's must be scored at the separation it
    will be used at.
 
+   **Stop looking for a correspondence at all. Pre-registered 2026-09-10, before it is built.**
+   Every instrument in this line has failed at the same place: pairing a point on one body with a
+   point on the other. Nearest point is biased, normal shooting misses thin bone, the envelope that
+   removes the misses also removes the deformation, and the return test that guards any of them
+   rejects honest pairs once the surfaces are a centimetre apart. The closing radius was mine and
+   the trade-off is structural: anything that makes two chest walls matchable erases what
+   distinguishes them.
+
+   A scalar offset field does not need a correspondence. For a point `x` on THIS body's chest wall
+   with smoothed normal `n(x)`, the offset is **where her wall is along that ray**, read from a
+   SIGNED DISTANCE FIELD of her chest wall rather than from a partner point: `s(x)` is the first
+   zero crossing of her SDF along `n(x)` within a 25 mm cap. An SDF is defined everywhere, so
+   nothing misses, nothing needs a round trip, and no geometry is closed or smoothed to make the
+   two surfaces comparable -- the raw ribs, cartilage and sternum stay exactly as they are.
+
+   * **Gate 0'', the field carries the deformation.** The median `|s|` over the breast base must
+     match the rib-to-rib offset this file already measures, **6.5-10.9 mm, within 20%** -- and
+     NOT the 1.0-1.2 mm the filtered correspondences saw, nor the 3.0 mm the envelopes stood apart.
+     This is the gate the last three instruments would have failed, and it is first because it is
+     the one that matters.
+   * **Gate 0''', coverage.** >= 95% of base points must find a crossing within the cap. An SDF has
+     no gaps, so a failure here is a statement about the ribs' extent rather than the instrument.
+   * **Known answer, with the symmetry broken as this line has now twice had to learn.** An
+     ellipsoid with three distinct semi-axes, displaced by a known scalar field along its normals
+     at a **10 mm** separation, recovered to <= 10% of the displacement. Not a sphere.
+   * **Then:** the field is smoothed as a scalar ON the surface -- never the geometry -- by the
+     committed CV rule, and **the smoothing must be reported as a fraction of the deformation it
+     removes**. Gates A' and 2-4 unchanged.
+
+   **Predicted:** gate 0'' passes, because reading a distance field along a normal cannot select
+   for agreement the way a matched pair does; coverage clears at the cap; and the smoothing removes
+   under 20% of the deformation. If gate 0'' fails -- if even an SDF read along the normal sees
+   1 mm where the bones stand 8 mm apart -- then the 6.5-10.9 mm figure is itself wrong, and what
+   needs re-examining is the offset measurement rather than any instrument built on it.
+
    **Predicted:** coverage clears 95% easily, because a closed envelope has no gaps to miss;
    the offsets the correspondence sees then match the 6.5-10.9 mm the decomposition measured,
    rather than the 0.37-0.45 mm the rib pairs saw. If coverage clears and gate 4 still fails, the
