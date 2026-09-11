@@ -4616,3 +4616,32 @@ What has changed is that the parametrization no longer stops at the scaffold.
    seat; per the rule above, neither is a drive with unconverged steps. Both conditions are
    currently unmet, and saying so now costs nothing, whereas saying it after seeing `FAIL` would
    be indistinguishable from excusing it.
+
+   ### min J is at the gate's bar with half the load left — predicted before it resolves
+
+   The post-repair drive on s1159-left, 3 h 53 m in, at fraction 0.5405. The minimum Jacobian
+   across the tet mesh, step by step:
+
+   `0.800  0.667  0.509  0.406  0.397  0.300  0.291  0.260  0.277  0.254  0.215  0.232  0.215`
+
+   **Gate (b) requires every tet's J > 0.2, and min J is at 0.215 with 46% of the load still to
+   apply.** It has fallen monotonically in trend since the first step and is now flat against the
+   bar.
+
+   **PREDICTED, before the drive resolves:** it does not complete a seat. Either min J crosses 0.2
+   and gate (b) FAILS, or the load stepping stalls first — the increments have been decaying
+   (0.025, 0.019, 0.014, 0.011) and `seat_on_bed` raises below 1e-4. I do not predict which.
+
+   If instead min J stabilises above 0.2 and the drive completes, this is wrong and the sliding
+   condition seats this breast.
+
+   **What it would mean if gate (b) fails this way.** Not a solver bug: the solver's known-answer
+   gates pass, and the elements are being driven toward inversion by the boundary condition
+   itself, which asks base nodes to slide onto a curved bed while the tissue resists. The
+   registration error is absorbed as deformation — the breast is 41.82 mm deep in the chest wall
+   before any load is applied — so the drive is not seating a breast so much as pushing 42 mm of
+   penetration out through the material. That is the quantity to fix, and it is upstream of the
+   boundary condition.
+
+   Every fraction past **0.1094** is reached through `Newton 300 UNCONVERGED` steps in any case,
+   so by the rule recorded above none of this is a seat regardless of what the gates say.
