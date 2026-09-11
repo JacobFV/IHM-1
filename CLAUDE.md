@@ -130,3 +130,17 @@ right for the median face is wrong for the tail, and the tail is where contact l
   **Always name the paths on the commit itself** — `git commit -- <paths>` (or
   `--only`) — so the index you did not build cannot follow you in. Do not leave
   files staged between steps either: stage and commit in one action.
+
+## Gate the part you derived, measure the part you guessed
+
+A scaling argument usually fixes an **exponent** and not a **prefactor**. The sagitta bound
+`d²/2RN` for association staleness predicted a 1/R scaling; the measurement gave `(1/R)^1.068`,
+which matches, at a constant **0.24 × the bound** — four times smaller, at every radius, because
+the solve carries part of the offset.
+
+The gate had been written as *ratio ∈ [0.5, 2.0]*, which folds both claims into one number, so it
+failed on the prefactor while the derived half was confirmed. **A single ratio test cannot pass the
+derived half and fail the guessed half; it only ever reports the guess.**
+
+So: gate the exponent, and *measure and report* the prefactor rather than predicting it. If you
+cannot say where a constant in your bar comes from, it does not belong in the bar.

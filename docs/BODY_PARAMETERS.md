@@ -3825,3 +3825,41 @@ What has changed is that the parametrization no longer stops at the scaffold.
    Combined with CC-flat' reading zero on a plane, the decomposition is complete: the degradation is
    the price of curvature, not a bug.
 
+
+   ### CC-curved: the exponent confirms, the prefactor was never derivable, and the gate fails
+
+   | R | staleness | predicted `d²/2RN` | ratio |
+   |---:|---:|---:|---:|
+   | 400 mm | 0.001856 mm | 0.008742 mm | 0.212 |
+   | 200 mm | 0.004481 mm | 0.017484 mm | 0.256 |
+   | 100 mm | 0.007927 mm | 0.034969 mm | 0.227 |
+   | 50 mm | 0.018077 mm | 0.069938 mm | 0.258 |
+
+   **Staleness scales as `(1/R)^1.068` against the sagitta argument's 1.000.** The prefactor is a
+   constant **0.24** — four times *smaller* than the bound, at every radius, which is how an upper
+   bound behaves when the solve carries part of the offset and per-step errors partly cancel rather
+   than accumulating as N copies of one.
+
+   **The declared band was ratio ∈ [0.5, 2.0], so the gate prints FAIL, and it is not rewritten.**
+
+   **But the band was mis-DESIGNED, not mis-set, and that distinction is the lesson.** It folded two
+   claims into one number. The sagitta derivation fixes the **exponent** — and the exponent matched,
+   1.068 against 1.000. **Nothing in that derivation fixes the constant**, and there was no basis for
+   predicting one to within a factor of four. A single ratio test cannot pass the half that was
+   derived and fail the half that was guessed; it can only report the guess.
+
+   > **Gate only the part of a prediction that has a derivation.** Where a scaling argument gives an
+   > exponent and no prefactor, the gate is on the exponent; the prefactor is *measured and
+   > reported*, not predicted. Recorded in `CLAUDE.md`.
+
+   **The decomposition closes, and it answers what CC was built for.** CC-flat′ puts the cost of
+   staleness at **zero on a plane** (2 nm falling to 6.4e-15 as `rtol` tightens, a fall of 3.9e7).
+   CC-curved puts it at **0.24 × d²/2RN, tracking 1/R**, on curved geometry. **So R2's degradation
+   under persistent association is the price of curvature, not a defect in the association** — which
+   is the bug-versus-cost question the decomposition existed to settle.
+
+   **Affordability, interim and moving:** fraction **0.2324** after 2,977 s, `min J` 0.406, having
+   earlier accepted 0.2852 before a cut-back — roughly **4× the reach** of the 0.0625 where it
+   stalled before the repair. Not quoted as final, and when it is, it must say what it was
+   exercising: an association **refused** at 0.4999 mm against a 0.5 mm jump limit, not a converged
+   one.
