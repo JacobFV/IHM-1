@@ -3334,3 +3334,36 @@ What has changed is that the parametrization no longer stops at the scaffold.
    construction." The wrong-sheet price I asked for is unmeasurable from a run that never left the
    start — reporting that, rather than a reassuring zero, is what makes the rest of the run readable.
 
+   **THE PRE-REGISTERED TEST COMES BACK ZERO. The starting configuration is sound, and the second
+   branch is the one we are in -- say it loudly.**
+
+   | configuration | non-positive elements | min J |
+   |---|---:|---:|
+   | the undeformed mesh | **0 of 54,704** | 1.000 |
+   | the bounds imposed at fraction 0, 1e-6 and 1e-4, initial association | **0, 0, 0** | 1.000, 1.000, 0.997 |
+   | the same after one association update | **0, 0, 0** | 0.999 |
+   | the clip alone, at fractions 1e-2 down to 1e-6 | **0 at every fraction** | -- |
+   | the clip plus the linear elastic response | **0 at every fraction** | -- |
+
+   So the seating drive does NOT begin from a broken state, and neither the clip nor the response
+   that replaced it inverts anything from the pristine configuration.
+
+   **AA's 42 inversions were my script's defect, and AA's numbers are withdrawn as evidence about
+   local search.** Called twice at IDENTICAL positions, the local association moves 141 of 3,123
+   nodes by more than 1 mm and up to 6.5 mm, then stabilises -- a one-time disagreement with the
+   global query rather than drift. The cause is the starting face: it is assigned by CENTROID
+   PROXIMITY, and on a bed whose faces run 1.6 mm median but 28.9 mm maximum the nearest centroid is
+   routinely not the face the association sits on, so the neighbourhood is grown from the wrong
+   place. That is the third appearance of the same two-tier hazard -- after the ray index and the
+   radius test -- and it means the step-size-invariant count of ~42 measured the script, not the
+   method.
+
+   Incidentally that disagreement IS the price metric gate AA was asked to report: 141 nodes, up to
+   6.5 mm. It is unusable as a measurement of local search until the starting face is taken from the
+   ray query that found it rather than inferred from a centroid.
+
+   **What remains open.** The earlier seating stalls under the GLOBAL association -- 13 and 2 inverted
+   elements, from states reached after accepted steps -- are not explained by this defect and are
+   still unaccounted for. What is now established is only that they do not originate in the initial
+   configuration.
+
