@@ -884,13 +884,21 @@ Each subject's OWN bone surface, carried through the same map, lands only 79-91%
 scaffold bone and **42-53% inside** it. The cartilage scores no worse than the bone it is glued to,
 and often better. Roughly half inside is what two coincident surfaces look like.
 
-**Why: the target is 265 faces with 18.5 mm median edges, and it is the odd one out.** Every other
-bone pair in this model is its opposite exactly mirrored -- l_tibia against r_tibia and l_patella
-against r_patella agree to **0.00 mm** on every vertex -- but `l_femur.vtp` is **908 faces** and
-`r_femur.vtp` is **265**, and mirrored they differ by a median of **7.58 mm** and up to 15.36 mm.
-The right femur is not this body's left femur reflected; it is a different, coarser surface. A 3 mm
-placement criterion sits far below an 18.5 mm facet, so on the right knee gate 3 measures the
-target's resolution rather than the registration.
+**Why: the target is 265 faces with 18.5 mm median edges, and it is the odd one out of the whole
+body.** `scripts/audit_scaffold_mirror_symmetry.py` mirrors every paired mesh the model references
+against its opposite: **36 of 37 agree to 0.000 mm on every vertex** -- both tibiae, both fibulae,
+both patellae, both feet, the talus, humerus, radius, ulna and all twenty hand bones. **One does
+not.** `l_femur.vtp` is 908 faces, `r_femur.vtp` is 265, and mirrored they differ by a median of
+**9.33 mm** and up to **56.39 mm**. The right femur is not this body's left femur reflected; it is a
+different, coarser surface standing in for one bone. A 3 mm placement criterion sits far below an
+18.5 mm facet, so on the right knee gate 3 measures the target's resolution rather than the
+registration.
+
+**Nothing already in this repository could have caught it.** The per-segment registration's own
+residuals read femur_l **3.88 mm** and femur_r **3.94** -- an ICP against the atlas fits each side
+about as well whatever surface is there, so a wrong right femur costs it nothing, and the exact
+mirrors give the control: tibia_l 5.28 against tibia_r 5.29. Mirror agreement is an invariant this
+body satisfies 36 times out of 37 and no gate here tested until now.
 
 That asymmetry reaches past this gate. The knee gaps recorded above -- 3.02 mm right against 4.57 mm
 left -- are measured on these same meshes, so part of that difference is the right femur's own
