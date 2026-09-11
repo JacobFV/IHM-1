@@ -984,6 +984,25 @@ the fit gained applies only to the next run, and the 2 h budget with it. It is l
 than restarted for logging, since restarting costs more than the missing lines are worth; its
 successor carries both.
 
+**A selection effect caught in the next instrument before it ran.**
+`normal_shooting.shoot_pairs` has `cap_m` defaulting to **20 mm** -- a shot that finds nothing
+inside 20 mm is dropped as `no_hit`. That default was set for the chest wall, whose separations
+are millimetres. On this line the per-segment RMS reaches 15 mm and correspondence displacements
+reach **95 mm**, so the default would have silently discarded exactly the long correspondences
+that carry the failing segments, and the survivors would have been the easy ones. The result would
+have looked like an improvement and would have been a filtered population -- the same shape as
+every row in this programme's ledger: a quantity computed correctly, compared against the wrong
+population.
+
+So three settings are declared in the artefact rather than defaulted, fixed here before the
+instrument is built: `cap_m` raised past the largest real displacement, `min_normal_agreement`
+set explicitly (it defaults to OFF and this line needs it ON), and the shot run **from the
+per-segment similarity's image to the scaffold surface, both in ground space** -- not from atlas
+space, where the two surfaces are not yet in correspondence at all. `shoot_pairs` returns its drop
+reasons (`no_hit`, `no_return`, `return_too_far`, `normal_disagreed`), and the kept fraction with
+its reason breakdown is reported beside every number this instrument produces. A correspondence
+result without its drop census is not readable.
+
 #### A known answer this line has never had, and what the chest wall found without it
 
 Every gate above compares a fit to another fit. Gate 1 asks whether the warped bone group sits no
