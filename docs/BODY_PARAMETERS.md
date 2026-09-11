@@ -953,6 +953,44 @@ done; the others have moved.
    muscular wall under it, the depth is not a coverage artefact and the registration itself is
    what puts this tissue inside the chest.
 
+   **Run on s1159 left. The coverage prediction holds; the depth prediction does not.** With the
+   muscular chest wall as the bed, 4,097 of 4,301 posterior nodes have muscle on their ray -- only
+   **204** do not, against 1,451 under pectoralis major alone. But the maximum penetration is
+   **41.8 mm**, against 45.5 mm before: essentially unchanged. By the rule fixed above, the depth
+   is **not a coverage artefact**, and the registration is putting this tissue inside the chest.
+
+   **What the max hid, and what my own reporting hid with it.** The distribution at the registered
+   pose, full muscular wall, 4,097 base nodes of which 3,123 penetrate:
+
+   | percentile | 50 | 75 | 90 | 99 | max |
+   |---|---:|---:|---:|---:|---:|
+   | penetration | 7.4 mm | 12.5 mm | 17.4 mm | 24.7 mm | 41.8 mm |
+
+   Deeper than 30 mm: **13 nodes (0.3%)**. Deeper than 40 mm: **one**. So the 45 mm that drove this
+   whole line of work was always a handful of nodes, and the bulk of the base sits at 7-17 mm --
+   the order of the ~10 mm chest-wall offset this file measures. Every "45 mm" statement here,
+   mine included, described one node as though it described the base.
+
+   **Step 1 with both faults fixed still fails the 25 mm rule**, and the escape is not fully cured.
+   The translation magnitude is now capped smoothly rather than boxed per component, and a node
+   that loses its bed is counted at its pre-placement penetration. The minimiser still wants
+   **73.1 mm** from the registered pose (32-80 mm across starts), and at that optimum the worst
+   penetration is WORSE (41.8 -> 54.6 mm) with 858 nodes having lost their bed. Counting a lost node
+   at its pre-placement value only charges escape up to what it already cost: a node whose
+   penetration would otherwise have grown still profits by leaving. s1159 left is reported
+   **unseated: registration failure**.
+
+   **Step 2 was tried anyway from the registered pose, as a labelled diagnostic**, since the
+   corrected bed leaves a median of only 7.4 mm. It still stalls: load fractions of ~0.002, minimum
+   J down to 0.739, cut back at every attempt to grow the step. The sliding condition is not
+   reachable for this breast by either route, so no gate table exists and the other seven were not
+   attempted.
+
+   One tool worth keeping: ray casting against the 125k-face muscular wall is spatially indexed in
+   two tiers (the bed's face radii run 1.6 mm median but 28.9 mm max, and one oversized triangle
+   would set the query radius for every ray), verified to reproduce brute force exactly and 21x
+   faster.
+
    **Seat it in two steps: place, then conform. Fixed 2026-09-10, before it runs.** 45 mm of
    overlap is not tissue deformation, it is placement -- the breast is another woman's tissue where
    a similarity registration put it, and a quasi-static solve pushing 45 mm of interpenetration out

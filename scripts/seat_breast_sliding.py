@@ -68,8 +68,16 @@ from ihm.assembly.febio_sliding import write_sliding_feb, split_base_faces      
 OUT = ROOT / "data/derived/female-breast-sliding-v1"
 REG = {"s0790": "female-torso-registered-v1", "s1067": "female-torso-registered-s1067-v1",
        "s1159": "female-torso-registered-s1159-v1", "s0970": "female-torso-registered-s0970-v1"}
-PECTORALIS = {"right": ["body-bp3d-FJ1447", "body-bp3d-FJ1464", "body-bp3d-FJ1446"],
-              "left": ["body-bp3d-FJ1447M", "body-bp3d-FJ1464M", "body-bp3d-FJ1446M"]}
+# THE MUSCULAR CHEST WALL (docs/BODY_PARAMETERS.md, corrected 2026-09-10): pectoralis major's three
+# parts, pectoralis minor, serratus anterior, the external oblique and rectus abdominis -- and still
+# NOT the ribs. Pectoralis major alone is not the bed under 13-29% of a breast; those nodes were
+# measured against the muscle's EDGE. Rectus abdominis has no BodyParts3D entity, so its Z-Anatomy
+# mesh is the only source for it (the duplicate-copy caution elsewhere does not apply: there is
+# nothing to duplicate).
+BED_MUSCLES = {"right": ["body-bp3d-FJ1447", "body-bp3d-FJ1464", "body-bp3d-FJ1446", "body-bp3d-FJ1456",
+                         "body-bp3d-FJ1459", "body-bp3d-FJ1452", "body-za-f8e80e0f249b354b"],
+               "left": ["body-bp3d-FJ1447M", "body-bp3d-FJ1464M", "body-bp3d-FJ1446M", "body-bp3d-FJ1456M",
+                        "body-bp3d-FJ1459M", "body-bp3d-FJ1452M", "body-za-a45e813cd3661ae2"]}
 FTETWILD = ROOT / "data/runtime/tolerant-mesher/build/FloatTetwild_bin"
 NU, E_PA, E_CHECK_PA = 0.49, 1000.0, 10000.0
 DECIMATE_FACES, DECIMATE_VOLUME_TOL, MESH_LR = 8000, 0.005, 0.08
@@ -88,7 +96,8 @@ RAY_REACH_M, GRAZING_COS, LOAD_STEPS, GAP_TOL_M = 0.060, 0.3, 8, 5e-5
 # and a finer step reads as noise (the search stalled after 2 iterations). Several starts are tried,
 # including pure anterior offsets -- lifting the breast off the chest is the obvious direction -- and
 # the best is kept.
-PLACEMENT_LIMIT_M, PLACEMENT_SAMPLE, PLACEMENT_TURN_LIMIT_RAD = 0.025, 1200, 0.262
+PLACEMENT_LIMIT_M, PLACEMENT_SAMPLE = 0.025, 1200
+PLACEMENT_CAP_M, PLACEMENT_TURN_CAP_RAD = 0.100, 0.524
 PLACEMENT_EPS_M, PLACEMENT_STARTS_MM = 5e-4, (0.0, 8.0, 16.0, 22.0)
 CAVEATS = ["one clinical subject per breast, as a segmentation model drew it",
            "'breast' is a single soft-tissue label: no gland, ducts or nipple",
@@ -123,17 +132,25 @@ def face_normals(V, F):
     return n / np.maximum(np.linalg.norm(n, axis=1, keepdims=True), 1e-30)
 
 
-def bed(side):
-    """The anterior-facing surface of this body's pectoralis major, and its rim vertices."""
+def bed(side, near=None, margin_m=0.08):
+    """The muscular chest wall on this side: whole muscle surfaces, NOT filtered to anterior-facing
+    faces. The filter existed because a closest-point association needs a single-valued patch; a ray
+    hits the superficial surface first by construction, and whole surfaces have no rim holes to
+    catch nodes. It also matters for the added muscles: serratus and the obliques face laterally, so
+    an anterior-only filter would discard most of the coverage this correction adds. `near` crops
+    the bed to that point cloud's bounding box plus margin_m, which is what makes ray casting
+    affordable."""
     ents = {e["id"]: e for e in json.loads((ROOT / "data/derived/canonical/anatomy.json").read_text())["entities"]}
     Vs, Fs, off = [], [], 0
-    for i in PECTORALIS[side]:
+    for i in BED_MUSCLES[side]:
         g = json.loads(gzip.decompress((ROOT / ents[i]["reference_geometry"]["path"]).read_bytes()))
         V = np.asarray(g["positions"], float).reshape(-1, 3); F = np.asarray(g["indices"], np.int64).reshape(-1, 3)
-        t = V[F]
-        if np.einsum("ij,ij->i", t[:, 0], np.cross(t[:, 1], t[:, 2])).sum() < 0: F = F[:, [0, 2, 1]]
         Vs.append(V); Fs.append(F + off); off += len(V)
-    V = np.vstack(Vs); F = np.vstack(Fs)[face_normals(np.vstack(Vs), np.vstack(Fs))[:, 2] > 0]
+    V = np.vstack(Vs); F = np.vstack(Fs)
+    if near is not None:
+        lo = np.asarray(near).min(0) - margin_m; hi = np.asarray(near).max(0) + margin_m
+        keep = ((V[F] >= lo).all(2) & (V[F] <= hi).all(2)).any(1)
+        F = F[keep]
     used = np.unique(F); remap = -np.ones(len(V), np.int64); remap[used] = np.arange(len(used))
     V, F = V[used], remap[F]
     e = np.sort(np.vstack([F[:, [0, 1]], F[:, [1, 2]], F[:, [2, 0]]]), 1)
@@ -162,6 +179,48 @@ def ray_hits(P, D, V, F, chunk=192):
     return dist, face
 
 
+def build_bed_index(V, F):
+    """Two tiers, because one oversized triangle would set the query radius for every ray: the bed's
+    face radii run 1.6 mm median but 28.9 mm max, and querying with the max pulls 3,079 candidates
+    per ray instead of 374. Small faces go in a KD-tree; the 1% oversized ones are tested in bulk."""
+    from scipy.spatial import cKDTree
+    cent = V[F].mean(1); rad = np.linalg.norm(V[F] - cent[:, None, :], axis=2).max(1)
+    cut = float(np.percentile(rad, 99))
+    small = np.flatnonzero(rad <= cut); large = np.flatnonzero(rad > cut)
+    return dict(tree=cKDTree(cent[small]), small=small, large=large, radius=cut)
+
+
+def ray_hits_indexed(P, D, V, F, index, reach_m):
+    """Same answer as ray_hits, but each ray is tested only against faces near its own segment: the
+    bed of the whole muscular chest wall is 125k faces, and testing all of them for every ray costs
+    2.45 s per 200 nodes. Any face the segment can hit has its centroid within reach/2 + the face
+    radius of the segment's midpoint."""
+    small, large, tree = index["small"], index["large"], index["tree"]
+    v0 = V[F[:, 0]]; e1 = V[F[:, 1]] - v0; e2 = V[F[:, 2]] - v0
+    dist = np.full(len(P), np.inf); face = np.full(len(P), -1, np.int64)
+    if len(large):                                   # the oversized few, against every ray at once
+        tl, fl = ray_hits(P, D, V, F[large])
+        take = (tl <= reach_m) & (tl < dist)
+        dist[take] = tl[take]; face[take] = large[fl[take]]
+    mid = P + D * (reach_m / 2)
+    for i, cand in enumerate(tree.query_ball_point(mid, r=reach_m / 2 + index["radius"], workers=-1)):
+        if not cand: continue
+        c = small[np.asarray(cand)]
+        h = np.cross(D[i], e2[c]); a = np.einsum('fj,fj->f', e1[c], h)
+        usable = np.abs(a) > 1e-16
+        inv = 1.0 / np.where(usable, a, 1.0)
+        sv = P[i] - v0[c]
+        u = inv * np.einsum('fj,fj->f', sv, h)
+        q = np.cross(sv, e1[c])
+        v = inv * (q @ D[i])
+        t = inv * np.einsum('fj,fj->f', e2[c], q)
+        ok = usable & (u >= -1e-9) & (v >= -1e-9) & (u + v <= 1 + 1e-9) & (t > 1e-9) & (t <= reach_m)
+        if not ok.any(): continue
+        t = np.where(ok, t, np.inf); j = int(np.argmin(t))
+        if t[j] < dist[i]: dist[i] = t[j]; face[i] = c[j]
+    return dist, face
+
+
 def bed_rays(V, F, directions, reach_m=0.060):
     """association(points) -> (c, n): where each node's fixed ray meets the bed, and the bed's
     anterior-facing normal there. The ray is cast both ways and the nearer hit wins, so a node
@@ -179,11 +238,11 @@ def bed_rays(V, F, directions, reach_m=0.060):
     fn /= np.maximum(np.linalg.norm(fn, axis=1, keepdims=True), 1e-30)
     D = np.asarray(directions, float)
     D = D / np.maximum(np.linalg.norm(D, axis=1, keepdims=True), 1e-30)
+    index = build_bed_index(V, F)
     def association(P):
         P = np.ascontiguousarray(np.asarray(P, float))
-        t_back, f_back = ray_hits(P, D, V, F)          # along the outward normal: bed behind
-        t_front, f_front = ray_hits(P, -D, V, F)       # against it: bed in front
-        t_back[t_back > reach_m] = np.inf; t_front[t_front > reach_m] = np.inf
+        t_back, f_back = ray_hits_indexed(P, D, V, F, index, reach_m)     # bed behind
+        t_front, f_front = ray_hits_indexed(P, -D, V, F, index, reach_m)  # bed in front
         front = t_front < t_back
         t = np.where(front, t_front, t_back); f = np.where(front, f_front, f_back)
         hit = np.isfinite(t)
@@ -203,7 +262,8 @@ def bed_rays(V, F, directions, reach_m=0.060):
         return c, n
     def has_bed(P):
         P = np.ascontiguousarray(np.asarray(P, float))
-        return (ray_hits(P, D, V, F)[0] <= reach_m) | (ray_hits(P, -D, V, F)[0] <= reach_m)
+        return (ray_hits_indexed(P, D, V, F, index, reach_m)[0] <= reach_m) | \
+               (ray_hits_indexed(P, -D, V, F, index, reach_m)[0] <= reach_m)
     return association, has_bed
 
 
@@ -234,7 +294,7 @@ def stage_prepare(sid, side, d):
     v = tet_volumes(X, T); T[v < 0] = T[v < 0][:, [0, 2, 1, 3]]
     B = boundary_faces(T); nb = face_normals(X, B)
     posterior = np.unique(B[nb[:, 2] < 0]); anterior = np.unique(B[nb[:, 2] > 0])
-    bV, bF, rim = bed(side)
+    bV, bF, rim = bed(side, near=X)
     vn = np.zeros_like(X)
     for k in range(3): np.add.at(vn, B[:, k], np.cross(X[B[:, 1]] - X[B[:, 0]], X[B[:, 2]] - X[B[:, 0]]))
     dirs = vn[posterior] / np.maximum(np.linalg.norm(vn[posterior], axis=1, keepdims=True), 1e-30)
@@ -270,41 +330,56 @@ def stage_place(sid, side, d):
     dirs0 = vn[posterior] / np.maximum(np.linalg.norm(vn[posterior], axis=1, keepdims=True), 1e-30)
     centroid = X0.mean(0)
 
-    def place(params):
-        R = Rotation.from_rotvec(params[3:]).as_matrix()
-        return (X0 - centroid) @ R.T + centroid + params[:3], dirs0 @ R.T
+    # Translation and rotation MAGNITUDES are what the rules are about, so the six free parameters
+    # are squashed onto magnitude caps rather than boxed per component: |t| < PLACEMENT_CAP_M and
+    # |rotvec| < PLACEMENT_TURN_CAP_RAD, smoothly, so L-BFGS stays unconstrained. Boxing components
+    # let |t| reach 43 mm under a 25 mm rule; the 25 mm rule then judges the result.
+    squash = lambda v, cap: cap * v / np.sqrt(1.0 + float(v @ v))
 
-    def penetration(params, idx):
-        Y, D = place(params)
+    def place(params):
+        t = squash(params[:3], PLACEMENT_CAP_M); rv = squash(params[3:], PLACEMENT_TURN_CAP_RAD)
+        R = Rotation.from_rotvec(rv).as_matrix()
+        return (X0 - centroid) @ R.T + centroid + t, dirs0 @ R.T, t, rv
+
+    def raw_penetration(params, idx):
+        Y, D, _, _ = place(params)
         association, _ = bed_rays(bV, bF, D[idx], RAY_REACH_M)
         c, n = association(Y[posterior[idx]])
         gap = np.einsum('ij,ij->i', n, Y[posterior[idx]] - c)
-        return np.where(np.isfinite(gap), np.maximum(0.0, -gap), 0.0)
+        return np.where(np.isfinite(gap), np.maximum(0.0, -gap), np.nan)
+
+    pen0 = np.nan_to_num(raw_penetration(np.zeros(6), np.arange(len(posterior))))
+
+    def penetration(params, idx):
+        """A node that LOSES its bed is counted at its PRE-placement penetration, so carrying tissue
+        off the muscle cannot pay -- the degenerate minimum of a penetration-only objective, which
+        flew the breast 999.7 mm unbounded and to the corner of the box bounded."""
+        pen = raw_penetration(params, idx)
+        return np.where(np.isfinite(pen), pen, pen0[idx])
 
     sample = np.random.default_rng(0).choice(len(posterior), min(PLACEMENT_SAMPLE, len(posterior)), replace=False)
-    before = penetration(np.zeros(6), np.arange(len(posterior)))
+    before = pen0.copy()
     t0 = time.time()
-    bounds = [(-PLACEMENT_LIMIT_M, PLACEMENT_LIMIT_M)] * 3 + [(-PLACEMENT_TURN_LIMIT_RAD, PLACEMENT_TURN_LIMIT_RAD)] * 3
     objective = lambda q: float((penetration(q, sample) ** 2).sum())
     anterior = -dirs0.mean(0); anterior /= max(np.linalg.norm(anterior), 1e-30)
     tries = []
     for mm in PLACEMENT_STARTS_MM:
-        q0 = np.zeros(6); q0[:3] = anterior * (mm * 1e-3)
-        q0[:3] = np.clip(q0[:3], -PLACEMENT_LIMIT_M, PLACEMENT_LIMIT_M)
-        ri = minimize(objective, q0, method="L-BFGS-B", bounds=bounds,
+        q0 = np.zeros(6); q0[:3] = anterior * (mm * 1e-3) / PLACEMENT_CAP_M   # in squashed coordinates
+        ri = minimize(objective, q0, method="L-BFGS-B",
                       options={"eps": PLACEMENT_EPS_M, "maxiter": 60, "ftol": 1e-14, "gtol": 1e-14})
         tries.append(ri)
         print(f"    start {mm:.0f} mm anterior: objective {objective(q0):.3e} -> {ri.fun:.3e}, "
-              f"|t| {np.linalg.norm(ri.x[:3])*1e3:.2f} mm, {ri.nit} iterations", flush=True)
+              f"|t| {np.linalg.norm(place(ri.x)[2])*1e3:.2f} mm, {ri.nit} iterations", flush=True)
     r = min(tries, key=lambda ri: ri.fun)
     after = penetration(r.x, np.arange(len(posterior)))
 
     def with_bed(params):
-        Y, D = place(params); _, has = bed_rays(bV, bF, D, RAY_REACH_M); return int(has(Y[posterior]).sum())
+        Y, D, _, _ = place(params); _, has = bed_rays(bV, bF, D, RAY_REACH_M); return int(has(Y[posterior]).sum())
     bed_before, bed_after = with_bed(np.zeros(6)), with_bed(r.x)
-    shift = float(np.linalg.norm(r.x[:3])); turn = float(np.degrees(np.linalg.norm(r.x[3:])))
-    rec = dict(translation_mm=(r.x[:3] * 1e3).tolist(), translation_magnitude_mm=shift * 1e3,
-               rotation_deg=turn, rotation_axis=(r.x[3:] / max(np.linalg.norm(r.x[3:]), 1e-30)).tolist(),
+    _, _, t_opt, rv_opt = place(r.x)
+    shift = float(np.linalg.norm(t_opt)); turn = float(np.degrees(np.linalg.norm(rv_opt)))
+    rec = dict(translation_mm=(t_opt * 1e3).tolist(), translation_magnitude_mm=shift * 1e3,
+               rotation_deg=turn, rotation_axis=(rv_opt / max(np.linalg.norm(rv_opt), 1e-30)).tolist(),
                penetration_before_mm=dict(max=float(before.max() * 1e3), median_over_penetrating=float(np.median(before[before > 0]) * 1e3) if (before > 0).any() else 0.0,
                                           nodes=int((before > 0).sum())),
                penetration_after_mm=dict(max=float(after.max() * 1e3), median_over_penetrating=float(np.median(after[after > 0]) * 1e3) if (after > 0).any() else 0.0,
@@ -313,12 +388,10 @@ def stage_place(sid, side, d):
                iterations=int(r.nit), starts_mm=list(PLACEMENT_STARTS_MM),
                start_objectives=[float(ri.fun) for ri in tries], wall_seconds=time.time() - t0,
                nodes_with_bed_on_their_ray=dict(before=bed_before, after=bed_after),
-               at_translation_bound=bool(np.max(np.abs(r.x[:3])) >= PLACEMENT_LIMIT_M - 1e-9),
-               at_rotation_bound=bool(np.max(np.abs(r.x[3:])) >= PLACEMENT_TURN_LIMIT_RAD - 1e-9),
-               registration_failure=shift > PLACEMENT_LIMIT_M or bool(np.max(np.abs(r.x[:3])) >= PLACEMENT_LIMIT_M - 1e-9),
+               registration_failure=bool(shift > PLACEMENT_LIMIT_M),
                limit_mm=PLACEMENT_LIMIT_M * 1e3)
     (d / "place.json").write_text(json.dumps(rec, indent=2) + "\n")
-    print(f"  rigid placement: translation {shift*1e3:.2f} mm {np.round(r.x[:3]*1e3,2).tolist()}, rotation {turn:.2f} deg, "
+    print(f"  rigid placement: translation {shift*1e3:.2f} mm {np.round(t_opt*1e3,2).tolist()}, rotation {turn:.2f} deg, "
           f"{r.nit} iterations, {time.time()-t0:.0f} s")
     print(f"  penetration: max {before.max()*1e3:.1f} -> {after.max()*1e3:.1f} mm; nodes penetrating {int((before>0).sum())} -> {int((after>0).sum())}; "
           f"nodes with muscle on their ray {bed_before} -> {bed_after}")
@@ -326,7 +399,7 @@ def stage_place(sid, side, d):
         raise SystemExit(f"REGISTRATION FAILURE for {sid} {side}: placement wants {shift*1e3:.1f} mm "
                          f"(bound {PLACEMENT_LIMIT_M*1e3:.0f} mm); reported unseated")
     # re-classify in the placed pose: step 2 starts here
-    X, D = place(r.x)
+    X, D, t_best, rv_best = place(r.x)
     association, has_bed = bed_rays(bV, bF, D, RAY_REACH_M)
     c, n = association(X[posterior])
     facing = np.abs(np.einsum('ij,ij->i', np.nan_to_num(n), D)) >= GRAZING_COS
