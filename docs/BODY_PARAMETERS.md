@@ -3978,3 +3978,39 @@ What has changed is that the parametrization no longer stops at the scaffold.
    of this particular loop, not instrumentation — if the loop had had a second silent exit, the
    reconstruction would have been impossible and the verdicts unrecoverable. The lesson is the
    printed flag, not the successful reconstruction.
+
+   ### The affordability number with the convergence flag on: 0.1094, not 0.3115
+
+   The re-run prints `UNCONVERGED` on the step line, and it changes the answer:
+
+   | accepted at fraction | Newton | held gap to the aim | `min J` |
+   |---:|---|---:|---:|
+   | 0.0625 | 30 | 14.80 mm | 0.800 |
+   | **0.1094** | **77** | 14.78 mm | 0.667 |
+   | 0.1797 | **300 UNCONVERGED** | 13.72 mm | 0.509 |
+   | 0.2324 | **300 UNCONVERGED** | 14.43 mm | 0.406 |
+   | 0.3115 | **300 UNCONVERGED** | 13.22 mm | 0.397 |
+
+   **Three of the five accepted steps exhausted the iteration budget, and every step past 0.1094 is
+   one of them.** So the honest reach is **fraction 0.1094**, the last converged step — not the
+   0.3115 that was already withdrawn, and not the 0.2852 quoted as interim before that. Against the
+   0.0625 where the drive stalled before the repair, the repair is worth **about 1.75×**, not 4×
+   and not 5×.
+
+   **`min J` falls monotonically across the unconverged steps** — 0.667 → 0.509 → 0.406 → 0.397 —
+   which is what accepting an unfinished solve looks like: each one starts further from a converged
+   state than the last.
+
+   **A second thing in the same table that nobody asked about: the held gap to the aim is not
+   closing.** 14.80 → 14.78 → 13.72 → 14.43 → 13.22 mm while the load fraction nearly quintuples.
+   **Whether that is a lag behind a moving aim or a failure to approach a fixed one decides whether
+   the fraction measures progress at all**, and it is not answerable from the log as written. If the
+   aim advances with the fraction then a roughly constant gap is a constant lag; if the aim is the
+   final target then the drive is barely approaching it. Asked of the agent rather than assumed,
+   because a reach number that does not correspond to getting closer is another quantity that does
+   not measure what its name says.
+
+   **What stands unchanged:** the repair itself (bounds at a zero step exactly 0.000e+00 over 0
+   nodes), R′ completing where pre-repair stalls with **zero** steps at the ceiling on either side,
+   and CC's decomposition. Those were audited for exactly this and came back clean. Only the reach
+   number moves.
