@@ -2066,6 +2066,50 @@ triangles, across all frames.
   question I cannot answer by reasoning, and reasoning past the evidence is what produced five
   wrong readings on this line today.
 
+### The commissioned measurement cannot be made: there is no limit-respecting crawl in this repo
+
+Audited against the model's own `declared_ranges`, **67 candidate trajectory files. Zero respect
+all declared ranges.**
+
+| trajectory | worst excursion | frames |
+|---|---|---:|
+| crawl-tissue-compare/v1 | 1.7° (pro_sup_l) | 2 |
+| tissue-mechanics prone drops | 2.1–7.7° | 201 each |
+| crawl-tissue-compare/v2 | **11.4°** (ankle_angle_r) | 1600 |
+| **crawl-best** | **11.5°** (ankle_angle_r) | 1600 |
+
+The only two crawls both plantarflex the ankle to **−1.073 rad against a declared ±0.873** — 61.5°
+where 50° is allowed — and **crawl-best is outside the declared range on 12 of its 22 coordinates.**
+That is not the withdrawn −2.524 rad run of `docs/LOG.md` row 27; it is the *current* best, and it is
+still not admissible.
+
+**So neither of my branches fires.** Option (a) is neither confirmed nor refuted for the crawl. It
+rests on the standing-pose geometry alone, where the folds sit 27.7–30.6 mm clear of the plantar
+band. The agent declined to substitute an inadmissible trajectory for the one I asked for, which is
+the right call — and the absence is the more consequential answer.
+
+**`docs/PRONE_LOCOMOTION.md` already says the right thing** — *"not inside the declared ranges, and
+no result here should say it is"* — so no programme-level claim is overturned. What this adds is the
+**census**: it is not one flagged run but **every stored trajectory**, and the shortfall on the
+current best is 12 coordinates rather than one.
+
+**A naming hazard, and it would have caught me.** Several files are named
+`trajectory-prone-admissible.json` and sit **5.2–7.7° outside the declared ranges**. The word refers
+to *ligament* admissibility, not joint-limit admissibility. Reaching for the obviously-named file
+would have produced a confident wrong answer, and it is the same failure as a log sentence asserting
+more than it measured — except a filename is read far more often than a log line and is quoted
+without being opened.
+
+**Authorised as explicitly-labelled supplementary evidence, not as the commissioned measurement:**
+clearance of the 73 folds against `crawl-best`. If they stay clear on a trajectory that
+over-plantarflexes by 11.5°, the standing-pose conclusion is robust to the pose caveat; if they
+touch, that is informative too. It is recorded as *supplementary*, against an inadmissible
+trajectory, and it does not close the branch.
+
+**The consequential finding is not about the toes.** The programme's stated target behaviour is a
+body crawling, and **it has no trajectory that does so within the joint ranges the body itself
+declares.** That is now measured across every stored trajectory rather than noted on one.
+
 **Why this was worth having from a retired control.** I retired it for firing a threshold at the
 wrong separation, and it then answered a question I had not asked: whether this line's headline
 quality metric measures accuracy at all. It does not. A control kept running after its gate was
