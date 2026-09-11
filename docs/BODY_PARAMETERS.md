@@ -3894,3 +3894,45 @@ What has changed is that the parametrization no longer stops at the scaffold.
    **This is the same shape as the jump limit printing `0.0000 mm` for "refused".** An acceptance
    criterion that omits the solve's own convergence reports success for a step that did not finish —
    a green result from a check that never looked at the thing it is named for.
+
+   **THE ACCEPTED-BUT-UNCONVERGED AUDIT: EVERY RECORDED VERDICT SURVIVES, AND THE PROXY IS A PROOF.**
+
+   `settled` checks the association's motion and the unilateral penetration and NEVER looks at the
+   solve's own convergence, so a step can be accepted while the Newton loop merely ran out of budget.
+   Every verdict on this line that rests on accepted steps inherits the question, so every one was
+   re-checked rather than re-read.
+
+   **First, the iteration count was established as a PROOF and not a proxy.** The Newton loop has
+   exactly one `break` (`res <= tol`, convergence), one nested `break` that leaves only the Armijo
+   line search, and one `raise` (line-search failure, which propagates and triggers a cut-back rather
+   than returning a result). There is no other way out. **Therefore `iterations < max_newton` implies
+   the solve converged**, and a step at the 300 ceiling is the only kind that can be accepted
+   unconverged.
+
+   | verdict | solves | max Newton | at the 300 ceiling |
+   |---|---:|---:|---:|
+   | T-none | 8 | 1 | **0** |
+   | W | 8 | 1 | **0** |
+   | X | 8 | 1 | **0** |
+   | V on the plane | 8 | 1 | **0** |
+   | **R2 / R-prime, repaired, completes to 1.0** | 8 | **148** | **0** |
+   | pre-repair R2, the stall at 0.6250 | 5 | 142 | **0** |
+   | gate AA | 1 | 30 | **0** |
+   | gate BB-prime | 7 | 30 | **0** |
+
+   **Every recorded verdict stands as recorded. None rests on an accepted-but-unconverged step.**
+   R-prime completing to 1.0 where the pre-repair code stalls is clean on BOTH sides -- the stall is
+   a real stall and the completion is a real completion -- so the headline evidence that the repair
+   is good is undamaged. The prediction that R-prime would be clean holds, though not for the reason
+   given: its steps are not easy, running to 148 iterations. Only the anatomical seating drive
+   reached the ceiling, which is the half of the prediction that was right.
+
+   **Fraction 0.3115 is withdrawn from the record.** The honest statement is that the repair took the
+   drive past the 0.0625 where it stalled, and it was still advancing when the clock ran out.
+
+   **A PAIR WORTH NAMING TOGETHER.** `0.0000 mm` printed for REFUSED, and `accepted` printed for RAN
+   OUT OF ITERATIONS. Both are green results from a check that never looked at the thing it is named
+   for. The first voided a comparison; the second could have voided a verdict and did not. The step
+   line now prints `UNCONVERGED`, and gate CC now reports its maximum Newton count and its count of
+   unconverged accepted steps, because a gate that cannot report this cannot be audited later.
+

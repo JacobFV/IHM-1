@@ -323,7 +323,7 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
             # where the acceptance test below actually reads it, the two coincide.
             held_err = float(np.abs(gap[held] - (gap0[held] + aim * step)).max()) if held.any() else 0.0
             pen = float(max(0.0, -gap[~held].min())) if (~held).any() else 0.0
-            if log: log(f"  fraction {fraction:.4f} pass {outer}: Newton {r['iterations']}, held gap to the aim {held_err*1e3:.4f} mm, "
+            if log: log(f"  fraction {fraction:.4f} pass {outer}: Newton {r['iterations']}{'' if r['converged'] else ' UNCONVERGED'}, held gap to the aim {held_err*1e3:.4f} mm, "
                         f"unilateral penetration {pen*1e3:.4f} mm, min J {r['minimum_jacobian']:.3f}, "
                         + (f"association moved {moved*1e3:.4f} mm" if association != 'adaptive'
                            else "association held for the step (adaptive updates after it)"), flush=True)

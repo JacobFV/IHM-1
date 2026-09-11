@@ -127,7 +127,12 @@ def run(bed, label, R, frozen=True):
     err = np.linalg.norm(u - d, axis=1)
     print(f"  {label}: min J {J.min():.6f}, inversions {int((J <= 0).sum())}, "
           f"max |u - d| {1000*err.max():.6f} mm, median {1000*np.median(err):.6f} mm, "
-          f"passes/step {min(st['passes'] for st in r['steps'])}-{max(st['passes'] for st in r['steps'])}  "
+          f"passes/step {min(st['passes'] for st in r['steps'])}-{max(st['passes'] for st in r['steps'])}, "
+          # `settled` never looks at the solve's own convergence, so a step can be ACCEPTED while
+          # unconverged. The only exits from the Newton loop are res <= tol and an exhausted
+          # budget, so newton_last < max tells you which -- but only if it is reported.
+          f"max Newton {max(st['newton_last'] for st in r['steps'])}, "
+          f"unconverged steps {sum(0 if st['converged'] else 1 for st in r['steps'])}  "
           f"[{time.time()-t0:.0f}s]", flush=True)
     passes = [st["passes"] for st in r["steps"]]
     return dict(label=label, R=R, minJ=float(J.min()), inv=int((J <= 0).sum()),
