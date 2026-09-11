@@ -1914,6 +1914,60 @@ on the bone frame, which is the continuous-skin problem this file has named from
 (c) exclude the toes from the registered set and say so. **None of those is a warp-family choice**,
 which is the useful consequence.
 
+### Split verdict: the compression half is REFUTED, and I had the map direction backwards
+
+**Predicted area ~0.68 and length ~0.83. The foot EXPANDS:** calcn ×1.286 / ×1.292 total area, toes
+×1.047 / ×1.065, talus ×1.17 / ×1.20. No segment shows anything near the predicted length ratio.
+
+**The error is not the magnitude, it is the direction, and it is mine.** I wrote "a warp mapping
+scaffold to specimen shortens the forefoot". This warp maps the specimen's atlas onto **the
+scaffold's larger foot** — the other way round. The 1.21 scale is the scaffold relative to the
+specimen; I attached it to a mapping that runs the opposite way without checking which direction the
+warp goes. **Fifth misreading today, and the first about direction rather than magnitude.**
+
+**Confirmed, and unanimously: folds sit exactly where local compression is greatest.** All **73 of
+73** folded triangles are locally compressed — median area ratio **0.238** against **0.948** for
+every other triangle. Not one fold occurs in expanding material. So the toes are not starved of
+frame overall; they are **locally crushed inside a segment that is expanding**, with 65% of toes_l
+triangles compressing locally while the segment's total area rises 4.7%.
+
+**The hands are the internal control, and they kill the material-excess story outright.**
+
+| | total area | triangles locally compressed | median ratio | 10th pct | **folds** |
+|---|---:|---:|---:|---:|---:|
+| hands | **0.801 / 0.814** | **97–99%** | 0.74–0.77 | 0.60 | **0** |
+| toes | 1.047 / 1.065 | 65% | — | **0.19–0.28** | **73** |
+
+**The hands compress far more than the toes and fold not at all.** Uniform compression does not fold
+skin; the **tail** does. That is a genuine control rather than a comparison — same warp, same
+carrier, same gate, opposite outcome — and it is the kind of pair that has caught every error on
+this line today.
+
+**The mechanism is a rotation conflict, not a scale conflict.** The toes' **third principal extent
+contracts to 0.847 / 0.828** while the first two *expand* (0.99–1.01 and 1.07–1.08): the skin is
+squashed in one direction and stretched in the others, which is shear, not compression. That matches
+the **17° swing** between the toes' and calcn's per-segment maps across the MTP that this file
+recorded long before any of today's work.
+
+**My consequence survives, for a different reason than I gave.** The warp is still not the
+instrument to fix this — but because **rigidly-carried skin cannot absorb a rotation disagreement
+across a joint**, however the warp is regularised, not because of material excess. Options (a), (b)
+and (c) stand, and **(b) is now the one the evidence points at specifically**: the failure is a shear
+the rigid carrier cannot represent, which is precisely the continuous-skin problem.
+
+**The discriminator, pre-registered, with the circularity removed.** Distance from each folded
+triangle to the toes/calcn partition boundary. A bare "folds cluster at the MTP seam" would be
+circular if the seam is simply where compression is greatest, so the test **conditions on
+compression**: compare folded triangles against non-folded triangles **matched on local area ratio**.
+
+* **Folded triangles closer to the seam than equally-compressed unfolded ones** → seam proximity
+  carries information beyond compression, and the rotation-conflict account is confirmed directly
+  rather than inferred.
+* **No difference once matched** → compression alone explains the folds, the seam is incidental, and
+  the rotation reading is dropped.
+* **No prediction offered.** I have just had the direction of a mapping wrong, and the agent's
+  measurement is what caught it.
+
 **Why this was worth having from a retired control.** I retired it for firing a threshold at the
 wrong separation, and it then answered a question I had not asked: whether this line's headline
 quality metric measures accuracy at all. It does not. A control kept running after its gate was
