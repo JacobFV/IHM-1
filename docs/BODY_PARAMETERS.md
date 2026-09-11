@@ -2410,3 +2410,48 @@ What has changed is that the parametrization no longer stops at the scaffold.
    J > 0.2 floor then blocks every further step. That is the fifth suspect this line has isolated by
    measurement, and the first that lies inside the solver rather than in the data.
 
+   **My fallback is withdrawn, not merely unsupported.** I had held in reserve the reading that this
+   line fails because a male chest cannot host a female breast -- the same reading that would say the
+   female work needs a female body before it can proceed. The smoothing result kills it: the field
+   that could not be applied loses **0.3%** of its magnitude on becoming appliable, so the geometry
+   the registration asked for was very nearly the geometry it gets. A host that was reshaping its
+   guest would not survive that test. Anything quoting the male-chest explanation for this line
+   should stop.
+
+   **Pre-registered before the solver is touched, because the fix and the diagnosis are the same
+   people's work.** Two stepping changes are proposed -- remeshing the base layer, and relaxing the
+   interior between increments instead of clipping constrained nodes first. Both are plausible and
+   neither is evidence. The question they assume the answer to is whether the solver can complete a
+   motion that is KNOWN to be completable, and that has a known answer available before any fix:
+
+   * **Control R, the rigid control.** Drive the same 3,123 held nodes through the same bed, same
+     solver, same J > 0.2 floor, with a **rigid translation** of the whole breast base equal to the
+     smoothed field's median displacement. A rigid motion preserves every element's Jacobian
+     **exactly**, so no element can invert under it for any reason of physics or mesh quality. It
+     breaks the symmetry the sphere could not: it separates "this configuration is infeasible" from
+     "the stepping is wrong", which the current failure cannot distinguish.
+   * **Gate R, fixed now:** Control R completes to fraction **1.0 with zero inversions**.
+   * **If R passes:** the solver handles feasible motions through this bed, the smoothed field is
+     genuinely infeasible for this mesh, and a remesh is attacking the right thing. The 13 elements
+     are then a property of the mesh under that specific field and are reported per element.
+   * **If R fails:** the fault is inside the stepping and NOT in the field, the mesh, or the breast,
+     and every one of this line's five suspects was diagnosed by a solver that cannot complete a
+     translation. That outcome invalidates more than it fixes, so it is the one to want.
+   * **Predicted: R passes.** The 13 elements sit at reference quality 0.478 against a mesh median of
+     0.487, which is ordinary, and ordinary elements do not invert under a rigid motion. The
+     prediction is recorded so that a pass is not read as confirmation of anything beyond the gate.
+
+   No remesh and no relaxation change is made until R has a number. A stepping fix tried first would
+   be judged by whether the seat completes, and a seat that completes is exactly what everyone
+   involved wants to see -- which is the condition under which this programme has been wrong 30
+   times.
+
+   **One honest weakness in the bandwidth rule, recorded and NOT acted on.** The worst gradient is
+   not monotonic in bandwidth (0.56 at 12 mm, 0.74 at 15, 0.39 at 20), so "the first bandwidth at the
+   bar" depends on the sweep's spacing: a finer sweep between 12 and 20 mm could return a smaller
+   bandwidth and a different field. The rule was written assuming monotonicity and that assumption is
+   false. It is left as written because re-running the sweep after seeing the result would be
+   choosing a bandwidth with the answer in view, and because at 0.3% removed the choice cannot matter
+   to any conclusion here. If a later result turns on the bandwidth, this paragraph is the reason to
+   re-derive it properly first.
+
