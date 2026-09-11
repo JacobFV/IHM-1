@@ -4056,3 +4056,41 @@ What has changed is that the parametrization no longer stops at the scaffold.
    replacement numbers and the commits. A stale log with a confident conclusion in it is what this
    line has been bitten by four times.
 
+
+   ### `aim` is the final target, and the distance to it went BACKWARDS
+
+   `held_err = |gap[held] − (gap0[held] + aim*step)|` with `aim` the **phase target**, 1.0 for the
+   forward phase. So the logged "held gap to the aim" is the distance to **full seating**, not to a
+   moving mid-drive waypoint. The fraction measures **load applied**, not distance closed.
+
+   | fraction | 0 (derived) | 0.0625 | **0.1094** | 0.1797 | 0.2324 | 0.3115 |
+   |---|---:|---:|---:|---:|---:|---:|
+   | distance to full seating, **max** | **14.18 mm** | 14.80 | **14.78** | 13.72 | 14.43 | 13.22 |
+   | Newton | — | 30 | 77 | 300 **U** | 300 **U** | 300 **U** |
+
+   **At the last converged step the worst held node is 14.78 mm from full seating, against 14.18 mm
+   before the drive started.** The load fraction quintupled and, on this measure, the distance closed
+   is **negative**.
+
+   **The scope is not established and must not be overstated.** The step line reported only the
+   maximum, so whether one node is stuck or the whole sheet is cannot be told from it — a third
+   instance on this line of a summary that cannot answer the question its name implies. The median is
+   now reported alongside the max and the drive is re-running; **from here the fraction is quoted
+   only with both.**
+
+   **What this does to the framing.** "Affordability" asked how far the drive could get. The prior
+   question — whether it was getting anywhere — had not been asked, and on the only measure of it
+   available the answer so far is no. The reach of **fraction 0.1094**, about **1.75×** the 0.0625
+   stall, stands as a statement about *load carried*, and carries no implication about seating.
+
+   **What still stands:** the repair (bounds at a zero step exactly 0.000e+00 over 0 nodes), R′
+   completing where pre-repair stalls with zero ceiling steps either side, CC's decomposition, and
+   the three stale `gate_aa*.log` files now carrying SUPERSEDED headers naming the seeding defect.
+   The anatomical runs, whenever quoted, were exercising an association **refused** at 0.4999–0.5000
+   mm against a 0.5 mm jump limit.
+
+   **The lesson the agent drew against itself is the transferable one.** The convergence audit
+   checked *verdicts against the runs that produced them*; it did not check *whether the headline
+   metric meant what its name said*. **Those are two different audits**, and passing the first says
+   nothing about the second — which is how a number that had gone backwards survived a clean audit
+   and three separate quotations.
