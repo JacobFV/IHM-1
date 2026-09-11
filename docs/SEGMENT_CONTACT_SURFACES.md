@@ -1181,6 +1181,50 @@ agreement filter, a different instrument from nearest-point TPS, and this contro
 about it. And the factor is not a constant to divide by -- it moves 3.4x to 7.7x across the two
 scales measured, so it is a warning that the quantity is wrong, not a conversion.
 
+### At the operating point the margin IS inside the bias, and my retraction was made out of range
+
+The separation control's second amplitude lands at a median separation of **1.05 mm**
+(0.35-5.07 across segments), squarely inside the pipeline's measured 0.78-6.88 mm range:
+
+| achieved separation | residual displacement | tangential fraction | **normal error (the correspondence's own)** | p90 | max |
+|---:|---:|---:|---:|---:|---:|
+| 0.39 mm | 1.17 mm | 0.9255 | **0.494 mm** | 0.966 | 32.5 |
+| **1.05 mm** | 3.53 mm | 0.9009 | **1.933 mm** | 5.470 | 54.8 |
+
+**Gate 1's 1 mm margin is inside the bias after all -- by a factor of about two.** The full
+accounting of this claim, which I have now had wrong twice in opposite directions:
+
+1. `d626af3` predicted and `95c1e94` asserted that the margin sits inside the bias, resting on
+   **1.318 mm** -- the whole error vector, nine tenths of it an identifiability floor. Right
+   conclusion, wrong quantity.
+2. `8fc58bd` retracted it on the correctly-attributed **0.494 mm** normal error. Right quantity --
+   measured at **0.39 mm separation, below the pipeline's own minimum of 0.78 mm**. Wrong
+   separation, so the retraction was made out of range.
+3. The claim is reinstated on **1.933 mm at 1.05 mm separation**: right quantity, in-range
+   separation. It stands for a reason neither earlier version had.
+
+That is the fourth time today this line has produced a number read at the wrong separation, and the
+second time I have been the one to read it. The lesson has now cost a prediction, a retraction and
+a stop rule.
+
+**A structural prediction, fixed before the third amplitude lands.** The normal error grows from
+0.494 to 1.933 mm as separation goes 0.39 to 1.05 mm -- an exponent of **1.38**, superlinear. Two
+points cannot establish an exponent, so the third amplitude (achieved separation ~2.7 mm) is a test
+rather than a confirmation, bracketed now:
+
+| hypothesis | exponent | predicted normal error at 2.7 mm |
+|---|---:|---:|
+| linear: a fixed angular error | 1.00 | 4.97 mm |
+| the measured 1-2 exponent, continued | 1.38 | 7.10 mm |
+| **d^2/R curvature bias** | **2.00** | **12.78 mm** |
+
+**Predicted: nearer 7 than 13** -- the 1-2 exponent continues rather than steepening to the
+curvature law. This is the first test this line has run that can speak to d^2/R at all, after
+`ae34bd2` correctly found the earlier control silent on it. If the third amplitude lands near
+12.8 mm, d^2/R is supported and the separations must be driven down rather than the correspondence
+improved; near 5 mm and the bias is an angular error that a better correspondence can remove. No
+gate attaches to this -- it is a structural question, and it decides which repair is worth building.
+
 **Why this was worth having from a retired control.** I retired it for firing a threshold at the
 wrong separation, and it then answered a question I had not asked: whether this line's headline
 quality metric measures accuracy at all. It does not. A control kept running after its gate was
