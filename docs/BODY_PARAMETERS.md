@@ -3234,3 +3234,55 @@ What has changed is that the parametrization no longer stops at the scaffold.
    "association moved 0.0000 mm", which is the PRE-step call that by construction returns zero, not
    evidence that associations fail to update. It now says the association is held for the step.
 
+   ### My "there is no floor" was measured on a rigid drive and does not survive the seating drive
+
+   `173bc9e` recorded a step-size table in which the over-the-bar count fell to **zero** as the
+   increment shrank, and concluded: *"There is no floor... a consistent update is always available at
+   a small enough step."* That table was measured on a **rigid** drive. Under the seating drive on
+   the anatomical bed there **is** a floor, and the mechanism is arithmetic:
+
+   > the bar is `|node motion| + 1 mm`, so **as the increment shrinks the bar tends to the facet
+   > scale**. An association that jumps more than 1 mm under an *arbitrarily small* motion can never
+   > be accommodated by a smaller step.
+
+   Gate V's own numbers show it: at a rejection, the count of associations over their own bar has a
+   **median of 1** — one node out of 3,123, jumping more than the facet scale no matter how small the
+   step, refuses every proposal. **That is a discontinuity, and no step size fixes a discontinuity.**
+
+   **So the affordability question is answered and the answer is no.** 705 s bought **0.02%** of one
+   breast's drive (stalled at fraction 0.0002, having reached 0.0625 and gone backwards, increment
+   below 10⁻⁶); Z's current stepping has passed 56 minutes unfinished on the same drive. **Neither
+   stepping makes a full seating run reachable, let alone eight breasts.**
+
+   **This is the fourth level at which the same error has been made on this line**, and it is mine
+   this time: every control removed the feature that costs, and I generalised from the control to the
+   regime. Rigid drives have no feature-jumping, so they have no floor; the anatomical bed under a
+   non-rigid motion has both.
+
+   ### The fix is not a threshold, it is the association's construction
+
+   A global closest-point query on a faceted, multi-sheet bed **can** jump between sheets, and every
+   rule tried so far — per-node limit, all-or-nothing, derived threshold, adaptive stepping — has
+   been an attempt to *detect* or *tolerate* that jump after the query made it. **Pre-registered
+   instead: constrain the query so the jump is impossible.**
+
+   > **Gate AA — local-search association.** The new association must lie within a bounded geodesic
+   > neighbourhood of the previous one on the bed surface, rather than being the global closest point.
+   > A jump between sheets is then impossible by construction, the refusal machinery becomes
+   > unnecessary, and step size is governed by the physics rather than by association motion.
+
+   * **Regressions, which must return their existing numbers unchanged:** T-none, W, X, and V on the
+     plane. A construction that alters a passed control's result is a different method, not a
+     better association.
+   * **Discrimination, per `CLAUDE.md`:** force the neighbourhood to zero and the behaviour must
+     become T-none's — never updating. A pass that looks identical to the mechanism's absence is not
+     evidence.
+   * **Affordability, the number that decides it:** wall-clock and fraction reached on the same
+     seating drive, against V's 0.02% in 705 s.
+   * **The failure mode to report rather than hide:** a local search can hold the *wrong* sheet when
+     the true contact genuinely moves to another one. Count how often the local best is worse than
+     the global closest point, and by how much. If that count is large, the constraint is buying
+     tractability by getting the contact wrong, which is worse than being slow.
+   * **No prediction.** Every prediction I have made about this regime ahead of a measurement has
+     been wrong, most recently the floor.
+
