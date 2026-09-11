@@ -1017,10 +1017,13 @@ if (renderer) {
         lastTick = now;
       }
     }
-    // The leaders track the orbit, but re-measuring 26 label boxes every frame
-    // is layout work for a line that moves a pixel; ten times a second is
-    // indistinguishable and costs a fortieth of it.
-    if (now - lastLeaders >= 100) { lastLeaders = now; ring?.follow(); }
+    // Every label stands on its own projected point now, so this is where they
+    // track the orbit rather than a leader's far end. It is affordable at frame
+    // rate because the boxes are measured once when they are built: a pass is
+    // N projections and N transforms, and no layout at all. Ten times a second
+    // was fine for lines converging on one anchor and visibly lags labels that
+    // are meant to sit ON the geometry.
+    if (now - lastLeaders >= 33) { lastLeaders = now; ring?.follow(); }
     renderer.render(scene, camera);
   });
   const ray = new THREE.Raycaster();
@@ -1060,7 +1063,10 @@ function projectCanonical(point) {
   projectScratch.project(camera);
   const w = viewport.clientWidth, h = viewport.clientHeight;
   if (!w || !h) return null;
-  return [(projectScratch.x * 0.5 + 0.5) * w, (-projectScratch.y * 0.5 + 0.5) * h];
+  // The third component is normalised depth, and the annotations need it: a
+  // point behind the camera still projects to a perfectly ordinary pixel, so
+  // without it the labels for the back of the body sit over the front of it.
+  return [(projectScratch.x * 0.5 + 0.5) * w, (-projectScratch.y * 0.5 + 0.5) * h, projectScratch.z];
 }
 function mountRingAndPrompt() {
   ring = mountRing($("ring-host"), { project: projectCanonical, panelHost: ringPanelHost });

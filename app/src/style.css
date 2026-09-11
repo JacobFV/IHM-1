@@ -578,8 +578,9 @@ input[type="range"]:disabled::-moz-range-thumb { background: var(--faint); }
    dead: there is no glow, no dash animation and no minimum "visible" weight
    beyond a hairline that exists only so a measured-zero edge is still clickable.
    See ring.js. */
-/* The ring's layers span the whole viewport so a label can sit anywhere on the
-   ellipse, which means only the leaves may take a click. `#ring-host > *` used
+/* The annotation layers span the whole viewport because a label can sit
+   anywhere its own projected point lands, which means only the leaves may take
+   a click. `#ring-host > *` used
    to grant it wholesale, and being id-specificity it beat every
    `pointer-events: none` below -- an invisible full-screen sheet then ate every
    click meant for the left column. Nothing here re-enables a container. */
@@ -591,15 +592,21 @@ input[type="range"]:disabled::-moz-range-thumb { background: var(--faint); }
 .ring-leaders path { fill: none; stroke: var(--line-strong); }
 .ring-layer { position: absolute; inset: 0; pointer-events: none; }
 .ring-layer[hidden] { display: none; }
+/* Positioned by transform from the top-left, because the placement comes from a
+   projected 3D point every frame and a transform is the one property that moves
+   a box without forcing layout. Nothing here may set `transform`: ring.js owns
+   it, and a rule that overrode it would pin every label to one corner. */
 .ring-item {
-  position: absolute; transform: translate(-50%, -50%); pointer-events: auto;
-  display: flex; align-items: center; gap: 6px; max-width: 230px;
+  position: absolute; left: 0; top: 0; will-change: transform; pointer-events: auto;
+  display: flex; align-items: center; gap: 6px;
   padding: 3px 7px; background: var(--ground); border: 1px solid var(--line);
   border-radius: var(--radius); box-shadow: var(--shadow); text-align: left;
   max-width: 250px;
 }
-.ring-item[data-side="l"] { transform: translate(-100%, -50%); }
-.ring-item[data-side="r"] { transform: translate(0, -50%); }
+.ring-item[hidden] { display: none; }
+/* An edge with no point of its own stands at its system's anchor instead. The
+   dashed border says the label is near the right structure, not on its own. */
+.ring-item[data-anchor="system"] { border-style: dashed; }
 .ring-item:hover { border-color: var(--accent-line); }
 .ring-item.is-active { border-color: var(--accent); }
 .ring-item.is-dim { opacity: .22; }

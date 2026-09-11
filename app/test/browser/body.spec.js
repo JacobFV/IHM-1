@@ -93,3 +93,47 @@ test("the ring draws a dead path dead and the load-bearing one thick", async ({ 
   await expect(page.locator("#ring-panel")).toContainText("100.0% · measured");
   await expect(page.locator("#ring-panel")).toContainText("not measured");
 });
+
+test("annotations stand on their own projected points and groups toggle", async ({ page }) => {
+  await page.goto("/");
+  const items = page.locator(".ring-item:not([hidden])");
+  await expect(items.first()).toBeVisible({ timeout: 240000 });
+
+  // Every label carries the point it is about: either its own edge's, or its
+  // system's anchor with the fallback declared rather than implied.
+  const anchors = await page.locator(".ring-item").evaluateAll(
+    (nodes) => nodes.map((n) => n.dataset.anchor));
+  expect(anchors.length).toBeGreaterThan(0);
+  expect(anchors.every((a) => a === "own" || a === "system")).toBe(true);
+
+  // Groups are a multi-select now: turning them all on shows more than one.
+  const single = await items.count();
+  await page.locator("#ring-all").click({ force: true });
+  await expect
+    .poll(async () => items.count(), { timeout: 20000 })
+    .toBeGreaterThan(single);
+
+  // A label is placed where its point projects, so orbiting the body moves it.
+  // A label that leaves the view is hidden and keeps its last transform, so the
+  // question is whether the SET of placements moved, not any one of them.
+  const places = () => page.locator(".ring-item:not([hidden])")
+    .evaluateAll((nodes) => nodes.map((n) => n.style.transform).join("|"));
+  const before = await places();
+  const view = page.locator("canvas").first();
+  const bounds = await view.boundingBox();
+  await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height / 3);
+  await page.mouse.down();
+  await page.mouse.move(bounds.x + bounds.width / 2 + 260, bounds.y + bounds.height / 3, { steps: 16 });
+  await page.mouse.up();
+  await expect.poll(places, { timeout: 15000 }).not.toBe(before);
+
+  await page.screenshot({ path: "test-results/annotations.png", fullPage: false });
+
+  // Clicking a shown-and-focused group hides it.
+  const cord = page.locator('#ring-systems button[data-system="cord"]');
+  await cord.click({ force: true });                      // focus it
+  await expect(cord).toHaveAttribute("aria-pressed", "true");
+  await cord.click({ force: true });                      // hide it
+  await expect(cord).toHaveAttribute("aria-pressed", "false");
+  await expect(page.locator('.ring-item[data-group="cord"]:not([hidden])')).toHaveCount(0);
+});

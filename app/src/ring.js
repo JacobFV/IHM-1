@@ -1,13 +1,17 @@
-// The ring: what is exchanging signal with the thing you are looking at, and
-// how much of it, drawn at the size it was measured.
+// The annotations: what is exchanging signal with this body, each label standing
+// at the projected position of the 3D point it is about.
 //
-// The IBM-1 site rings a brain with its materializations and runs leader lines
-// to the structures each one touches. The interaction is reused here; the ring
-// is not. On the site the ring is a menu of models. Here the signals are live
-// and there is a body on the other end, so the ring is a ring of the things
-// currently exchanging signal, and clicking one answers a question you cannot
-// otherwise ask: what is this contributing, right now, to the thing I am
-// looking at?
+// This used to be a ring. Labels were dealt onto a screen-space ellipse in the
+// order they happened to rank, and every leader ran to ONE anchor -- the
+// highlighted system's -- so a label's position said nothing about where its
+// structure was, and only one system's 26 strongest edges could be shown at all.
+//
+// Now every annotation carries its own point in canonical metres, the same point
+// the geometry is drawn from. Each frame that point is projected and the label is
+// placed where it lands, so the labels orbit with the body because they ARE on
+// the body. That is what makes the count affordable: the boxes are measured once
+// when they are built and moved by transform afterwards, never re-measured, so
+// 150 annotations cost 150 projections and no layout at all.
 //
 // **The constraint that decides every other decision here: arrow width IS the
 // measured magnitude.** Most of these paths are near zero. Only 0.03-0.07% of a
@@ -23,10 +27,15 @@
 //   declared    a gain or latency, drawn as a bracket and never as width
 //   unmeasured  a dashed hairline that says so
 //
-// The one genuinely load-bearing result -- severing the cortical dynamics drops
-// the body at 2.90 s while the intact one holds at 0.17 mm -- is magnitude 1.0
-// and comes out as the thick arrow it actually is. Everything else is thin
-// because everything else is thin.
+// Two honesty rules the 3D placement adds:
+//
+//   * An annotation whose edge carries no point of its own falls back to its
+//     system's anchor and says so (`data-anchor="system"`). Its label is near the
+//     right structure and not ON its own, and that distinction is visible rather
+//     than implied.
+//   * A point behind the camera or off the viewport is not drawn. Pinning such a
+//     label to the nearest edge of the screen would put a label for the back of
+//     the body over the front of it.
 
 const SVG = "http://www.w3.org/2000/svg";
 
@@ -37,6 +46,12 @@ const SVG = "http://www.w3.org/2000/svg";
 // minimum and never a claim -- the number is always printed beside it.
 export const HAIRLINE_PX = 0.6;
 export const FULL_PX = 14;
+
+// How far a label sits from its own point. Crowded labels take another direction
+// around the same point rather than a longer leader: past about four times this
+// the line is long enough that which point it came from stops being obvious, and
+// a label that cannot be placed within it is hidden and counted instead.
+const LEADER_PX = 34;
 
 export function arrowWidth(magnitude, kind) {
   if (kind === "declared" || kind === "unmeasured" || magnitude == null) return HAIRLINE_PX;
@@ -60,12 +75,12 @@ export function magnitudeText(edge) {
   return edge.magnitude_kind === "live" ? `${value} · live this tick` : `${value} · measured`;
 }
 
-/** Merge the per-side records of one nerve into one ring item.
+/** Merge the per-side records of one nerve into one annotation.
  *
- * A ring with "left median nerve" and "right median nerve" as separate labels
- * is a ring nobody can read; the sides are kept on the item so the panel can
- * still name both, and the delays are identical by construction only when the
- * measured lengths are, which they are not, so both are carried.
+ * Two labels reading "left median nerve" and "right median nerve" are two labels
+ * nobody needs; the sides are kept on the item so the panel can still name both,
+ * and the delays are identical by construction only when the measured lengths
+ * are, which they are not, so both are carried.
  */
 function mergeKey(edge) {
   if (edge.kind !== "route") return edge.id;
@@ -92,7 +107,9 @@ export function contributors(graph, state, systemId) {
     if (!held) { items.set(key, { ...edge, key, members: [edge] }); continue; }
     held.members.push(edge);
     // Two sides of one nerve: keep the larger measured magnitude and say the
-    // label covers both.
+    // label covers both. The anchor stays the first side's own point, so the
+    // label stands on one of the two structures it names rather than between
+    // them, which is a place neither of them is.
     if ((edge.magnitude ?? -1) > (held.magnitude ?? -1)) {
       held.magnitude = edge.magnitude;
       held.magnitude_kind = edge.magnitude_kind;
@@ -119,6 +136,64 @@ export function fibreRows(item) {
   return rows.sort((a, b) => a.delay_s - b.delay_s);
 }
 
+/** Screen-space placement for already-projected annotations.
+ *
+ * Exported because it is the part worth testing without a browser: given points
+ * and box sizes it returns where each label goes, and it is a pure function of
+ * its inputs. Labels are placed at their own point, offset to whichever side has
+ * room, and nudged vertically only when they would overlap one already placed.
+ * Ordered by magnitude, so the largest measurement keeps the position it earned
+ * and the hairlines move around it.
+ */
+export function placeLabels(entries, width, height, bounds) {
+  const area = {
+    left: bounds?.left ?? 0, right: bounds?.right ?? width,
+    top: bounds?.top ?? 0, bottom: bounds?.bottom ?? height,
+  };
+  const placed = [];
+  const out = [];
+  // Candidate directions, tried in order: straight out from the middle of the
+  // view first, then progressively steeper, then back across the body as a last
+  // resort. Going OUTWARD matters -- a label placed toward the centre covers the
+  // structure it is naming, and with a hundred of them the body disappears under
+  // its own annotations.
+  const ANGLES = [0, 22, -22, 45, -45, 68, -68, 90, -90, 112, -112, 135, -135, 158, -158, 180];
+  const RADII = [LEADER_PX, LEADER_PX * 1.8, LEADER_PX * 2.8, LEADER_PX * 4];
+  const overlaps = (cx, cy, w, h) => placed.some((p) =>
+    Math.abs(p.cx - cx) * 2 < p.w + w + 6 && Math.abs(p.cy - cy) * 2 < p.h + h + 4);
+  for (const entry of entries) {
+    const { x, y, w, h } = entry;
+    const outward = x < width / 2 ? -1 : 1;
+    let spot = null;
+    for (const radius of RADII) {
+      for (const angle of ANGLES) {
+        const t = (angle * Math.PI) / 180;
+        const dx = outward * Math.cos(t) * radius;
+        const dy = Math.sin(t) * radius;
+        // The box hangs off the anchor on the side the direction points, so its
+        // near edge is what the leader meets and the far edge is what grows.
+        const cx = x + dx + (dx >= 0 ? w / 2 : -w / 2);
+        const cy = y + dy;
+        // Reject rather than clamp: a clamped position collapses every label
+        // pushed past an edge onto one pixel, where the overlap test no longer
+        // sees them and they stack silently. The bounds are the clear middle of
+        // the view, not the viewport -- the columns of panes overlay it, and a
+        // label under one of them is a label nobody can read.
+        if (cx - w / 2 < area.left || cx + w / 2 > area.right) continue;
+        if (cy - h / 2 < area.top || cy + h / 2 > area.bottom) continue;
+        if (overlaps(cx, cy, w, h)) continue;
+        spot = { cx, cy, side: dx >= 0 ? "r" : "l" };
+        break;
+      }
+      if (spot) break;
+    }
+    if (!spot) { out.push({ ...entry, hidden: true }); continue; }
+    placed.push({ cx: spot.cx, cy: spot.cy, w, h });
+    out.push({ ...entry, ...spot, hidden: false });
+  }
+  return out;
+}
+
 const el = (tag, cls, text) => {
   const node = document.createElement(tag);
   if (cls) node.className = cls;
@@ -133,9 +208,10 @@ const svgEl = (tag, attributes = {}) => {
 const escaped = (s) => String(s ?? "");
 
 /**
- * @param host      the element the ring's buttons and panel live in
- * @param project   (point_m) => [x, y] in host pixels, or null when unprojectable
- * @param onSystem  called when the highlighted system changes
+ * @param host      the element the annotations and their controls live in
+ * @param project   (point_m) => [x, y] or [x, y, ndcZ] in host pixels, or null.
+ *                  An ndcZ above 1 is behind the camera and is not drawn.
+ * @param onSystem  called when the focused system changes
  */
 export function mountRing(host, { project, onSystem, panelHost } = {}) {
   const layer = el("div", "ring-layer");
@@ -147,27 +223,24 @@ export function mountRing(host, { project, onSystem, panelHost } = {}) {
   const chooser = el("div", "ring-systems");
   chooser.id = "ring-systems";
   chooser.setAttribute("role", "group");
-  chooser.setAttribute("aria-label", "Highlighted system");
+  chooser.setAttribute("aria-label", "Annotation groups");
   const note = el("p", "note ring-basis");
   note.id = "ring-basis";
   note.setAttribute("role", "status");
   const more = el("p", "note ring-more");
   more.id = "ring-more";
   more.hidden = true;
-  // The chooser and the basis line are one stacked control: the basis is a
-  // statement about the widths below it and has to sit under them, not float
-  // over whichever row the buttons happen to wrap onto.
   const controls = el("div", "ring-controls");
   controls.id = "ring-controls";
   controls.append(chooser, note, more);
   host.append(lines, layer, controls);
   // The panel is a reading surface, not an overlay: it goes in the column of
-  // panes with every other readout, which leaves the whole middle of the view
-  // to the ring itself.
+  // panes with every other readout.
   (panelHost || host).append(panel);
 
   let graph = null, state = null, system = null, selected = null, items = [];
-  let width = 0, height = 0, visible = true, lastAnchor = null;
+  let width = 0, height = 0, visible = true;
+  const groups = new Set();
 
   function setVisible(on) {
     visible = !!on;
@@ -175,7 +248,7 @@ export function mountRing(host, { project, onSystem, panelHost } = {}) {
     lines.style.display = visible ? "" : "none";
     note.hidden = !visible;
     drawChooser();
-    if (visible) { drawRing(); } else { panel.hidden = true; }
+    if (visible) { build(); } else { panel.hidden = true; }
   }
 
   function setBasis() {
@@ -189,158 +262,176 @@ export function mountRing(host, { project, onSystem, panelHost } = {}) {
 
   function drawChooser() {
     chooser.replaceChildren();
-    // The ring is the centrepiece, so it is on; it also covers the body, so it
-    // folds away to its own title the way every pane here does.
-    const fold = el("button", "ring-fold", visible ? "▾ Ring" : "▸ Ring");
+    const fold = el("button", "ring-fold", visible ? "▾ Annotations" : "▸ Annotations");
     fold.type = "button";
     fold.id = "ring-fold";
     fold.setAttribute("aria-expanded", String(visible));
     fold.onclick = () => { setVisible(!visible); };
     chooser.append(fold);
     if (!visible) return;
+    // Groups are a multi-select: any number of them can be on at once, which is
+    // the whole reason the labels had to leave the ellipse.
     for (const entry of graph?.systems || []) {
-      const button = el("button", "ring-system", entry.label);
+      const on = groups.has(entry.id);
+      const count = countFor(entry.id);
+      const button = el("button", "ring-system", `${entry.label} · ${count}`);
       button.type = "button";
       button.dataset.system = entry.id;
-      button.setAttribute("aria-pressed", String(entry.id === system));
+      button.dataset.group = entry.id;
+      button.setAttribute("aria-pressed", String(on));
       button.title = entry.note || "";
-      button.onclick = () => highlight(entry.id);
+      // A plain click is the toggle: off turns the group on and focuses it, on
+      // turns it off. Clicking a group that is already shown but not focused
+      // focuses it instead of hiding it, so reading the panel for one group
+      // never costs you the annotations of another. No modifier key decides
+      // anything here -- a control nobody can find is a control nobody has.
+      button.onclick = () => {
+        if (!groups.has(entry.id)) { groups.add(entry.id); system = entry.id; selected = null; onSystem?.(entry.id); }
+        else if (system !== entry.id) { system = entry.id; selected = null; onSystem?.(entry.id); }
+        else {
+          groups.delete(entry.id);
+          system = [...groups][0] || null;
+        }
+        drawChooser();
+        build();
+      };
       chooser.append(button);
     }
+    const all = el("button", "ring-system ring-all", groups.size === (graph?.systems || []).length ? "none" : "all");
+    all.type = "button";
+    all.id = "ring-all";
+    all.onclick = () => {
+      const every = (graph?.systems || []).map((s) => s.id);
+      if (groups.size === every.length) groups.clear();
+      else for (const id of every) groups.add(id);
+      drawChooser();
+      build();
+    };
+    chooser.append(all);
   }
 
-  function drawRing() {
+  function countFor(id) {
+    return contributors(graph, state, id).length;
+  }
+
+  function toggleGroup(id) {
+    if (groups.has(id)) groups.delete(id); else groups.add(id);
+    if (!groups.has(system)) system = [...groups][0] || null;
+    drawChooser();
+    build();
+  }
+
+  function focusGroup(id) {
+    groups.clear();
+    groups.add(id);
+    system = id;
+    selected = null;
+    drawChooser();
+    build();
+    onSystem?.(id);
+  }
+
+  /** One annotation per contributor of every visible group, built once. */
+  function build() {
     layer.replaceChildren();
     lines.replaceChildren();
     items = [];
-    if (!graph || !system) return;
-    const all = contributors(graph, state, system);
-    // A ring nobody can read is not a ring. The tail is kept, counted, and
-    // reachable from the panel rather than silently dropped.
-    const shown = all.slice(0, 26);
-    const hidden = all.length - shown.length;
-    shown.forEach((item, i) => {
-      const button = el("button", "ring-item");
-      button.type = "button";
-      button.dataset.edge = item.key;
-      button.dataset.kind = item.magnitude_kind;
-      button.setAttribute("aria-pressed", String(selected === item.key));
-      const swatch = svgEl("svg", { class: "ring-gauge", viewBox: "0 0 20 16", "aria-hidden": "true" });
-      const stroke = arrowWidth(item.magnitude, item.magnitude_kind);
-      const rule = svgEl("line", {
-        x1: "1", y1: "8", x2: "19", y2: "8",
-        "stroke-width": stroke.toFixed(2),
-        "stroke-dasharray": item.magnitude_kind === "unmeasured" ? "2 2" : "",
-      });
-      swatch.append(rule);
-      button.append(swatch, el("span", "ring-label", item.label),
-        el("span", "ring-magnitude", magnitudeText(item)));
-      button.onclick = () => choose(item.key);
-      layer.append(button);
-      const leader = svgEl("path", { class: "ring-leader", "stroke-width": stroke.toFixed(2) });
-      if (item.magnitude_kind === "unmeasured") leader.setAttribute("stroke-dasharray", "3 4");
-      lines.append(leader);
-      items.push({ item, button, leader, index: i, count: shown.length });
-    });
-    more.hidden = true;
-    if (hidden > 0) {
-      more.textContent =
-        `${hidden} further route${hidden === 1 ? "" : "s"} touch this system and are listed in the panel.`;
-      more.hidden = false;
+    if (!graph || !groups.size) { panel.hidden = true; return; }
+    const systemAnchor = new Map((graph.systems || []).map((s) => [s.id, s.anchor_m]));
+    const seen = new Set();
+    for (const id of groups) {
+      for (const item of contributors(graph, state, id)) {
+        // One structure can touch two visible groups; it gets one label.
+        if (seen.has(item.key)) continue;
+        seen.add(item.key);
+        const own = item.anchor_m || (item.members || []).map((m) => m.anchor_m).find(Boolean);
+        const point = own || systemAnchor.get(id);
+        if (!point) continue;
+        const button = el("button", "ring-item");
+        button.type = "button";
+        button.dataset.edge = item.key;
+        button.dataset.kind = item.magnitude_kind;
+        button.dataset.group = id;
+        button.dataset.anchor = own ? "own" : "system";
+        if (!own) button.title = "No point of its own: placed at this system's anchor.";
+        button.setAttribute("aria-pressed", String(selected === item.key));
+        const swatch = svgEl("svg", { class: "ring-gauge", viewBox: "0 0 20 16", "aria-hidden": "true" });
+        const stroke = arrowWidth(item.magnitude, item.magnitude_kind);
+        swatch.append(svgEl("line", {
+          x1: "1", y1: "8", x2: "19", y2: "8",
+          "stroke-width": stroke.toFixed(2),
+          "stroke-dasharray": item.magnitude_kind === "unmeasured" ? "2 2" : "",
+        }));
+        button.append(swatch, el("span", "ring-label", item.label),
+          el("span", "ring-magnitude", magnitudeText(item)));
+        button.onclick = () => choose(item.key);
+        layer.append(button);
+        const leader = svgEl("path", { class: "ring-leader", "stroke-width": stroke.toFixed(2) });
+        if (item.magnitude_kind === "unmeasured") leader.setAttribute("stroke-dasharray", "3 4");
+        lines.append(leader);
+        // Measured once, here. Everything after this is a transform.
+        items.push({ item, button, leader, point, group: id,
+                     w: button.offsetWidth || 180, h: button.offsetHeight || 20 });
+      }
     }
-    layout();
+    follow();
     drawPanel();
   }
 
-  // The ellipse, and one leader per item from its inner edge to the system's
-  // own anchor projected into the scene. Same construction as the site's ring:
-  // the labels own the ellipse, the leaders own the middle.
-  function layout() {
+  /** Project every anchor, place the labels, run the leaders. Per frame. */
+  function follow() {
     width = host.clientWidth || 0;
     height = host.clientHeight || 0;
-    if (!width || !height || !items.length) return;
-    const style = getComputedStyle(host);
-    const left = parseFloat(style.getPropertyValue("--left-inset")) || 12;
-    const right = parseFloat(style.getPropertyValue("--right-inset")) || 12;
-    // The band the ring may use: clear of the system chooser above and of the
-    // transport and prompt bar below, both of which are measured rather than
-    // assumed so a five-entry retrieval never pushes labels under the bar.
-    // The band starts below the chooser and its basis line, measured, so an
-    // extra row of system buttons never lands a ring label under the text that
-    // explains what its width means.
-    const hostTop = host.getBoundingClientRect?.().top ?? 0;
-    const controlsBottom = controls.getBoundingClientRect?.().bottom ?? 0;
-    const above = Math.max(120, controlsBottom - hostTop + 16);
-    // The prompt panel overlays rather than reflows: letting a five-entry
-    // retrieval squeeze the ring would pile 26 labels on top of each other.
-    const below = Math.min((parseFloat(style.getPropertyValue("--prompt-inset")) || 48) + 116,
-                           Math.max(160, height * 0.30));
-    const cx = (left + (width - right)) / 2;
-    const cy = (above + (height - below)) / 2;
-    const rx = Math.max(140, (width - left - right) / 2 - 150);
-    const ry = Math.max(90, (height - above - below) / 2);
-    items.forEach(({ button, index, count }, i) => {
-      // Start at the top and walk the ellipse; the sides carry the most items,
-      // which is where the labels have room.
-      const t = -Math.PI / 2 + (index / count) * Math.PI * 2;
-      let x = cx + rx * Math.cos(t);
-      const y = cy + ry * Math.sin(t);
-      const side = Math.abs(Math.cos(t)) < 0.12 ? "c" : Math.cos(t) < 0 ? "l" : "r";
-      // A left label hangs to the LEFT of its anchor, so the ellipse's own edge
-      // is not where the text ends. Clamp by the widest label the CSS allows,
-      // or the ring runs under the columns on both sides.
-      const reach = 250;
-      if (side === "l") x = Math.max(x, left + reach);
-      if (side === "r") x = Math.min(x, width - right - reach);
-      button.style.left = `${x}px`;
-      button.style.top = `${y}px`;
-      button.dataset.side = side;
-      items[i].x = x;
-      items[i].y = y;
-      items[i].side = side;
-    });
-    // Where each leader leaves its label, measured once here. The boxes only
-    // move when this runs; the camera moves every frame. Re-measuring 26 labels
-    // per tick forced a layout ten times a second while 2,229 geometries were
-    // still streaming in, for a line whose near end had not moved.
-    const hostBox = host.getBoundingClientRect?.();
+    if (!width || !height) return;
+    lines.setAttribute("viewBox", `0 0 ${width} ${height}`);
+    const candidates = [];
     for (const entry of items) {
-      const box = entry.button.getBoundingClientRect?.();
-      if (!box || !hostBox || !box.width) { entry.x0 = entry.x; entry.y0 = entry.y; continue; }
-      entry.y0 = box.top - hostBox.top + box.height / 2;
-      entry.x0 = entry.side === "l" ? box.right - hostBox.left + 4
-        : entry.side === "r" ? box.left - hostBox.left - 4
-        : box.left - hostBox.left + box.width / 2;
+      const p = project ? project(entry.point) : null;
+      const behind = p && p.length > 2 && !(p[2] <= 1);
+      const onScreen = p && Number.isFinite(p[0]) && Number.isFinite(p[1])
+        && p[0] >= -80 && p[0] <= width + 80 && p[1] >= -80 && p[1] <= height + 80;
+      if (!p || behind || !onScreen) { hide(entry); continue; }
+      if (!entry.w) { entry.w = entry.button.offsetWidth || 180; entry.h = entry.button.offsetHeight || 20; }
+      candidates.push({ entry, x: p[0], y: p[1], w: entry.w, h: entry.h });
     }
-    lastAnchor = null;
-    drawLeaders();
+    // The band the labels may use: clear of the columns of panes on either side,
+    // of the annotation controls above, and of the transport and prompt bar
+    // below. All measured rather than assumed, so a wrapped row of group
+    // buttons never lands a label under the text that explains what it means.
+    const style = getComputedStyle(host);
+    const hostTop = host.getBoundingClientRect?.().top ?? 0;
+    const bounds = {
+      left: (parseFloat(style.getPropertyValue("--left-inset")) || 12) + 8,
+      right: width - (parseFloat(style.getPropertyValue("--right-inset")) || 12) - 8,
+      top: Math.max(8, (controls.getBoundingClientRect?.().bottom ?? 0) - hostTop + 10),
+      bottom: height - Math.min((parseFloat(style.getPropertyValue("--prompt-inset")) || 48) + 70,
+                                Math.max(90, height * 0.22)),
+    };
+    let dropped = 0;
+    for (const placedEntry of placeLabels(candidates, width, height, bounds)) {
+      const { entry, x, y, cx, cy, side, hidden } = placedEntry;
+      if (hidden) { hide(entry); dropped += 1; continue; }
+      entry.button.hidden = false;
+      entry.button.dataset.side = side;
+      entry.button.style.transform = `translate3d(${(cx - entry.w / 2).toFixed(1)}px, ${(cy - entry.h / 2).toFixed(1)}px, 0)`;
+      const edgeX = side === "r" ? cx - entry.w / 2 - 3 : cx + entry.w / 2 + 3;
+      entry.leader.style.display = "";
+      entry.leader.setAttribute("d",
+        `M${edgeX.toFixed(1)},${cy.toFixed(1)} Q${((edgeX + x) / 2).toFixed(1)},${cy.toFixed(1)} ${x.toFixed(1)},${y.toFixed(1)}`);
+    }
+    const off = items.length - candidates.length;
+    more.hidden = !(off || dropped);
+    if (!more.hidden)
+      more.textContent = [
+        off ? `${off} out of view` : "",
+        dropped ? `${dropped} too crowded to place` : "",
+      ].filter(Boolean).join(" · ") + `, of ${items.length} annotations.`;
     paintSelection();
   }
 
-  function anchor() {
-    const entry = (graph?.systems || []).find((s) => s.id === system);
-    const point = entry?.anchor_m;
-    const projected = point && project ? project(point) : null;
-    if (projected && Number.isFinite(projected[0]) && Number.isFinite(projected[1])) return projected;
-    const left = parseFloat(getComputedStyle(host).getPropertyValue("--left-inset")) || 12;
-    const right = parseFloat(getComputedStyle(host).getPropertyValue("--right-inset")) || 12;
-    return [(left + (width - right)) / 2, height / 2];
-  }
-
-  function drawLeaders() {
-    if (!width || !height || !items.length) return;
-    const [ax, ay] = anchor();
-    // A settled camera still drifts by fractions of a pixel under damping.
-    // Rewriting 26 path strings for that is work nobody can see.
-    if (lastAnchor && Math.abs(ax - lastAnchor[0]) < 0.5 && Math.abs(ay - lastAnchor[1]) < 0.5) return;
-    lastAnchor = [ax, ay];
-    lines.setAttribute("viewBox", `0 0 ${width} ${height}`);
-    for (const entry of items) {
-      const { leader } = entry;
-      const x0 = entry.x0 ?? entry.x, y0 = entry.y0 ?? entry.y;
-      const mx = (x0 + ax) / 2, my = (y0 + ay) / 2;
-      leader.setAttribute("d", `M${x0.toFixed(1)},${y0.toFixed(1)} Q${mx.toFixed(1)},${y0.toFixed(1)} ${ax.toFixed(1)},${ay.toFixed(1)}`);
-    }
+  function hide(entry) {
+    entry.button.hidden = true;
+    entry.leader.style.display = "none";
   }
 
   // Dimming is a selection change, not a camera change, so it is its own pass
@@ -360,7 +451,10 @@ export function mountRing(host, { project, onSystem, panelHost } = {}) {
     panel.replaceChildren();
     const entry = (graph.systems || []).find((s) => s.id === system);
     const all = contributors(graph, state, system);
-    const item = selected ? all.find((x) => x.key === selected) : null;
+    const item = selected
+      ? all.find((x) => x.key === selected)
+        || [...groups].flatMap((g) => contributors(graph, state, g)).find((x) => x.key === selected)
+      : null;
 
     const head = el("div", "ring-head");
     head.append(el("div", "eyebrow", item ? "Contribution" : "Everything feeding this"));
@@ -374,7 +468,6 @@ export function mountRing(host, { project, onSystem, panelHost } = {}) {
     panel.append(head);
 
     if (!item) {
-      // Selecting the system rather than a contributor: the converse view.
       panel.append(el("p", "note", entry?.note || ""));
       const list = el("ol", "ring-rank");
       for (const row of all) {
@@ -458,12 +551,7 @@ export function mountRing(host, { project, onSystem, panelHost } = {}) {
 
   function highlight(id) {
     if (!graph) return;
-    system = id;
-    selected = null;
-    for (const button of chooser.querySelectorAll("button"))
-      button.setAttribute("aria-pressed", String(button.dataset.system === id));
-    drawRing();
-    onSystem?.(id);
+    focusGroup(id);
   }
 
   return {
@@ -472,16 +560,20 @@ export function mountRing(host, { project, onSystem, panelHost } = {}) {
     setGraph(next) {
       graph = next;
       system = system || next?.systems?.[0]?.id || null;
+      if (!groups.size && system) groups.add(system);
       drawChooser();
       setBasis();
-      drawRing();
+      build();
     },
-    setState(next) { state = next; setBasis(); drawRing(); },
+    setState(next) { state = next; setBasis(); build(); },
     setVisible,
     highlight,
-    resize: layout,
-    follow: drawLeaders,
+    toggleGroup,
+    resize: follow,
+    follow,
     get system() { return system; },
+    get groups() { return [...groups]; },
     get selected() { return selected; },
+    get count() { return items.length; },
   };
 }
