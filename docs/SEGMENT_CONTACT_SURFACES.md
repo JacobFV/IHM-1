@@ -1872,6 +1872,48 @@ it: this body's toe skin does not contain its toe bones. It belongs with the for
 already recorded -- per-segment similarity scale **1.22** at calcn and **1.21** at toes against the
 global map -- as a property of the scaffold's foot rather than of anything fitted to it.
 
+### One mechanism that would explain all three toe measurements, and the test that settles it
+
+The untrimmed fit closes the set: **gate 1 PASS 22/22, gate 2 FAIL, gate 3 PASS, gate 4 FAIL** —
+the same two gates in the same places as the trimmed fit. Three independent measurements now point
+at one piece of geometry:
+
+| measurement | value |
+|---|---|
+| enclosure shortfall, toes | 0.854 / 0.876 against a 0.95 bar |
+| folds, gate 4 | 46 vertices and 73 triangles, **almost entirely toe skin**, 7.5–15.2 mm from the nearest spline centre |
+| per-segment similarity scale | **1.21** at toes, **1.22** at calcn |
+
+**A single mechanism predicts all three.** If the scaffold's forefoot is ~21% longer than this
+specimen's, then a warp that maps scaffold to specimen **shortens** the forefoot by that factor. Toe
+skin carried through that warp then has **more material than the shortened bone frame can hold**: the
+excess buckles (gate 4's folds, in exactly that skin) and the bone ends push through where the skin
+has pulled away (gate 2's shortfall, in exactly those segments). One cause, two failures, in one
+place — and it is not a correspondence problem, a regularisation problem, or a sampling problem,
+which is why none of those changed it.
+
+**The test, pre-registered before it runs.** Measure toe-skin **surface area and its principal arc
+lengths, before and against after** the warp, per segment.
+
+* **If the toe skin compresses by about the scale factor** — area near 1/1.21² ≈ 0.68, or length
+  near 1/1.21 ≈ 0.83 — and **the folded triangles sit where local area compression is greatest**,
+  the mechanism is confirmed and the toes question **closes**: you cannot carry a longer foot's skin
+  onto a shorter foot without removing skin area or folding it. That is a statement about the
+  problem, not about the method, and it ends the search for a warp family that fixes it.
+* **If the skin does not compress by anything like that, or the folds sit where compression is
+  low**, the mechanism is wrong and the toes remain unexplained — which would be worth knowing,
+  because it would mean four rounds of correct negative results have been aimed at the wrong cause.
+* **Predicted: confirmed.** Stated with the caveat that my record on this line is poor and that this
+  is the first prediction I have made here whose mechanism is arithmetic rather than judgement —
+  area is conserved or it is not.
+
+**What follows if it is confirmed**, and it should be written before the number rather than after:
+the warp is not the instrument to blame or to fix. The options become (a) accept folded toe skin and
+gate the body without it, (b) allow the skin to carry its own area change rather than riding rigidly
+on the bone frame, which is the continuous-skin problem this file has named from the start, or
+(c) exclude the toes from the registered set and say so. **None of those is a warp-family choice**,
+which is the useful consequence.
+
 **Why this was worth having from a retired control.** I retired it for firing a threshold at the
 wrong separation, and it then answered a question I had not asked: whether this line's headline
 quality metric measures accuracy at all. It does not. A control kept running after its gate was
