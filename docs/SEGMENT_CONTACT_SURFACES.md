@@ -2021,6 +2021,51 @@ continuous-skin problem this file named at the outset. **(a)** accepting folded 
 only if the folds do not corrupt the contact layer, which is a separate measurement nobody has made;
 **(c)** excluding the toes costs the forefoot contact that a crawl needs most.
 
+### The folds are all in the contact set and none in the plantar load path
+
+| segment | folded | in bundle | folded area | share of piece | height above the piece's lowest point |
+|---|---:|---|---:|---:|---|
+| toes_l | 31 of 5,436 | **yes** | 63.0 mm² | 0.156% | median 30.6 mm, **min 29.8** |
+| toes_r | 41 of 5,560 | **yes** | 134.1 mm² | 0.325% | median 29.0 mm, **min 27.7** |
+| pelvis | 1 of 13,836 | **yes** | 82.5 mm² | 0.035% | 314 mm |
+
+The bundle's manifest records exactly the triangle counts `build()` selected, so **nothing was
+repaired away**: the reversed normals are in the meshes the engine loads. But **zero of the 73 lie
+within the lowest 10 mm of their piece** — the closest is 27.7 mm above it. The folds are on the
+**dorsal** surface of the toes, the top of the foot, not the sole. Total folded area is 279.6 mm²,
+about **0.016%** of the body's admitted contact surface.
+
+**So option (a) is defensible for plantar contact** — standing, and the stance phase of a crawl.
+
+**The caveat is load-bearing for THIS programme, not hypothetical.** Height above a piece's lowest
+point is a rigid-body fact that holds in any pose; *which* part of the piece faces the floor is not.
+`docs/LOG.md` row 27 records a prone search that reached 16.0 s of locomotion and 973 mm of travel
+**with the ankle at −2.524 rad against a declared ±0.873 — 145° of plantarflexion, the feet folded
+back on themselves.** That is dorsum-down, and it is exactly the pose in which these 73 reversed
+normals would carry force the wrong way. That result was withdrawn because it exploited the missing
+joint limits, so it is not a valid solution — but it shows the search space the optimiser explores
+contains dorsum-down poses, which makes the caveat a live question rather than a remote one.
+
+**A near-miss worth recording, because it is the sixth of the day and the first one caught before
+it was written.** `crawl-best/report.json` carries `psi_ankle: -2.039`, and against a declared ankle
+range of ±0.873 rad that reads immediately as 117° of plantarflexion — dorsum-down, caveat
+confirmed, story closed. **It is not an angle.** `scripts/crawl.py` bounds it at (−3.14, 3.14) and
+uses it as `phi + q['psi_ankle']` inside the gait phase: it is a **phase offset**, and −2.039 rad of
+phase says nothing whatever about the foot's orientation. Checking what the number was took one
+grep; five of today's errors would each have been caught by the same one.
+
+**The measurement that actually settles (a), pre-registered:** over a crawl trajectory that
+**respects the declared joint limits**, compute the minimum height above the floor of the 73 folded
+triangles, across all frames.
+
+* **They stay clear of the floor throughout** → (a) is defensible for the crawl as well as for
+  standing, and this line can stop at an interim with the reason recorded.
+* **They reach the floor in any frame** → (a) is off the table, the reversed normals are in the load
+  path of the programme's target behaviour, and the choice is (b) or (c).
+* **No prediction.** Whether 50° of plantarflexion puts dorsal toe skin on the ground is a geometric
+  question I cannot answer by reasoning, and reasoning past the evidence is what produced five
+  wrong readings on this line today.
+
 **Why this was worth having from a retired control.** I retired it for firing a threshold at the
 wrong separation, and it then answered a question I had not asked: whether this line's headline
 quality metric measures accuracy at all. It does not. A control kept running after its gate was
