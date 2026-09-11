@@ -3429,3 +3429,78 @@ What has changed is that the parametrization no longer stops at the scaffold.
    own `advance` and accepted displacement. It is what makes a zero-sized step askable at all, since
    every cut-back re-associates and so never tested the step alone.
 
+   ### The root cause: the load fraction scales one term of the bound and not the other
+
+   **A step of size zero fails identically.** Requested at fraction 0.0625:
+
+   | requested ds | inverted | bounds moving >1 mm | worst |
+   |---:|---:|---:|---:|
+   | 0.023 | 4 | 39 | 6.80 mm |
+   | 0.0029 | 4 | 25 | 7.14 mm |
+   | 0.00073 | 4 | 25 | 7.18 mm |
+   | **0 exactly** | **4** | **26** | **7.1912 mm** |
+   | 0 again, same state | 4 | 26 | 7.1912 mm |
+
+   Shrink the step 128× and the bound displacement does not shrink — it **converges** to 7.19 mm.
+
+   **The mechanism, which follows without guessing.** A held node's bound is
+   `on_plane + gap0 + fraction*travel`, with `on_plane = n·(c − X[base])`. At a zero increment `gap0`
+   and `fraction*travel` are bit-identical to the accepted step's, so **the entire 7.19 mm is
+   `on_plane` — the association term.** The load fraction scales `travel` and does **not** scale
+   `on_plane`, which is recomputed absolutely and applied instantaneously. Once the association has
+   drifted, several millimetres are waiting at the head of the next increment **whatever its size**.
+
+   **That accounts for the whole line.** Why no stepping rule ever helped; why adaptive stepping
+   failed on this bed; why every test from the pristine state read zero — at the start the
+   association has not drifted, so the uncontrolled term is exactly zero. **Every gate from R to AA
+   was adjusting the term that was already small.**
+
+   ### Un-withdrawing my inference, and the part of it that stays wrong
+
+   `5131bd8` withdrew `a9d5fe5` entirely on the grounds that AA's instrument was broken. That was too
+   broad, and the agent says so against its own retraction: **the step-invariance is real.** It
+   survives the seeding fix and holds across a **256× range** of ds. So:
+
+   * **"An inversion count invariant to the step size is not caused by the step" — stands.** The
+     logic was sound and the phenomenon is genuine.
+   * **"Therefore the starting configuration is already broken" — remains wrong.** The start is
+     provably clean, 0 of 54,704.
+   * **What I missed was a third branch**: *not caused by the step* admits *caused by a term the step
+     does not scale*, which is neither "at the start" nor "in the first increment". My two branches
+     were both about **where in the increment** the inversions were born; the answer was a term that
+     is not under the increment parameter at all.
+   * **The generalisable move, which I did not make and should have:** when a quantity is invariant
+     under a parameter, ask **what in the model is not a function of that parameter** — rather than
+     asking where in the parameter's range it lives.
+
+   The agent argues the third branch was not available to write down in advance, and I half agree:
+   the frame was productive — it is what made "ask for an increment of size zero" the obvious next
+   question — but "or something the fraction does not scale" was writable, and I did not write it.
+
+   ### The repair and its gate, fixed before it is built
+
+   > **Scale the association term with the load fraction, or apply it incrementally rather than
+   > absolutely, so that every term of the prescribed displacement is under the increment parameter.**
+
+   * **Gate BB, and it is a known answer rather than a threshold: a step of size zero must move
+     nothing.** `ds = 0` must produce zero bound displacement and zero inversions, from any state.
+     That the current code returns 7.19 mm is the defect stated as a test.
+   * **Regressions unchanged:** T-none, W, X, V on the plane, and R2's block cases.
+   * **Then** the affordability question re-opens on honest terms: fraction reached and wall-clock on
+     the seating drive, against AA's 6.25% and V's 0.02%.
+   * **No prediction.** I have been wrong about this regime at five levels, and right once by an
+     argument I then withdrew.
+
+   **AA's honest numbers, now that its instrument is a function**: it reaches **fraction 0.0625**,
+   6.25% of the drive against gate V's 0.02%, and the wrong-sheet price it was built to report is
+   **measurable and real** — the local best is worse than the global closest point for **124 of 4,096
+   nodes, median 0.336 mm, worst 13.831 mm.** A 13.8 mm miss is a held wrong sheet. Local search buys
+   a 300× improvement in reach and does sometimes hold the wrong surface; both belong in any decision
+   about it.
+
+   **A second way the association was not a function**, found while fixing the first: the seeding call
+   took its normal from `bed_rays`' area-weighted vertex normals and every later call from
+   `vertex_normals()` — two different fields, so a node could be handed a different normal at zero
+   motion. One field and one interpolation now, with idempotence gated at **0 of 4,097 faces changed**
+   and 0.000000 mm of point motion across repeated and returning calls.
+
