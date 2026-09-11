@@ -2248,3 +2248,52 @@ What has changed is that the parametrization no longer stops at the scaffold.
    (13.8-16.5 mm). Every instrument this line has built reports the aligned minority unless
    something forces it to account for the rest.
 
+   ### The registration-correction branch ends here, and what it leaves behind (2026-09-10)
+
+   Six instruments, in order: prescribed closest-point seating, the sliding base, rigid placement,
+   the label trim, a chest-local similarity, a vector warp, a scalar field on smoothed normals, an
+   envelope, and a distance-field reader. **Every one failed at the same place** -- establishing
+   what this body's chest wall is, relative to hers, densely enough to correct it -- and the last
+   three failed for the same reason in three different representations. A rib cage is struts with
+   air between them. Pair against it and the rays miss; close it and the closing eats the
+   difference; read a field along it and two thirds of the rays cross no bone at all. That is not
+   an instrument fault and no further instrument of this kind is pre-registered.
+
+   **What is now known, and it is not nothing:**
+   * the deformation is **91-94% normal** (`de88ef4`), so the representation question is settled;
+   * the correspondence floor on these meshes is **0.078 mm**, set by faceting as 0.135 x edge^2;
+   * a scalar field on the surface beats a vector warp everywhere and improves with scale, where the
+     vector warp's curve was flat -- the first instrument in the line that behaved like a matched one;
+   * and three rules that outlive it: score a correspondence at the separation it will be used at,
+     break the symmetry a known answer is testing, and a tolerance calibrated at zero separation is
+     a different test at eight millimetres.
+
+   **A figure this file must stop quoting without its caveat.** The "~10 mm chest-wall offset"
+   (line 971, and the 8.0 / 8.3 mm at rib 5 above) is a **mean over nearest-point pairs**, which is
+   the estimator this line measured to be biased by d^2/R and to select for already-aligned regions.
+   The distance-field reader, which selects differently, agrees with it on s0790 within 5% and is
+   36-45% below it on the other three. **It is corroborated on one subject of four and should be
+   written as "6-11 mm by a biased estimator, 5.5-6.6 mm by another" wherever it is used**, until
+   something measures it without selecting. Nothing downstream of it is safe to quote more precisely
+   than that.
+
+   **Where the breast work goes instead, pre-registered before it is built.** The target was always
+   to put a female breast on this body, and correcting the registration was one route to it, chosen
+   because seating failed first. The other route uses only surfaces that ARE continuous: this body's
+   own muscular chest wall, which has no gaps, and her breast's own shape. **Seat the breast on this
+   body's wall and let the deformation absorb the registration error**, with the result labelled for
+   what it is -- her breast adapted to this chest, not a claim about her anatomy.
+   * the sliding boundary condition of `5699cb2`, whose solver gate passed in two independent codes;
+   * from the registered pose, on the muscular bed of `88178df`, with the median penetration of
+     7.4 mm that the corrected bed leaves -- not the 45 mm that stopped the first attempt, which was
+     13 nodes;
+   * gates (a)-(d) unchanged: volume within 1%, every tet J > 0.2, the two solvers within 5%, no
+     flipped base triangle;
+   * **and one addition, because the registration error is now being absorbed rather than fixed:**
+     report the deformation's own magnitude per breast, since a seating that moves tissue by more
+     than the breast's own dimension is no longer that breast.
+
+   **Predicted:** it seats, because 7.4 mm of median penetration on a continuous bed is what the
+   solver was gated for; and the deformation magnitude lands in single-digit millimetres, which is
+   a breast adapted to a chest rather than a different breast.
+
