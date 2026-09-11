@@ -3548,3 +3548,45 @@ What has changed is that the parametrization no longer stops at the scaffold.
    stalled, and still advancing. **Regressions so far: W, X, V-on-plane and T-none all PASS** with the
    repair in, T-none reproducing the rigid translation at median and max 0.000 mm, `min J` 1.0000.
 
+   ### R2: the repair did not cause it. Persistent association degrades the control in both codes.
+
+   The pre-repair baseline (`50e7583`, separate worktree) reaches fraction 0.25 at **`min J` 0.710**;
+   the repaired run at the same fraction reads **0.920**. **Persistent association degrades the
+   rigid-translation control in both codes**, so the repair is not the cause — which is all the
+   comparison is asked to establish.
+
+   **The agent's caveat against its own favourable number is right and is adopted:** 0.710 against
+   0.920 is one fraction in two runs that took different paths there, not a controlled comparison. It
+   suffices to refute "the repair caused it", which needs only the baseline to fall at all. It is
+   **not** a measurement of how much better the repair is and must not be quoted as one.
+
+   **So a new question is open: why does persistent association cost anything on a control with a
+   known answer?** T-none holds `min J` 1.0000 under maximal staleness — but T-none has the bed
+   *removed*, so there is no association to go stale. R2's block cases have platens and a cylinder.
+
+   **The decomposition, pre-registered, and it needs no chosen tolerance.** Stale normals cost
+   nothing on a surface whose normal does not rotate, and cost a computable amount on one that does.
+   Translating a distance `d` along a cylinder of radius `R` rotates the closest point's normal by
+   about `d/R`, so the constraint error goes as **d²/R** — the same quantity the skin line spent a
+   day on.
+
+   * **Gate CC-flat, a known answer with no tolerance at all:** the **platens** under persistent
+     association must still read **0.00000%** and hold `min J` **1.000**. A plane's normal never
+     rotates, so staleness costs exactly zero there. **Any deviation is a defect, not a limitation** —
+     and it would mean the degradation is a bug rather than the price of persistence.
+   * **Gate CC-curved:** the **cylinder's** degradation must track the analytic `d²/R` staleness
+     bound. Report measured against predicted. Much larger means something beyond staleness; matching
+     means persistence has a known, quantified price on curved geometry, which is a limitation to
+     carry rather than a fault to fix.
+   * **This separates a bug from a cost**, which the single R2 number cannot do, and it is why the
+     block cases under persistent association are a new gate rather than a re-run of the old one.
+
+   **R2's earlier pass is re-scoped, not retired.** Platens 0.00000% and cylinder 6.382 µm stand for
+   the configuration they were measured in, which is **association-free**. Quoting them for the
+   persistent-association configuration would be the false-pass shape at the level of what a gate
+   covers rather than what a flag set.
+
+   **BB′ is built with its threshold declared before the run** — 6 zero-sized steps at one fixed
+   fraction, each from the last one's answer, fixed point at **1 µm**, a thousandth of the bed's 1 mm
+   facet scale, and the whole sequence printed either way.
+
