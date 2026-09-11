@@ -922,3 +922,29 @@ skin-to-bone/muscle depth is 11.0 mm, so 20 mm from bone surface is genuinely sk
 under it. Gates 1-4 unchanged; the anchor count is reported for both. **Predicted:** the corrected
 measure anchors a small fraction -- the toe tips, the lateral forefoot, the hands and the fleshy
 trunk -- rather than two thirds of the body.
+
+#### A known answer this line has never had, and what the chest wall found without it
+
+Every gate above compares a fit to another fit. Gate 1 asks whether the warped bone group sits no
+further from the scaffold than the per-segment similarity leaves it; the zero-warp control asks
+whether the pipeline reproduces the binding map. Neither asks the question a known answer asks:
+**displace this body's own bones by a warp we chose, and does the fit return it?** The chest-wall
+line (`docs/BODY_PARAMETERS.md`) built exactly that test and **failed it at 1.194 mm RMS against a
+1 mm bar**, with its own fit residual at the correspondences reading 0.01 mm.
+
+The cause is the correspondence, and this line uses the same one. Targets here are "the nearest
+point ON the scaffold's bone mesh" (`fit_skin_warp.py`); measured against a known true preimage,
+a nearest-point target is off by **mean 0.671 mm, p90 2.281 mm, max 7.152 mm** for displacements
+averaging 1.53 mm -- the d²/R bias nearest-point matching carries on a curved surface, and on a
+rib a few millimetres thick that is most of the signal. A field applied purely along the surface
+normals, identifiable by construction, recovered no better, so it is not the well-known tangential
+blindness alone.
+
+**Additional control, fixed now, to run after the anchored fit reports** -- an addition, not a
+change to any gate: displace this body's own bone groups by a known smooth field of the fitted
+family, fit that field with this line's own pipeline and correspondences, and report the recovery
+RMS both pointwise and to the surface. **Predicted:** it lands near the chest wall's 1.2 mm rather
+than near this line's 0.571 mm correspondence residual, because the residual measures agreement
+with targets and the control measures agreement with the truth. If it does, gate 1's margin of
+1 mm is inside the bias, and no result here that turns on a millimetre can be read as a
+transform's doing.

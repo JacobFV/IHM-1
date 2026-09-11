@@ -1185,6 +1185,34 @@ done; the others have moved.
    or landmark parameterisation along each rib, normal shooting, or a symmetric matching that is
    unbiased on curvature, with this same known-answer gate to prove it before any subject is fitted.
 
+   **Accepted, and the correspondence is pre-registered here before it is built (2026-09-10).**
+   Failing at gate 1 is worth more than failing at gate 4 would have been: it was reached with this
+   body's own bones on both sides and a field of the fitted family, so nothing about her CT, her
+   segmentation or the atlas is implicated, and no better warp built on these targets can be
+   expected to pass. Both readings of the gate were measured rather than the convenient one, and
+   the purely normal control rules out tangential blindness as the explanation. That is the
+   standard the rest of this line is held to.
+
+   * **The instrument: symmetric normal shooting.** For each source sample, shoot along the SOURCE
+     surface's own outward normal to the target surface and take the first intersection within a
+     cap; shoot back from that hit along the TARGET's normal; keep the pair only where the return
+     lands within 1 mm of the source. Direction then comes from the surfaces rather than from
+     proximity, which is what carries the d²/R bias.
+   * **Gate 0, the correspondence itself, before any warp is fitted.** Against the known preimage
+     of a known smooth field, the target error must be **<= 0.2 mm mean and <= 0.5 mm p90** -- an
+     order below the 0.671 mm and 2.281 mm the nearest-point rule gives on the same test. A
+     correspondence is judged as an instrument before anything is fitted with it.
+   * **Gate 1 unchanged:** the warp recovers a known field to **1 mm RMS**, reported both pointwise
+     and to the surface, exactly as it was failed.
+   * **Gates 2-4 unchanged**, and only reached if gate 0 and gate 1 pass.
+   * **Reported:** how many samples are dropped for failing the return test, and where.
+
+   **Predicted before it runs:** normal shooting brings the target error under 0.2 mm and the
+   recovery under 1 mm. If it does not, the limit is the surfaces themselves -- a rib is a few
+   millimetres thick and these meshes are not dense -- and the 1 mm bar would have to be re-derived
+   from what the geometry can support, which is a new pre-registration and not a loosening of this
+   one.
+
    **Seat it in two steps: place, then conform. Fixed 2026-09-10, before it runs.** 45 mm of
    overlap is not tissue deformation, it is placement -- the breast is another woman's tissue where
    a similarity registration put it, and a quasi-static solve pushing 45 mm of interpenetration out
