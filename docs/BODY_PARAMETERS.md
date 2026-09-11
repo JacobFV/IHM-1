@@ -1906,6 +1906,42 @@ done; the others have moved.
    than described (11 supporting entities, all male; 0 uterine; 0 placental), and
    the audit turned up a second problem in front of the first: the testis meshes
    are 6.7 mL against a 12–30 mL reference.
+
+   **Audited across ten solid organs (2026-09-10, `scripts/audit_organ_volumes.py`), and the
+   headline is not the testis.** **Seven of the ten are not watertight**, so no volume can be
+   computed for them at all: left kidney 10 boundary edges, right kidney 22, spleen 58, pancreas 52,
+   gallbladder 6, urinary bladder 24, stomach 22. A divergence-theorem volume on an open surface
+   returns a number rather than an error, which is exactly how this would have been missed.
+
+   | organ | volume | reference (stated, not catalogued) | ratio to low end |
+   |---|---:|---:|---:|
+   | left testis | 6.72 mL | 12–30 mL | **0.560x** |
+   | right testis | 6.78 mL | 12–30 mL | **0.565x** |
+   | prostate | 11.59 mL | 15–30 mL | **0.772x** |
+
+   **The testis is not alone** -- every organ that can be measured reads low -- but three organs
+   cannot distinguish a scale fault from three mesh faults, and the spread (0.560 to 0.772) is wide
+   enough that they are not obviously one factor. The reference ranges are typical adult male values
+   stated in the script so they can be argued with; they are **not** from any source catalogued in
+   `data/sources/`, and no gate is attached to them.
+
+   **A tempting link that does NOT hold, recorded so it is not made later.** The mass ledger records
+   tissue volumes at sourced densities weighing 60.00 kg against a profile demanding 70.77, absorbed
+   by a uniform 1.179x inflation. Undersized organs look like an explanation and are not: the ten
+   audited organs total roughly 1.1 L at the low end of their references, so even at 0.56x they
+   account for **under half a kilogram of the 10.77 kg shortfall, under 5%**. The organ defect and
+   the mass shortfall are separate problems.
+
+   **The known answer failed first, and the bar was not moved.** The gate initially asked an
+   inscribed icosphere to match its *sphere's* closed form within 2e-3 and read 2.17e-3 at
+   subdivision 4. That is not a fault in the volume reader -- an inscribed polyhedron understates by
+   construction -- so the bar was testing tessellation fineness while claiming to test the reader.
+   The bar stands as failed and the **instrument** was replaced, which is the permitted move: the
+   cube now gates exactness at machine precision (rel 2.12e-16), and the sphere's deficit must
+   converge at **second order**, falling by a factor near 4 per subdivision. It measures **3.981x
+   and 3.995x**, with the deficit one-signed as an inscribed polyhedron requires. That is a sharper
+   test than the absolute bar could ever have been: a sign error, a factor of two, or a winding bug
+   does not produce clean second-order convergence toward the analytic value.
 5. **Seven measured female `shaft_bearing_fraction` values.** Sharper than
    "measured female values for the hair fields": the parameter exists on every
    field already, six of the seven androgen-dependent ones assume 1.0, and 1.0 is
