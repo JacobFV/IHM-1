@@ -865,6 +865,47 @@ nothing else does.
 placement still fails with 3 mm of room and a criterion that passes on the source, then the fit is
 what is wrong, not the geometry -- and that would be the first evidence pointing there.
 
+### Result: the room is real, and this body's RIGHT FEMUR is not its left one mirrored (73dc626)
+
+Gate 2 passes 6 of 6 (right wins by 48-62%). Gate 4 falls roughly tenfold -- overlap 12-19% under
+the canonical target becomes **0.00-2.13%** -- so the 3 mm of joint space is real and two knees now
+pass outright; four sit at 1.17-2.13% against a 1% bar. Gate 1 was re-earned on the scaffold's bones
+after failing three times, each fix to the SEARCH and never to a threshold: 24 principal-axis starts
+put the tibia 129 deg out (the scaffold's `tibia_r` body carries the **fibula**, which the OAIZIB
+tibia label does not, so the two clouds' principal frames genuinely disagree), a one-way residual has
+a degenerate minimum at 0.00 mm reachable by shrinking the source onto a point, and a cheap screen is
+only a proxy for the full fit. It now searches 2,072 fixed rotations, bounds scale to 0.5-2.0, and
+finishes the best three. A frame bug came out with it: left-right is **z** in the scaffold's ground
+frame and **x** in the canonical one, and fixing it took the medial-cartilage check from 4 of 6 to
+6 of 6.
+
+**Gate 3 fails, and my prediction that this would indict the fit is refuted by its own ceiling.**
+Each subject's OWN bone surface, carried through the same map, lands only 79-91% within 3 mm of the
+scaffold bone and **42-53% inside** it. The cartilage scores no worse than the bone it is glued to,
+and often better. Roughly half inside is what two coincident surfaces look like.
+
+**Why: the target is 265 faces with 18.5 mm median edges, and it is the odd one out.** Every other
+bone pair in this model is its opposite exactly mirrored -- l_tibia against r_tibia and l_patella
+against r_patella agree to **0.00 mm** on every vertex -- but `l_femur.vtp` is **908 faces** and
+`r_femur.vtp` is **265**, and mirrored they differ by a median of **7.58 mm** and up to 15.36 mm.
+The right femur is not this body's left femur reflected; it is a different, coarser surface. A 3 mm
+placement criterion sits far below an 18.5 mm facet, so on the right knee gate 3 measures the
+target's resolution rather than the registration.
+
+That asymmetry reaches past this gate. The knee gaps recorded above -- 3.02 mm right against 4.57 mm
+left -- are measured on these same meshes, so part of that difference is the right femur's own
+coarseness rather than the body's anatomy. Any bilateral femur measurement in this repository
+inherits it.
+
+**Next, pre-registered before it is run:** re-target the right knee onto **the left femur mirrored**,
+which is what every other bone in this model already is, and re-run gates 1-4 unchanged. Reported
+beside them: the same run on the present right femur, so the two targets can be read against each
+other. **Predicted:** the ceiling rises toward the left knee's and gate 3's placement improves
+markedly, while gate 4's overlap moves little, because overlap is set by the joint's gap and not by
+the facet size. **Not decided here:** whether the PLANT should carry the mirrored femur. That
+changes contact geometry and every stance result measured on it, and it is the owner's call, not a
+registration detail.
+
 **The placement gate fails its own known answer.** In each scan's own frame, before any
 registration, only 85-97% of the femoral cartilage surface lies within 3 mm of its own femur --
 cartilage is up to ~3 mm thick and the gate samples its whole surface. A gate the ground truth
