@@ -2291,3 +2291,61 @@ parser that could disagree. And the trajectory's joints carry `{value, speed, un
 rotational coordinates are compared**, with the five `unit: m` translations skipped, because
 comparing a pelvis translation in metres against a range in radians is the units error this
 programme's ledger opens with.
+
+### The forefoot is a mitten, and it explains the toes' ceiling
+
+Observed by eye — "the toes look like they are all glued together" — and measured. The test needs no
+threshold because it carries its own control: the minimum distance from the skin to the straight
+segment between two adjacent toe-bone centroids, against the distance from the **middle of a single
+toe** to the skin. A real cleft brings the surface close to the inter-toe line; a mitten leaves that
+line as deep in flesh as a toe's own middle.
+
+| | inside a single toe (control) | between adjacent toes | ratio |
+|---|---:|---:|---:|
+| left forefoot | 8.81 mm | 8.15 mm | **0.92** |
+| right forefoot | 8.74 mm | 8.59 mm | **0.98** |
+
+**The skin between the toes is as far from the surface as the middle of a toe is.** There are no
+inter-digital clefts. The forefoot is one fused lobe over five phalanges.
+
+**This explains the toes' enclosure ceiling, which was the one anomaly nobody had accounted for.**
+Every other segment's own anatomy contains its own bones at **1.000**; the toes sit at **0.966 /
+0.968**, and the canonical body's toe bones are 3.4% outside its own toe skin. A mitten has no
+digit-shaped lobes to contain digit-shaped bones, so the phalanges of the outer toes protrude
+through a surface that was never shaped around them. The ceiling is a property of the mesh, not of
+any registration.
+
+**And it reframes the gate-2 and gate-4 failures there.** They have been treated as a warp problem
+through the anchor rule, the correspondence rule, the trim and a 28% more accurate map, none of
+which moved them. A fused forefoot is a different kind of defect: **the surface being carried is not
+anatomically toe skin.** No warp of a mitten produces five toes.
+
+**Limitation, stated because it bounds the claim.** Only three of five proximal toe phalanges matched
+by name per foot (second, third, fourth), so this is **two inter-toe gaps per foot, not four**. The
+great and fifth toes are unmeasured here and the ratio is a median over two samples. The direction is
+unambiguous; the precision is not.
+
+### s1067 is measurably the least buried breast
+
+Also observed by eye — "s1067 looks the most realistic" — and the eye was tracking a real quantity.
+Taking the nearest chest-wall vertex for each sampled breast vertex and comparing the anterior
+coordinate (+z is anterior in this frame):
+
+| subject | breast vertices behind the chest wall |
+|---|---:|
+| **s1067** | **32.7%** |
+| s1159 | 47.5% |
+| s0790 | 50.3% |
+| s0970 | 51.2% |
+
+s1067 buries a third of its tissue where the others bury half. It is not that the render flattered
+it from one camera; it penetrates measurably less. **That makes s1067 the sensible subject to fit the
+seating on**, rather than s0790 which the renders have been using, or s1159 which the solver work
+used.
+
+**A test that failed for a real reason, kept because the failure is the useful part.** The first
+version of this measurement asked whether the point between two toes is *inside* the skin — binary,
+no threshold, and exactly right in principle. Its known answer failed: the skin's own centroid read
+OUTSIDE. The detector was not at fault. **The canonical skin has 1,512 boundary edges and is an OPEN
+surface**, so a ray through a hole flips the parity and containment is undefined on it. The
+precondition was never checked before the test was written.
