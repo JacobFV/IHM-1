@@ -1487,6 +1487,47 @@ trade and is worth testing precisely because it is counterintuitive.
   honest scale of what a correspondence change can do for this line, and is worth stating before
   anyone builds a third one.
 
+### The hybrid: 1.686 mm. Predicted below 2.00 means a real repair, and it is.
+
+| arm, amplitude 2 | mean target error (normal) | **to-surface recovery** |
+|---|---:|---:|
+| nearest, full coverage | 1.933 mm | 2.138 mm |
+| Control C (nearest, reduced coverage) | 0.529 mm* | 2.758 mm |
+| shooting | **0.444 mm** (best targets) | 2.697 mm |
+| **hybrid** | 1.962 mm (**worst targets**) | **1.686 mm** (best recovery) |
+
+\*same-population figure. Predicted 2.00-2.13; **below 2.00 means the effects combine better than
+additively and the line has a real repair.** It is 1.686 -- 21% better than the best previous arm.
+
+**The arm with the WORST mean target error has the BEST recovery, and the arm with the best targets
+is third of four.** Ranked by mean target error the order is very nearly the reverse of the ranking
+by recovery. This is the day's theme at its sharpest: **mean target error does not predict recovery
+on this line, and never did.**
+
+**The proposed mechanism sharpens it further, and it is mine to test rather than accept.** The
+hybrid gives shot-quality targets to 62.8% of points and matches the nearest rule only on the hard
+torso geometry. Since the torso tail dominates the mean, the mean hides an improvement spread
+across two thirds of the body. If that is right, **mean target error was the wrong SUMMARY
+STATISTIC, not merely the wrong quantity** -- a distinction worth having, because the first is
+repairable and the second is not.
+
+**Pre-registered before it is measured: per-segment recovery for the hybrid against full-coverage
+nearest.** The two differ only in which targets the shot supplies, so the comparison is clean.
+
+* **Predicted: the hybrid's advantage is concentrated where its shot share is high, and is near
+  zero on the torso** (shot share 6.8%), where it is using nearest targets anyway. If the torso
+  improves as much as the well-covered segments, the mechanism is wrong and something other than
+  target provenance is driving the gain.
+* This is a mechanism test with no gate attached, and it is the cheap version of the question that
+  would otherwise be answered by building a fourth correspondence.
+
+**Correcting a ceiling I set one entry ago.** `380df28` concluded "the entire normal-shooting
+exercise is then worth under 0.15 mm". That was wrong, and wrong for a reason worth naming: it
+assumed shooting would be used as a **replacement** for the nearest rule. As a **component**, with
+its drops backfilled rather than discarded, it is worth **0.452 mm** of recovery (2.138 -> 1.686) --
+three times the ceiling I set. The measurement that produced the ceiling was sound; the framing
+around it was not, because I compared two rules when the answer was to use both.
+
 **Why this was worth having from a retired control.** I retired it for firing a threshold at the
 wrong separation, and it then answered a question I had not asked: whether this line's headline
 quality metric measures accuracy at all. It does not. A control kept running after its gate was
