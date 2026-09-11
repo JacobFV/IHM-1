@@ -833,6 +833,38 @@ it needs, or the atlas knee has to be corrected before its bones can carry any.
 point exceeds 10.000 mm -- less where the surface curves toward the shift, because this is a
 nearest-surface distance and not a displacement.)
 
+### Knee cartilage, second attempt: onto the bones that have room. Gates fixed 2026-09-10
+
+The pilot registered onto the CANONICAL femur and tibia, which are 0.64 mm apart, so placement and
+joint space could not pass whatever the fit did. The scaffold's are 3.02 mm apart, which is what
+the subjects' own bones keep, and the scaffold's bones are also what the plant moves -- cartilage
+carried there is cartilage the engine can use as contact geometry. So the target changes and
+nothing else does.
+
+* **The instrument.** `scripts/register_knee_cartilage.py`'s one-way trimmed ICP, unchanged, with
+  the SCAFFOLD's femur and tibia meshes as the target in place of the canonical ones.
+* **Gate 1, known answer.** The scaffold's own femur and tibia, truncated as a knee MRI's field of
+  view crops them, moved by a known similarity, recovered within **2 mm, 2 deg, 1%** -- the gate
+  the pilot passed at 0.026 mm on the canonical bones, now to be passed on these.
+* **Gate 2, which knee.** Unchanged: each subject is fitted to both knees and the lower one-way
+  residual must win by at least 20%, or the subject is excluded. Every OAI knee is a right knee,
+  so this remains a real check.
+* **Gate 3, placement -- and the criterion is validated on the SOURCE before it judges anything.**
+  The pilot's "95% of the cartilage surface within 3 mm of the bone" was void as a measurement: on
+  the subjects' own scans, before any registration, it reads 85-97%. The replacement is the same
+  test on the cartilage's BONE-FACING surface only (the half whose outward normal points at the
+  bone), and it is first run in each subject's own frame, where the answer is known: **if it does
+  not reach 95% there, the criterion is void and is reported as void rather than used.** Only if
+  it passes on the source is it applied to the mapped cartilage against the scaffold's bone.
+* **Gate 4, joint space.** Unchanged: mapped femoral and tibial cartilage overlap by at most 1% of
+  the smaller volume, at the plant's reference pose.
+* **Reported, not judged:** cartilage thickness, and the cartilage-inside-bone fraction by volume.
+
+**Predicted before it runs:** gate 4 passes on most knees, because 3.02 mm of room is what two
+~1.5 mm layers need, and the cartilage-inside-bone fraction falls from 4.5-20% to near zero. If
+placement still fails with 3 mm of room and a criterion that passes on the source, then the fit is
+what is wrong, not the geometry -- and that would be the first evidence pointing there.
+
 **The placement gate fails its own known answer.** In each scan's own frame, before any
 registration, only 85-97% of the femoral cartilage surface lies within 3 mm of its own femur --
 cartilage is up to ~3 mm thick and the gate samples its whole surface. A gate the ground truth
