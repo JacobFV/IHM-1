@@ -1312,6 +1312,46 @@ done; the others have moved.
    field's scale, no warp on these meshes can carry a chest wall, and the honest end of this line
    is to say so rather than to fit one.
 
+   **The curve is FLAT, L\* does not exist below 40 mm, and 4x the sampling changes nothing. This is
+   the end of the line, and not for the reason predicted.**
+
+   | surface RMS, mean of 5 seeds, amplitude fixed at 3.1 mm | L = 5 mm | 10 mm | 20 mm | 40 mm |
+   |---|---:|---:|---:|---:|
+   | present density (~3,300 correspondences, ~3.6 mm apart) | 1.53 | 1.58 | 1.47 | 1.52 |
+   | 4x density, paired seed 0 at L = 5 (13,496 correspondences, ~1.8 mm apart) | 1.595 vs 1.600 | | | |
+
+   **L\* is above 40 mm at both densities.** A field varying over 40 mm recovers no better than one
+   varying over 5 mm, and quadrupling the correspondences improves the paired seed by 0.3%. So the
+   limit is neither the field's scale nor the sampling -- the two things the curve was built to
+   separate -- and the prediction of L\* between 10 and 20 mm is refused in a way that makes the
+   question moot.
+
+   **What binds, measured.** The warp fits its correspondences to 0.012 mm and is already 0.818 mm
+   off 1-2 mm away from one, 1.309 mm at 2-4 mm, 1.652 mm at 4-8 mm, against a 0.288 mm floor for
+   the measure itself (an identity warp on coinciding surfaces). The reason is the surface: on this
+   body's ribs the normal turns a median 4.6 deg between samples 1-2 mm apart and 7.9 deg at 2-4 mm,
+   and a 3.1 mm displacement along normals 7.9 deg apart differs by 0.43 mm in direction. Normal
+   shooting returns correct target POINTS, but the displacement VECTORS it returns inherit that
+   turning, so they are not the restriction of any smooth 3D field, and a thin-plate spline chasing
+   them oscillates between its own data. The three limits reported beside it -- the correspondence's
+   0.078 mm discretisation floor, the warp's 0.434 mm held-out error, the 0.288 mm measure floor --
+   are all an order below what actually binds.
+
+   **Gate 1b, measured without the correspondence's filters** (the return and agreement tests keep
+   only pairs that already nearly coincide -- 3-7% here -- which biases both the magnitude and the
+   scale): her ribs stand 4.1-5.4 mm mean (2.7-3.7 median) from this body's under the whole-torso
+   similarity, and that offset field decorrelates to 1/e within **2-6 mm** on all four subjects.
+   Against an L\* above 40 mm, the deformation is an order finer than anything this instrument can
+   represent. **Caveat, and it cuts both ways:** the offsets are measured along each sample's own
+   normal, so this number inherits the same normal-turning contamination that limits the warp. What
+   is certain is that the two are not separated by the margin the gate needed.
+
+   **So: no warp of this family, fitted on these meshes, can carry this chest wall**, and the
+   honest end is to say so. One avenue remains and is deliberately NOT taken here, because it would
+   be a new instrument and a new pre-registration: the obstacle is the roughness of the target
+   normals, so fitting the normal component as a SCALAR field on the surface, or smoothing the
+   target surface before shooting, attacks the thing that binds rather than the two that do not.
+
    **Normal agreement is adopted, on the argument and not on the score (2026-09-10).** A hit whose
    surface faces away from the source is on the far wall of the rib: it is not the partner of the
    source point, it is a different part of the bone that happens to lie along the ray, and the

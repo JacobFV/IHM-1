@@ -109,7 +109,7 @@ def choose_lambda(S, D, seed=0):
     return max(ok), dict(grid=list(LAMBDA_GRID), cv_rms_mm=[1000 * r for r in rms], chosen=max(ok))
 
 
-def correspondences(src, body, G, warp=None, seed=0):
+def correspondences(src, body, G, warp=None, seed=0, per_rib=None):
     """Her rib surfaces onto this body's, by SYMMETRIC NORMAL SHOOTING (ihm/anatomy/normal_shooting.py).
 
     The source surface is hers carried into body space -- by the warp of the previous pass where
@@ -122,7 +122,7 @@ def correspondences(src, body, G, warp=None, seed=0):
         if lab not in src or lab not in body: continue
         V, F = src[lab]
         moved = warp.apply(V) if warp is not None else CW.apply(G, V)
-        r = shoot_pairs(moved, F, *body[lab], n=PER_RIB, cap_m=SHOOT_CAP_M,
+        r = shoot_pairs(moved, F, *body[lab], n=per_rib or PER_RIB, cap_m=SHOOT_CAP_M,
                         return_tol_m=SHOOT_RETURN_TOL_M, seed=seed + i,
                         min_normal_agreement=SHOOT_AGREEMENT)
         S.append(r["source"]); T.append(r["target"])
@@ -281,10 +281,13 @@ def _behind(subject, side, Y, F, workdir):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--subject", choices=CW.SUBJECTS); ap.add_argument("--stage", default="all", choices=("all", "gate0", "known-answer"))
+    ap.add_argument("--subject", choices=CW.SUBJECTS); ap.add_argument("--stage", default="all", choices=("all", "gate0", "known-answer", "curve", "scale"))
+    ap.add_argument("--density", type=int)
     a = ap.parse_args()
     OUT.mkdir(parents=True, exist_ok=True)
     body = CW.body_meshes()
+    if a.stage == "curve": stage_curve(body, a.density); return
+    if a.stage == "scale": stage_scale(body); return
     g0_ok, g0 = gate0(body)
     (OUT / "gate0.json").write_text(json.dumps(g0, indent=2) + "\n")
     if not g0_ok:
@@ -338,6 +341,130 @@ def main():
             f"{100*r['gate4_behind_wall']['left']['volume_behind_wall']:.2f}% / "
             f"{100*r['gate4_behind_wall']['right']['volume_behind_wall']:.2f}% "
             f"{'pass' if r['gate4_behind_wall']['passes'] else 'FAIL'} -> {'PASS' if r['passes'] else 'FAIL'}")
+
+
+# ---- gate 1a, the resolution curve, and gate 1b, the real field's scale -------------------------
+# The bar of 1 mm measured an unstated test field, so it is replaced by a curve (docs/BODY_PARAMETERS.md,
+# 1615a32). Amplitude is held at the 3.1 mm of the original field so the curve varies SCALE only, and
+# the two densities share seeds so the curves are paired.
+CURVE_L_MM = (5.0, 10.0, 20.0, 40.0)
+CURVE_SEEDS = 5
+CURVE_DENSITIES = (300, 1200)                  # the present correspondence density, and 4x it
+CURVE_AMPLITUDE_M = 3.097e-3
+CURVE_LAMBDA = 1e-4                            # the flat region: cross-validated RMS was 0.434 mm from 1e-6 to 1e-4
+
+
+def tps_fit_direct(S, D, lam):
+    """The same system as tps_solve, as a saddle-point LU solve: [[K+lam I, P],[P^T, 0]][w;a] = [D;0].
+    Agrees with the eigendecomposition route to 5e-13 and is 55x faster at n=900; LU ('gen') rather
+    than the symmetric path, which is 10x slower here for want of threading."""
+    import scipy.linalg as sla
+    n = len(S)
+    A = np.zeros((n + 4, n + 4))
+    A[:n, :n] = SW.phi(cdist(S, S)) + lam * np.eye(n)
+    P = np.hstack([S, np.ones((n, 1))])
+    A[:n, n:] = P; A[n:, :n] = P.T
+    rhs = np.zeros((n + 4, 3)); rhs[:n] = D
+    z = sla.solve(A, rhs, assume_a="gen")
+    return z[:n], z[n:]
+
+
+def random_field(chest, L_m, seed, amplitude_m=CURVE_AMPLITUDE_M):
+    """A known smooth field of the FITTED family with a set spatial scale: thin-plate-spline anchors
+    spaced about L_m (one per occupied cell of an L_m grid, origin jittered by the seed), random
+    weights projected onto P^T w = 0, then rescaled so the mean displacement is amplitude_m whatever
+    L is -- otherwise the curve would confound scale with size."""
+    rng = np.random.default_rng(seed)
+    pts = np.vstack([CW.area_samples(*chest[l], 4000, seed * 97 + i) for i, l in enumerate(chest)])
+    origin = pts.min(0) - rng.random(3) * L_m
+    cell = np.floor((pts - origin) / L_m).astype(np.int64)
+    _, first = np.unique(cell, axis=0, return_index=True)
+    anchors = pts[np.sort(first)]
+    P = np.hstack([anchors, np.ones((len(anchors), 1))])
+    Q, _ = np.linalg.qr(P, mode="complete"); Q2 = Q[:, 4:]
+    w = Q2 @ rng.standard_normal((Q2.shape[1], 3))
+    field = SW.Warp(np.eye(4), anchors, w, np.zeros((4, 3)), dict(kind=f"known field L={L_m}"))
+    probe = np.vstack([CW.area_samples(*chest[l], 1500, 31 + i) for i, l in enumerate(chest)])
+    mean = float(np.linalg.norm(field.displacement(probe), axis=1).mean())
+    field.weights *= amplitude_m / max(mean, 1e-12)
+    return field, len(anchors)
+
+
+def curve_fit(moved, chest, per_rib, seed):
+    """Two passes at a fixed lambda, with the LU solve: the same protocol at both densities."""
+    warp = None; kept = 0
+    for _ in range(PASSES):
+        S, T, drops = correspondences(moved, chest, np.eye(4), warp, seed, per_rib=per_rib)
+        w, a = tps_fit_direct(S, T - S, CURVE_LAMBDA)
+        warp = SW.Warp(np.eye(4), S, w, np.vstack([a[:3], a[3]]), dict(kind="curve"))
+        kept = len(S)
+    return warp, kept
+
+
+def surface_rms(warp, moved, chest, seed=0):
+    out = []
+    for i, l in enumerate(chest):
+        tree = cKDTree(CW.area_samples(*chest[l], 40000, 300 + i))
+        out.append(tree.query(warp.apply(CW.area_samples(*moved[l], 1500, 500 + i + seed)))[0])
+    return float(np.sqrt((np.concatenate(out) ** 2).mean()))
+
+
+def stage_curve(body, density=None):
+    chest = {l: body[l] for l in CW.FIT_LABELS}
+    rows = []
+    for per_rib in ([density] if density else CURVE_DENSITIES):
+        for L in CURVE_L_MM:
+            for seed in range(CURVE_SEEDS):
+                field, n_anchor = random_field(chest, L * 1e-3, seed)
+                moved = {l: (field.apply(V), F) for l, (V, F) in chest.items()}
+                t0 = time.time(); warp, kept = curve_fit(moved, chest, per_rib, seed)
+                rms = surface_rms(warp, moved, chest, seed)
+                rows.append(dict(density=per_rib, L_mm=L, seed=seed, anchors=n_anchor, kept=kept,
+                                 surface_rms_mm=1000 * rms, seconds=time.time() - t0))
+                say(f"  density {per_rib}/rib, L {L:.0f} mm, seed {seed}: {n_anchor} anchors, {kept} correspondences, "
+                    f"surface RMS {1000*rms:.3f} mm ({time.time()-t0:.0f} s)")
+            got = [r["surface_rms_mm"] for r in rows if r["density"] == per_rib and r["L_mm"] == L]
+            say(f"  -> density {per_rib}/rib, L {L:.0f} mm: surface RMS mean {np.mean(got):.3f} mm "
+                f"(min {np.min(got):.3f}, max {np.max(got):.3f})")
+        (OUT / f"curve_{per_rib}.json").write_text(json.dumps([r for r in rows if r["density"] == per_rib], indent=2) + "\n")
+    for per_rib in sorted({r["density"] for r in rows}):
+        means = {L: float(np.mean([r["surface_rms_mm"] for r in rows if r["density"] == per_rib and r["L_mm"] == L])) for L in CURVE_L_MM}
+        star = min([L for L, m in means.items() if m <= 1.0], default=None)
+        say(f"L* at density {per_rib}/rib: {star if star else 'above 40 mm'} "
+            f"({', '.join(f'{L:.0f}mm:{m:.2f}' for L, m in means.items())})")
+    return rows
+
+
+def stage_scale(body):
+    """GATE 1b: the spatial scale of the REAL offset field -- her registered ribs against this body's
+    -- as the distance over which it decorrelates to 1/e."""
+    chest = {l: body[l] for l in CW.FIT_LABELS}
+    out = {}
+    for subject in CW.SUBJECTS:
+        src = CW.subject_meshes(subject)
+        G = np.array(json.loads((ROOT / "data/derived" / CW.REGISTERED[subject] / "manifest.json").read_text())["transform"])
+        S, T, drops = correspondences(src, chest, G, None, 0, per_rib=600)
+        d = T - S
+        d = d - d.mean(0)                                   # the constant part is a translation, not structure
+        tree = cKDTree(S)
+        bins = np.arange(0, 0.121, 0.005); corr = []
+        pairs = tree.query_pairs(0.12, output_type="ndarray")
+        rsep = np.linalg.norm(S[pairs[:, 0]] - S[pairs[:, 1]], axis=1)
+        dot = np.einsum('ij,ij->i', d[pairs[:, 0]], d[pairs[:, 1]]) / (d ** 2).sum(1).mean()
+        for lo, hi in zip(bins[:-1], bins[1:]):
+            m = (rsep >= lo) & (rsep < hi)
+            corr.append(float(dot[m].mean()) if m.sum() > 50 else np.nan)
+        corr = np.array(corr); mid = (bins[:-1] + bins[1:]) / 2
+        below = np.flatnonzero(np.isfinite(corr) & (corr <= np.exp(-1.0)))
+        scale = float(mid[below[0]] * 1000) if len(below) else float(mid[np.isfinite(corr)][-1] * 1000)
+        out[subject] = dict(decorrelation_mm=scale, magnitude_mm=float(1000 * np.linalg.norm(T - S, axis=1).mean()),
+                            correspondences=int(len(S)),
+                            correlation=[dict(r_mm=float(1000 * m), c=(None if not np.isfinite(c) else float(c)))
+                                         for m, c in zip(mid, corr)])
+        say(f"  {subject}: offset magnitude {out[subject]['magnitude_mm']:.1f} mm, decorrelates to 1/e at "
+            f"{scale:.0f} mm ({len(S)} correspondences)")
+    (OUT / "real_field_scale.json").write_text(json.dumps(out, indent=2) + "\n")
+    return out
 
 
 if __name__ == "__main__": main()
