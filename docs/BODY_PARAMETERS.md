@@ -3367,3 +3367,65 @@ What has changed is that the parametrization no longer stops at the scaffold.
    still unaccounted for. What is now established is only that they do not originate in the initial
    configuration.
 
+   **THE SEED IS FIXED, AA IS HONEST, AND THE OPEN QUESTION HAS AN ANSWER: A STEP OF SIZE ZERO FAILS
+   IDENTICALLY.**
+
+   *1. The idempotence gate, run before any AA number is quoted.* The local search now takes its
+   starting face from the face the RAY QUERY returned, reconstructed from the same primitives
+   bed_rays uses and checked against it as a known answer -- agreement 5.55e-17 m in the point and
+   2.90e-14 in the normal over 4,097 of 4,097 hits. A second defect was found in the same object
+   while fixing the first: the seeding call took its normal from bed_rays' area-weighted vertex
+   normals and every later call from vertex_normals(), two different fields, so a node could be
+   handed a different normal at ZERO motion. Both paths now use one field and one interpolation.
+
+   | two calls at identical positions | faces changed | point moved | normal moved |
+   |---|---:|---:|---:|
+   | at the initial positions | **0 of 4,097** | 0.000000 mm | 0.00e+00 |
+   | at 0.5 mm along each ray | **0 of 4,097** | 0.000000 mm | 0.00e+00 |
+   | back at the initial positions | **0 of 4,097** | 0.000000 mm | 0.00e+00 |
+
+   *2. Gate AA re-run.* It reaches **fraction 0.0625** -- 6.25% of the drive, against gate V's 0.02%
+   on the same bed -- and then stalls with **48 inverted elements, invariant from ds = 0.023 down to
+   ds = 0.00009, a 256x range**. So the step-invariance is REAL and was not only my artefact; what
+   was my artefact was the particular number 42 and the claim that it said anything about local
+   search. **THE PRICE, now measurable because the stall hook reports at a state that has actually
+   moved**: the local best is worse than the global closest point for **124 of 4,096 nodes, by a
+   median 0.336 mm and at most 13.831 mm**. A 13.8 mm miss is a held wrong sheet, exactly the
+   failure mode the gate was built to expose.
+
+   *3. The open question, answered.* At the stall the drive was asked for a step of size ZERO -- the
+   same fraction it had already accepted, so no held node is asked to travel at all.
+
+   | request at fraction 0.0625 | inverted | bounds move >1 mm | worst bound move |
+   |---|---:|---:|---:|
+   | ds = 0.023 | 4 | 39 nodes | 6.80 mm |
+   | ds = 0.0029 | 4 | 25 nodes | 7.14 mm |
+   | ds = 0.00073 | 4 | 25 nodes | 7.18 mm |
+   | **ds = 0 exactly** | **4** | **26 nodes** | **7.1912 mm** |
+   | ds = 0 again, same state | 4 | 26 nodes | 7.1912 mm |
+
+   As the step shrinks 128x the bound displacement does not shrink; it CONVERGES to 7.19 mm. A step
+   of size zero reproduces the failure exactly, twice.
+
+   **THE MECHANISM, derived rather than guessed.** A held node's bound is
+   `on_plane + gap0 + fraction * travel`, where `on_plane = n . (c - X[base])` is the displacement
+   that puts the node on its association plane. At a zero increment `gap0` and `fraction * travel`
+   are bit-identical to the accepted step's, so the entire 7.19 mm is `on_plane`: the association
+   term. **The load fraction scales one of the two terms in the prescribed displacement and not the
+   other.** The association term is recomputed absolutely from the current association and applied
+   instantaneously, so once the association has drifted, a demand of several millimetres is waiting
+   at the head of the next increment whatever its size. That is why no stepping rule helped, why
+   adaptive stepping failed on this bed, and why every test from the pristine state read zero -- at
+   the start the association has not drifted, so the uncontrolled term is zero.
+
+   **A misleading sentence of my own, caught and corrected inside the round.** The first version of
+   this message reported one number for "the bounds displaced the previous configuration". It read
+   5,660 nodes when only 4,097 are bounded at all, which is what exposed it: by that line `v` has
+   been overwritten by the active-set loop, so the quantity was the WHOLE start displacement
+   including the elastic response on free nodes, not the bound displacement. The message now reports
+   the two separately. Fifth instance of a sentence that named more than it measured.
+
+   *Added to the solver:* `seat_on_bed(..., on_stall=)`, a hook called at the stall with the drive's
+   own `advance` and accepted displacement. It is what makes a zero-sized step askable at all, since
+   every cut-back re-associates and so never tested the step alone.
+

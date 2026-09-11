@@ -68,6 +68,7 @@ class SlidingRegion(DeformableRegion):
         v_prev = np.einsum('nik,ni->nk', R, u0)
         v = np.clip(v_prev, lo, hi)
         delta = v - v_prev                       # what the changed bounds ask of the constrained DOFs
+        clip0 = np.abs(delta).copy()             # kept: delta is reassigned inside the active-set loop
         # The bound change enters through the STIFFNESS, not by clipping alone. Clipping moves the
         # constrained coordinates and leaves every other one at the previous solution, which is
         # infeasible by construction: that start could not carry even a RIGID TRANSLATION, which
@@ -107,7 +108,20 @@ class SlidingRegion(DeformableRegion):
         if j0.min() <= 0:
             # State what was observed. The previous wording named a cause -- "reduce the load step" --
             # that was false, and it cost this line five suspects' worth of investigation.
-            raise ValueError(f"the start of this increment has {int((j0 <= 0).sum())} inverted elements")
+            # The clip magnitude is part of the observation, not commentary: a start that inverts with
+            # delta at zero cannot have been made by the bounds, and one that inverts with delta
+            # finite at a ZERO load increment was made by the re-association and not by the step.
+            # TWO numbers, because they are two different things and one sentence covering both was
+            # wrong: by this line v has been overwritten by the active-set loop, so |v - v_prev| is
+            # the WHOLE start displacement including the elastic response carried on free nodes --
+            # it counted 5,660 nodes when only 4,097 are bounded at all, which is what exposed it.
+            # clip0 is the bound-driven part alone.
+            tot = np.abs(v - v_prev)
+            raise ValueError(f"the start of this increment has {int((j0 <= 0).sum())} inverted "
+                             f"elements; the BOUNDS moved {int((clip0.max(1) > 1e-3).sum())} nodes by "
+                             f"more than 1 mm, at most {1000 * float(clip0.max()):.4f} mm, and the "
+                             f"start including the elastic response moved at most "
+                             f"{1000 * float(tot.max()):.4f} mm")
         tol = rtol * float(np.mean(self.mu)) * self.edge_m ** 2
         fixed = lo == hi; began = time.perf_counter(); res = np.inf
         for it in range(max_newton):
@@ -153,7 +167,7 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
                 hint=(0.0, 1.0, 0.0), rtol=1e-7, jump_limit_m=0.01, assoc_tol_m=1e-4, move=None,
                 rigid_m=None, freeze_frames=False, project=True, solver_log=None, stop_fraction=1.0,
                 association='persistent', lost_bed='hold', facet_m=1e-3, drive_full=False,
-                prescribe=None, phases=(1.0,), log=None):
+                prescribe=None, phases=(1.0,), on_stall=None, log=None):
     """The sliding base. base: node indices on the surface facing the bed. closest(points) ->
     (c, n): closest bed points and the bed's outward unit normals there. A base node BEHIND the bed
     in the registered position is HELD: its signed normal gap is ramped to zero over load_steps and
@@ -312,7 +326,13 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
             assoc[0], assoc[1] = saved
             ds *= 0.5; cutbacks += 1
             if log: log(f"  cut back to {ds:.5f} at fraction {trial:.4f}: {failure}", flush=True)
-            if ds < 1e-4: raise RuntimeError(f"load stepping stalled at fraction {fraction:.4f}: {failure}")
+            if ds < 1e-4:
+                # A ZERO-SIZED STEP, offered to the caller before the stall is raised. advance() at
+                # the fraction already accepted asks for no new travel at all, so anything it does is
+                # the RE-ASSOCIATION acting on an already-deformed state rather than the increment.
+                # It is the only way to separate the two, since every cut-back keeps re-associating.
+                if on_stall is not None: on_stall(fraction, advance, u)
+                raise RuntimeError(f"load stepping stalled at fraction {fraction:.4f}: {failure}")
             continue
         if association == 'adaptive':
             points = (X + u_new)[base]
