@@ -954,6 +954,36 @@ improve but do not reach 0.95, because a fifth of a foot is a shape difference a
 correspondence error. The thin-sheet failure applies squarely -- these correspondences include ribs,
 scapulae and the sternum -- so the agreement filter is not optional here.
 
+**Caught before acting on it: 1.318 mm is measured at the WRONG SCALE for this line, and I was
+about to kill the v3 fit over it.** The control above displaces bones 1.50 mm because that is the
+chest wall's scale, where 1.318 mm of target error is 88% of the signal and damning. This line's
+skin moves about **20 mm**. At 20 mm the same absolute error would be 6.6%, which is not obviously
+disqualifying. The programme already learned this twice -- *score a correspondence at the
+separation it will be used at*, and *a tolerance calibrated at zero separation is a different test
+at 8 mm* -- and I still read a 1.5 mm-scale number as a verdict on a 20 mm-scale instrument.
+
+So **nothing is killed and nothing is concluded until the 20 mm-scale recovery number lands**
+(running now, `data/derived/skin-warp-v1/recovery.log`). Fixed before it does, so this is a
+prediction and not a reading:
+
+- if target error at 20 mm stays near 1.3 mm absolute, the bias is a FIXED OFFSET, it is 6.6% of
+  this line's signal, and the anchored-fit comparison in v3 is readable as a warp-family
+  comparison -- while the anchor rule above stays misdescribed and gate 1's 1 mm margin stays
+  inside the bias, because THAT margin is a millimetre quantity whatever the displacement is;
+- if it scales with the displacement -- roughly 18 mm of error on a 20 mm field -- the targets
+  carry no signal at this scale at all, the v3 fit is fitting noise, and it is stopped on the spot.
+
+**Predicted: it stays near 1.3 mm absolute.** The d^2/R argument makes nearest-point bias a
+function of surface CURVATURE and separation, not of how far the truth happens to move, so the
+error should be governed by the skin-to-bone gap (median 19.7 mm here) rather than by the field
+amplitude. If it instead scales with the field, that argument is wrong and the chest-wall line's
+correspondence work rests on it too.
+
+The v3 anchored fit is meanwhile at **7,401 s with no progress output** -- the iteration logging
+the fit gained applies only to the next run, and the 2 h budget with it. It is left alone rather
+than restarted for logging, since restarting costs more than the missing lines are worth; its
+successor carries both.
+
 #### A known answer this line has never had, and what the chest wall found without it
 
 Every gate above compares a fit to another fit. Gate 1 asks whether the warped bone group sits no
