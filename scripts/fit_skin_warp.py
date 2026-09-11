@@ -169,6 +169,160 @@ def tps_solve(system, D, lam):
 def tps_predict(Y, S, w, a):
     return phi(cdist(Y, S)) @ w + Y @ a[:3] + a[3]
 
+def local_preconditioner(S, lam, k=48, chunk=4096):
+    """Beatson-Cherrie-Mouat local cardinal functions: column i of an approximate inverse from the
+    local spline problem on i's k nearest centres.  Plain CG does not converge on a 1 mm-spaced
+    centre set (20,000 iterations and still 1e-3); this is the standard fix for polyharmonic
+    splines and it changes only the SPEED of the solve, never the system being solved."""
+    from scipy.sparse import csc_matrix
+    N = len(S); k = min(k, N); idx = cKDTree(S).query(S, k=k)[1]
+    rows, cols, vals = [], [], []
+    for s in range(0, N, chunk):
+        J = idx[s:s + chunk]; b = len(J); Sl = S[J]                       # (b, k, 3)
+        Kl = phi(np.linalg.norm(Sl[:, :, None, :] - Sl[:, None, :, :], axis=3)) + lam * np.eye(k)[None]
+        Pl = np.concatenate([Sl, np.ones((b, k, 1))], axis=2)             # (b, k, 4)
+        A = np.zeros((b, k + 4, k + 4))
+        A[:, :k, :k] = Kl; A[:, :k, k:] = Pl; A[:, k:, :k] = np.transpose(Pl, (0, 2, 1))
+        rhs = np.zeros((b, k + 4, 1)); rhs[:, 0, 0] = 1.0                  # nearest neighbour is self
+        z = np.linalg.solve(A, rhs)[:, :k, 0]
+        rows.append(J.ravel()); cols.append(np.repeat(np.arange(s, s + b), k)); vals.append(z.ravel())
+    M = csc_matrix((np.concatenate(vals), (np.concatenate(rows), np.concatenate(cols))), shape=(N, N))
+    return (M + M.T) * 0.5
+
+def tps_solve_matrix_free(S, D, lam, tol=1e-12, maxiter=20000, block=2048, report=None, precondition=True, k=48,
+                          log_every=25, budget_s=7200.0):
+    """The SAME system as tps_solve, solved without ever forming K.
+
+    With anchors there are 38,821 centres, so K is 12 GB and the nullspace QR is another 12 GB --
+    more than this machine has free.  The equations are unchanged: (K + lam I) w + P a = D with
+    P^T w = 0.  Projecting onto the complement of span(P) (where phi = -r is positive definite)
+    turns the first equation into a symmetric positive-definite system in w, which conjugate
+    gradients solves with only streamed kernel products.  Validated against tps_solve on the
+    bone-only system, where it must return the same weights.
+    """
+    from skin_warp import _distances
+    N = len(S); P = np.hstack([S, np.ones((N, 1))]); PtP = np.linalg.inv(P.T @ P); c2 = (S * S).sum(1)
+    def proj(X): return X - P @ (PtP @ (P.T @ X))
+    def Kmul(X):
+        out = np.empty_like(X)
+        for s in range(0, N, block):
+            r = _distances(S[s:s + block], S, c2); np.negative(r, out=r)
+            out[s:s + block] = r @ X
+        return out
+    def A(X): return proj(Kmul(X) + lam * X)
+    M = local_preconditioner(S, lam, k=k) if precondition else None
+    def apply_M(X): return proj(M @ X) if M is not None else X
+    b = proj(D); w = np.zeros_like(D); r = b - A(w); z = apply_M(r); p = z.copy(); rz = (r * z).sum(0)
+    scale = np.maximum(np.sqrt((b * b).sum(0)), 1e-300); used = 0
+    start = time.time(); stopped = None
+    for it in range(1, maxiter + 1):
+        Ap = A(p); alpha = rz / np.maximum((p * Ap).sum(0), 1e-300)
+        w += alpha * p; r -= alpha * Ap
+        used = it; rel = float(np.max(np.sqrt((r * r).sum(0)) / scale)); elapsed = time.time() - start
+        # A solve that prints nothing for hours cannot be told from a wedged one.
+        if log_every and (it % log_every == 0 or it == 1):
+            say(f"    CG {it:6d}  relative residual {rel:.3e}  {elapsed:7.0f}s")
+        if rel < tol: break
+        if budget_s is not None and elapsed > budget_s:
+            stopped = "wall-clock budget"
+            say(f"    CG stopped on its {budget_s:.0f}s budget at iteration {it}, relative residual {rel:.3e}")
+            break
+        z = apply_M(r); rz_new = (r * z).sum(0)
+        p = z + (rz_new / np.where(np.abs(rz) < 1e-300, 1e-300, rz)) * p; rz = rz_new
+    residual = float(np.max(np.sqrt((r * r).sum(0)) / scale))
+    a = PtP @ (P.T @ (D - Kmul(w) - lam * w))
+    if report is not None:
+        report.update(iterations=used, relative_residual=residual, seconds=time.time() - start, stopped_on=stopped)
+    return w, a
+
+# ------------------------------------------------ anchors (v3 instrument, 437e30e)
+ANCHOR_MIN_M = 0.020        # fixed in the pre-registration; this body's median skin depth is 11.0 mm
+ANCHOR_MEASURE = "correspondence"   # rebound in __main__: 437e30e's measure, or c0e88a2's bone surface
+
+def exterior_vertices(geometry):
+    F = np.asarray(geometry["indices"], np.int64).reshape(-1, 3)
+    ext = np.asarray(json.loads((ROOT / bscm.EVIDENCE).read_text())["contact_eligible_triangle_ids"], np.int64)
+    return np.unique(F[ext])
+
+def atlas_bone_surface():
+    """Every atlas bone group as one surface, for the corrected 'no bone under it' measure."""
+    V, F, off = [], [], 0
+    for seg in segments:
+        v, f = atlas_mesh(seg); V.append(v); F.append(f + off); off += len(v)
+    return np.concatenate(V), np.concatenate(F)
+
+def anchor_distances(measure, canonical, used, atlas_samples=None, block=2048):
+    """How far a skin vertex is from bone, in atlas space, by one of the two measures.
+
+    'correspondence' (437e30e): distance to the nearest of the 4,410 sampled bone correspondences.
+    Those are SPARSE samples, so this reads ~27 mm even where bone is directly beneath the skin.
+    'surface' (c0e88a2): exact distance to the nearest point on any atlas bone surface, which is
+    what "no bone under it" means.  Same 20 mm threshold in both."""
+    if measure == "correspondence":
+        return cKDTree(atlas_samples).query(canonical[used])[0]
+    Vb, Fb = atlas_bone_surface()
+    project = projector(Vb, Fb, np.random.default_rng(31), n=400000)
+    return np.concatenate([project(canonical[used[s:s + block]])[1] for s in range(0, len(used), block)])
+
+def build_anchors(G, Mseg, canonical, used, distance):
+    """An anchor for every exterior skin vertex with no bone under it.
+
+    The target is the vertex's image under ITS OWN segment's per-segment similarity, which is the
+    only local statement available where there is no bone beneath the skin.  Anchors are an
+    assumption, not a measurement, so they never enter the choice of lambda."""
+    pick = used[distance > ANCHOR_MIN_M]
+    sb = json.loads(gzip.decompress((ROOT / bscm.BINDING).read_bytes()))
+    names = [s["id"] for s in sb["segments"]]
+    segment = np.asarray(sb["weights"], np.float32)[pick].argmax(1)
+    source = apply(G, canonical[pick]); target = np.empty_like(source)
+    for i, name in enumerate(names):
+        m = segment == i
+        if m.any(): target[m] = apply(Mseg[name], canonical[pick][m])
+    counts = {names[i]: int((segment == i).sum()) for i in np.unique(segment)}
+    return dict(vertices=pick, source=source, target=target, counts=counts, distance=distance,
+                exterior_vertices=int(len(used)), names=names, segment=segment)
+
+def anchor_atlas_samples(Mseg, rest, om):
+    """The kept bone correspondence samples in atlas space -- the 437e30e measure's reference."""
+    out = []
+    for seg in segments:
+        i = segments.index(seg); Va, Fa = atlas_mesh(seg); Vo, Fo = om[seg]; Vo_g = apply(rest[seg], Vo)
+        n = N_CORR_TORSO if seg == "torso" else N_CORR_PELVIS if seg == "pelvis" else N_CORR
+        a = sample(Va, Fa, n, np.random.default_rng(10000 + i))
+        _, d, _ = projector(Vo_g, Fo, np.random.default_rng(20000 + i))(apply(Mseg[seg], a))
+        out.append(a[d <= np.quantile(d, 1 - CORR_TRIM)])
+    return np.concatenate(out)
+
+def stage_anchors():
+    """Report the anchor set the rule produces, before anything is fitted with it."""
+    reg = json.loads(REGISTRATION.read_text()); Tb, frames_b, binding = bscm.binding_registration()
+    G = np.asarray(reg["global_atlas_to_ground"], float)
+    Mseg = {s: np.asarray(reg["segments"][s]["atlas_to_ground"], float) for s in reg["segments"]}
+    rest = render.OsimModel(B.MODEL).forward(reg["reference_pose_rad"]); om = osim_meshes()
+    mech = json.loads((ROOT / "data/derived/canonical/mechanics.json").read_text())
+    skin = next(e for e in mech["entities"] if e["role"] == "skin")
+    geometry = json.loads(gzip.decompress((ROOT / skin["reference_geometry"]["path"]).read_bytes()))
+    canonical = np.asarray(geometry["positions"], float).reshape(-1, 3)
+    used = exterior_vertices(geometry); atlas = anchor_atlas_samples(Mseg, rest, om)
+    out = {}
+    for measure in ("correspondence", "surface"):
+        d = anchor_distances(measure, canonical, used, atlas_samples=atlas)
+        A = build_anchors(G, Mseg, canonical, used, d)
+        disp = np.linalg.norm(A["target"] - A["source"], axis=1)
+        label = "437e30e, to the nearest of 4,410 bone SAMPLES" if measure == "correspondence" else \
+                "c0e88a2, to the nearest point on any atlas BONE SURFACE"
+        say(f"\n== {measure} ({label})")
+        say(f"  skin-to-bone distance over {len(used):,} exterior vertices: median {1e3*np.median(d):.1f} mm, "
+            f"quartiles {1e3*np.quantile(d,.25):.1f}/{1e3*np.quantile(d,.75):.1f}, max {1e3*d.max():.1f} mm")
+        say(f"  anchors (> {1e3*ANCHOR_MIN_M:.0f} mm): {len(A['vertices']):,} of {len(used):,} "
+            f"({100*len(A['vertices'])/len(used):.1f}%)  -> {len(atlas) + len(A['vertices']):,} centres in total")
+        if len(disp): say(f"  anchor targets move {1e3*np.median(disp):.1f} mm from the global map (median), {1e3*disp.max():.1f} max")
+        for name in sorted(A["counts"], key=lambda k: -A["counts"][k]):
+            say(f"   {name:10s} {A['counts'][name]:6d}")
+        out[measure] = dict(count=int(len(A["vertices"])), by_segment=A["counts"], exterior_vertices=int(len(used)),
+                            distance_median_m=float(np.median(d)), distance_max_m=float(d.max()))
+    (ROOT / "data/derived/skin-warp-v3/anchor_measures.json").write_text(json.dumps(out, indent=2) + "\n")
+
 # ------------------------------------------------ the flow (v2 instrument, 3b1526c)
 def make_flow(base, S, w, a, probe):
     """the field with a squaring count fixed by its own size: per-step displacement <= 1 mm."""
@@ -287,7 +441,7 @@ def stage_fit():
 
     # ---------------------------------------------- correspondences
     say(f"\n== correspondences: atlas bone group -> nearest point on the scaffold bone mesh to M_seg a  [{time.time()-t0:.0f}s] ==")
-    S, T, L, per = [], [], [], {}
+    S, T, L, per, atlas_kept = [], [], [], {}, []
     for seg in segments:
         i = segments.index(seg); Va, Fa = atlas_mesh(seg); Vo, Fo = om[seg]; Vo_g = apply(rest[seg], Vo)
         n = N_CORR_TORSO if seg == "torso" else N_CORR_PELVIS if seg == "pelvis" else N_CORR
@@ -295,7 +449,7 @@ def stage_fit():
         p = apply(Mseg[seg], a); t, d, _ = projector(Vo_g, Fo, np.random.default_rng(20000 + i))(p)
         keep = d <= np.quantile(d, 1 - CORR_TRIM)
         s = apply(G, a)
-        S.append(s[keep]); T.append(t[keep]); L += [seg] * int(keep.sum())
+        S.append(s[keep]); T.append(t[keep]); L += [seg] * int(keep.sum()); atlas_kept.append(a[keep])
         per[seg] = dict(sampled=n, kept=int(keep.sum()), projection_median_mm=1e3 * float(np.median(d)),
                         projection_kept_max_mm=1e3 * float(d[keep].max()),
                         displacement_from_global_median_mm=1e3 * float(np.median(np.linalg.norm(t[keep] - s[keep], axis=1))),
@@ -303,6 +457,7 @@ def stage_fit():
         say(f"  {seg:10s} kept {keep.sum():4d}/{n}  |t - M a| median {per[seg]['projection_median_mm']:5.2f} mm   "
             f"|t - G a| median {per[seg]['displacement_from_global_median_mm']:5.1f} max {per[seg]['displacement_from_global_max_mm']:5.1f} mm")
     S, T, L = np.concatenate(S), np.concatenate(T), np.asarray(L); D = T - S
+    atlas_kept = np.concatenate(atlas_kept)
     say(f"  {len(S)} correspondences")
 
     # ---------------------------------------------- the regularisation rule
@@ -327,7 +482,7 @@ def stage_fit():
         + ("   (the grid's edge)" if lam in (LAMBDAS[0], LAMBDAS[-1]) else ""))
     sy = tps_system(S)
     rule = "largest lambda within 1% of the minimum 5-fold CV RMS on the bone correspondences"
-    flow_report = None
+    flow_report = anchor_report = None
     if FAMILY == "flow":
         W, hist, vmax = fit_flow(sy, S, T, lam, G, probe)
         fit_res = np.linalg.norm(W.flow(S) - T, axis=1)
@@ -339,6 +494,49 @@ def stage_fit():
         say(f"  flow: {W.steps} steps (2^{int(np.log2(W.steps))} squarings), max |v| {1e3*vmax:.1f} mm, "
             f"max per-step displacement {1e3*step_max:.3f} mm (budget {1e3*STEP_TARGET_M:.1f} mm)")
         say(f"  outer corrections, worst |flow - target| per pass: " + ", ".join(f"{1e3*h:.2f}" for h in hist) + " mm")
+    elif FAMILY in ("anchored", "anchored-surface"):
+        # C9: with the anchor set EMPTY this pipeline must BE the 96e5f1b spline.
+        w0, a0 = tps_solve(sy, D, lam); W0 = Warp(G, S, w0, a0)
+        v1 = Warp.load(ROOT / "data/derived/skin-warp-v1/warp.npz")
+        d9 = float(np.abs(W0.apply(canonical) - v1.apply(canonical)).max())
+        controls["anchor_empty_reproduces_v1_max_m"] = d9
+        say(f"C9 anchor set empty reproduces the 96e5f1b spline on all {len(canonical):,} skin vertices: "
+            f"{d9:.2e} m -> {'PASS' if d9 == 0.0 else 'FAIL'}")
+        if d9 != 0.0: sys.exit("C9 failed")
+        # C10: the anchored system is 38,821 centres -- 12 GB as a dense factorisation, which this
+        # machine does not have free -- so it is solved matrix-free.  Same equations; prove it here,
+        # where the direct answer is available.
+        rep10 = {}; w1, a1 = tps_solve_matrix_free(S, D, lam, report=rep10)
+        d10 = float(np.abs(Warp(G, S, w1, a1).apply(canonical) - W0.apply(canonical)).max())
+        controls.update(matrix_free_vs_direct_max_m=d10, matrix_free_iterations=rep10["iterations"],
+                        matrix_free_relative_residual=rep10["relative_residual"])
+        say(f"C10 matrix-free PCG vs the direct solve, same bone system: {d10:.2e} m over the whole skin "
+            f"({rep10['iterations']} iterations, relative residual {rep10['relative_residual']:.1e})")
+        used_v = exterior_vertices(g)
+        A = build_anchors(G, Mseg, canonical, used_v,
+                          anchor_distances(ANCHOR_MEASURE, canonical, used_v, atlas_samples=atlas_kept))
+        disp = np.linalg.norm(A["target"] - A["source"], axis=1)
+        say(f"\n== anchors: skin vertices more than {1e3*ANCHOR_MIN_M:.0f} mm (atlas) from "
+            f"{'any sampled bone correspondence' if ANCHOR_MEASURE == 'correspondence' else 'the nearest point on any atlas bone surface'} ==")
+        say(f"  {len(A['source']):,} of {A['exterior_vertices']:,} exterior vertices "
+            f"({100*len(A['source'])/A['exterior_vertices']:.1f}%); {len(S) + len(A['source']):,} centres in total")
+        say(f"  their targets move {1e3*np.median(disp):.1f} mm from the global map (median), {1e3*disp.max():.1f} max")
+        for name in sorted(A["counts"], key=lambda k: -A["counts"][k]):
+            say(f"   {name:10s} {A['counts'][name]:6d}")
+        anchor_report = dict(threshold_m=ANCHOR_MIN_M, measure=ANCHOR_MEASURE, count=int(len(A["source"])), by_segment=A["counts"],
+                             exterior_vertices=A["exterior_vertices"],
+                             displacement_median_m=float(np.median(disp)), displacement_max_m=float(disp.max()))
+        S_all, T_all = np.vstack([S, A["source"]]), np.vstack([T, A["target"]])
+        say(f"\n== the anchored fit: {len(S_all):,} centres, lambda {lam:.2e}, matrix-free  [{time.time()-t0:.0f}s] ==")
+        rep = {}; w, a = tps_solve_matrix_free(S_all, T_all - S_all, lam, report=rep)
+        anchor_report.update(solver="projected PCG with local cardinal-function preconditioner",
+                             iterations=rep["iterations"], relative_residual=rep["relative_residual"])
+        say(f"  solved in {rep['iterations']} iterations, relative residual {rep['relative_residual']:.1e}  [{time.time()-t0:.0f}s]")
+        W = Warp(G, S_all, w, a, dict(kind="thin-plate spline with anchors", lam=lam,
+                                      correspondences=int(len(S_all)), anchors=int(len(A["source"])), rule=rule))
+        fit_res = np.linalg.norm(W.apply(np.linalg.solve(G[:3, :3], (S_all - G[:3, 3]).T).T) - T_all, axis=1)
+        bone_res = fit_res[:len(S)]
+        say(f"  residual at the BONE correspondences RMS {1e3*np.sqrt((bone_res**2).mean()):.3f} mm, max {1e3*bone_res.max():.2f} mm")
     else:
         w, a = tps_solve(sy, D, lam)
         W = Warp(G, S, w, a, dict(kind="thin-plate spline displacement on the binding map", lam=lam,
@@ -372,7 +570,8 @@ def stage_fit():
         ok = err < 1e-9
         say(f"C8 max |inverse(forward(x)) - x| = {err:.2e} m (< 1e-9) -> {'PASS' if ok else 'FAIL'}   [{time.time()-t0:.0f}s]")
         if not ok: sys.exit("C8 failed")
-    (OUT / "fit.json").write_text(json.dumps(dict(schema="ihm.skin-warp-fit.v1", family=FAMILY, flow=flow_report, controls=controls,
+    (OUT / "fit.json").write_text(json.dumps(dict(schema="ihm.skin-warp-fit.v1", family=FAMILY, flow=flow_report,
+        anchors=anchor_report, controls=controls,
         correspondences=per, n_correspondences=int(len(S)), cv=dict(lambdas=LAMBDAS, rms_m=cv.tolist(), chosen=lam, tie=TIE, folds=FOLDS),
         bending_energy=W.bending_energy(), gate1=dict(passed=gate1, margin_m=GATE1_MARGIN_M, segments=g1),
         provenance=dict(script=str(Path(__file__).relative_to(ROOT)), script_sha256=sha(__file__),
@@ -532,6 +731,95 @@ def stage_diagnose():
                    f"z {rec['outside_z_mm'][0]:+.0f}/{rec['outside_z_mm'][1]:+.0f}/{rec['outside_z_mm'][2]:+.0f} mm (min/median/max)"))
     (OUT / "diagnose.json").write_text(json.dumps(out, indent=2) + "\n")
 
+def choose_lambda(S, T):
+    """The line's own rule, factored out so the recovery control uses the identical one."""
+    D = T - S
+    perm = np.random.default_rng(7).permutation(len(S)); fold_idx = np.array_split(perm, FOLDS)
+    sse = np.zeros(len(LAMBDAS))
+    for f in fold_idx:
+        tr = np.setdiff1d(perm, f); sy = tps_system(S[tr])
+        for li, lam in enumerate(LAMBDAS):
+            w, a = tps_solve(sy, D[tr], lam)
+            sse[li] += ((S[f] + tps_predict(S[f], S[tr], w, a) - T[f]) ** 2).sum()
+    cv = np.sqrt(sse / len(S)); best = cv.min()
+    return max(l for l, e in zip(LAMBDAS, cv) if e <= best * (1 + TIE)), cv
+
+# Two magnitudes, because the d^2/R bias grows with the displacement: the chest wall's, so the two
+# lines are comparable, and this line's own, which is what its gates are actually read at.
+RECOVERY_SCALES = (("chest-wall scale", 0.0015), ("this line's scale", 0.020))
+
+def stage_recovery():
+    """The known answer this line never had (d626af3).
+
+    Every gate here compares one fit to another fit.  This displaces THIS BODY'S OWN bone groups by
+    a field we chose -- a thin-plate spline displacement, the same family the warp is fitted in --
+    and asks whether the pipeline returns it.  Recovery is reported against the TRUTH, pointwise
+    and to the surface, beside the residual at the correspondences, which is agreement with the
+    targets and is the quantity that has been flattering this line."""
+    t0 = time.time(); OUT.mkdir(parents=True, exist_ok=True)
+    meshes = {seg: atlas_mesh(seg) for seg in segments}
+    allV, allF = atlas_bone_surface()
+    centres = sample(allV, allF, 200, np.random.default_rng(102))
+    w0 = np.random.default_rng(101).normal(size=(len(centres), 3))
+    P = np.hstack([centres, np.ones((len(centres), 1))]); Q, _ = np.linalg.qr(P)
+    w0 -= Q @ (Q.T @ w0)                      # P^T w = 0: a pure spline displacement, no affine part
+    probe = sample(allV, allF, 20000, np.random.default_rng(103))
+    unit = float(np.linalg.norm(Warp(np.eye(4), centres, w0, np.zeros((4, 3))).displacement(probe), axis=1).mean())
+    out = {}
+    for label, magnitude in RECOVERY_SCALES:
+        truth = Warp(np.eye(4), centres, w0 * (magnitude / unit), np.zeros((4, 3)))
+        moved = float(np.linalg.norm(truth.displacement(probe), axis=1).mean())
+        say(f"\n== recovery control, {label}: known field moves this body's bones {1e3*moved:.2f} mm on average "
+            f"[{time.time()-t0:.0f}s]")
+        S, T, ES, TRUTH_ES, seg_of_es = [], [], [], [], []
+        for seg in segments:
+            i = segments.index(seg); Va, Fa = meshes[seg]
+            Vd = truth.apply(Va)                      # the displaced bone plays the scaffold's part
+            n = N_CORR_TORSO if seg == "torso" else N_CORR_PELVIS if seg == "pelvis" else N_CORR
+            a = sample(Va, Fa, n, np.random.default_rng(10000 + i))
+            # this line's correspondence: the nearest point ON the displaced surface, from the
+            # starting map's image -- the identity here, as the global similarity is in the real one
+            t, d, _ = projector(Vd, Fa, np.random.default_rng(20000 + i))(a)
+            keep = d <= np.quantile(d, 1 - CORR_TRIM)
+            S.append(a[keep]); T.append(t[keep])
+            e = sample(Va, Fa, 2000, np.random.default_rng(30000 + i))
+            ES.append(e); TRUTH_ES.append(truth.apply(e)); seg_of_es += [seg] * len(e)
+        S, T = np.concatenate(S), np.concatenate(T); ES, TRUTH_ES = np.concatenate(ES), np.concatenate(TRUTH_ES)
+        seg_of_es = np.asarray(seg_of_es)
+        # the correspondence as an instrument, before anything is fitted with it
+        terr = np.linalg.norm(T - truth.apply(S), axis=1)
+        say(f"   target error (nearest-point target vs the known truth): mean {1e3*terr.mean():.3f} mm, "
+            f"p90 {1e3*np.quantile(terr, .9):.3f}, max {1e3*terr.max():.3f}")
+        lam, cv = choose_lambda(S, T)
+        say(f"   lambda by the same rule: {lam:.2e}  (CV min {1e3*cv.min():.3f} mm)  [{time.time()-t0:.0f}s]")
+        w, a = tps_solve(tps_system(S), T - S, lam)
+        W = Warp(np.eye(4), S, w, a)
+        fit_res = np.linalg.norm(W.apply(S) - T, axis=1)
+        got = W.apply(ES); point = np.linalg.norm(got - TRUTH_ES, axis=1)
+        surface = np.zeros(len(ES))
+        for seg in segments:
+            m = seg_of_es == seg
+            Va, Fa = meshes[seg]
+            surface[m] = projector(truth.apply(Va), Fa, np.random.default_rng(40000 + segments.index(seg)))(got[m])[1]
+        rec = dict(known_field_mean_displacement_m=moved, lam=lam,
+                   target_error_mean_m=float(terr.mean()), target_error_p90_m=float(np.quantile(terr, .9)),
+                   target_error_max_m=float(terr.max()),
+                   residual_at_correspondences_rms_m=float(np.sqrt((fit_res ** 2).mean())),
+                   recovery_pointwise_rms_m=float(np.sqrt((point ** 2).mean())),
+                   recovery_pointwise_p90_m=float(np.quantile(point, .9)), recovery_pointwise_max_m=float(point.max()),
+                   recovery_to_surface_rms_m=float(np.sqrt((surface ** 2).mean())),
+                   recovery_to_surface_p90_m=float(np.quantile(surface, .9)))
+        say(f"   residual at the correspondences (agreement with TARGETS): {1e3*rec['residual_at_correspondences_rms_m']:.3f} mm RMS")
+        say(f"   RECOVERY vs the TRUTH, pointwise: {1e3*rec['recovery_pointwise_rms_m']:.3f} mm RMS, "
+            f"p90 {1e3*rec['recovery_pointwise_p90_m']:.3f}, max {1e3*rec['recovery_pointwise_max_m']:.3f}")
+        say(f"   RECOVERY to the surface: {1e3*rec['recovery_to_surface_rms_m']:.3f} mm RMS, "
+            f"p90 {1e3*rec['recovery_to_surface_p90_m']:.3f}   [{time.time()-t0:.0f}s]")
+        out[label] = rec
+    (OUT / "recovery.json").write_text(json.dumps(dict(schema="ihm.skin-warp-recovery.v1", scales=out,
+        basis="a known thin-plate-spline displacement of this body's own bone groups, fitted by this line's own "
+              "correspondences (nearest point on the displaced surface) and lambda rule; recovery measured against "
+              "the known field, not against the targets"), indent=2) + "\n")
+
 def stage_slivers():
     """The triangles gate 4 caught: slivers in the SOURCE mesh, or ordinary triangles?
 
@@ -578,14 +866,24 @@ def stage_slivers():
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("--stage", choices=("fit", "score", "diagnose", "slivers"), required=True)
-    ap.add_argument("--family", choices=("spline", "flow"), default="spline",
+    ap.add_argument("--stage", choices=("fit", "score", "diagnose", "slivers", "anchors", "recovery"), required=True)
+    ap.add_argument("--family", choices=("spline", "flow", "anchored", "anchored-surface"), default="spline",
                     help="spline: the v1 thin-plate warp (data/derived/skin-warp-v1). "
-                         "flow: the v2 stationary-velocity-field flow, which cannot fold (skin-warp-v2).")
+                         "flow: the v2 stationary-velocity-field flow, which cannot fold (skin-warp-v2). "
+                         "anchored: the v3 spline with anchors for skin that has no bone under it (skin-warp-v3).")
     args = ap.parse_args()
     # module-level rebinding, so every stage reads the family's own directories
     FAMILY = args.family
     if FAMILY == "flow":
         OUT = ROOT / "data/derived/skin-warp-v2"
         BUNDLE = "data/derived/segment-contact-meshes/skin-warp-v2"
-    {"fit": stage_fit, "score": stage_score, "diagnose": stage_diagnose, "slivers": stage_slivers}[args.stage]()
+    elif FAMILY == "anchored":
+        OUT = ROOT / "data/derived/skin-warp-v3"
+        BUNDLE = "data/derived/segment-contact-meshes/skin-warp-v3"
+    elif FAMILY == "anchored-surface":
+        # c0e88a2: the same instrument, with "no bone under it" measured to the bone SURFACE
+        ANCHOR_MEASURE = "surface"
+        OUT = ROOT / "data/derived/skin-warp-v4"
+        BUNDLE = "data/derived/segment-contact-meshes/skin-warp-v4"
+    {"fit": stage_fit, "score": stage_score, "diagnose": stage_diagnose, "slivers": stage_slivers,
+     "anchors": stage_anchors, "recovery": stage_recovery}[args.stage]()
