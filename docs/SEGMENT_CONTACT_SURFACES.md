@@ -1528,6 +1528,64 @@ its drops backfilled rather than discarded, it is worth **0.452 mm** of recovery
 three times the ceiling I set. The measurement that produced the ceiling was sound; the framing
 around it was not, because I compared two rules when the answer was to use both.
 
+### The mechanism is refuted, the hybrid's win is confounded, and the ceiling correction is suspended
+
+**Predicted: the hybrid's advantage concentrates where shot share is high and is near zero on the
+torso. Refuted.** Per-segment, against full-coverage nearest:
+
+| | measured |
+|---|---|
+| Pearson r (gain vs shot share) | **-0.353**, p = 0.108, **r^2 = 0.124** |
+| Spearman | -0.401, p = 0.064 (n = 22) |
+| segments improving | **22 of 22**, range -6.2% to -38.2% |
+| mean gain | **-22.7%**, sd 8.2% |
+| torso | **-18.2%** at 6.5% shot share |
+
+The correlation runs in the predicted direction, is weak, is not significant, and explains about an
+eighth of the variance. The dominant feature is a **near-uniform ~23% gain across every segment**,
+including those taking almost no shot targets. Target provenance is at best a minor term and is
+**not** what drives the hybrid's win.
+
+**And the comparison is confounded, which the agent found in its own construction.** The
+full-coverage nearest arm discards its largest-separation **10% per segment**; the hybrid discards
+none. The two arms therefore differ in targets *and* in trim, and a trim that removes the hardest
+points from one arm and not the other would produce exactly this signature -- a uniform improvement
+independent of provenance. Given that coverage has already been shown to dominate targets ten to
+one (`380df28`), a 10% difference concentrated on the hardest points is a live explanation and
+possibly the whole one.
+
+**Withdrawn: the ceiling correction in `80afd28`.** I revised "the whole normal-shooting exercise is
+worth under 0.15 mm" up to **0.452 mm as a component**, on the strength of 2.138 -> 1.686. That
+comparison cannot carry the attribution, so the revision is suspended. The defensible position
+returns to `380df28`'s **under 0.15 mm**, which was measured at matched coverage and is not touched
+by the trim. I corrected a sound figure on the basis of a confounded one, within an hour of setting
+it.
+
+**What survives untouched**, because none of it turns on the hybrid's cause:
+
+* Control C: coverage is the mechanism for shooting's deficit (2.138 -> 2.758);
+* the subset control: 1.19x on a matched population, most of the 4.4x was selection;
+* **the hybrid is genuinely better, across all three amplitudes** (-24%, -21%, -13%). The *result*
+  stands; only the *explanation* is missing.
+
+**The isolating design, pre-registered before either fit runs.** It completes a 2x2 whose diagonal
+is already filled -- {nearest, hybrid} x {trimmed, untrimmed}, at lambda = 1e-3 with no CV needed:
+
+| | trimmed 10% | untrimmed |
+|---|---:|---:|
+| nearest targets | **2.138 mm** (have) | **cell A** |
+| hybrid targets | **cell B** | **1.686 mm** (have) |
+
+* **Trim explains it:** A near 1.69, B near 2.14.
+* **Targets explain it:** A near 2.14, B near 1.69.
+* **Predicted: trim carries the majority but not all** -- A lands **1.75-1.95**, B lands
+  **1.95-2.15**. Coverage has beaten target quality on this line three times now (Control C, the
+  selection control, the coverage restoration), and the trim is a coverage manipulation aimed at
+  precisely the hardest points.
+* Stated with low confidence and recorded anyway: my predictions on this line stand at two hits in
+  eight, and the design is worth more than the guess. **The 2x2 is decisive whichever way it falls**,
+  which is the property being bought here.
+
 **Why this was worth having from a retired control.** I retired it for firing a threshold at the
 wrong separation, and it then answered a question I had not asked: whether this line's headline
 quality metric measures accuracy at all. It does not. A control kept running after its gate was
