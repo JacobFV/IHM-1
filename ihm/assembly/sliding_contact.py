@@ -181,7 +181,8 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
     c0, n0 = closest(X[base]); gap0 = np.einsum('ij,ij->i', n0, X[base] - c0)   # signed; < 0 behind the bed
     held = gap0 < 0
     u = np.zeros_like(X); record = []
-    assoc = [c0.copy(), n0.copy(), np.zeros(len(base), bool), X[base].copy()]   # ..., positions when it was last taken
+    assoc = [c0.copy(), n0.copy(), np.zeros(len(base), bool), X[base].copy(),
+             np.zeros(len(base), bool)]   # ..., positions when it was last taken, last refusal mask
     lost_history = []; refusals = []          # persistent association, snapshotted per accepted step
 
     def associate(points):
@@ -234,6 +235,11 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
         assoc[2] = invalid if lost_bed == 'release' else np.zeros(len(invalid), bool)
         lost_history.append(int(invalid.sum()))
         teleport = rejected
+        # WHICH nodes were refused, not just how many. 'association moved 0.4999 mm' is the max
+        # over ACCEPTED updates, so a node whose update exceeded the limit contributes nothing to
+        # it and vanishes from the log entirely. Keeping the mask is what lets a later question --
+        # are the diverging nodes the refused ones? -- be asked at all.
+        assoc[4] = rejected.copy()
         return c_new, n_new, int(teleport.sum()), moved
 
     # How far each held node is asked to travel along the bed normal. By default it closes its own
@@ -323,6 +329,7 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
             # where the acceptance test below actually reads it, the two coincide.
             to_aim = np.abs(gap[held] - (gap0[held] + aim * step)) if held.any() else np.zeros(1)
             held_err = float(to_aim.max())
+            refused_mask = assoc[4].copy()
             # THE MEDIAN TOO. Reporting only the max made 'distance closed' unreadable: the drive
             # ran to fraction 0.3115 while the max sat at 13-15 mm against 14.18 mm at the start,
             # so the load fraction was measuring load APPLIED and not distance CLOSED, and there
@@ -341,7 +348,10 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
                            else "association held for the step (adaptive updates after it)"), flush=True)
             settled = moved <= assoc_tol_m and pen <= gap_tol_m
             if freeze_frames or (settled and (abs(fraction - aim) > 1e-12 or held_err <= gap_tol_m)):
-                return u_local, dict(passes=outer + 1, held_gap_error_m=held_err, unilateral_penetration_m=pen,
+                return u_local, dict(passes=outer + 1, held_gap_error_m=held_err,
+                                     held_gap_median_m=held_mid, closed_median_m=closed,
+                                     backwards=worse, refused_mask=refused_mask,
+                                     to_aim_m=to_aim.copy(), unilateral_penetration_m=pen,
                                      bound_displacement_m=r['bound_displacement_m'],
                                      bound_nodes_over_1mm=r['bound_nodes_over_1mm'],
                                      newton_last=r['iterations'], min_J=r['minimum_jacobian'],
@@ -404,7 +414,7 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
         # GATE BB is asked here, after every ACCEPTED step, not only at a stall: if the repair
         # works there may be no stall at all, and a gate that only fires on failure would never
         # run on the code it is meant to certify.
-        if on_step is not None: on_step(fraction, advance, u, target)
+        if on_step is not None: on_step(fraction, advance, u, target, info)
         ds = min(ds * 1.5, 1.0 / load_steps)
     return dict(displacement=u, gap_m=gap, held=held, initial_gap_m=gap0, closest_m=c, normal=n, steps=record,
                 cutbacks=cutbacks, lost_bed_per_association=lost_history, association=association,

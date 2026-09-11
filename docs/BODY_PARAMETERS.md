@@ -4189,3 +4189,51 @@ What has changed is that the parametrization no longer stops at the scaffold.
    because that number was arithmetically impossible. **An overlap without its chance level, and a
    count without its denominator, are the same mistake**, and the second one is caught by luck
    whenever the arithmetic happens not to be absurd.
+
+   **THE 39, SIZED. THEY SHRINK, THEY ARE SCATTERED, AND THEY ARE NOT THE REFUSED NODES -- THE CAUSE
+   I PROPOSED IS REFUTED, BELOW CHANCE.**
+
+   | fraction | 0.0625 | 0.1094 | 0.1797 |
+   |---|---:|---:|---:|
+   | held nodes moving away, of 3,123 | **39** | **34** | 27 |
+   | worst, backwards | 1.445 mm | 4.214 mm | 3.677 mm |
+   | their own asked travel, mean | 6.951 mm | 6.468 mm | 5.324 mm |
+   | spread on the base | 103.6 mm | 103.9 mm | 119.8 mm |
+   | same nodes as the previous fraction | -- | **34 of 39 (87%)** | 22 of 34 (65%) |
+   | association REFUSED this step, of 3,123 | 963 | 982 | 1,144 |
+   | diverging nodes among the refused | **0** | **1** | 3 |
+   | expected by chance | **12.0** | **10.7** | 9.9 |
+
+   Convergence, from the identical drive logged with the flag: 0.0625 (Newton 30) and 0.1094 (77) are
+   CONVERGED; 0.1797 exhausted the 300 budget and is shown for shape only.
+
+   **WHERE:** scattered, not clustered. They span 103.6 mm on a base whose whole extent is of that
+   order, so this is not one bad patch of bed.
+
+   **THE SAME?** largely yes -- 87% carry over between the two converged fractions, so there is a
+   persistent core rather than a rotating cast.
+
+   **HOW MANY:** the set SHRINKS, 39 -> 34 -> 27. Whatever they are, the drive is not recruiting more
+   of them as it proceeds.
+
+   **REFUSED? NO, AND EMPHATICALLY SO.** I proposed the jump-limit refusal as their cause because it
+   would have connected them to something already on the record. The overlap is 0 of 39 and 1 of 34
+   against 12.0 and 10.7 expected at random -- **far BELOW chance, not above it**. The diverging nodes
+   are drawn almost exclusively from those whose association updates are being ACCEPTED. The refusal
+   is not their cause, and a tidy connection to an existing finding is exactly the kind I should want
+   refuted rather than confirmed.
+
+   The chance column is why this reads as a refutation rather than a weak confirmation. With 963 of
+   3,123 nodes refused, roughly a third of the base, ANY set of 39 would overlap about 12 by
+   construction. An overlap quoted without its chance level would have been the same error as an
+   inversion count without a denominator -- the one that produced "5,660 nodes" against a base of
+   4,097 earlier today, and which was caught then only because that particular number happened to be
+   arithmetically impossible. Here it would not have been.
+
+   **A NUMBER THAT WAS INVISIBLE UNTIL NOW:** 963 to 1,144 of 3,123 held nodes -- **31% to 37% --
+   have their association update REFUSED at every step.** The log reported only "association moved
+   0.4999 mm", which is the maximum over ACCEPTED updates, so a third of the base was being frozen
+   every step with no trace in the output. This is the jump limit's third distinct form of blindness:
+   it disabled persistence entirely in gate CC, it reads as "settled" rather than "refused", and it
+   hid which and how many nodes it was acting on.
+

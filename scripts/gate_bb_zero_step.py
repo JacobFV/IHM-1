@@ -72,7 +72,7 @@ FIXED_POINT_M = 1e-6                      # declared above, before the run: a th
 class Done(RuntimeError): pass
 
 
-def zero_step(fraction, advance, u, aim):
+def zero_step(fraction, advance, u, aim, info=None):
     """REPEATS zero-sized steps at ONE fraction, each starting from the last one's answer. Declared:
     each call re-associates, which is the point -- the test is whether the association and the solve
     settle against each other at a fixed load, not whether one call is quiet."""
