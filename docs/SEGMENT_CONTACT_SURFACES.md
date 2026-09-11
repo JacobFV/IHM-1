@@ -1108,6 +1108,46 @@ question stays open rather than answered in either direction, and the denominato
 rows do not mean the same thing (residual displacement against field amplitude), so the trend is
 not read as a result at all.
 
+### The decomposition lands, and "gate 1's margin is inside the bias" was overstated
+
+The decomposition code was verified against the isotropic known answer first: it returns **0.7849**
+against pi/4 = 0.7854, rms **0.8162** against 0.8165, normal **0.5005** against 0.5. At the first
+amplitude (achieved separation 0.39 mm, residual displacement 1.17 mm):
+
+| component | mean | share |
+|---|---:|---:|
+| whole error vector | 2.146 mm | 89.2% of residual displacement -- **not the correspondence's error** |
+| tangential (identifiability floor) | 1.986 mm | **0.9255** of the error vector |
+| **normal -- the correspondence's own error** | **0.494 mm** | p90 **0.966**, max **32.5** |
+
+**The error vector is more tangential than isotropic** -- 0.9255 against pi/4 = 0.7854 -- which is
+the case I told the agent to watch for, and the mechanism it gives is convincing: a best-fit
+similarity starting map preferentially absorbs scale and translation, which is normal-direction
+content, leaving a residual that is more tangential than a random field would be. **So the true
+floor here is above pi/4 and my crude subtraction would have mis-credited it.** The per-point
+decomposition was the right instrument and the closed-form floor was only ever a sanity check on it.
+
+**Correcting myself, for the third time on this line and in the same direction.** `95c1e94` said,
+and `d626af3` predicted, that "gate 1's margin of 1 mm is inside the bias". That rested on
+**1.318 mm**, which is the whole error vector -- nine tenths of it a floor that a perfect
+correspondence incurs too. The correspondence's own error is **0.494 mm mean**. So:
+
+* the claim as written is **wrong at the mean**: the margin is about twice the bias, not inside it;
+* it is **very nearly right at p90**, where the bias is 0.966 mm against a 1 mm margin;
+* the honest statement is that **a result turning on a millimetre is unsafe for the worst tenth of
+  points and defensible at the median**, which is a much weaker and much more useful claim than the
+  blanket one I committed.
+
+Three times today I read a composite number as a correspondence error: displacement for separation,
+error vector for correspondence error, and a scaled control for a fixed one. The common shape is
+the ledger's own -- a quantity computed correctly and compared against the wrong thing.
+
+**The max of 32.5 mm in the NORMAL component is the thin-sheet failure**, arriving exactly where
+predicted: a nearest-point target landing on the far wall of a rib. It is the pathology normal
+shooting shares and the agreement filter exists to remove, so it strengthens rather than weakens
+the queued instrument -- and it is now visible as a correspondence fault rather than buried inside
+a number that was 93% floor.
+
 #### A known answer this line has never had, and what the chest wall found without it
 
 Every gate above compares a fit to another fit. Gate 1 asks whether the warped bone group sits no
