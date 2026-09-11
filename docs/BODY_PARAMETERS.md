@@ -4579,3 +4579,25 @@ What has changed is that the parametrization no longer stops at the scaffold.
 
    This does not touch the prediction made before the run — *past fraction 0.0005* — which is
    confirmed either way: 0.1094 converged is 219× the pre-repair stall.
+
+   ### The judge cannot PASS without FEBio, and FEBio has never completed a step here
+
+   Noted 2026-09-11 before the first `judge.json` exists, so the reading is fixed in advance.
+
+   `passes = all(gates.values())` over the four gates, and gate (c) is
+   `bool(fe is not None and rms / umax <= 0.05)` where `fe` is `febio_displacement.npy`
+   (`scripts/seat_breast_sliding.py:575, 586, 594`). **When the FEBio arm is absent, gate (c) is
+   `False` by construction, not by measurement**, and the overall verdict is `FAIL` whatever the
+   deformation looks like.
+
+   FEBio has never completed a step on this problem: `s1159/left/febio.json` records
+   `final_time 0.0, normal_termination false, returncode 1` after 774.8 s, and the earlier
+   closest-point line's attempt ended the same way at `final_time 0.227`.
+
+   So the first `judge.json` this project produces will read `FAIL`, and **that word will mean
+   "the cross-solver check has no second solver", not "the deformation is wrong"**. Gates (a),
+   (b) and (d) — volume, minimum Jacobian, flipped base triangles — are real measurements of the
+   in-repo solve and are the ones to read. A one-solver result is reported as such and is not a
+   seat; per the rule above, neither is a drive with unconverged steps. Both conditions are
+   currently unmet, and saying so now costs nothing, whereas saying it after seeing `FAIL` would
+   be indistinguishable from excusing it.
