@@ -2179,3 +2179,53 @@ than near this line's 0.571 mm correspondence residual, because the residual mea
 with targets and the control measures agreement with the truth. If it does, gate 1's margin of
 1 mm is inside the bias, and no result here that turns on a millimetre can be read as a
 transform's doing.
+### The hard partition, measured: four segments are assigned on a coin-toss
+
+`build_skin_contact_meshes.py` cuts the skin into one rigid piece per segment by the **argmax** of
+`continuous_surface_binding`'s graph-diffused weights, and says so itself: *"a HARD partition of a
+surface that is really continuous, so every segment boundary is a seam that in the real body does
+not exist"*, forced because *"Simbody is a rigid multibody engine and there is no deformable
+continuum anywhere in it"*. The weights are continuous; the partition is not. Until now the cost of
+that was described. `scripts/measure_partition_ambiguity.py` measures it.
+
+**Whole surface**, 203,382 triangles: winning share median **0.940**, p10 0.606, min 0.264.
+**9.67%** of triangles are assigned on a winning share below 0.6, **3.52%** below 0.5. Threshold-free:
+**2.37%** of triangles have three vertices that disagree on their own argmax — a seam by definition,
+no bar chosen.
+
+| segment | triangles | median winning share | below 0.6 |
+|---|---:|---:|---:|
+| **patella_l** | 769 | **0.522** | **100.0%** |
+| **patella_r** | 795 | **0.498** | **100.0%** |
+| **talus_l** | 13 | **0.282** | **100.0%** |
+| **talus_r** | 75 | **0.304** | **100.0%** |
+| ulna_r | 2,855 | 0.698 | 33.9% |
+| radius_r | 1,794 | 0.685 | 30.7% |
+| toes_l | 10,070 | 0.733 | 14.5% |
+| toes_r | 10,001 | 0.753 | 13.6% |
+| femur_r | 9,537 | 0.882 | 9.3% |
+| torso | 50,140 | 0.994 | 3.0% |
+| hand_l | 18,672 | 0.988 | 2.8% |
+
+**The patellae and tali have no unambiguous skin at all.** Every one of their triangles is assigned
+on a winning share below 0.6, and the patellar medians sit at ~0.51 — the coin-toss line for two
+competing segments. `measure_skin_enclosure_whole.py` already knew the qualitative half: per-segment
+enclosure *"cannot pass for radius/ulna/patella under ANY registration, because those segments own a
+strip or a patch of skin, not a closed region"*. This puts a number on it and adds the tali.
+
+**The toes are worse than the body but not the worst** — 13.6–14.5% below 0.6 against a 3% torso —
+which is consistent with the toe failures being local shear rather than a partition artefact, and
+does not change that reading.
+
+**What this does and does not bear on.** It is a property of the partition alone: no warp, no
+solver, no gate. It does not explain gate 2 or gate 4, and it is not offered as doing so. What it
+does is put a size on the thing option (b) would remove, and identify where the hard partition costs
+most — which is not where this line has been looking.
+
+**Three known-answer constructions failed before any figure printed, all mine.** A per-vertex one-hot
+binding reads 1/3, not 1, because a hard binding means a triangle's three vertices *agree*, not that
+each is confident. A straddling case built with `split[2::3, idx]` read 1.0 instead of 2/3, because
+mixing a slice with an index array **broadcasts** — it set `len(idx)` columns in every selected row
+rather than pairing them one to one, making every third vertex hot on all 22 segments. Both were the
+test case rather than the detector, and the gate caught them on its own author before a number
+reached this file.
