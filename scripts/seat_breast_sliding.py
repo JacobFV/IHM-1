@@ -572,7 +572,24 @@ def ribs_inside(side, V, F):
 def stage_judge(sid, side, d):
     P = np.load(d / "prepared.npz"); X, T, B, base, gap0 = P["X"], P["T"], P["boundary"], P["base"], P["gap0"]
     u = np.load(d / "dr_displacement.npy"); Y = X + u
-    fe = np.load(d / "febio_displacement.npy") if (d / "febio_displacement.npy").exists() else None
+    # THE SECOND SOLVER HAS TO HAVE ACTUALLY SOLVED.  this used to be `np.load(...) if exists`,
+    # and the file on disk for s1159-left is 13,216 nodes of EXACT ZERO -- FEBio's time-0 state,
+    # written by a run recorded in febio.json as `final_time 0.0, normal_termination false,
+    # returncode 1`.  gate (c) is `rms(u - fe) / max|u| <= 0.05`, so against an all-zero `fe` it
+    # silently becomes `rms(u) / max|u|`: a statement about how concentrated the in-repo
+    # displacement is, with no second solver in it at all -- and one that CAN PASS, for a
+    # concentrated field, while certifying an agreement that was never computed.  a control that
+    # can pass for a reason unrelated to what it tests is worse than one that cannot fail.
+    fe, fe_status = None, "absent"
+    fpath, fjson = d / "febio_displacement.npy", d / "febio.json"
+    if fpath.exists():
+        st = json.loads(fjson.read_text()) if fjson.exists() else {}
+        if not st.get("normal_termination") or not (st.get("final_time") or 0) > 0:
+            fe_status = (f"REJECTED: febio.json says final_time {st.get('final_time')}, "
+                         f"normal_termination {st.get('normal_termination')} -- not a solve")
+        else:
+            fe = np.load(fpath); fe_status = "loaded"
+    print(f"  second solver: {fe_status}")
     J = np.linalg.det(np.swapaxes(Y[T[:, 1:]] - Y[T[:, 0, None]], 1, 2) @ np.linalg.inv(np.swapaxes(X[T[:, 1:]] - X[T[:, 0, None]], 1, 2)))
     vr = float(tet_volumes(Y, T).sum() / tet_volumes(X, T).sum())
     isb = np.zeros(len(X), bool); isb[base] = True
@@ -591,7 +608,7 @@ def stage_judge(sid, side, d):
     ant = P["anterior"]; ua = np.linalg.norm(u[ant], axis=1)
     rec = dict(subject=sid, side=side, nodes=int(len(X)), tets=int(len(T)), volume_ratio=vr, min_J=float(J.min()),
                max_displacement_mm=umax * 1e3, rms_dr_vs_febio_mm=rms * 1e3, rms_over_max=rms / umax if fe is not None else None,
-               flipped_base_triangles=flipped, base_triangles=int(len(tri)), gates=gates, passes=all(gates.values()),
+               flipped_base_triangles=flipped, base_triangles=int(len(tri)), gates=gates, passes=all(gates.values()), second_solver=fe_status,
                reported=dict(held_nodes=int(held.sum()), unilateral_nodes=int((~held).sum()),
                              held_gap_median_mm=float(np.median(np.abs(gap[held])) * 1e3) if held.any() else None,
                              held_gap_max_mm=float(np.abs(gap[held]).max() * 1e3) if held.any() else None,

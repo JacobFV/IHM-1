@@ -4584,15 +4584,30 @@ What has changed is that the parametrization no longer stops at the scaffold.
 
    Noted 2026-09-11 before the first `judge.json` exists, so the reading is fixed in advance.
 
-   `passes = all(gates.values())` over the four gates, and gate (c) is
-   `bool(fe is not None and rms / umax <= 0.05)` where `fe` is `febio_displacement.npy`
-   (`scripts/seat_breast_sliding.py:575, 586, 594`). **When the FEBio arm is absent, gate (c) is
-   `False` by construction, not by measurement**, and the overall verdict is `FAIL` whatever the
-   deformation looks like.
+   **CORRECTED within the hour, and the correction is the finding.** This section first said
+   gate (c) would read `False` because `febio_displacement.npy` was absent. **It is not absent.**
+   It is on disk at 317,312 bytes — and it is **13,216 nodes of exact zero**, FEBio's time-0
+   state, written by the run `febio.json` records as `final_time 0.0, normal_termination false,
+   returncode 1`. I asserted the file's absence from `febio.json`'s failure without listing the
+   directory. The truth is worse than what I claimed.
+
+   Gate (c) is `bool(fe is not None and rms / umax <= 0.05)`, where `rms` is the RMS difference
+   between the in-repo displacement and `fe`. Against an all-zero `fe` it silently becomes
+   **`rms(u) / max|u|`** — a statement about how concentrated the in-repo displacement is, with
+   no second solver in it at all. And unlike a gate that cannot fail, **this one can PASS**: a
+   sufficiently concentrated displacement field satisfies it, and would certify a cross-solver
+   agreement that was never computed. *A control that can pass for a reason unrelated to what it
+   tests is worse than one that cannot fail*, because its failure mode is a false certificate
+   rather than a missing one.
 
    FEBio has never completed a step on this problem: `s1159/left/febio.json` records
    `final_time 0.0, normal_termination false, returncode 1` after 774.8 s, and the earlier
    closest-point line's attempt ended the same way at `final_time 0.227`.
+
+   `scripts/seat_breast_sliding.py` now refuses a FEBio displacement whose `febio.json` does not
+   report `normal_termination` with `final_time > 0`, prints the second solver's status, and
+   records it in `judge.json` as `second_solver`. On s1159-left that reads
+   `REJECTED: ... not a solve`, so gate (c) is `False` for a stated reason.
 
    So the first `judge.json` this project produces will read `FAIL`, and **that word will mean
    "the cross-solver check has no second solver", not "the deformation is wrong"**. Gates (a),
