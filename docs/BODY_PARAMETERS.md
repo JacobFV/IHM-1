@@ -2333,3 +2333,35 @@ What has changed is that the parametrization no longer stops at the scaffold.
    would then follow the chest wall rather than the registration, and what is delivered is a breast
    shaped to this body, not this subject's breast placed on it.
 
+   ### Smooth the field until it is a deformation, and declare what that costs. Fixed 2026-09-10
+
+   Option 1 is closed by four instruments. Option 2 is taken, with the smoothing bound by the
+   requirement rather than by taste, and with the thing it removes reported as the headline rather
+   than a footnote -- because smoothing is exactly what the envelope did when it ate the offset it
+   existed to carry, and the only difference here is that this time it is declared.
+
+   * **The rule.** Smooth the depth field ON the base surface (never the geometry), increasing the
+     bandwidth monotonically from zero, and **stop at the first bandwidth where the field is a
+     deformation**: max |gradient| between neighbouring base nodes **<= 0.5**, half the value at
+     which an edge's ends pass through each other. The stopping rule is the invertibility the
+     solver needs, so nothing is chosen to make a result come out.
+   * **Reported as the headline:** the bandwidth required, the fraction of the field's magnitude it
+     removes, and the median and p90 depth before and after. A reader must be able to see how much
+     of this subject survived.
+   * **The stopping condition, fixed now:** if reaching a gradient of 0.5 removes **more than half**
+     the field's magnitude, the breast is being reshaped by the chest rather than seated on it,
+     and that is the result -- reported, not smoothed further.
+   * **Gates (a)-(d) unchanged** -- volume within 1%, every tet J > 0.2, the two solvers within 5%,
+     no flipped base triangle -- plus the seating actually completing, and rib points inside the
+     breast reported as before.
+   * **The label travels with the artefact:** what this produces is *a female breast adapted to
+     this body's chest wall, derived from subject s1159 and not a model of her*. Any manifest,
+     figure or card carrying it says so, the way the endometriosis caveat travels with the pelvic
+     organs.
+
+   **Predicted:** a bandwidth of 10-20 mm suffices, it removes 20-40% of the magnitude, the seat
+   completes, and the deformation stays in single-digit millimetres. If it removes more than half,
+   the honest reading is that this chest cannot carry this breast without becoming its author, and
+   the female-torso work needs a female body rather than a male one corrected -- which is the
+   conclusion `data/sources/visible-human-lower-extremity.json` was catalogued against.
+
