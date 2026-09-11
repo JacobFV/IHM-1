@@ -1393,6 +1393,48 @@ improve. Being right about three sub-quantities of a metric that turned out to b
 anti-correlated with the outcome is not a good record; it is a demonstration that forecasting skill
 on the wrong quantity is worth nothing.
 
+### The 4.4x was mostly selection: on the same population it is 1.19x. My criterion fired against me.
+
+`ded65bf` predicted nearest-point on shooting's kept subset would land at **0.8-1.5 mm**, and fixed
+the refutation in advance: *"If it lands at or below 0.6, I am wrong and most of the gain is
+selection."* **It is 0.529 mm.** The criterion fired, and the conclusion it forced is the one it
+was written to force.
+
+| amplitude 2 | nearest point | normal shooting | ratio |
+|---|---:|---:|---:|
+| target error, **all** samples | 1.933 mm | 0.444 mm | 4.4x "better" |
+| **target error, same population** | **0.529 mm** | **0.444 mm** | **1.19x** |
+| to-surface recovery | 2.138 mm | 2.697 mm | **26% worse** |
+| fit residual | 0.258 mm | 0.173 mm | "better" while the error worsened |
+
+**Three quarters of the headline improvement was the filter declining to answer for the hard
+points.** The nearest rule is not 4.4 times worse than shooting; it is 1.19 times worse, and its
+apparent gap was the far-wall pathologies that shooting drops rather than solves.
+
+**So normal shooting, as constituted, is strictly worse.** It buys 1.19x on targets and pays 26% on
+the warp -- the only quantity with a known truth behind it. The repair authorised in `5239b2a` does
+not repair this line. Whether coverage explains the 26% is Control C's question and is still open;
+what is closed is that the 4.4x was never real.
+
+**The fit residual inverted a third time here**, and it is worth stating as a completed pattern:
+0.258 -> 0.173 mm, *better*, on the arm whose warp is worse. Across this line the residual has now
+moved independently of the error (flat while it doubled), and opposite to it (down while it rose).
+It is not a degraded measure of accuracy. It is not a measure of accuracy.
+
+**My scoreboard on this line today, since it bears on how much weight my calls should carry:** the
+anchor rule's "small fraction" -- refused. Target error "near 1.3 mm absolute" -- refused. The
+d^2/R bracket -- directionally right, centrally wrong. The shooting exponent's 1.2-1.4 band --
+direction right, below the band. Nearest-on-kept-subset at 0.8-1.5 -- refused, at 0.529. Three
+shooting sub-predictions -- all landed, all worthless, because the metric was anti-correlated with
+the outcome.
+
+**What did hold was the sequencing, not the forecasting:** recovery control first, no warp family
+judged until it lands, every criterion written before its number existed. That order caught all
+three inversions, and each one was invisible in the quantity the line had been quoting. The
+discipline earned its keep today; the predictions did not, and the honest reading is that my
+intuitions about this instrument are not calibrated and should be used to generate controls rather
+than to anticipate their results.
+
 **Why this was worth having from a retired control.** I retired it for firing a threshold at the
 wrong separation, and it then answered a question I had not asked: whether this line's headline
 quality metric measures accuracy at all. It does not. A control kept running after its gate was
