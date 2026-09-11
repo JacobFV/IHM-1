@@ -364,8 +364,12 @@ def register(sid, arr, affine, meta, body, out, target, axes, flexmaps):
         Pm = apply(M, Ps)
         near = float(np.mean(ttree.query(Pm)[0] <= PLACE_MM / 1000)); inb = float(np.mean(inside(tV, tF, Pm)))
         Pb = apply(M, area_samples(sV, sF, N_PLACE, 40 + bl))               # the ceiling: the scan's own bone surface, mapped
+        # the ceiling measured with the SIGNED instrument too: if the registered bone surface is itself
+        # negative here, cartilage correctly placed on it cannot be positive, and the signed gate has no headroom
+        cS, cK = area_samples_faces(tV, tF, 200000, 23); cj = cKDTree(cS).query(Pb)[1]
         rec[f"bone_ceiling_{bone}"] = dict(within_3mm=float(np.mean(ttree.query(Pb)[0] <= PLACE_MM / 1000)),
-                                           inside_bone=float(np.mean(inside(tV, tF, Pb))))
+                                           inside_bone=float(np.mean(inside(tV, tF, Pb))),
+                                           median_signed_offset_mm=1000 * float(np.median(((Pb - cS[cj]) * outward_normals(tV, tF)[cK][cj]).sum(1))))
         rec[f"transform_{bone}"] = M.tolist()
         tS, tK = area_samples_faces(tV, tF, 200000, 23)                      # gate 3'': the bone's outward normal where it is nearest
         signed = ((Pm - tS[cKDTree(tS).query(Pm)[1]]) * outward_normals(tV, tF)[tK][cKDTree(tS).query(Pm)[1]]).sum(1)
