@@ -4237,3 +4237,58 @@ What has changed is that the parametrization no longer stops at the scaffold.
    it disabled persistence entirely in gate CC, it reads as "settled" rather than "refused", and it
    hid which and how many nodes it was acting on.
 
+
+   ### The 39 characterised: persistent, scattered, shrinking — and NOT the refused ones
+
+   | fraction | 0.0625 | 0.1094 | 0.1797 (unconverged) |
+   |---|---:|---:|---:|
+   | moving away, of 3,123 | **39** | **34** | 27 |
+   | worst, backwards | 1.445 mm | 4.214 mm | 3.677 mm |
+   | spread on the base | 103.6 mm | 103.9 mm | 119.8 mm |
+   | same nodes as previous | — | **34 of 39 (87%)** | 22 of 34 |
+   | association **refused** this step | 963 | 982 | 1,144 |
+   | diverging nodes among the refused | **0** | **1** | 3 |
+   | **expected by chance** | **12.0** | **10.7** | 9.9 |
+
+   Scattered across 103.6 mm rather than one bad patch of bed; **87% persist** between the two
+   converged fractions; and the count **shrinks**, 39 → 34 → 27. The drive is not recruiting more.
+
+   **My proposed cause is refuted, and below chance.** I suggested the jump-limit refusal because it
+   would have tied these nodes to something already on the record — which is precisely the kind of
+   tidy connection that deserves suspicion. The overlap is **0 of 39 and 1 of 34 against 12.0 and
+   10.7 expected at random**: not merely unsupported but *anti*-correlated. The diverging nodes come
+   almost exclusively from those whose association updates are being **accepted**.
+
+   **The chance column is what made that readable**, and it is the reason the guard was built before
+   the numbers. With 963 of 3,123 refused — a third of the base — *any* set of 39 overlaps about 12
+   by construction. The raw overlap would have been the denominator error again, and unlike this
+   morning's "5,660 of 4,097" it would have looked entirely plausible.
+
+   ### The larger finding: a third of the contact constraints are frozen every step
+
+   **963–1,144 of 3,123 held nodes — 31% to 37% — have their association refused at every single
+   step.** This was invisible because the log printed only `association moved 0.4999 mm`, the maximum
+   over *accepted* updates. **Every anatomical seating result to date was computed with roughly a
+   third of the contact constraints held stale by a limit nobody was reading.** That is a live
+   setting on the production drive, not a diagnostic artefact.
+
+   **And it leaves the line in a genuine bind rather than with an obvious fix:**
+
+   * the per-node 0.5 mm limit freezes **31–37% of nodes** every step;
+   * the all-or-nothing rule with the derived threshold refuses **93.8% of whole steps** (gate U);
+   * gate T showed the pure extremes fail in both directions — `none` cannot follow a sliding bed,
+     `all` imports the 46.6 mm teleports.
+
+   **Pre-registered, and it needs no curvature model:** the refused association displacement is
+   *directly* the staleness — it is exactly how far each association would have moved and did not.
+   **Accumulate it per node across the drive and report the distribution.** CC's `0.24 × d²/2RN`
+   gives the price of staleness on curved geometry, but it needs a local radius; the accumulated
+   refused displacement measures the same thing in millimetres with nothing assumed.
+
+   * **If the accumulated staleness is small** — a few tenths of a millimetre over the drive — the
+     31–37% is a bookkeeping fact and the seating results survive with a caveat.
+   * **If it is millimetres**, every anatomical result on this line was computed against constraints
+     pointing somewhere the bed no longer is, and they are re-run rather than re-read.
+   * **No prediction.** The refused nodes are refused *because* their associations want to move
+     furthest, so they are the worst-case population by construction — which is an argument that this
+     could be large, not a forecast that it is.
