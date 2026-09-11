@@ -2484,3 +2484,40 @@ What has changed is that the parametrization no longer stops at the scaffold.
    So the seating question is reopened rather than answered: the sliding condition has still not
    been tested on this breast by a stepping that can carry a translation.
 
+   **Blast radius, checked rather than assumed.** Three files import `sliding_contact`:
+   `seat_breast_sliding.py`, `verify_contact_broadphase.py` and `assess_soft_body_coupling.py`. Only
+   the first calls `solve_sliding`; the other two import the module and never reach it, and no
+   document cites either. **The contamination is confined to the breast seating line.** The skin
+   warp, the knee cartilage registration and the bed work use different solvers and are untouched by
+   this. That was worth ten seconds of grep before anyone worried about it.
+
+   **The diagnostic named the wrong cause, and that is the transferable lesson.**
+   `sliding_contact.py:73` raises `"bounded start inverts N elements; reduce the load step"`. The
+   second clause is false -- the load step is not what limits it, and shrinking the increment shrinks
+   the bound change without touching the inconsistency. That message was read about fifteen times
+   across this line and it steered every reading toward the data, because **it asserted a cause with
+   the authority of a measurement**. A diagnostic that names a wrong cause is worse than no
+   diagnostic, since a silent failure gets investigated and a confident one gets believed. The
+   message should state what was observed -- the clipped start inverts -- and stop there. Fixing the
+   message is part of fixing the stepping.
+
+   **Why the existing validation could not catch it.** The block case compared two codes on
+   *prescribed displacements*, where the clipped start happens to be feasible, and passed at 1.58%.
+   It never exercised the sliding path at all. That is `docs/LOG.md` row 30 word for word -- *a
+   control only tests the path it exercises* -- and the second time today that sentence has been the
+   answer.
+
+   **Why my prediction was wrong, precisely.** I argued that ordinary elements, at reference quality
+   0.478 against a mesh median of 0.487, do not invert under a rigid motion. True of the *motion*,
+   irrelevant to the *algorithm*: the rigid motion is never applied, because the solver builds a
+   non-rigid intermediate state and inverts there. I reasoned about the physics of the target while
+   the failure lived in an intermediate the physics never sees. Worth keeping, because designing a
+   known answer around the target's properties is exactly how a control gets built that the code can
+   still fail for reasons the control does not name.
+
+   **Control R is the standing gate on the stepping, fixed before any fix is written.** A feasible
+   warm start is the proposed repair -- extrapolate the previous increment, or apply the bound change
+   inside the Newton loop instead of clipping before it. Whichever is built, **R must pass at
+   fraction 1.0 with zero inversions before any breast is judged again**, and R is re-run on every
+   later change to the stepping. No seating result from this line is readable until it does.
+

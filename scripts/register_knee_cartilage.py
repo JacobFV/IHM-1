@@ -64,6 +64,8 @@ SCALE_MIN, SCALE_MAX = 0.5, 2.0
 # One knee's two bones come from one person, so their scales should agree; a fit whose two scales differ by
 # more than this is reported as suspect. REPORTED, NOT GATED, and not tuned: no verdict depends on it.
 SCALE_DISAGREE = 0.20
+FLEX_DEG = (0, 30, 60, 90)        # gate 4': overlap must hold at EVERY one of these, not on average
+PAIRED_SLACK = 0.05               # gate 3': how far below/above the same map's own ceiling the cartilage may sit
 FRAMES = {"scaffold": "ground (supine-support-5ma720yd t=0)", "canonical": "canonical"}
 
 def _load(name, rel):
@@ -186,6 +188,62 @@ def fit_bone(src, src_jc, tgt, tgt_jc, seed=0):
     if best is None: raise SystemExit("every full fit collapsed: no candidate inside the anatomical scale range")
     return best
 
+def knee_function(f, q):
+    """the walker_knee's own function types. ihm/spatial/opensim.py evaluates Constant/Linear/SimmSpline;
+    this knee is polynomial, so the polynomial forms are evaluated here in the same convention."""
+    if f.tag == "Constant": return float(f.findtext("value"))
+    if f.tag == "LinearFunction":
+        c = [float(x) for x in f.findtext("coefficients").split()]; return float(c[0] * q + c[1])
+    if f.tag == "PolynomialFunction":
+        return float(np.polyval([float(x) for x in f.findtext("coefficients").split()], q))
+    if f.tag == "MultiplierFunction":
+        return float(f.findtext("scale")) * knee_function(f.find("function")[0], q)
+    raise SystemExit(f"unsupported knee transform function {f.tag}")
+
+def flexion_maps(side="right"):
+    """What the PLANT's own knee does to the tibia, read from the model the engine loads and composed in
+    ihm/spatial/opensim.py's convention: rotations R1@R2@R3, translations summed in the parent offset frame.
+
+    Known answer: the reference run sits at knee_angle_r = 0, so the joint evaluated at 0 must reproduce the
+    tibia's recorded transform_ground. That checks the offset frames and the composition, not the engine's
+    integrator -- this is a re-evaluation of the plant's joint, not the plant's solver."""
+    import xml.etree.ElementTree as ET
+    sys.path.insert(0, str(ROOT))
+    from ihm.spatial.opensim import offset_transform, vector
+    root = ET.parse(ROOT / "data/models/engineering_stance_v1/model.osim").getroot().find("Model")
+    suffix = "r" if side == "right" else "l"
+    j = next(x for x in root.iter("CustomJoint") if x.get("name") == f"walker_knee_{suffix}")
+    offs = {f.attrib["name"]: f for f in j.findall("frames/PhysicalOffsetFrame")}
+    T = lambda f: offset_transform(vector(f.findtext("translation")), vector(f.findtext("orientation")))
+    xpf, xcf = T(offs[j.findtext("socket_parent_frame")]), T(offs[j.findtext("socket_child_frame")])
+    axes = j.findall("SpatialTransform/TransformAxis")
+    if [a.attrib["name"] for a in axes] != ["rotation1", "rotation2", "rotation3", "translation1", "translation2", "translation3"]:
+        raise SystemExit("unsupported spatial axis order in the knee joint")
+    def motion(q):
+        M = np.eye(4)
+        for i, a in enumerate(axes):
+            ax = vector(a.findtext("axis")); ax = ax / np.linalg.norm(ax)
+            fn = [c for c in a if c.tag not in ("coordinates", "axis")][0]
+            v = knee_function(fn, q)
+            if i < 3: M[:3, :3] = M[:3, :3] @ Rotation.from_rotvec(ax * v).as_matrix()
+            else: M[:3, 3] += ax * v
+        return M
+    ref = json.loads((ROOT / "data/derived/supine-support-5ma720yd/initial_native.json").read_text())["bodies"]
+    Gf = np.asarray(ref[f"femur_{suffix}"]["transform_ground"], float); Gt = np.asarray(ref[f"tibia_{suffix}"]["transform_ground"], float)
+    G = lambda q: Gf @ xpf @ motion(q) @ np.linalg.inv(xcf)
+    G0 = G(0.0)
+    known = dict(translation_mm=1000 * float(np.abs(G0[:3, 3] - Gt[:3, 3]).max()),
+                 rotation_deg=float(np.degrees(np.arccos(np.clip((np.trace(G0[:3, :3].T @ Gt[:3, :3]) - 1) / 2, -1, 1)))))
+    if known["translation_mm"] > 0.01 or known["rotation_deg"] > 0.01:
+        raise SystemExit(f"the knee joint evaluated at 0 does not reproduce the plant's own tibia pose: {known}")
+    return {d: G(np.deg2rad(d)) @ np.linalg.inv(G0) for d in FLEX_DEG}, known
+
+def area_samples_faces(V, F, n, seed=0):
+    """area-weighted samples, with the face each came from -- gate 3'' needs the bone's outward normal there"""
+    rng = np.random.default_rng(seed); a = areas(V, F); k = rng.choice(len(F), n, p=a / a.sum()); t = V[F][k]
+    r1 = np.sqrt(rng.random(n)); r2 = rng.random(n)
+    return (1 - r1)[:, None] * t[:, 0] + (r1 * (1 - r2))[:, None] * t[:, 1] + (r1 * r2)[:, None] * t[:, 2], k
+
 def label_meshes(arr, affine):
     from skimage import measure
     out = {}
@@ -259,7 +317,7 @@ def known_answer(body, axes):
                 f"(<= {KA_R_DEG}), scale {100*serr:.3f}% (<= {100*KA_S:.0f}%), {it} iterations, residual {1000*rms:.2f} mm -> {'PASS' if ok else 'FAIL'}")
     return ok_all, dict(kept_share=share, cases=rec)
 
-def register(sid, arr, affine, meta, body, out, target, axes):
+def register(sid, arr, affine, meta, body, out, target, axes, flexmaps):
     say(f"\n=== {sid} ({meta.get('sex')}, gender code {meta['gender']}, KL {meta['kl']}) ===")
     src = label_meshes(arr, affine)
     if 1 not in src or 3 not in src: return dict(subject=sid, error="femur or tibia label missing", passes=False, **meta)
@@ -309,12 +367,23 @@ def register(sid, arr, affine, meta, body, out, target, axes):
         rec[f"bone_ceiling_{bone}"] = dict(within_3mm=float(np.mean(ttree.query(Pb)[0] <= PLACE_MM / 1000)),
                                            inside_bone=float(np.mean(inside(tV, tF, Pb))))
         rec[f"transform_{bone}"] = M.tolist()
+        tS, tK = area_samples_faces(tV, tF, 200000, 23)                      # gate 3'': the bone's outward normal where it is nearest
+        signed = ((Pm - tS[cKDTree(tS).query(Pm)[1]]) * outward_normals(tV, tF)[tK][cKDTree(tS).query(Pm)[1]]).sum(1)
+        med_signed = 1000 * float(np.median(signed))
         ok_near = src_near >= PLACE_MIN; ok_in = src_in <= INSIDE_MAX      # the criterion validated on the SOURCE
+        ceil = rec[f"bone_ceiling_{bone}"]
+        paired = bool(near >= ceil["within_3mm"] - PAIRED_SLACK and inb <= ceil["inside_bone"] + PAIRED_SLACK)
         rec[f"placement_{bone}"] = dict(source_within_3mm=src_near, source_inside_bone=src_in,
                                         criterion_valid_within=ok_near, criterion_valid_inside=ok_in,
                                         within_3mm=near, inside_bone=inb,
                                         within_verdict=(near >= PLACE_MIN) if ok_near else None,
-                                        inside_verdict=(inb <= INSIDE_MAX) if ok_in else None)
+                                        inside_verdict=(inb <= INSIDE_MAX) if ok_in else None,
+                                        gate_paired=paired, median_signed_offset_mm=med_signed, gate_signed=bool(med_signed > 0))
+        place_ok &= paired and med_signed > 0
+        say(f"  GATE 3' paired [{bone}]: within {100*near:.1f}% vs ceiling {100*ceil['within_3mm']:.1f}% (needs >= ceiling - 5), "
+            f"inside {100*inb:.1f}% vs ceiling {100*ceil['inside_bone']:.1f}% (needs <= ceiling + 5) -> {'PASS' if paired else 'FAIL'}")
+        say(f"  GATE 3'' signed [{bone}]: median offset along the bone's outward normal {med_signed:+.2f} mm (needs > 0) "
+            f"-> {'PASS' if med_signed > 0 else 'FAIL'}")
         say(f"  criterion on the SOURCE [{bone} cartilage, bone-facing surface]: {100*src_near:.1f}% within {PLACE_MM:g} mm (needs >= 95), "
             f"{100*src_in:.2f}% inside its own bone (needs <= 1) -> {'VALID' if ok_near and ok_in else 'VOID'}")
         say(f"  ceiling [{bone}: the scan's own bone surface carried by the same map]: {100*rec[f'bone_ceiling_{bone}']['within_3mm']:.1f}% "
@@ -322,10 +391,8 @@ def register(sid, arr, affine, meta, body, out, target, axes):
         say(f"  placement [{bone} cartilage, bone-facing surface]: {100*near:.1f}% within {PLACE_MM:g} mm, {100*inb:.2f}% inside the {bone} -> "
             + (" ".join(x for x in ((f"within {'PASS' if near >= PLACE_MIN else 'FAIL'}" if ok_near else "within VOID"),
                                     (f"inside {'PASS' if inb <= INSIDE_MAX else 'FAIL'}" if ok_in else "inside VOID")))))
-        for valid, val, lim, ge in ((ok_near, near, PLACE_MIN, True), (ok_in, inb, INSIDE_MAX, False)):
-            if not valid: void = True
-            elif (val < lim) if ge else (val > lim): place_ok = False
-    rec["gate_placement"] = None if void else place_ok
+        if not (ok_near and ok_in): void = True
+    rec["gate_placement"] = place_ok
     rec["placement_criterion_void"] = void
     vox_m3 = float(np.prod(np.abs(np.diag(affine)[:3]))) / 1e9     # m^3 per voxel
     vol = {}
@@ -352,7 +419,19 @@ def register(sid, arr, affine, meta, body, out, target, axes):
     js_ok = overlap <= OVERLAP_MAX
     rec.update(joint_space_overlap=overlap, gate_joint_space=js_ok,
                cartilage_volume_ml={"femoral": 1e6 * vol[2], "medial_tibial": 1e6 * vol.get(4, 0), "lateral_tibial": 1e6 * vol.get(5, 0)})
-    say(f"  joint space: femoral/tibial cartilage overlap {100*overlap:.2f}% of the smaller (<= 1) -> {'PASS' if js_ok else 'FAIL'}")
+    say(f"  joint space at rest: femoral/tibial cartilage overlap {100*overlap:.2f}% of the smaller (<= 1) -> {'PASS' if js_ok else 'FAIL'}")
+    if flexmaps is None:
+        rec["gate_joint_space_flexion"] = None; flex_ok = js_ok
+    else:
+        Mf_, Mt_ = fits[("right", "femur")][0], fits[("right", "tibia")][0]
+        flex = {d: overlap_of(Mf_, D @ Mt_) for d, D in flexmaps.items()}
+        first = next((d for d in FLEX_DEG if flex[d] > OVERLAP_MAX), None)
+        flex_ok = first is None
+        rec["joint_space_flexion"] = {str(d): v for d, v in flex.items()}
+        rec["first_flexion_over_1pct_deg"] = first
+        rec["gate_joint_space_flexion"] = flex_ok
+        say(f"  GATE 4' the moving knee: overlap " + ", ".join(f"{d} deg {100*flex[d]:.2f}%" for d in FLEX_DEG)
+            + f" -> {'PASS at every angle' if flex_ok else f'FAIL, first over 1% at {first} deg'}")
     # EVIDENCE, not gates: the same measures on the scan in its own frame (a perfect map would score these),
     # and placement read by cartilage VOLUME (voxel centres) rather than by surface samples
     ident = dict(joint_space_overlap=overlap_of(None, None))
@@ -378,7 +457,7 @@ def register(sid, arr, affine, meta, body, out, target, axes):
         rec["medial_nearer_midline"] = bool(med)
     say(f"  volume femoral {1e6*vol[2]:.1f} mL, tibial {1e6*(vol.get(4,0)+vol.get(5,0)):.1f} mL; "
         f"mean thickness {', '.join(f'{k}: {1000*v:.2f} mm' for k, v in thick.items())}; medial nearer midline: {rec.get('medial_nearer_midline')}")
-    rec["passes"] = bool(side_ok and place_ok and js_ok and not rec["fit_suspect"])
+    rec["passes"] = bool(side_ok and place_ok and flex_ok and not rec["fit_suspect"])
     return rec
 
 def sex_coding():
@@ -424,12 +503,18 @@ def main():
     if a.target == "scaffold": body, mirror_check = scaffold_bones(a.right_femur)
     else: body = body_bones()
     say(f"target: the {a.target} femur and tibia, {FRAMES[a.target]} frame; right femur from {a.right_femur}")
+    flexmaps = None
+    if a.target == "scaffold":
+        flexmaps, knee_known = flexion_maps("right")
+        say(f"  the plant's own knee, evaluated at 0 deg against its recorded tibia pose (known answer): "
+            f"{knee_known['translation_mm']:.2e} mm, {knee_known['rotation_deg']:.2e} deg")
     if mirror_check is not None: say(f"  mirror known answer (max vertex difference, must be 0): {mirror_check}")
     say("== known answer ==")
     axes = frame_axes(body)
     ok, ka = known_answer(body, axes)
     man = out / "manifest.json"
     report = json.loads(man.read_text()) if man.exists() else dict(schema="ihm.knee-cartilage-registered.v2", licence=LICENCE, subjects={})
+    if flexmaps is not None: report["knee_known_answer"] = knee_known
     report["target"] = dict(bones=a.target, frame=FRAMES[a.target], axes_lr_si_ap=list(axes),
                             right_femur=a.right_femur, mirror_known_answer_mm=mirror_check); report["known_answer"] = ka; report["licence"] = LICENCE
     report["body_joint_gap_mm"] = {side: body_gap(body, side) for side in ("right", "left")}
@@ -447,7 +532,7 @@ def main():
         zf, n = zips[sid]; img = nib.Nifti1Image.from_bytes(gzip.decompress(zf.read(n)))
         meta = dict(gender=info[sid]["gender"], sex=sex.get(info[sid]["gender"]), kl=info[sid]["kl"], age=info[sid]["age"], knee_side_recorded=side.get(sid))
         prev = report["subjects"].get(sid)
-        rec = register(sid, np.asanyarray(img.dataobj), img.affine, meta, body, out, a.target, axes)
+        rec = register(sid, np.asanyarray(img.dataobj), img.affine, meta, body, out, a.target, axes, flexmaps)
         if prev: rec["superseded"] = prev.pop("superseded", []) + [prev]
         report["subjects"][sid] = rec
         man.write_text(json.dumps(report, indent=2, default=float) + "\n")

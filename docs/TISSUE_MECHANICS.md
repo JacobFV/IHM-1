@@ -956,6 +956,59 @@ knee bends and four of five are within 0.5% of the bar at rest. If gate 4' fails
 this source cannot be carried as contact geometry through a crawl, and that is the finding rather
 than a defect.
 
+#### Result: gate 4' passes at every angle for 4 of 5, and gate 3'' has no headroom on the tibia
+
+Six KL-0 knees onto the mirrored-left femur, gates 1 and 2 unchanged and passing (known answer
+<= 0.029 mm, 0.153 deg, 0.057%; which knee 6 of 6, margins 22-76%). oaizib_006 is flagged SUSPECT
+FIT and is excluded from every count below.
+
+| subject | 3' paired femur/tibia | 3'' signed femur/tibia | overlap 0/30/60/90 deg | 4' |
+|---|---|---|---|---|
+| oaizib_001 | PASS / PASS | +0.69 / **-0.21** mm | 0.02 / 0.00 / 0.06 / 0.40% | PASS |
+| oaizib_002 | PASS / PASS | **-0.29** / +0.14 mm | 0.38 / 0.00 / 0.00 / 0.00% | PASS |
+| oaizib_003 | PASS / PASS | +0.42 / **-0.07** mm | **1.97** / 0.00 / 0.19 / 0.84% | FAIL at 0 deg |
+| oaizib_004 | PASS / PASS | +0.25 / **-0.56** mm | 0.47 / 0.00 / 0.00 / 0.00% | PASS |
+| oaizib_005 | **FAIL** / PASS | **-0.00** / +0.32 mm | 0.00 / 0.00 / 0.00 / 0.33% | PASS |
+| oaizib_006 (suspect) | PASS / PASS | +0.19 / +0.32 mm | 0.00 / 0.00 / 0.00 / 0.00% | - |
+
+**Gate 4' passes at every angle for 4 of 5.** The prediction was that it would fail at flexion
+because the tibiofemoral gap narrows as the knee bends. It does not narrow: driven by the plant's
+own `walker_knee_r`, the femur-tibia surface gap goes 3.47 mm at 0 deg to 6.15 at 30 and 60 and
+4.72 at 90, so overlap *falls* as soon as the knee leaves full extension. The single failure,
+oaizib_003, is over the bar **only at 0 deg** (1.97%) and clears at every flexed angle. That
+inverts the worry: for these knees the reference pose is the worst case, not the crawl.
+
+The knee is re-evaluated from the model the engine loads, in `ihm/spatial/opensim.py`'s convention,
+not by the native solver. Its known answer: at `knee_angle_r` = 0 it reproduces the plant's own
+recorded tibia pose to **1.4e-14 mm and 0 deg**. It stays articulated across the sweep, which is
+what says the composition is right.
+
+**Gate 3'' cannot be read on the tibia.** Measured after the fact with the same signed instrument,
+the CEILING surface -- the scan's own bone carried by the same map -- has a negative signed median
+on the tibia in all six subjects (-0.09 to -0.30 mm, median **-0.18**). The registered bone surface
+itself sits inside the plant's tibia, so cartilage correctly placed on that bone cannot show a
+positive median: the gate has no headroom there and its three tibia FAILs (001, 003, 004) say
+nothing about the cartilage. On the femur the ceiling's median is **+0.12 mm** (min -0.12, max
++0.45), thin but positive, so the femur verdicts are readable with that margin in mind. The gate is
+NOT changed here and the FAILs stand on the record as FAILs; this is a diagnostic of whether they
+can be interpreted, computed from the transforms in the manifest without refitting.
+
+Observed while measuring it, and not adopted as anything: the cartilage's signed median sits above
+the ceiling's in 9 of 12 bones, which is the behaviour a correct placement would show. A paired
+form of 3'', against the ceiling as gate 3' already is, would be the obvious replacement, and it
+would be a fresh pre-registration to be made before any subject is scored on it.
+
+**Gate 3' paired passes 4 of 5 on the femur and 5 of 5 on the tibia.** The one failure, oaizib_005,
+is 8.2 points below its femur ceiling. A pattern was nearly written up here from oaizib_005 and
+oaizib_006 alone -- that the femur fails systematically because it is the one non-mirrored bone --
+and the count refutes it: 4 of 5 pass.
+
+Caveats that travel with these numbers: six knees, all KL 0; the flexion sweep moves the tibia
+through the joint's own kinematics but no soft tissue resists it, and cartilage is carried rigidly,
+so nothing here models contact; the known answer remains a self-fit and bounds the search, not the
+anatomy. Meshes and manifest: `data/derived/knee-cartilage-registered-v3-mirrored-femur/`, with the
+ceiling diagnostic beside them in `ceiling_signed_diagnostic.txt`.
+
 **Predicted (the earlier round):** the ceiling rises toward the left knee's and gate 3's placement improves
 markedly, while gate 4's overlap moves little, because overlap is set by the joint's gap and not by
 the facet size. **Not decided here:** whether the PLANT should carry the mirrored femur. That
