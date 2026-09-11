@@ -1047,6 +1047,37 @@ done; the others have moved.
    belongs on the REGISTRATION, not on the tissue: a fit that is local to the chest wall, or a
    per-subject correction with its own known answer, before any seating is judged again.
 
+   **The chest-wall registration, and its gates, fixed 2026-09-10 before it is built.** Accepted:
+   the seating line stops here, and the next instrument is the fit. Her CT carries the bones to do
+   it -- ribs 1-12 per side, sternum, clavicles and T1-T12 as separate labels -- so the fit does not
+   need her soft tissue, which is what the whole-torso similarity was leaning on.
+
+   * **The instrument.** One similarity per subject fitted to the CHEST WALL alone: her ribs 2-7,
+     both sides, onto this body's, by the one-way trimmed ICP the pelvic registration already uses
+     (partial scan surfaces onto complete body bones, never the reverse). Ribs 2-7 because that is
+     the breast's own base, measured: the rib points inside the mapped breasts are ribs 2-7,
+     deepest at rib 5.
+   * **Gate 1, known answer.** This body's own chest bones, truncated the way her scan's field of
+     view cuts them, moved by a known similarity, recovered within **2 mm, 2 deg and 1%** -- the
+     pelvic registration's gate, which it passes at 0.033 mm.
+   * **Gate 2, laterality.** Her left ribs map nearer this body's left ribs than its right.
+   * **Gate 3, held out.** Ribs 2-7 are fitted; **sternum, clavicles, rib 1, ribs 8-12 and T1-T12
+     are held out**, and on those the median nearest-surface distance must be **no worse than the
+     whole-torso similarity achieves on the same structures**, subject by subject. A fit judged on
+     what it was fitted to would only report its own objective; this asks whether a chest-local fit
+     costs anything elsewhere.
+   * **Gate 4, the consequence.** With the new transform, the breast volume more than 20 mm behind
+     the muscular chest wall is **<= 1%** on every subject -- the trim gate above, now testing the
+     registration that failed it rather than the label that did not.
+   * **Reported, not judged:** how far each subject's chest-local transform differs from its
+     whole-torso one, and the chest-wall offset table recomputed under it.
+
+   **Predicted before it runs:** gate 4 passes for s1159 and s1067, and s0970 is the one at risk --
+   its 7.6% is twice s1159's and it carries the largest offset of the four. If s0970 still exceeds
+   1% under a chest-local similarity, then its chest is a different SHAPE and not a different size,
+   no similarity will place it, and the honest next step is a deformable chest-wall fit or dropping
+   that subject with the reason stated.
+
    **Seat it in two steps: place, then conform. Fixed 2026-09-10, before it runs.** 45 mm of
    overlap is not tissue deformation, it is placement -- the breast is another woman's tissue where
    a similarity registration put it, and a quasi-static solve pushing 45 mm of interpenetration out
