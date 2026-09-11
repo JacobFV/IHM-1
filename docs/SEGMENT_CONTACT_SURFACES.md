@@ -1586,6 +1586,68 @@ is already filled -- {nearest, hybrid} x {trimmed, untrimmed}, at lambda = 1e-3 
   eight, and the design is worth more than the guess. **The 2x2 is decisive whichever way it falls**,
   which is the property being bought here.
 
+### THE TRIM IS THE WHOLE EFFECT. The correspondence rule is worth 0.02 mm.
+
+| to-surface recovery, amplitude 2 | trimmed 10% | untrimmed | **trim effect** |
+|---|---:|---:|---:|
+| nearest targets | 2.138 mm | **1.666 mm** | **-0.472 mm** |
+| hybrid targets | 2.113 mm | 1.686 mm | **-0.427 mm** |
+| **target effect** | -0.025 mm | +0.020 mm | |
+
+Both rows agree on the trim to within 0.045 mm. Both columns agree that swapping nearest targets
+for hybrid targets moves recovery by **±0.02 mm, which is nothing.** The factor this line has spent
+the day investigating does not matter; a parameter nobody was looking at accounts for all of it.
+
+**Scoring the prediction:** cell B landed inside its band (2.113 against 1.95-2.15); cell A fell
+below it (1.666 against 1.75-1.95). I said trim would carry "the majority but not all". It carries
+effectively all. Directionally right, magnitude under-called -- which puts my record on this line at
+roughly two and a half hits in nine.
+
+**This is not a property of the control. It is in the production pipeline.** `CORR_TRIM = 0.10` is
+applied to the correspondences in the real instrument: **v1 spline, v2 flow and v3 anchored all
+discard the largest-separation 10% per segment.** On this control that choice costs **22% of
+recovery accuracy** while barely touching target error (1.933 -> 2.036 mm untrimmed). The points it
+removes are the ones carrying the most information about where the surfaces disagree.
+
+**How it got there is the lesson.** It was adopted in the v1 pre-registration as "the same 10% trim
+the per-segment fit itself uses", reasoning by analogy with ICP's outlier rejection. It was never
+measured. **A pre-registration protects against choosing a threshold after seeing a result; it does
+nothing about a parameter adopted by analogy before any result exists.** Those are a different
+failure and this programme had no guard against them. Recorded in `CLAUDE.md`.
+
+**Consequences, stated plainly:**
+
+* **Normal shooting's value on this line is ~0.02 mm** -- below even the "under 0.15 mm" figure
+  restored in `269f1bb`. As a replacement or as a component, the correspondence rule is not where
+  the accuracy is, and the whole normal-shooting branch was a well-run investigation of a term that
+  does not matter.
+* **The trim is where the accuracy is**, and removing it is an instrument change requiring its own
+  pre-registration, below.
+* **Every gate-1 number was produced with the trim in place.** If the trim goes, those fits must be
+  **re-run, not re-read**. That includes v3, currently five hours into a solve that would become
+  obsolete -- a cost worth paying, since the anchored family is closed as an idea anyway.
+
+**Pre-registered before the sweep runs.** The 10% was arbitrary as well as unmeasured, so the
+question is not only whether to remove it but whether its cost is monotone. Sweep
+`CORR_TRIM` over **{0, 0.02, 0.05, 0.10}** on the control at amplitude 2, nearest targets, all else
+fixed.
+
+* **Monotone** -- recovery improves all the way to 0 -- **adopt 0** and delete the parameter rather
+  than retune it.
+* **Interior optimum** -- some small trim beats both 0 and 0.10 -- adopt it, label it **post-hoc**,
+  and state that it was chosen on a synthetic control.
+* **Predicted: monotone to 0.** The 22% cost at 10% and the ±0.02 mm target-error insensitivity
+  both say the trim is removing information rather than noise.
+
+**The caveat that must travel with any decision here, and it is not small.** This control's truth is
+a known field applied to *this same body*, so its largest separations are hard but genuine. In a
+real subject-to-scaffold registration the largest separations may be **wrong** correspondences
+rather than merely hard ones, and a trim that costs accuracy here could be protective there. There
+is no ground truth on real data -- that is the reason this control exists at all -- so the only
+evidence available says remove the trim, and no evidence says keep it. That is a weaker warrant
+than it looks, and what would overturn it is a real registration with independent truth, which this
+programme does not have.
+
 **Why this was worth having from a retired control.** I retired it for firing a threshold at the
 wrong separation, and it then answered a question I had not asked: whether this line's headline
 quality metric measures accuracy at all. It does not. A control kept running after its gate was

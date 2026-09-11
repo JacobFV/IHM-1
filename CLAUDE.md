@@ -52,6 +52,24 @@ report what the crude body did as what the body did.
 - **Two bodies of different mass.** Mechanical 77.6122029 kg (a bare literal in
   67 places across 58 files, no derivation found) against anatomical 70.7713 kg.
 
+## A pre-registration can carry an unmeasured assumption
+
+**Fixing a threshold before the result protects against one failure. It does nothing about a
+parameter adopted by ANALOGY.** `CORR_TRIM = 0.10` -- discard the largest-separation 10% of
+correspondences per segment -- entered the v1 skin-warp pre-registration as "the same 10% trim the
+per-segment fit itself uses", reasoned from ICP's outlier rejection. It was never measured. It then
+rode into v1 spline, v2 flow and v3 anchored as production behaviour.
+
+Measured against a known truth a month later, in a 2x2 that varied it against the correspondence
+rule: **the trim costs 22% of recovery accuracy and the correspondence rule is worth ±0.02 mm.**
+A day had been spent comparing correspondence rules -- nearest point, normal shooting, a hybrid --
+while the term that carried all of the effect sat in a constant nobody was varying.
+
+The guard is not more pre-registration. It is: **when a pre-registration imports a parameter by
+analogy, write down that it is unmeasured and what would measure it.** A borrowed constant is an
+assumption wearing a pre-registration's clothes, and the discipline that catches post-hoc threshold
+moves is blind to it by construction.
+
 ## Jobs
 
 - Never commit weights, caches, meshes or large payloads. `data/derived/`,
