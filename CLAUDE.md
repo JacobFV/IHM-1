@@ -70,6 +70,25 @@ analogy, write down that it is unmeasured and what would measure it.** A borrowe
 assumption wearing a pre-registration's clothes, and the discipline that catches post-hoc threshold
 moves is blind to it by construction.
 
+## A control that cannot fail has not passed
+
+**Two separate checks, and the second is the one everyone skips.**
+
+*Did the run actually use the configuration it claims?* A gate-V run reported **PASS** while its own
+header read `stepping: allornothing` — the driver set `sys.argv = ["x"]` before importing the seat
+module, wiping `--adaptive` before the mode was read. The verdict was true of the run and false of
+the thing the run was supposed to test. **Read the mode back out of the run's own output; never
+infer it from the flag you passed.**
+
+*Can the mechanism fail at all?* On the plane the adaptive rule rejected **0 of 8** steps. A rule
+that never engages reports 0 rejections too, so 0 is indistinguishable from a no-op. Forcing the
+facet slack to 0 mm made it reject and stall, which is what a live mechanism must do. **A control
+whose pass looks identical to its absence is not evidence until you have made it fail on purpose.**
+
+This is adjacent to *a known answer must break the symmetry it is testing*, but distinct: there the
+test case was too weak, here the test never ran. Both produce a green result from an instrument that
+measured nothing.
+
 ## Jobs
 
 - Never commit weights, caches, meshes or large payloads. `data/derived/`,
