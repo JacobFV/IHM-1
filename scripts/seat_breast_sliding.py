@@ -632,11 +632,12 @@ def stage_judge(sid, side, d):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--subject", required=True, choices=sorted(REG)); ap.add_argument("--side", required=True, choices=("left", "right"))
-    ap.add_argument("--stage", required=True, choices=("prepare", "place", "smooth", "dr", "dr-check-E", "febio", "judge"))
+    ap.add_argument("--stage", required=True, choices=("prepare", "place", "smooth", "control-r", "dr", "dr-check-E", "febio", "judge"))
     a = ap.parse_args(); d = OUT / a.subject / a.side; d.mkdir(parents=True, exist_ok=True)
     print(f"{a.subject} {a.side}: {a.stage}", flush=True)
     {"prepare": lambda: stage_prepare(a.subject, a.side, d), "place": lambda: stage_place(a.subject, a.side, d),
      "smooth": lambda: stage_smooth(a.subject, a.side, d),
+     "control-r": lambda: stage_control_r(a.subject, a.side, d),
      "dr": lambda: stage_dr(a.subject, a.side, d, E_PA),
      "dr-check-E": lambda: stage_dr(a.subject, a.side, d, E_CHECK_PA, "_E10000"),
      "febio": lambda: stage_febio(a.subject, a.side, d), "judge": lambda: stage_judge(a.subject, a.side, d)}[a.stage]()
@@ -730,6 +731,55 @@ def stage_smooth(sid, side, d_dir):
     np.save(d_dir / "smoothed_move.npy", chosen["field"])
     (d_dir / "smoothing.json").write_text(json.dumps(rec, indent=2) + "\n")
     return chosen
+
+
+def stage_control_r(sid, side, d_dir):
+    """CONTROL R: the same 3,123 held nodes, the same bed, the same solver and the same J > 0.2
+    floor, driven by a RIGID TRANSLATION of the whole base equal to the smoothed field's median
+    displacement. Gate R: completes to fraction 1.0 with zero inversions."""
+    P = np.load(d_dir / "prepared.npz")
+    X, T, base, gap0 = P["X"], P["T"], P["base"], P["gap0"]
+    held = gap0 < 0
+    mu, lam = lame(E_PA, NU)
+    region = SlidingRegion(X, T, mu_pa=mu, lambda_pa=lam, density_kg_m3=950.0)
+    closest, _ = bed_rays(P["bedV"], P["bedF"], P["ray_directions"], RAY_REACH_M)
+    c0, n0 = closest(X[base])
+    smoothed = d_dir / "smoothed_move.npy"
+    travel = np.load(smoothed) if smoothed.exists() else np.where(gap0 < 0, -gap0, 0.0)
+    magnitude = float(np.median(travel[held]))
+    direction = n0[held].mean(0); direction /= np.linalg.norm(direction)
+    rigid = magnitude * direction
+    say(f"{sid} {side} CONTROL R: rigid translation of {1000*magnitude:.2f} mm along "
+        f"[{direction[0]:+.3f}, {direction[1]:+.3f}, {direction[2]:+.3f}] "
+        f"({int(held.sum())} held nodes, same bed, same solver, same J > 0.2 floor)")
+    t0 = time.time()
+    try:
+        r = seat_on_bed(region, base, closest, load_steps=LOAD_STEPS, gap_tol_m=GAP_TOL_M,
+                        jump_limit_m=5e-4, assoc_tol_m=ASSOC_TOL_M, rigid_m=rigid,
+                        log=lambda m, flush=True: print(m, flush=True))
+    except Exception as failure:
+        say(f"GATE R: FAILED -- {type(failure).__name__}: {failure}")
+        say("  the fault is inside the stepping, not in the field, the mesh or the breast: this solver "
+            "cannot complete a motion that preserves every Jacobian exactly.")
+        (d_dir / "control_r.json").write_text(json.dumps(dict(passes=False, error=str(failure),
+            rigid_mm=1000 * magnitude, direction=direction.tolist(), seconds=time.time() - t0), indent=2) + "\n")
+        return False
+    u = r["displacement"]
+    Y = X + u
+    J = np.linalg.det(np.swapaxes(Y[T[:, 1:]] - Y[T[:, 0, None]], 1, 2)
+                      @ np.linalg.inv(np.swapaxes(X[T[:, 1:]] - X[T[:, 0, None]], 1, 2)))
+    drift = np.linalg.norm(u - rigid, axis=1)
+    ok = bool(J.min() > 0.2)
+    say(f"GATE R: completed to fraction 1.0 in {time.time()-t0:.0f} s, min J {J.min():.4f}, "
+        f"inversions {int((J <= 0).sum())} -> {'PASS' if ok else 'FAIL'}")
+    say(f"  the solution against the ideal rigid translation: median |u - d| {1000*np.median(drift):.3f} mm, "
+        f"max {1000*drift.max():.3f} mm; volume ratio {tet_volumes(Y, T).sum()/tet_volumes(X, T).sum():.6f}")
+    (d_dir / "control_r.json").write_text(json.dumps(dict(passes=ok, rigid_mm=1000 * magnitude,
+        direction=direction.tolist(), min_J=float(J.min()), inversions=int((J <= 0).sum()),
+        drift_median_mm=float(1000 * np.median(drift)), drift_max_mm=float(1000 * drift.max()),
+        volume_ratio=float(tet_volumes(Y, T).sum() / tet_volumes(X, T).sum()),
+        cutbacks=r["cutbacks"], seconds=time.time() - t0), indent=2) + "\n")
+    return ok
 
 
 if __name__ == "__main__": main()

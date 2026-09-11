@@ -112,7 +112,8 @@ def tangent_frames(n, hint=(0.0, 1.0, 0.0)):
 
 
 def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5, max_outer=25,
-                hint=(0.0, 1.0, 0.0), rtol=1e-7, jump_limit_m=0.01, assoc_tol_m=1e-4, move=None, log=None):
+                hint=(0.0, 1.0, 0.0), rtol=1e-7, jump_limit_m=0.01, assoc_tol_m=1e-4, move=None,
+                rigid_m=None, log=None):
     """The sliding base. base: node indices on the surface facing the bed. closest(points) ->
     (c, n): closest bed points and the bed's outward unit normals there. A base node BEHIND the bed
     in the registered position is HELD: its signed normal gap is ramped to zero over load_steps and
@@ -145,13 +146,20 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
     # gap exactly; `move` supplies a different per-node distance -- the DECLARED modelling choice of
     # a smoothed depth field, where closing each gap exactly would fold the tissue through itself.
     travel = -gap0[held] if move is None else np.asarray(move, float)[held]
+    # CONTROL R (docs/BODY_PARAMETERS.md, 4a58efd): drive the SAME held set through the SAME stepping
+    # with a rigid translation of the whole base. A rigid motion preserves every Jacobian exactly, so
+    # nothing can invert for any reason of physics or mesh quality, and a whole-body translation by
+    # rigid_m satisfies every held constraint at zero strain energy. It separates "this configuration
+    # is infeasible" from "the stepping is wrong".
+    rigid = None if rigid_m is None else np.asarray(rigid_m, float)
 
     def advance(fraction, u_start):
         """Re-linearise and solve at this fraction of the held nodes' travel."""
         u_local = u_start
         for outer in range(max_outer):
-            target = gap0[held] + fraction * travel
             c, n, kept, _ = associate((X + u_local)[base])
+            step = travel if rigid is None else n[held] @ rigid      # rigid: the normal part of one vector
+            target = gap0[held] + fraction * step
             frames = np.tile(np.eye(3), (N, 1, 1)); frames[base] = tangent_frames(n, hint)
             lo = np.full(X.shape, -np.inf); hi = np.full(X.shape, np.inf)
             on_plane = np.einsum('ij,ij->i', n, c - X[base])                     # n.u that puts the node on the tangent plane
@@ -163,6 +171,8 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
                 lo[node, col[0]] = hi[node, col[0]] = 0.0
             r = region.solve_sliding(frames, lo, hi, start=u_local, rtol=rtol); u_local = r['displacement']
             c, n, kept, moved = associate((X + u_local)[base]); gap = np.einsum('ij,ij->i', n, (X + u_local)[base] - c)
+            step = travel if rigid is None else n[held] @ rigid
+            target = gap0[held] + fraction * step
             held_err = float(np.abs(gap[held] - target).max()) if held.any() else 0.0
             pen = float(max(0.0, -gap[~held].min())) if (~held).any() else 0.0
             if log: log(f"  fraction {fraction:.4f} pass {outer}: Newton {r['iterations']}, held gap error {held_err*1e3:.4f} mm, "

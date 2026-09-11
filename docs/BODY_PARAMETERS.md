@@ -2455,3 +2455,32 @@ What has changed is that the parametrization no longer stops at the scaffold.
    to any conclusion here. If a later result turns on the bandwidth, this paragraph is the reason to
    re-derive it properly first.
 
+   **CONTROL R FAILS, and it invalidates this line's solver-side diagnoses.** Driven by a rigid
+   translation of 7.48 mm -- the smoothed field's median, along the held nodes' mean normal -- the
+   same 3,123 held nodes through the same bed, solver and J > 0.2 floor stall at fraction **0.0312**,
+   with 27 elements inverting at every step size tried down to 9e-5. A rigid motion preserves every
+   element's Jacobian exactly and satisfies every held constraint at zero strain energy, so nothing
+   can invert under it for any reason of physics or mesh quality. **The fault is inside the stepping.**
+
+   The mechanism is visible in the failure message, which is the same one every seating attempt gave:
+   "bounded start inverts N elements". Each increment begins by CLIPPING the constrained degrees of
+   freedom to their new bounds while every other coordinate stays at the previous solution. For a
+   motion whose feasible path also moves the tangential and interior coordinates -- which a rigid
+   translation certainly does -- that start is infeasible by construction, however small the step.
+
+   **What this withdraws.** Every statement of the form "the seating stalls because the field is
+   infeasible" is now unsupported, including the reading that a handful of ordinary elements
+   obstruct it: the solver stalls the same way on a motion that is feasible by construction. Those
+   thirteen elements are not established as a property of the mesh under that field.
+
+   **What survives, because it was measured without the solver.** The edge-gradient census (11.0% of
+   base edges requiring their ends to slide past each other by more than the edge's own length,
+   worst 74.7) is a property of the field and the mesh, computed directly. So is the smoothing sweep
+   (74.71 -> 0.39 at 20 mm bandwidth, 0.3% of magnitude removed), gate B's 91-94% normal
+   decomposition, and the whole registration line's coverage, envelope and distance-field results,
+   none of which ran a solver. The block-case solver gate also stands as what it always was: two
+   codes agreeing on prescribed displacements, where the clipped start is feasible.
+
+   So the seating question is reopened rather than answered: the sliding condition has still not
+   been tested on this breast by a stepping that can carry a translation.
+
