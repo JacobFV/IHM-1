@@ -2644,3 +2644,39 @@ What has changed is that the parametrization no longer stops at the scaffold.
    to be reported as quality.** Report a quantity with a known truth behind it; where none is
    available, say so rather than substituting a residual.
 
+   **Control R's premise is wrong, and I am recording that BEFORE its outcome is known.** At the
+   time of writing R is mid-run at fraction 0.6250 -- already twenty times past the 0.0312 where the
+   clipped start stalled, so the stepping fix plainly works -- with `min J` falling steadily,
+   0.596 -> 0.407 -> 0.307 -> 0.275 -> **0.226** against a 0.2 floor. That fall is the tell.
+
+   I justified the gate with: *"A rigid motion preserves every element's Jacobian exactly and
+   satisfies every held constraint at zero strain energy. Nothing can invert under it."* **That is
+   true only if every node moves rigidly.** Here only the **3,123 held nodes** are driven; the
+   interior and the bed-contact nodes are free, and the bed is enforcing unilateral contact
+   throughout (0.0556, 0.0725, 0.0236 mm of penetration in the log). A body whose held surface
+   translates into a fixed bed **cannot** translate rigidly as a whole, so the rigid translation is
+   not a zero-energy admissible solution and elements can legitimately deform -- which is exactly
+   what `min J` shows.
+
+   **So "R completes at fraction 1.0 with zero inversions" is not achievable by construction, and
+   it is withdrawn as a pass/fail gate.** The flaw is in the premise, not the threshold: I asserted
+   feasibility that the bed contradicts. What R remains, and remains good for, is a **comparative**
+   diagnostic on a fixed target: the same drive, the same bed, the same floor, before and after the
+   stepping change -- **0.0312 against whatever it reaches.** That comparison is valid precisely
+   because both arms face the same possibly-infeasible target.
+
+   **Consequences fixed now, before the number:**
+
+   * A stall at, say, fraction 0.8 must **not** be read as the stepping still being broken. Against
+     0.0312 it would be a twenty-five-fold improvement on the identical target.
+   * If R *does* reach 1.0, that is a **stronger** result than the flawed gate ever required, and it
+     will be reported as such rather than as "the gate passed".
+   * **Gate R2 is untouched** and remains a real pass/fail: the block case must still agree at
+     1.58%, because there the prescribed displacements are feasible and the premise holds.
+   * Outcome 3 of the three named above -- "R passes and the seat still stalls" -- loses its
+     sharpness with R weakened, so the earned reading that "the field is infeasible for this mesh"
+     now needs a control whose feasibility is guaranteed. **The obvious one: drive the held nodes
+     with the bed's constraint removed**, where a rigid translation genuinely is zero-energy and
+     nothing may invert. That is the control R should have been, and it is pre-registered here as
+     R′ before either result is read.
+
