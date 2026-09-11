@@ -2886,3 +2886,42 @@ What has changed is that the parametrization no longer stops at the scaffold.
    which is the property the solver needs, and no step mixes epochs. That threshold is a number that
    must be pre-registered rather than chosen by analogy.
 
+   ### The threshold, derived rather than chosen — no free parameter
+
+   > **threshold = |the step's node motion| + the bed's facet scale**
+
+   Both terms are already measured on this line and neither is picked. The node motion is known per
+   step — **0.935 mm** in this drive. The facet scale is **1 mm**, declared here earlier as a
+   convergence tolerance because the muscular wall's normals turn several degrees over 2–4 mm. The
+   physical content: a closest point on a locally smooth bed cannot outrun the node that owns it by
+   more than the surface's own resolution, so anything further has **changed feature**, which is
+   what a teleport is.
+
+   On this drive the bar is **1.935 mm**. The median association move of **0.4499 mm** sits well
+   inside it; the **46.6 mm** moves exceed it **twenty-four-fold**. It separates the two populations
+   by a factor of 24, not by a judgement call — which is the property `CORR_TRIM = 0.10` never had.
+
+   **Gate U, fixed before implementation:** under this rule R′ passes exactly as T-none does —
+   fraction 1.0, zero inversions, `min J ≥ 0.99` — because some associations exceed the bar at every
+   step, the whole update is refused, and T-none's behaviour is recovered. **That is a consistency
+   check on the rule, not a new result, and must be reported as such.** A rule that failed it would
+   be wrong; a rule that passes it has only shown it did not break what already worked.
+
+   **The real test is the refusal rate, and it is where this rule can fail.** Report the fraction of
+   steps whose update is refused.
+
+   * **Refusal rare** — the rule follows the bed while staying consistent, which is what real
+     seating needs.
+   * **Refusal near 100%** — the rule has degenerated to T-none, which cannot follow a sliding bed.
+     A single all-or-nothing switch then cannot deliver both consistency and bed-following, and
+     saying so is more useful than tuning the bar.
+   * **In that case the answer is the step size, not the rule:** shrink the increment until no
+     association exceeds the threshold, making a consistent update always available. That is
+     adaptive step control driven by **association motion** — the quantity that actually breaks —
+     rather than by `min J`, and it follows from the same measurement rather than introducing a new
+     constant.
+
+   **No prediction on the refusal rate.** The breast's motion is non-rigid and slides along the bed,
+   which is exactly the regime neither this control nor its predecessors exercise, and I have been
+   wrong twice today on this line by reasoning past the end of what the controls actually cover.
+
