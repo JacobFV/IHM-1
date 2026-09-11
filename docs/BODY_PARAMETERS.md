@@ -1991,6 +1991,46 @@ done; the others have moved.
    open** -- which is what the detector printed. The expectation was corrected, the detector was
    not, and the census had not yet run, so nothing was tuned to a result. A failed known answer is
    only as useful as the care taken to find out which side of it was wrong.
+
+   **Measured, and my own finding mostly dissolves** (`scripts/measure_viscus_hole_error.py`). The
+   size of an error decides whether it is worth repairing, so the 62 viscera were capped -- boundary
+   edges chained into loops, each loop fanned to its centroid -- and the capped volume compared
+   against the raw one. Known answer first: a unit cube with one and with two faces deleted must cap
+   back to **exactly 1.0**, which tests boundary detection, loop chaining, fan orientation and the
+   volume reader together, and catches a backwards fan because that gives 1 − 2×(cap) rather than 1.
+   Both pass at machine precision.
+
+   **The enclosed-volume shortfall across the 62 is median 0.0%, min −11.9%, max +0.5%.** The holes
+   are real and they are tiny -- one to five loops of a few edges on meshes of tens of thousands of
+   triangles. **So the premise violation recorded above has essentially no numerical consequence for
+   the ledger.** The basis sentence is still wrong -- those surfaces do not enclose anything, and the
+   claim should be corrected -- but nothing downstream of it needs re-deriving, and the 1.581 L is
+   not in doubt. A defect in a stated premise is not automatically a defect in a number, and I had
+   written the first as though it implied the second.
+
+   **Two residues that do not dissolve:**
+
+   1. **`mucosa of stomach` reads −412.46 mL, capped −368.58, a −11.9% shortfall.** The sign is the
+      real finding: a **negative** signed volume means inside-out winding, which is a different
+      defect from a hole and one the capping cannot fix.
+   2. **`jejunum` at −4.5%** is the only other viscus above half a percent.
+
+   **A census of winding over every closed mesh, since the sign is checkable everywhere.** Of the
+   **1,311** closed surfaces, exactly **4** have negative signed volume: **left and right acetabular
+   labrum (−1.91 mL each) and left and right glenoid labrum (−0.76, −0.75 mL)**, 5.3 mL in total.
+
+   **The ledger is not affected and already says why**: their basis is "absolute signed surface
+   integral", and the stored `volume_m3` for each is the positive magnitude (1.9083, 1.9058, 0.7577,
+   0.7541 mL). Taking the absolute value is the right thing for a mass and it makes the sign
+   invisible to the ledger -- which is precisely why nobody had looked at it.
+
+   **Where it is NOT invisible is anything that uses the surface's normal direction** -- contact,
+   signed distance, inside/outside tests, normal shooting. An inside-out labrum has its normals
+   pointing into the joint. All four are fibrocartilage joint structures promoted as candidate
+   tissue elements in `scripts/build_joint_promotion_candidate.py`. **Whether any of them currently
+   carries a normal-dependent element is not established here and is not claimed** -- it is flagged
+   as the question worth asking, and it is cheap to answer for whoever next touches the joint
+   element set.
 5. **Seven measured female `shaft_bearing_fraction` values.** Sharper than
    "measured female values for the hair fields": the parameter exists on every
    field already, six of the seven androgen-dependent ones assume 1.0, and 1.0 is
