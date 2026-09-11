@@ -1742,6 +1742,46 @@ exactly, but the *columns* also differ in sampler, which was stated and not cont
 "no effect was detectable against a sampler difference of unknown size", not as a measured zero. The
 trim result, which is the row comparison, is unaffected.
 
+### Gate 2 on the untrimmed fit: unchanged. The trim gain does not show on real data.
+
+| | ceiling | binding map | **trimmed** | **untrimmed** |
+|---|---:|---:|---:|---:|
+| mean enclosure | 0.997 | 0.888 | **0.954** | **0.951** |
+| segments ≥ 0.99 | 20/22 | 9/22 | **12/22** | **12/22** |
+
+**Gate 2 still FAILS, and removing the trim moved it by −0.003 — marginally worse.** The worst
+segments are unchanged in identity and nearly in value: toes **0.854 / 0.876**, hands 0.792 / 0.818,
+pelvis 0.905, calcn 0.910 / 0.912, torso 0.918.
+
+**This is the first real-data test of the trim change, and it is negative.** Set against what the
+same change bought elsewhere:
+
+| quantity | effect of removing the trim |
+|---|---|
+| to-surface recovery on the control *(has a truth)* | **−28%**, 2.138 → 1.666 mm |
+| gate 1 *(agreement with what the fit aimed at)* | better on **22/22**, mean −12.9% |
+| **gate 2 *(skin enclosing bone, real data, no truth)*** | **−0.003 mean, 12/22 either way** |
+
+Three quantities, three behaviours. Gate 1's improvement I had already ruled inadmissible in
+`8caf15b`, before it was measured. Gate 2 is not of that kind — it is a geometric containment of
+bone by skin, not an agreement with any target the fit chased, and the warp moves skin by up to
+56.33 mm, so it is sensitive to exactly what changed. **It shows no benefit.**
+
+**So the practical value of removing the trim is, on today's evidence, unestablished on real data.**
+The 28% is real and measured against a truth; it simply has not appeared in the one real-data
+quantity that could show it. That does not reinstate the trim — nothing here argues for putting it
+back, and the control remains the only place a truth exists — but it does bound the claim. Anything
+quoting "removing the trim is worth 28%" should say *on a synthetic field on the same body*, and
+should say that the one independent real-data gate moved by −0.003.
+
+**And it sharpens what the toes are.** They have now survived: the anchor rule being wrong in both
+its forms, the correspondence rule turning out not to matter, the trim removal that improved
+everything else, and a 28% better warp. Gate 3 adds the same finding from another direction — toe
+skin sits **29.3 / 27.6 mm below** the toe bone's lowest point, reported there because gate 3 is
+defined on calcn only. Nothing this line has tried has moved the toes, and the standing explanation
+survives untouched: the scaffold's forefoot is a fifth longer than this specimen's, which is a shape
+difference that no correspondence, regularisation or sampling change can reach.
+
 **Why this was worth having from a retired control.** I retired it for firing a threshold at the
 wrong separation, and it then answered a question I had not asked: whether this line's headline
 quality metric measures accuracy at all. It does not. A control kept running after its gate was
