@@ -4014,3 +4014,45 @@ What has changed is that the parametrization no longer stops at the scaffold.
    nodes), R′ completing where pre-repair stalls with **zero** steps at the ceiling on either side,
    and CC's decomposition. Those were audited for exactly this and came back clean. Only the reach
    number moves.
+
+   **`aim` IS THE FINAL TARGET, SO THE LOAD FRACTION MEASURES LOAD APPLIED AND NOT DISTANCE CLOSED --
+   AND BY THE LOGGED MEASURE THE DRIVE HAS CLOSED NOTHING.**
+
+   Answering it from the code rather than the log: `held_err = |gap[held] - (gap0[held] + aim*step)|`
+   and `aim` is the PHASE TARGET, passed as `advance(trial, u, theta, target)`. It is 1.0 for the
+   forward phase. I changed it to that in the repair, because the increment now closes theta of what
+   remains and a nominal mid-drive schedule is a number the drive is not trying to hit. So the logged
+   "held gap to the aim" is the distance to FULL SEATING, and it is the coordinator's second branch.
+
+   | fraction | 0 (derived) | 0.0625 | 0.1094 | 0.1797 | 0.2324 | 0.3115 |
+   |---|---:|---:|---:|---:|---:|---:|
+   | distance to full seating, max over held nodes | **14.18 mm** | 14.80 | 14.78 | 13.72 | 14.43 | 13.22 |
+   | Newton | -- | 30 | 77 | **300 UNCONVERGED** | **300 UNCONVERGED** | **300 UNCONVERGED** |
+
+   **At the last CONVERGED step the worst held node is 14.78 mm from full seating, against 14.18 mm
+   before the drive started. It has gone backwards.** The load fraction quintupled and the distance
+   closed is negative on that measure. A reach number that does not correspond to getting closer is
+   the fifth quantity on this line that does not measure what its name says.
+
+   *The reach, stated honestly.* **Fraction 0.1094**, the last converged step, against the 0.0625
+   where the pre-repair drive stalled: about **1.75x**, not the 4x I wrote or the 5x the raw fraction
+   suggests. The three steps past it exhausted the 300-iteration budget, confirmed by the new
+   `UNCONVERGED` flag rather than inferred from the count. min J falling monotonically across them --
+   0.667, 0.509, 0.406, 0.397 -- is what accepting an unfinished solve looks like: each starts
+   further from converged than the last.
+
+   *What the max cannot tell me, and what is now logged.* The step line reported only the maximum, so
+   there was no way to know whether one node is stuck or the whole sheet is. It now reports the
+   MEDIAN alongside it. Until that run returns, the distance closed is reported as unknown for the
+   sheet and negative for the worst node, and the fraction is quoted only with both.
+
+   *Also: what the anatomical runs were exercising.* Their association was REFUSED, pinned at
+   0.4999-0.5000 mm against the 0.5 mm jump limit, not converged. Every number from them carries
+   that.
+
+   *Stale logs marked.* `gate_aa.log`, `gate_aa2.log` and `gate_aa3.log` in the subject directory
+   reported 42 and 100 inverted elements from the pre-seed-fix runs, with a "THE PRICE: not
+   measurable" line that read as current. Each now carries a SUPERSEDED header naming the defect, the
+   replacement numbers and the commits. A stale log with a confident conclusion in it is what this
+   line has been bitten by four times.
+

@@ -321,9 +321,15 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
             # tracks: the increment now closes theta of what remains, so "distance from
             # gap0 + fraction*travel" would be a number the drive is not trying to hit. At the aim,
             # where the acceptance test below actually reads it, the two coincide.
-            held_err = float(np.abs(gap[held] - (gap0[held] + aim * step)).max()) if held.any() else 0.0
+            to_aim = np.abs(gap[held] - (gap0[held] + aim * step)) if held.any() else np.zeros(1)
+            held_err = float(to_aim.max())
+            # THE MEDIAN TOO. Reporting only the max made 'distance closed' unreadable: the drive
+            # ran to fraction 0.3115 while the max sat at 13-15 mm against 14.18 mm at the start,
+            # so the load fraction was measuring load APPLIED and not distance CLOSED, and there
+            # was no way to tell from the log whether one node or the whole sheet was stuck.
+            held_mid = float(np.median(to_aim))
             pen = float(max(0.0, -gap[~held].min())) if (~held).any() else 0.0
-            if log: log(f"  fraction {fraction:.4f} pass {outer}: Newton {r['iterations']}{'' if r['converged'] else ' UNCONVERGED'}, held gap to the aim {held_err*1e3:.4f} mm, "
+            if log: log(f"  fraction {fraction:.4f} pass {outer}: Newton {r['iterations']}{'' if r['converged'] else ' UNCONVERGED'}, held gap to the aim {held_err*1e3:.4f} mm max / {held_mid*1e3:.4f} median, "
                         f"unilateral penetration {pen*1e3:.4f} mm, min J {r['minimum_jacobian']:.3f}, "
                         + (f"association moved {moved*1e3:.4f} mm" if association != 'adaptive'
                            else "association held for the step (adaptive updates after it)"), flush=True)
