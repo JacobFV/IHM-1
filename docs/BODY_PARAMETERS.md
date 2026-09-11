@@ -3504,3 +3504,47 @@ What has changed is that the parametrization no longer stops at the scaffold.
    motion. One field and one interpolation now, with idempotence gated at **0 of 4,097 faces changed**
    and 0.000000 mm of point motion across repeated and returning calls.
 
+   ### Gate BB passes on the bounds, and the agent refuses to call it clean
+
+   **The bound displacement at a step of size zero is exactly 0.000e+00 mm over 0 nodes**, with no
+   inversions, at both accepted steps probed (fractions 0.0625 and 0.1094). The same request before
+   the repair returned **7.19 mm over 26 nodes and 4 inversions**.
+
+   **But the solve still moves at a zero-sized step** — 0.335 mm, then 0.477 mm. The bounds impose
+   nothing, yet re-association changes the feasible *set*: where the plane has moved away from a
+   node, its unilateral lower bound **loosens**, and the body relaxes into it. That motion is carried
+   by the minimisation rather than imposed as a jump, which is exactly the difference that stops
+   inversions — but "a step of size zero must move nothing" is not literally satisfied, and the
+   agent declined to file it as a pass.
+
+   **It should not be satisfied literally, and the gate as I wrote it was too strong.** A loosened
+   unilateral bound *ought* to let the body relax; forbidding that would forbid contact from ever
+   releasing. What must be true is not that the motion is zero but that it **converges**.
+
+   > **Gate BB′, replacing the literal form:** apply zero-sized steps **repeatedly at the same
+   > fraction**. The motion per step must fall below the solver's tolerance within a small number of
+   > repeats — the zero-step must reach a **fixed point**.
+
+   * **Motion decays to tolerance** → the residual is one-time relaxation into a legitimately
+     loosened feasible set, and gate BB is satisfied in the only sense that was ever meaningful.
+   * **Motion persists across repeats** → the association and the solve are chasing each other at a
+     *fixed* load, which is the same non-convergence in a new place and is not fixed by the repair.
+   * The two numbers already in hand (0.335 and 0.477 mm) are at **different fractions**, so they are
+     not a convergence sequence and must not be read as one — a rise from 0.335 to 0.477 across
+     different states says nothing about whether either converges.
+
+   **R2 is the open question and must not be guessed at.** With persistent association its `min J`
+   falls **1.000 → 0.636 by fraction 0.75**, where a rigid-translation control should hold 1.000. The
+   agent is running the identical stage on pre-repair code (`50e7583`) in a separate worktree to
+   separate *the repair* from *pre-existing*. **The distinction that decides it:** R2's earlier pass
+   (platens 0.00000%, cylinder 6.382 µm) was measured **without** persistent association. If the
+   pre-repair baseline also falls, this is a property of persistent association and not a regression
+   of the repair — and R2's earlier pass stands for the configuration it was run in, which is not
+   this one. Running the baseline rather than reasoning about it is the right call, and the baseline
+   being stuck on its second increment at 25 minutes while the repaired run reached 0.75 is
+   suggestive and not yet an answer.
+
+   **Affordability, interim:** the drive is at **fraction 0.1094**, already past the 0.0625 where AA
+   stalled, and still advancing. **Regressions so far: W, X, V-on-plane and T-none all PASS** with the
+   repair in, T-none reproducing the rigid translation at median and max 0.000 mm, `min J` 1.0000.
+
