@@ -4378,3 +4378,59 @@ What has changed is that the parametrization no longer stops at the scaffold.
    **The ratchet is neither confirmed nor refuted.** It may still hold — the instantaneous numbers
    will say — but the confirmation that appeared to arrive was produced by the summation, not by the
    body.
+
+   ## THE SLIDING-SEATING LINE, STOPPED AND LEFT RESUMABLE
+
+   The owner stopped the association-refusal investigation. The instantaneous-displacement
+   measurement was never taken. This section is what someone picking the line up in a month needs.
+
+   **THE ONE SENTENCE THAT MATTERS MOST: the accumulated refused-staleness figure is an ARTEFACT and
+   must not be quoted.** It read median 3.0842 mm over affected nodes and max 143.1322 mm at fraction
+   0.1094, and 143.13 is 47.7 x 3 -- the same ~47 mm teleport refused three times, summed as though
+   it were accumulated drift. A teleport of that size is exactly what the jump limit exists to
+   reject, so the figure partly credits the mechanism's CORRECT behaviour to its failure mode.
+   Quoting it would trigger a re-run of every anatomical result on this line, chasing a number that
+   partly measures the limit working.
+
+   **ESTABLISHED, and none of it depends on the refusal question.**
+   * *The repair.* A held node's bound was `on_plane + gap0 + fraction*travel` and the fraction scaled
+     `travel` and not `on_plane`, so a drifted association demanded its whole drift instantly however
+     small the step -- 7.19 mm over 26 nodes at a step of size ZERO. Every term is now under the
+     increment parameter via `theta`. A zero-sized step displaces the bounds by exactly 0.000e+00 mm
+     over 0 nodes. That one fact explains gates R, R', R'', S, T, U, V and AA: all were adjusting the
+     term that was already small.
+   * *The repair is good, not merely neutral.* R' completes to fraction 1.0 where the pre-repair code
+     STALLS at 0.6250, same stage, same data, zero ceiling steps on either side.
+   * *The solver is sound.* T-none, W, X and V-on-the-plane all pass, at one Newton iteration a step.
+   * *CC's decomposition.* On a plane the cost of persistent association is zero -- CC-flat' falls to
+     6.408e-15 of the drive as rtol tightens. On a cylinder it scales as (1/R)^1.068 against the
+     sagitta's 1.000, at a constant prefactor of 0.24. The degradation is the price of curvature, not
+     a bug.
+   * *The load fraction never measured seating.* It measures load APPLIED. `aim` is the final target,
+     so the logged gap is the distance to full seating, and the reach of 0.1094 is a statement about
+     load carried and nothing else.
+   * *A third of the contact constraints are frozen every step.* 963 to 1,144 of 3,123 held nodes,
+     31-37%, have their association update REFUSED at the 0.5 mm jump limit, at every step.
+   * *The 39, characterised.* 39 -> 34 -> 27 held nodes move AWAY from their target: scattered over
+     103.6 mm rather than one patch, 87% the same nodes between converged fractions, and SHRINKING
+     rather than recruiting. They are NOT the refused nodes -- 0 of 39 and 1 of 34 against 12.0 and
+     10.7 expected by chance, anti-correlated.
+
+   **OPEN, and honestly so.**
+   * The INSTANTANEOUS staleness -- how far a refused constraint is from the bed right now -- was
+     never measured. It is the number that would have decided whether the 31-37% costs anything.
+   * The RATCHET is neither confirmed nor refuted: a refused node measures its next wanted
+     displacement from the same frozen point, so refusal may compound. Its apparent confirmation in
+     the accumulated figures was the artefact above.
+   * GATE BB' FAILS: zero-sized steps at one fraction give 0.335 -> 0.122 -> 0.0346 -> 0.0364 ->
+     0.0374 -> 0.0361 mm, plateauing at ~36 um instead of reaching a fixed point. At a fixed load the
+     association and the solve chase each other. The repair does not address it.
+   * *The bind.* The per-node 0.5 mm limit freezes 31-37% of nodes per step; the all-or-nothing rule
+     refuses 93.8% of whole steps; gate T showed both pure extremes fail. No setting among the three
+     is simply correct.
+
+   **THE CAVEAT THAT TRAVELS WITH EVERY SEATING NUMBER FROM THIS LINE**, whether or not anyone chases
+   it: the production drive (`stage_dr`) runs `jump_limit_m = 5e-4`, and under it about a third of
+   held nodes have their association refused at every step and held stale. `association moved 0.4999
+   mm` in those logs is the maximum over ACCEPTED updates and does not show it.
+

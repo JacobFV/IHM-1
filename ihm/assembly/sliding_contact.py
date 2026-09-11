@@ -182,7 +182,12 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
     held = gap0 < 0
     u = np.zeros_like(X); record = []
     assoc = [c0.copy(), n0.copy(), np.zeros(len(base), bool), X[base].copy(),
-             np.zeros(len(base), bool)]   # ..., positions when it was last taken, last refusal mask
+             np.zeros(len(base), bool), np.zeros(len(base)), np.zeros(len(base), int),
+             np.zeros(len(base))]
+    # ..., positions when it was last taken, last refusal mask, ACCUMULATED REFUSED DISPLACEMENT
+    # per node, and how many steps each node was refused. The refused displacement IS the
+    # staleness: exactly how far each association would have moved and did not, in metres, with
+    # no curvature model and nothing assumed.
     lost_history = []; refusals = []          # persistent association, snapshotted per accepted step
 
     def associate(points):
@@ -227,8 +232,22 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
             assoc[0], assoc[1], assoc[3] = c_new, n_new, points.copy()
             return c_new, n_new, 0, float(move.max())
         invalid = ~np.isfinite(c_new).all(1) | ~np.isfinite(n_new).all(1)
+        want = np.linalg.norm(c_new - assoc[0], axis=1)          # BEFORE the substitution
         rejected = invalid if association == 'all' else (
             invalid | (np.linalg.norm(np.nan_to_num(c_new - assoc[0]), axis=1) > jump_limit_m))
+        # accumulate only where the update was refused AND the wanted displacement is a real
+        # number: an invalid node has no bed to move to, which is a different fact and is counted
+        # separately rather than folded in as a distance.
+        countable = rejected & np.isfinite(want)
+        assoc[5] += np.where(countable, want, 0.0)
+        assoc[6] += countable.astype(int)
+        # THE INSTANTANEOUS wanted displacement, which is the one that measures staleness. The
+        # ACCUMULATED sum above conflates two different things: an association falling a little
+        # further behind each step, and ONE large jump refused over and over. The max read 47.82
+        # mm after one refusal and 143.13 mm after three -- 47.7 x 3, the same teleport counted
+        # three times, not a node 143 mm behind. How far the constraint is from the bed RIGHT NOW
+        # is this, not the sum.
+        assoc[7] = np.where(countable, want, 0.0)
         c_new[rejected] = assoc[0][rejected]; n_new[rejected] = assoc[1][rejected]
         moved = float(np.linalg.norm(c_new - assoc[0], axis=1).max())
         assoc[0], assoc[1] = c_new, n_new
@@ -351,6 +370,9 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
                 return u_local, dict(passes=outer + 1, held_gap_error_m=held_err,
                                      held_gap_median_m=held_mid, closed_median_m=closed,
                                      backwards=worse, refused_mask=refused_mask,
+                                     refused_travel_m=assoc[5].copy(),
+                                     refused_steps=assoc[6].copy(),
+                                     wanted_now_m=assoc[7].copy(),
                                      to_aim_m=to_aim.copy(), unilateral_penetration_m=pen,
                                      bound_displacement_m=r['bound_displacement_m'],
                                      bound_nodes_over_1mm=r['bound_nodes_over_1mm'],
@@ -377,11 +399,14 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
         # theta: the share of the REMAINING drive this increment consumes. It is what now carries the
         # association term, so a cut-back shrinks EVERY term of the prescribed displacement.
         theta = (trial - fraction) / (target - fraction)
-        saved = [assoc[0].copy(), assoc[1].copy()]      # a failed step must not leave a stale association
+        # the accumulator is saved and restored with the association: a REJECTED step's refusals
+        # never happened as far as the drive is concerned, and counting them would inflate the
+        # staleness by every attempt the cut-back loop threw away.
+        saved = [assoc[0].copy(), assoc[1].copy(), assoc[5].copy(), assoc[6].copy()]
         try:
             u_new, info, gap, c, n = advance(trial, u, theta, target)
         except (ValueError, RuntimeError) as failure:
-            assoc[0], assoc[1] = saved
+            assoc[0], assoc[1], assoc[5], assoc[6] = saved
             ds *= 0.5; cutbacks += 1
             if log: log(f"  cut back to {ds:.5f} at fraction {trial:.4f}: {failure}", flush=True)
             if ds < 1e-4:
@@ -400,7 +425,7 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
             over = int(((np.linalg.norm(np.nan_to_num(c_new - assoc[0]), axis=1) > bar) | invalid).sum())
             refusals.append(bool(over))
             if over:                                  # the STEP is rejected, not the update
-                assoc[0], assoc[1] = saved
+                assoc[0], assoc[1], assoc[5], assoc[6] = saved
                 ds *= 0.5; cutbacks += 1
                 if log: log(f"  step rejected at fraction {trial:.4f}: {over} associations would exceed "
                             f"their own bar; shrinking to {ds:.5f}", flush=True)
