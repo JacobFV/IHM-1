@@ -811,7 +811,27 @@ bone are forced whatever the fit. The fit itself sits where it should: the mappe
 coincides with this body's bone (50-53% of its samples inside, as for two coincident surfaces),
 residual 1.1-1.4 mm. That the body's femur matches the scans' BONE surface rather than their
 cartilage surface says the cartilage is not already inside these bone meshes; the bones are simply
-drawn in contact. Whether the canonical pose or the source model closes the joint is not tested.
+drawn in contact.
+
+**Tested, 2026-09-10: it is the SOURCE, not the pose, and the scaffold's own knee is open.** The
+same nearest-surface measure, applied to the scaffold's bone meshes carried into ground by the
+reference run's body transforms:
+
+| knee, bone to bone | right | left |
+|---|---:|---:|
+| canonical anatomy (BodyParts3D) | **0.64 mm** | 1.21 mm |
+| scaffold (OpenSim, at its reference pose) | **3.02 mm** | 4.57 mm |
+| the OAI subjects' own bones | 3.3 mm | -- |
+
+Femur to patella on the scaffold is 3.49 mm, and no tibia vertex lies within 3 mm of the femur on
+either side. So a knee in this programme does have room for cartilage -- in the plant. The atlas
+knee does not, at a pose the plant does not use, which makes the closed joint a property of the
+canonical anatomy rather than of the pose or of the engine. **That reopens the knee line**: the
+cartilage the pilot could not place belongs on the scaffold's femur and tibia, which have the 3 mm
+it needs, or the atlas knee has to be corrected before its bones can carry any.
+(Instrument check: a cloud against itself reads 0.000 mm, and against a copy translated 10 mm no
+point exceeds 10.000 mm -- less where the surface curves toward the shift, because this is a
+nearest-surface distance and not a displacement.)
 
 **The placement gate fails its own known answer.** In each scan's own frame, before any
 registration, only 85-97% of the femoral cartilage surface lies within 3 mm of its own femur --
