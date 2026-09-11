@@ -281,13 +281,14 @@ def _behind(subject, side, Y, F, workdir):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--subject", choices=CW.SUBJECTS); ap.add_argument("--stage", default="all", choices=("all", "gate0", "known-answer", "curve", "scale", "scalar"))
+    ap.add_argument("--subject", choices=CW.SUBJECTS); ap.add_argument("--stage", default="all", choices=("all", "gate0", "known-answer", "curve", "scale", "scalar", "subjects"))
     ap.add_argument("--density", type=int)
     a = ap.parse_args()
     OUT.mkdir(parents=True, exist_ok=True)
     body = CW.body_meshes()
     if a.stage == "curve": stage_curve(body, a.density); return
     if a.stage == "scale": stage_scale(body); return
+    if a.stage == "subjects": stage_subjects(body); return
     if a.stage == "scalar":
         ok, normals = stage_scalar(body)
         stage_gate_b(body, normals)
@@ -605,6 +606,123 @@ def stage_gate_b(body, normals):
         f"{'a normal-only model is PERMITTED' if worst <= 0.5 else 'tangential-MAJORITY: a normal-only model is the wrong representation'}")
     (OUT / "scalar_gate_b.json").write_text(json.dumps(out, indent=2) + "\n")
     return worst <= 0.5, out
+
+
+# ---- the scalar field fitted to a subject, and gates 2-4 ----------------------------------------
+# The scalar field lives on this body's rib surface, so carrying her whole torso needs it extended
+# off that surface: s is a thin-plate spline and is defined everywhere, and the DIRECTION at a point
+# is the Taubin-smoothed normal of the nearest point on this body's ribs 2-7. Away from the chest
+# wall that direction is an extrapolation -- which is exactly what the held-out structures test.
+def body_normal_field(body):
+    from ihm.anatomy.normal_shooting import vertex_normals
+    P, N = [], []
+    for i, lab in enumerate(CW.FIT_LABELS):
+        V, F = body[lab]
+        Vs = taubin_smooth(V, F); n = vertex_normals(Vs, F)
+        P.append(V); N.append(n)
+    P = np.vstack(P); N = np.vstack(N)
+    tree = cKDTree(P)
+    def direction(Y):
+        return N[tree.query(np.asarray(Y, float))[1]]
+    return direction
+
+
+def fit_scalar_subject(src, body, G, direction, seed=0):
+    """Normal shooting from her ribs (carried by G, then by the field of the previous pass) onto this
+    body's, reduced to ONE NUMBER per pair: how far to move along the local smoothed normal."""
+    from ihm.anatomy.normal_shooting import shoot_pairs
+    warp = None; report = []
+    for p in range(PASSES):
+        S, obs, drops = [], [], dict(sampled=0, no_hit=0, no_return=0, return_too_far=0, normal_disagreed=0)
+        for i, lab in enumerate(CW.FIT_LABELS):
+            if lab not in src: continue
+            V, F = src[lab]
+            y = CW.apply(G, V)
+            if warp is not None: y = warp(y)
+            r = shoot_pairs(y, F, *body[lab], n=PER_RIB, cap_m=SHOOT_CAP_M, return_tol_m=SHOOT_RETURN_TOL_M,
+                            seed=seed + i, min_normal_agreement=SHOOT_AGREEMENT)
+            for k in drops: drops[k] += r.get(k, 0)
+            if not len(r["source"]): continue
+            n = direction(r["source"])
+            S.append(r["source"]); obs.append(np.einsum('ij,ij->i', r["target"] - r["source"], n))
+        S = np.vstack(S); obs = np.concatenate(obs)
+        w, a = tps_fit_direct(S, obs, CURVE_LAMBDA)
+        centres = S.copy()
+        def field(Y, w=w, a=a, centres=centres):
+            return (SW.phi(cdist(np.asarray(Y, float), centres)) @ w + np.asarray(Y, float) @ a[:3] + a[3]).ravel()
+        prev = warp
+        def warp(Y, field=field, prev=prev):
+            y = np.asarray(Y, float)
+            if prev is not None: y = prev(y)
+            return y + field(y)[:, None] * direction(y)
+        resid = np.abs(field(S) - obs)
+        report.append(dict(pass_=p + 1, correspondences=int(len(S)), drops=drops,
+                           observation_median_mm=float(1000 * np.median(np.abs(obs))),
+                           residual_median_mm=float(1000 * np.median(resid))))
+        say(f"    pass {p+1}: {len(S)} of {drops['sampled']} kept (no hit {drops['no_hit']}, no return "
+            f"{drops['no_return']}, return too far {drops['return_too_far']}, normals disagreed "
+            f"{drops['normal_disagreed']}); offsets |s| median {1000*np.median(np.abs(obs)):.2f} mm, "
+            f"fit residual median {1000*np.median(resid):.3f} mm")
+    return warp, report
+
+
+def stage_subjects(body):
+    direction = body_normal_field(body)
+    results = {}
+    for subject in CW.SUBJECTS:
+        say(f"\n=== {subject} ===")
+        src = CW.subject_meshes(subject)
+        G = np.array(json.loads((ROOT / "data/derived" / CW.REGISTERED[subject] / "manifest.json").read_text())["transform"])
+        t0 = time.time(); warp, rep = fit_scalar_subject(src, body, G, direction); secs = time.time() - t0
+        # gate 2: laterality
+        lat = {}
+        for side, other in (("left", "right"), ("right", "left")):
+            P = np.vstack([warp(CW.apply(G, CW.area_samples(*src[f"rib_{side}_{i}"], 2000)))
+                           for i in range(2, 8) if f"rib_{side}_{i}" in src])
+            own = cKDTree(np.vstack([CW.area_samples(*body[f"rib_{side}_{i}"], 20000) for i in range(2, 8)]))
+            opp = cKDTree(np.vstack([CW.area_samples(*body[f"rib_{other}_{i}"], 20000) for i in range(2, 8)]))
+            lat[side] = (float(np.median(own.query(P)[0])), float(np.median(opp.query(P)[0])))
+        g2 = all(a < b for a, b in lat.values())
+        say(f"GATE 2 laterality: left {1000*lat['left'][0]:.1f} vs {1000*lat['left'][1]:.1f} mm, right "
+            f"{1000*lat['right'][0]:.1f} vs {1000*lat['right'][1]:.1f} mm -> {'PASS' if g2 else 'FAIL'}")
+        # gate 3: held out
+        rows = {}
+        for lab in CW.HELD_OUT:
+            if lab not in src or lab not in body: continue
+            P = CW.area_samples(*src[lab], 3000, 7)
+            tree = cKDTree(CW.area_samples(*body[lab], 30000, 11))
+            rows[lab] = (float(np.median(tree.query(warp(CW.apply(G, P)))[0])),
+                         float(np.median(tree.query(CW.apply(G, P))[0])))
+        med = float(np.median([v[0] for v in rows.values()])); bar = WHOLE_TORSO_HELD_OUT_MM[subject] / 1000
+        g3 = med <= bar
+        say(f"GATE 3 held out ({len(rows)} structures): median {1000*med:.2f} mm vs the whole-torso "
+            f"similarity's {1000*bar:.2f} mm -> {'PASS' if g3 else 'FAIL'}")
+        worst = sorted(((v[0] - v[1]) * 1000, l) for l, v in rows.items())[-3:]
+        say("  worst three against the similarity: " + ", ".join(f"{l} {d:+.1f} mm" for d, l in reversed(worst)))
+        # gate 4: the breast behind the muscular wall
+        g4 = {}
+        for side in ("left", "right"):
+            V, F = SEAT.read_obj(CW.SRC / subject / "meshes" / f"breast_{side}.obj")
+            frac, pmax, ndeep = _behind(subject, side, warp(CW.apply(G, V)), F, OUT / "subjects" / subject / side)
+            g4[side] = dict(volume_behind_wall=frac, deepest_mm=pmax, deep_vertices=ndeep)
+            say(f"GATE 4 {side}: {100*frac:.3f}% more than 20 mm behind the wall (deepest {pmax:.1f} mm) -> "
+                f"{'PASS' if frac <= TRIM_VOLUME_TOL else 'FAIL'}")
+        g4_ok = all(v["volume_behind_wall"] <= TRIM_VOLUME_TOL for v in g4.values())
+        results[subject] = dict(passes=bool(g2 and g3 and g4_ok), seconds=secs, fit=rep,
+                                gate2=dict(passes=g2, **{k: dict(own_mm=1000*v[0], opposite_mm=1000*v[1]) for k, v in lat.items()}),
+                                gate3=dict(passes=g3, median_mm=1000*med, bar_mm=1000*bar,
+                                           per_structure_mm={l: dict(warped=1000*v[0], similarity=1000*v[1]) for l, v in rows.items()}),
+                                gate4=dict(passes=g4_ok, **g4))
+        (OUT / f"scalar_{subject}.json").write_text(json.dumps(results[subject], indent=2) + "\n")
+    say("\n=== gate table ===")
+    for s_, r in results.items():
+        say(f"  {s_}: laterality {'pass' if r['gate2']['passes'] else 'FAIL'} | held out "
+            f"{r['gate3']['median_mm']:.2f} vs {r['gate3']['bar_mm']:.2f} mm "
+            f"{'pass' if r['gate3']['passes'] else 'FAIL'} | behind the wall "
+            f"{100*r['gate4']['left']['volume_behind_wall']:.2f}% / {100*r['gate4']['right']['volume_behind_wall']:.2f}% "
+            f"{'pass' if r['gate4']['passes'] else 'FAIL'} -> {'PASS' if r['passes'] else 'FAIL'}")
+    (OUT / "scalar_subjects.json").write_text(json.dumps(results, indent=2) + "\n")
+    return results
 
 
 if __name__ == "__main__": main()

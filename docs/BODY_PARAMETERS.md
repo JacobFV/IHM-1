@@ -1402,6 +1402,41 @@ done; the others have moved.
    | s1159 | 10.06 mm | 1.02 mm | 9.2% (energy 2.2%) |
    | s0970 | 9.27 mm | 0.62 mm | 6.3% (energy 0.7%) |
 
+   **Gates 2-4 on all four subjects: all fail, and a 10% representation error is not what stood in
+   the way. The correspondence collapses on real data.**
+
+   | subject | 2 laterality | 3 held out (bar) | 4 behind the wall, left / right (whole-torso similarity) | overall |
+   |---|---|---:|---:|---|
+   | s0790 | pass | **4.59** (4.55) FAIL | 6.66% / 5.51% (4.86 / 4.73) | **FAIL** |
+   | s1067 | pass | **5.59** (5.18) FAIL | 3.46% / 3.73% (3.70 / 5.25) | **FAIL** |
+   | s1159 | pass | 4.77 (5.52) pass | 2.31% / **0.00%** (1.99 / 2.26) | **FAIL** |
+   | s0970 | pass | 5.16 (5.60) pass | 7.81% / 7.60% (7.56 / 7.73) | **FAIL** |
+
+   **Why, in one row.** The fit kept 134 to 311 of 3,600 samples per subject -- 3.7% to 8.6% -- with
+   2,100 to 2,700 of them finding NO target within the 20 mm cap. Ribs are thin and curved and stand
+   5-10 mm apart, so a ray along her rib's own normal passes BESIDE this body's rib rather than
+   hitting it. The pairs that do survive are the already-aligned minority: the offsets they see have
+   a median of 0.37-0.45 mm where the real deformation is 6.5-10.9 mm. The scalar field is therefore
+   fitted to about a twentieth of the deformation it was meant to carry, and it behaves like it --
+   gate 3 barely moves in either direction (the largest damage anywhere is +0.6 mm, on T7), and
+   gate 4 improves on some breasts (s1159 right 2.26% -> 0.00%, s1067 5.25% -> 3.73%) while making
+   others worse (s0790 4.86% -> 6.66%).
+
+   This is the same selection bias that had to be corrected in gate 1b, found this time INSIDE the
+   fit: a correspondence with a return test keeps what already agrees. It passed gate 0 at 0.078 mm
+   because there the two surfaces were the same surface displaced; it does not survive two rib cages
+   that stand a centimetre apart.
+
+   **So the standing 10% criterion is not what to test next, and neither is the representation.**
+   Gate B settled the representation (91-94% normal) and gate A's bar was unreachable by
+   construction; what blocks the line now is getting a correspondence at all across a centimetre of
+   separation on thin bones. Two carried forward as asked: the Taubin smoothing's **5.501 mm max**
+   displacement is the kind of local error that would show in held-out ribs, and it does not appear
+   there because the field is too small to expose it; and `tps_fit_direct` silently broadcast a
+   one-column scalar into three identical columns until it was caught -- a fault that returns a
+   plausible wrong answer rather than an error, which is what makes the known-answer gates worth
+   their cost.
+
    **A normal-only model gives up 6-9% of the deformation**, far inside the 50% that would have
    ended the line, and the normal part -- 6.5 to 10.9 mm -- is the chest-wall offset this file has
    recorded all along. A chest wall differs from another chest wall mostly in how far forward it
