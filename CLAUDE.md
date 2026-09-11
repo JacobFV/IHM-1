@@ -89,6 +89,27 @@ This is adjacent to *a known answer must break the symmetry it is testing*, but 
 test case was too weak, here the test never ran. Both produce a green result from an instrument that
 measured nothing.
 
+## Call it twice at the same input
+
+**A query that is meant to be a pure function of position must return the same answer when called
+twice at the same position.** `LocalAssociation` did not: called a second time at *identical* node
+positions it moved **141 of 3,123** associations by more than 1 mm, up to **6.5 mm**, then stabilised
+from the third call on. That one-time disagreement, re-imposed by a cut-back loop's discarded
+attempts, produced a step-size-invariant count of ~42 inverted elements that was read as a property
+of the mechanics — of the mesh, the stepping, the association concept, the starting state — for a
+full round of work before anyone called the function twice.
+
+The check costs one line and it is not the same as a known answer: a known answer tests the value,
+idempotence tests whether the instrument is a function at all. Run it on anything stateful, cached,
+or seeded from a previous result.
+
+**The cause was the third instance of one hazard on this line: a coarse proxy standing in for an
+exact query on a mesh with a long facet tail.** The local search seeded its starting face by
+*centroid proximity*, and this bed's faces run 1.6 mm median against a 28.9 mm maximum, so the
+nearest centroid is routinely not the face the association sits on. Before it, the unsigned ray
+index and the radius test failed the same way. **When a mesh has a long facet tail, a proxy that is
+right for the median face is wrong for the tail, and the tail is where contact lives.**
+
 ## Jobs
 
 - Never commit weights, caches, meshes or large payloads. `data/derived/`,
