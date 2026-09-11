@@ -3048,3 +3048,39 @@ What has changed is that the parametrization no longer stops at the scaffold.
    * **The standing condition is unchanged and X does not satisfy it.** X is on a plane; the breast
      is non-rigid motion against the *anatomical* bed. X is necessary, not sufficient.
 
+   **The threshold is per-node now, T/U/W return unchanged, and GATE X PASSES.**
+   (`scripts/gate_x_homogeneous.py`, standalone like W so both re-run as regressions.)
+
+   The bar is `|node i's own motion this step| + the bed's facet scale`, with the refuse-or-take
+   decision still GLOBAL -- that is what keeps every constraint in one epoch. Under a rigid drive all
+   nodes move equally and it reduces to the previous rule, which is what the regressions verify:
+
+   | regression | before | after |
+   |---|---|---|
+   | T-none | PASS, fraction 1.0, min J 1.0000, 0 inversions | **identical** |
+   | T-all | FAIL at 0.1250, 548 inverted | **identical** |
+   | U | 93.8% refused (15 of 16), completes, min J 1.0000 | **identical** |
+   | W | PASS, 0.0% refused, min J 1.0000 | **identical** |
+
+   | gate X, homogeneous shear tangent to an analytic plane | result |
+   |---|---|
+   | completion | fraction 1.0, one Newton iteration per step |
+   | min J | **1.0000**, exact for an isochoric shear; zero inversions; volume ratio 1.00000000 |
+   | refusal rate | **0.0%**, 0 of 16 |
+   | solution vs the exact homogeneous field | median **0.000000 mm**, max **0.000000 mm** |
+
+   Association motion varies from 0 to 7.5 mm across the base here -- the property no earlier control
+   contained -- and nothing is refused, so a per-node bar survives a spatially varying field.
+
+   Two notes on how it had to be built. The WHOLE boundary is driven, not the base alone: a
+   homogeneous field is exact only if the entire boundary is compatible with it, and driving the base
+   alone would let the free surface relax, leaving nothing closed-form to compare against. And X's own
+   log prints a "held gap error" rising to 46.55 mm, which is an INAPPLICABLE metric rather than a
+   defect: it measures the distance from a normal-gap-closing drive that X does not apply, since X
+   prescribes displacement directly. The number is real and means nothing here.
+
+   **X IS NECESSARY AND NOT SUFFICIENT.** It runs on a plane. The breast is non-rigid motion against
+   the ANATOMICAL bed, where a closest point jumps between sheets, and the standing condition on this
+   line is unchanged: no result about the breast is readable until a control exercises that regime.
+   A passing X is not clearance.
+

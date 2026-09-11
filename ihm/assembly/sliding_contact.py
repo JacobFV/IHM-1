@@ -152,7 +152,8 @@ def tangent_frames(n, hint=(0.0, 1.0, 0.0)):
 def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5, max_outer=25,
                 hint=(0.0, 1.0, 0.0), rtol=1e-7, jump_limit_m=0.01, assoc_tol_m=1e-4, move=None,
                 rigid_m=None, freeze_frames=False, project=True, solver_log=None, stop_fraction=1.0,
-                association='persistent', lost_bed='hold', facet_m=1e-3, drive_full=False, log=None):
+                association='persistent', lost_bed='hold', facet_m=1e-3, drive_full=False,
+                prescribe=None, log=None):
     """The sliding base. base: node indices on the surface facing the bed. closest(points) ->
     (c, n): closest bed points and the bed's outward unit normals there. A base node BEHIND the bed
     in the registered position is HELD: its signed normal gap is ramped to zero over load_steps and
@@ -188,8 +189,13 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
             # more than the surface's own resolution; anything further has changed FEATURE, which is
             # what a teleport is. An update is taken WHOLE or refused WHOLE, because mixing updated
             # and stale constraints is what deformed the body (gate S).
-            motion = float(np.linalg.norm(points - assoc[3], axis=1).max())
-            bar = motion + facet_m
+            # PER-NODE bar. Under a rigid drive every node moves the same distance and a single
+            # scalar sufficed; under a non-rigid one it does not, and a global bar is then too tight
+            # for the fast nodes or too loose for the slow ones. The refuse-or-take DECISION stays
+            # global -- that is what keeps every constraint in one epoch -- and only the bar is
+            # per-node. With equal motion this reduces exactly to the previous rule, which is what
+            # the T, U and W regressions check.
+            bar = np.linalg.norm(points - assoc[3], axis=1) + facet_m
             move = np.linalg.norm(np.nan_to_num(c_new - assoc[0]), axis=1)
             invalid = ~np.isfinite(c_new).all(1) | ~np.isfinite(n_new).all(1)
             over = int((move > bar).sum()) + int(invalid.sum())
@@ -249,6 +255,13 @@ def seat_on_bed(region, base, closest, *, load_steps=8, pins=(), gap_tol_m=5e-5,
                 lo[base[~held], 0] = on_plane[~held]
             if assoc[2].any():                          # released: no constraint for this step
                 lo[base[assoc[2]]] = -np.inf; hi[base[assoc[2]]] = np.inf
+            if prescribe is not None:
+                # GATE X: an arbitrary per-node prescribed displacement, scaled by the load fraction.
+                # A homogeneous field is exact only if the WHOLE boundary is compatible with it --
+                # driving the base alone would let the free surface relax and there would be no
+                # closed-form answer to compare against.
+                idx, values = prescribe
+                lo[idx] = hi[idx] = np.einsum('nik,ni->nk', frames[idx], fraction * values)
             for node, axis in pins:
                 col = np.flatnonzero(np.abs(frames[node][axis, :]) > 1 - 1e-9)
                 if len(col) != 1: raise ValueError(f"pin on node {node}, axis {axis}, is not along one of its frame axes")
