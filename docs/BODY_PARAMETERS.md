@@ -3936,3 +3936,45 @@ What has changed is that the parametrization no longer stops at the scaffold.
    line now prints `UNCONVERGED`, and gate CC now reports its maximum Newton count and its count of
    unconverged accepted steps, because a gate that cannot report this cannot be audited later.
 
+
+   ### The convergence audit: every verdict survives, and the check was made a proof first
+
+   **Before trusting the iteration count, its meaning was established by enumerating the loop's
+   exits.** The Newton loop has exactly one `break` (`res <= tol`), one nested `break` that leaves
+   only the Armijo line search, and one `raise` (line-search failure, which propagates into a
+   cut-back rather than returning a result). There is no other exit. **Therefore
+   `iterations < max_newton` implies the solve converged**, and a step at the 300 ceiling is the only
+   kind that can be accepted unconverged.
+
+   That is the difference between a proxy and a proof, and it is why the audit below is worth
+   anything: the iteration count is not *evidence about* convergence here, it is *equivalent to* it.
+
+   | verdict | solves | max Newton | at the ceiling |
+   |---|---:|---:|---:|
+   | T-none / W / X / V-on-plane | 8 each | 1 | **0** |
+   | **R2 / R′ repaired, completes to 1.0** | 8 | **148** | **0** |
+   | pre-repair R2, the stall at 0.6250 | 5 | 142 | **0** |
+   | AA | 1 | 30 | **0** |
+   | BB′ | 7 | 30 | **0** |
+
+   **Every recorded verdict survives. R′ is clean on both sides** — the stall is a real stall and the
+   completion is a real completion — so the headline evidence that the repair is good is undamaged.
+
+   **My prediction was right about which half was at risk and wrong about why.** I said R′ would be
+   safe because "R′ has no bed, so its steps are easy". Its steps are **not** easy: they run to 148
+   iterations. It is clean because it **converged**, not because it had little to do. Right
+   conclusion, wrong mechanism — which is the third time this week I have reached a correct verdict
+   through an argument that did not hold, and the reason to report mechanisms rather than just
+   calls.
+
+   **Both gaps are closed at the source rather than worked around.** The step line prints
+   `UNCONVERGED`, and gate CC now reports its maximum Newton count and its count of unconverged
+   accepted steps. **CC is re-running under that reporting**, because its verdict was recorded with
+   `log=None` and carried no counts at all — the agent refused to leave CC as the one gate exempt
+   from its own audit, which is the right instinct and not one I asked for.
+
+   **A candid note on what the audit actually relied on.** This verdict survived only because
+   convergence could be *reconstructed* from the iteration count after the fact. That was a property
+   of this particular loop, not instrumentation — if the loop had had a second silent exit, the
+   reconstruction would have been impossible and the verdicts unrecoverable. The lesson is the
+   printed flag, not the successful reconstruction.
