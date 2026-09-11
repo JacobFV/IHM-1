@@ -1281,6 +1281,52 @@ being quoted as fit quality entirely, and be replaced by the to-surface recovery
 available and by nothing at all where one is not. A residual this flat is a statement about how
 well the spline interpolates its own targets, which was never in doubt.
 
+### Normal shooting: 0.444 mm against 1.933 -- and the comparison is not yet like-for-like
+
+| at the operating point | nearest point | normal shooting |
+|---|---:|---:|
+| achieved separation | 1.05 mm | 0.96 mm |
+| **normal error** | **1.933 mm** | **0.444 mm** |
+| as % of residual displacement | 27.4% | 10.7% |
+| thin-sheet hits | pending | 5 of 3,989 (0.13%), torso |
+| **kept fraction** | **100%** (10% trim) | **27.1%** |
+
+**The repair predicted in `5239b2a` delivers, and it puts the error under gate 1's margin for the
+first time** -- 0.444 mm against a 1 mm margin, where the nearest rule sat at nearly twice it. The
+shooting arm's 1->2 exponent is **1.059**: it did **not** collapse toward zero, which is what I
+asked to be watched for, but it sits just below my predicted 1.2-1.4 band. Same shape as the last
+two predictions of mine -- hypothesis right, magnitude slightly wrong, erring toward the benign.
+
+**But 27.1% kept is not a detail, it is the whole question.** Nearest point is scored on 100% of
+its samples; shooting is scored on the 27.1% that survived `no_hit` (1,031) and `return_too_far`
+(3,821). **Those are different populations, so 1.933 against 0.444 is not a measurement of the
+two rules.** This is exactly what `fec11d2` pre-registered the drop census to catch -- a
+correspondence that discards three quarters of its samples and reports an improvement may simply be
+reporting the easy quarter. The nearest rule's own pathologies (normal-component maxima of 32.5 and
+54.8 mm, far-wall hits through thin ribs) are precisely the points shooting drops, so the kept set
+is plausibly enriched for points nearest-point also handles well.
+
+**The control that settles it, ordered now and fixed before it runs: score the NEAREST-POINT rule
+on exactly the subset shooting kept.** Same points, same amplitude, same everything else. That is
+the only like-for-like number, and it is cheap because the subset is already known.
+
+* **If nearest-point on the kept subset is still near 1.9 mm**, the improvement is real and
+  entirely attributable to the rule.
+* **If it falls to near 0.44 mm**, the improvement is selection and normal shooting's advantage at
+  the operating point is an artefact of which points it declines to answer for.
+* **Predicted: it lands between 0.8 and 1.5 mm** -- a genuine improvement over 1.933 because the
+  subset excludes the far-wall pathologies that inflate the nearest rule's mean, but still two to
+  three times worse than shooting's 0.444. If it lands at or below 0.6, I am wrong and most of the
+  gain is selection.
+
+**And the drop census is now a cost in its own right, not only a diagnostic.** It worsens with
+separation -- 27.1% kept at the operating point, `return_too_far` up from 1,281 to 3,821 and
+`no_hit` from 138 to 1,031. A correspondence that answers for a quarter of the skin cannot drive a
+warp over the segments that fail unless those segments survive the filter. **Report the kept
+fraction PER SEGMENT at the largest amplitude**, because a 27% average that is 60% on the torso and
+5% on the calcaneus would leave exactly the failing segments unconstrained, and the headline number
+would not show it.
+
 **Why this was worth having from a retired control.** I retired it for firing a threshold at the
 wrong separation, and it then answered a question I had not asked: whether this line's headline
 quality metric measures accuracy at all. It does not. A control kept running after its gate was
