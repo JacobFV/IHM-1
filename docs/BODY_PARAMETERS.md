@@ -1117,7 +1117,42 @@ done; the others have moved.
    Cutting them to what her mapped label lies within removed far too much (a median 0.27-0.46 of each
    rib) because it measures the whole-torso misalignment under investigation. The cut that is neither
    is calibrated by AREA RATIO, which depends on the scale and not the pose, taken from the anterior
-   costal-cartilage end where a CT rib label stops.
+   costal-cartilage end where a CT rib label stops. **If her labels are instead thinned all over
+   rather than cut at that end, gate 1 is easier than it looks** -- said here because the agent that
+   built it said it, and nothing downstream should quote 0.023 mm without it.
+
+   **The deformable chest-wall fit, pre-registered 2026-09-10 before it is built -- and it is the
+   instrument the OTHER line already built.** `docs/SEGMENT_CONTACT_SURFACES.md` reached the same
+   wall from the other side: one global similarity cannot carry this specimen's skin onto the
+   scaffold either, and a smooth warp (`scripts/skin_warp.py`, thin-plate spline with a fixed
+   cross-validation rule, a zero-warp control and a matrix-free solver verified against the direct
+   one) is already built and gated there. The same instrument answers this, so it is reused rather
+   than reinvented.
+
+   * **The instrument.** `W(x) = Gx + d(Gx)`, G the whole-torso similarity this file already
+     records, d a regularised thin-plate spline fitted to correspondences from HER chest bones --
+     ribs 2-7 both sides -- onto this body's, exactly the set the chest-local similarity used.
+   * **Gate 1, known answer, and not the one that needed three tries.** A warp is recovered from a
+     warp: take this body's own chest bones, displace them by a KNOWN smooth field of the same
+     family, and the fit must recover it to **1 mm RMS** over the fitted bones. This tests the
+     instrument without depending on any assumption about where her labels stop.
+   * **Gate 2, laterality.** Unchanged.
+   * **Gate 3, held out, unchanged and unweakened.** Fit ribs 2-7; sternum, clavicles, rib 1, ribs
+     8-12 and T1-T12 held out, and the median nearest-surface distance there **no worse than the
+     whole-torso similarity's** -- 4.55, 5.18, 5.52 and 5.60 mm for s0790, s1067, s1159 and s0970.
+     The chest-local similarity failed this at 5.81, 6.47, 8.24 and 8.70; a warp that trades the
+     lower ribs for the breast fails it too.
+   * **Gate 4, the consequence.** Breast volume more than 20 mm behind the muscular wall **<= 1%**
+     on every subject, as before.
+   * **Reported:** the warp's bending energy, its displacement at the breast base and at ribs 9-12,
+     and the chest-wall offset table recomputed.
+
+   **Predicted before it runs:** gate 3 passes, because a warp has the freedom a similarity lacks
+   and the held-out ribs only need to stay where they already are; gate 4 passes on s1159 and s1067
+   and is uncertain on s0790 and s0970. If gate 3 fails again, the constraint is not the
+   transform's freedom but the correspondences -- her ribs are segmented from a CT and this body's
+   are an atlas, and two rib surfaces that do not mean the same thing cannot be made to agree by
+   any map.
 
    **Seat it in two steps: place, then conform. Fixed 2026-09-10, before it runs.** 45 mm of
    overlap is not tissue deformation, it is placement -- the breast is another woman's tissue where
