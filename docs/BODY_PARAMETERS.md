@@ -991,6 +991,35 @@ done; the others have moved.
    would set the query radius for every ray), verified to reproduce brute force exactly and 21x
    faster.
 
+   **Fourth attempt: fix the LABEL, not the threshold. Fixed 2026-09-10, before it runs.** The
+   question the distribution raises is whether 13 nodes of 4,097 should stop a seating, and the
+   answer is not to move a threshold after three runs have failed it -- it is to ask what those 13
+   nodes are. **Breast tissue does not lie behind pectoralis major.** A CT label that does is a
+   segmentation error, and this cohort's labels come from a model run on a clinical scan, not from
+   a dissection. So the correction is to the DATA and it is gated:
+   * **The trim.** Remove from the breast label every vertex lying behind the muscular chest wall
+     by more than **20 mm** along its own outward ray, together with the tetrahedra they belong to,
+     and re-mesh. 20 mm is fixed now, sits below the p99 of 24.7 mm so it is a real test rather
+     than one satisfied by construction, and is above the ~10-17 mm the chest-wall offset explains.
+   * **Gate on the trim itself, before any seating:** the removed volume is **<= 1%** of the
+     breast. If it exceeds 1%, the label is not locally wrong -- the breast is in the wrong place,
+     the subject is reported unseated as a registration failure, and no seating is attempted.
+   * **Then drop step 1 entirely.** The rigid placement has failed twice on an objective that
+     rewards carrying tissue off the muscle, and its escape is not cured by charging a departing
+     node its pre-placement cost. With the corrected bed the median penetration is 7.4 mm and 95%
+     of nodes have muscle on their ray, so there is nothing left for a rigid move to buy. Seat from
+     the REGISTERED pose, which is also where the registration's own evidence puts the tissue.
+   * **The four per-breast gates do not move**: volume within 1% of the *trimmed* undeformed
+     breast, every tet J > 0.2, the two solvers within 5%, no flipped base triangle. The trimmed
+     volume is reported next to them so nobody reads a 1% volume gate over a breast that lost 5%
+     to the trim.
+
+   **Predicted, before it runs:** the trim removes well under 1% of each breast (the 13 nodes are
+   0.3% of the base and lie at its medial edge), the maximum penetration falls below 20 mm by
+   construction, and the solve that stalled at load fractions of 0.002 completes. If the trim
+   exceeds 1% on a subject, that subject's breast is misplaced rather than mislabelled, and saying
+   so is the result.
+
    **Seat it in two steps: place, then conform. Fixed 2026-09-10, before it runs.** 45 mm of
    overlap is not tissue deformation, it is placement -- the breast is another woman's tissue where
    a similarity registration put it, and a quasi-static solve pushing 45 mm of interpenetration out
