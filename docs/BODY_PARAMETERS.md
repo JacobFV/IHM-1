@@ -1285,6 +1285,33 @@ done; the others have moved.
    replaces 1 mm should fix that scale explicitly, or gate 1 measures the test field as much as the
    instrument.
 
+   **The bar is replaced by a curve, and the question it answers is fixed first (2026-09-10).**
+   The caveat is correct and it is mine: 1 mm was a number, not a requirement derived from anything.
+   A single bar against a field of unstated scale cannot say whether this pipeline can carry a
+   chest wall, and an 8.6x better correspondence scoring slightly worse is the proof that the bar
+   was measuring the wrong thing. So gate 1 is replaced, not loosened:
+
+   * **Gate 1a, the resolution curve.** Recover known smooth fields of the fitted family at spatial
+     scales **L = 5, 10, 20 and 40 mm**, fixed here, five seeds each, amplitude held at the 3.1 mm
+     already used, reported as surface RMS against L. The instrument's resolution **L\*** is the
+     smallest L recovered to <= 1 mm. Run at the present correspondence density and at **4x** it,
+     because sampling and the warp family are different limits and the curve separates them.
+   * **Gate 1b, the question that actually matters.** Measure the spatial scale of the REAL
+     deformation -- the per-subject offset field between her registered ribs and this body's, whose
+     magnitude this file already records at about 10 mm -- as the distance over which that field
+     decorrelates to 1/e. The pipeline can carry this deformation if that scale **exceeds L\***.
+   * **Reported beside both:** the correspondence's discretisation floor (0.078 mm, 0.135 x edge^2
+     at a 1.94 mm mean edge) and the warp's held-out correspondence error (0.434 mm, flat from
+     lambda 1e-6 to 1e-4), so a reader can see which of the three limits binds.
+   * **Gates 2-4 unchanged**, and reached only if 1b says the deformation is representable.
+
+   **Predicted before it runs:** L\* lands between 10 and 20 mm at the present density and improves
+   less than a factor of two at 4x, because a 0.434 mm held-out error that is flat in lambda is a
+   sampling limit rather than a smoothing one; and the real chest-wall field decorrelates over
+   several centimetres, so 1b passes and the line continues. If instead L\* is above the real
+   field's scale, no warp on these meshes can carry a chest wall, and the honest end of this line
+   is to say so rather than to fit one.
+
    **Normal agreement is adopted, on the argument and not on the score (2026-09-10).** A hit whose
    surface faces away from the source is on the far wall of the rib: it is not the partner of the
    source point, it is a different part of the bone that happens to lie along the ray, and the
