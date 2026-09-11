@@ -2256,3 +2256,38 @@ this bundle. `crawl.py` runs on source foot contacts plus one inertia-inscribed 
 body, so the patellar mesh carries no load today. This is a statement about the artefact the
 programme is building toward, not about anything it currently runs — and it is exactly the kind of
 defect that an unconsumed artefact accumulates unnoticed until something reads it.
+
+### The crawl is not grazing its joint limits. It lives outside them.
+
+"12 of 22 coordinates violate" is a yes/no. This is the depth
+(`scripts/measure_range_violation_depth.py`, against `crawl.py`'s own `declared_ranges` reader
+rather than a second parser):
+
+| coordinate | frames outside | depth / own range | worst | own range | worst / traversed span |
+|---|---:|---:|---:|---:|---:|
+| **knee_angle_l** | **95.6%** | 8.0% | 11.23° | 140° | **35.4%** |
+| **ankle_angle_r** | **94.1%** | 11.5% | 11.48° | 100° | 18.7% |
+| **pro_sup_r** | **94.0%** | 5.6% | 6.73° | 119.75° | 25.0% |
+| ankle_angle_l | 79.1% | 10.5% | 10.48° | 100° | 17.3% |
+| knee_angle_r | 68.8% | 7.9% | 11.07° | 140° | 35.1% |
+| hip_rotation_l | 46.1% | 12.7% | 10.15° | 80° | 20.2% |
+| hip_flexion_l | 28.5% | 1.5% | 2.24° | 150° | 6.1% |
+| hip_adduction_r | 0.2% | 0.1% | 0.06° | 80° | 0.1% |
+
+**The median violating coordinate is outside its declared range for 53% of the cycle**, and the
+worst three are outside for **94–96%** of it. The left knee spends **95.6%** of 1,600 frames past its
+limit, and the out-of-range part accounts for **35%** of the total motion that knee traverses.
+
+**So the excursions are the operating regime, not an overshoot.** The *depth* is modest — median
+6.4% of a coordinate's own range, max 12.7% — which is why "11.5° outside" sounded like a trim. It
+is not a trim: a coordinate that is outside for nineteen frames in twenty is being **leaned on**.
+**Clamping these would change the locomotion rather than tidy it**, and an admissible crawl is
+therefore not a small correction of this one — it is a different gait, which the search has never
+been asked to find.
+
+**Two guards worth naming, because both prevented a wrong number.** The ranges come from `crawl.py`'s
+own reader, so the comparison is against the thing the search was scored on rather than a second
+parser that could disagree. And the trajectory's joints carry `{value, speed, unit}`: **only the 28
+rotational coordinates are compared**, with the five `unit: m` translations skipped, because
+comparing a pelvis translation in metres against a range in radians is the units error this
+programme's ledger opens with.
