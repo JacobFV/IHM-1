@@ -2958,3 +2958,32 @@ What has changed is that the parametrization no longer stops at the scaffold.
    min J -- the quantity that actually breaks -- and it needs no constant that is not already
    measured here. It is not built: it needs its gate first.
 
+   **Gate V, fixed before implementation.** Shrink the increment until no association exceeds the
+   threshold, then take the whole update. R′ must complete at fraction **1.0**, zero inversions,
+   `min J ≥ 0.99` — **and the refusal rate must be ≈ 0, with associations actually updating.** That
+   conjunction is the gate. Completion alone would be passed by T-none with extra steps, which is
+   not the point: the aim is bed-following *with* consistency, and a run that completes while
+   refusing every update has achieved only the half already in hand.
+
+   ### The regime nothing has tested: every control so far has been a RIGID motion
+
+   The agent's own caveat, and the sharpest thing in this round. R, R′, R″, S, T, U are all rigid
+   drives. **The breast's motion is non-rigid and slides along the bed** — which is exactly where
+   large *legitimate* association motion lives. In a rigid drive there is almost none, so **no
+   control run so far can distinguish "following a bed" from "teleporting off it"**. Both my last
+   two inferences and the agent's were made about sliding, from controls containing none.
+
+   **Gate W, pre-registered: an analytic PLANAR bed, driven by a rigid translation TANGENT to it.**
+   A plane makes the answer exact — a tangential rigid translation is zero-energy, the body does not
+   deform, and every association slides by **exactly the translation distance** with **zero**
+   teleports. It is the minimal control that exercises bed-following, and its answer is known in
+   closed form rather than by comparison with another arm.
+
+   * **Pass:** fraction 1.0, `min J ≥ 0.99`, refusal rate 0, and association motion matching the
+     translation distance to the solver's tolerance.
+   * **Fail:** the rule cannot follow even a perfectly smooth bed — decisive, and it would move the
+     problem from the threshold to the association's construction.
+   * **No result about the breast is readable until a control exercises the regime the breast is
+     in.** That is the standing condition on this line now, and it outranks the step-control work:
+     adaptive stepping that passes on rigid drives would still be untested where it matters.
+
