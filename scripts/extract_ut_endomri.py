@@ -126,9 +126,19 @@ def main():
     ap.add_argument("--route", choices=("strict", "world"), default="strict")
     a = ap.parse_args()
     out = a.out
-    if not a.skip_md5:
-        got = md5(a.zip); print(f"GATE md5: {got} {'PASS' if got == MD5 else 'FAIL'}")
-        if got != MD5: raise SystemExit("the zip is not the archive Zenodo records; nothing extracted")
+    # THE MANIFEST MUST RECORD WHAT WAS COMPUTED, NOT WHAT WAS EXPECTED.  it used to write
+    # `md5=MD5` -- the constant -- unconditionally, so a run under `--skip-md5` produced an
+    # artefact asserting a verification it had not performed, and the v2-world extract did
+    # exactly that: its manifest carries the md5 and its own extract.log has no GATE line.
+    # The bytes were fine (verified independently 2026-09-11), but the claim was not earned
+    # when it was written, and a reader cannot tell those apart from the manifest.
+    if a.skip_md5:
+        got, verified = None, False
+        print("GATE md5: SKIPPED -- the manifest will say so")
+    else:
+        got = md5(a.zip); verified = got == MD5
+        print(f"GATE md5: {got} {'PASS' if verified else 'FAIL'}")
+        if not verified: raise SystemExit("the zip is not the archive Zenodo records; nothing extracted")
     zf = zipfile.ZipFile(a.zip)
     pat = re.compile(r"UT-EndoMRI/(D[12]_\w+)/(D\d-\d+)/\s*(D\d-\d+)_\s*(\w+)\.nii(\.gz)?$")
     subjects = {}
@@ -137,7 +147,21 @@ def main():
         m = pat.match(n.replace(" ", ""))
         if m: subjects.setdefault(m.group(2), {})[m.group(4)] = n
     out.mkdir(parents=True, exist_ok=True)
-    report = dict(schema="ihm.ut-endomri-organs.v1", route=a.route, source="Zenodo 13749613", md5=MD5, caveat=CAVEAT,
+    report = dict(schema="ihm.ut-endomri-organs.v1", route=a.route, source="Zenodo 13749613",
+                  md5_expected=MD5, md5_computed=got, md5_verified=verified, caveat=CAVEAT,
+                  # the header says these bounds are typo catchers and not anatomy; the MANIFEST
+                  # did not, and a reader seeing `volume_in_bound: true` on a 765.7 mL uterus
+                  # would reasonably take it for a plausibility check. it is not one, and on this
+                  # cohort it passes 91 of 91.  same for `count_expected`, which asks only
+                  # `pieces <= 2` because unilateral absence is real here (68 of 82 subjects have
+                  # a single ovary segmented).  a caution that lives only in a script header is
+                  # one revision from being lost.
+                  gate_semantics=dict(
+                      volume_in_bound=f"COARSE typo catcher, NOT anatomy: uterus {UTERUS_ML} mL, "
+                                      f"ovary {OVARY_ML} mL. It does not assert plausibility.",
+                      count_expected="pieces <= 2 only. Surgical absence and unilateral disease "
+                                     "are real in this cohort, so a single ovary is not an error.",
+                      inter_rater_dice="reported, never gated -- D1 has three raters and D2 one."),
                   consensus_rule=">=2 of 3 raters; both of 2; the one of 1", subjects={})
     for i, (sid, files) in enumerate(sorted(subjects.items())):
         if a.limit is not None and i >= a.limit: break

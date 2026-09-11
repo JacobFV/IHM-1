@@ -1832,7 +1832,10 @@ done; the others have moved.
 
    **It is not fit quality, and it is not size.** The five sacrum cases fit like the cohort:
    scale 0.957-1.059, trimmed residual 4.0-4.8 mm, against cohort means of 0.985 +/- 0.063 (D1)
-   and 0.962 +/- 0.049 (D2) at ~4.3 mm; their uteri are 52.7-179.4 mL, ordinary ones. Failure
+   and 0.962 +/- 0.049 (D2) at ~4.3 mm; their uteri are 52.7-179.4 mL, ordinary FOR THIS COHORT
+   (whose IQR is 68.8-154.8 mL) though the top of that span is 1.5x an adult non-gravid
+   reference -- see the cohort section below; the argument here is that the five are not
+   outliers among their peers, which stands either way. Failure
    rates by sub-dataset are alike -- D1 3 of 27, D2 8 of 60 -- but **every bone overlap is D2**,
    and D1_MHS and D2_TCPW are different sites with different rating protocols (three raters
    against one).
@@ -4440,3 +4443,56 @@ What has changed is that the parametrization no longer stops at the scaffold.
    held nodes have their association refused at every step and held stale. `association moved 0.4999
    mm` in those logs is the maximum over ACCEPTED updates and does not show it.
 
+
+   ## THE UT-ENDOMRI COHORT, IN NUMBERS RATHER THAN AS A SENTENCE
+
+   Measured 2026-09-11 by `scripts/characterise_ut_endomri_cohort.py` over all 124 extracted
+   subjects. The endometriosis caveat has travelled with every artefact from this dataset as a
+   sentence — *"an endometriosis cohort, NOT a typical-anatomy reference"* — which is true and
+   unfalsifiable as written. These are the figures behind it.
+
+   Reference ranges were stated in the script before the data were read, so they could not be
+   fitted to it: uterus ~30–120 mL, ovary ~3–10 mL per side, an ovary above ~20 mL in this
+   cohort being endometrioma-scale. **Nothing passes or fails on them.** They are the axis the
+   cohort is described against, not a gate.
+
+   | | |
+   |---|---|
+   | uterus labelled | 91 of 124 (absent in 33) |
+   | uterus median / IQR | **108.5 mL** / 68.8–154.8 |
+   | uterus range | 23.4 – **765.7 mL** |
+   | above the 120 mL reference | 38 (**42%**) |
+   | above 240 mL | 9 (10%) |
+   | largest | **6.4×** the top of the reference range |
+   | ovary labelled | 82 subjects (absent in 42), 95 pieces |
+   | subjects with a SINGLE ovary | **68 of 82 (83%)** |
+   | ovary piece median / range | 7.76 mL / 1.45 – **115.02 mL** |
+   | pieces above 20 mL (endometrioma-scale) | 11 (**12%**) |
+   | uterus inter-rater Dice (D1, 35 pairs) | median **0.774**, range 0.224–0.901, **26% below 0.70** |
+   | subjects carrying extraction flags | 40 of 124 (32%) |
+
+   **What this means for anything derived from here.** 42% of labelled uteri are above an adult
+   non-gravid reference; 83% of subjects with an ovary label have only one, which the dataset's
+   own README attributes partly to surgical resection; and the raters disagree about where the
+   uterus is badly enough on a quarter of D1 pairs that the worst pair overlaps at Dice 0.224.
+   **A mean over this cohort is not a typical anatomy**, and no organ taken from it should be
+   presented as one.
+
+   ### Two corrections to how this was recorded
+
+   **The manifest asserted a verification it had not performed.** `extract_ut_endomri.py` wrote
+   `md5=MD5` — the expected constant — into every manifest unconditionally, including runs under
+   `--skip-md5`. The v2-world extract did exactly that: its manifest carries
+   `7ace6e1b08efa10d0a1967073b0ba41c` and its own `extract.log` has no `GATE md5` line, so the
+   claim was not earned when it was written and a reader could not tell. **The bytes are fine** —
+   the archive was hashed independently on 2026-09-11 and matches — but the manifest now records
+   `md5_computed` and `md5_verified` separately from `md5_expected`, so a skipped check says so.
+
+   **A gate labelled honestly in a script header was not labelled at all in the artefact.**
+   `volume_in_bound` is a coarse typo catcher at 10–1000 mL and the script's header says so; the
+   manifest just said `volume_in_bound: true`, on a cohort where it passes 91 of 91 including a
+   765.7 mL uterus. Likewise `count_expected`, which asks only `pieces <= 2` — correct, because
+   unilateral absence is real here, but not a check on anything. Both now carry their semantics
+   in the manifest under `gate_semantics`. Neither gate was wrong; neither was readable from the
+   thing it was stamped on. *A caution that lives only in a script header is one revision from
+   being lost.*
