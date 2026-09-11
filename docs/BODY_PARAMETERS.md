@@ -2297,3 +2297,39 @@ What has changed is that the parametrization no longer stops at the scaffold.
    solver was gated for; and the deformation magnitude lands in single-digit millimetres, which is
    a breast adapted to a chest rather than a different breast.
 
+   **The return to seating: it does not seat, and the sliding condition is not what fails.**
+   On the continuous muscular bed, from the registered pose, with median penetration 7.4 mm: the
+   in-repo solver accepts about 0.1% of the seating per step and inverts elements whenever the step
+   grows, and FEBio fails inside its first time step with 42 retries and negative Jacobians. Neither
+   is the culprit -- their shared solver gate passed in two independent codes, and the boundary
+   condition is the one whose block cases agree to 1.58% of maximum displacement.
+
+   **What fails is the field the seating is asked to apply: it is not a deformation.** The depth each
+   base node must travel varies between NEIGHBOURS faster than the tissue can follow.
+
+   | between neighbouring base nodes (11,963 edges, median length 3.02 mm) | |
+   |---|---:|
+   | change in required depth: median / p90 / max | 0.72 / 3.32 / 34.44 mm |
+   | that change as a gradient (per unit edge length): median / p90 / max | 0.24 / 1.08 / 74.7 |
+   | edges whose ends must slide past each other by MORE than their own length | **1,311 (11.0%)** |
+   | by more than twice their length | 603 (5.0%) |
+
+   A gradient above 1 means the two ends of an edge pass through one another. No boundary condition
+   and no solver preserves an element through that, so 11% of this base cannot be seated by any
+   instrument of this kind.
+
+   **And the obstruction is roughness, not size.** The motion required is small against the breast
+   itself -- 143 x 187 x 116 mm, 263 mm across, 562 mL -- at a median 7.4 mm (2.8% of its diagonal)
+   and a maximum 41.8 mm (15.9%). It is not that the breast must move far; it is that neighbouring
+   points of its base must move by very different amounts over 3 mm. That is the same roughness that
+   collapsed 69% of the base triangles under the first, closest-point rule, seen now through a
+   boundary condition built to avoid exactly that.
+
+   **So the seating line and the registration line meet at one statement.** The registered breast's
+   base and this body's chest wall differ by an amount that varies faster than the tissue's own mesh
+   resolution. Removing that requires either a locally accurate registration -- which the four
+   instruments above established cannot be had from a rib cage of struts and air -- or smoothing the
+   depth field before applying it, which is a modelling choice that has to be declared: the breast
+   would then follow the chest wall rather than the registration, and what is delivered is a breast
+   shaped to this body, not this subject's breast placed on it.
+

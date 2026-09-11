@@ -104,6 +104,7 @@ RAY_REACH_M, GRAZING_COS, LOAD_STEPS, GAP_TOL_M = 0.060, 0.3, 8, 5e-5
 # more than TRIM_VOLUME_TOL of the breast, the label is not locally wrong -- the breast is in the
 # wrong place -- and the subject is a registration failure with no seating attempted.
 TRIM_DEPTH_M, TRIM_VOLUME_TOL = 0.020, 0.01
+TRIM_ENABLED = False
 PLACEMENT_LIMIT_M, PLACEMENT_SAMPLE = 0.025, 1200
 PLACEMENT_CAP_M, PLACEMENT_TURN_CAP_RAD = 0.100, 0.524
 PLACEMENT_EPS_M, PLACEMENT_STARTS_MM = 5e-4, (0.0, 8.0, 16.0, 22.0)
@@ -330,44 +331,54 @@ def stage_prepare(sid, side, d):
     v = tet_volumes(X, T); T[v < 0] = T[v < 0][:, [0, 2, 1, 3]]
     B = boundary_faces(T)
     bV, bF, rim = bed(side, near=X)
-    # --- the trim, gated before any seating ---
-    idx, pen, _, _ = penetration_of(X, B, bV, bF)
-    deep = idx[pen > TRIM_DEPTH_M]
-    volume_all = tet_volumes(X, T).sum()
-    trim = dict(depth_mm=TRIM_DEPTH_M * 1e3, deep_vertices=int(len(deep)),
-                penetration_before_mm=dict(max=float(pen.max() * 1e3), p99=float(np.percentile(pen, 99) * 1e3)))
-    if len(deep):
-        isdeep = np.zeros(len(X), bool); isdeep[deep] = True
-        keep = ~isdeep[T].any(1)
-        keep &= largest_component(T[keep])[np.cumsum(keep) - 1] if keep.any() else keep
-        removed = 1.0 - tet_volumes(X, T[keep]).sum() / volume_all
-        trim.update(tets_removed=int((~keep).sum()), removed_volume_fraction=float(removed))
-        print(f"  trim: {len(deep)} vertices deeper than {TRIM_DEPTH_M*1e3:.0f} mm (max {pen.max()*1e3:.1f} mm), "
-              f"{int((~keep).sum())} tets, {100*removed:.3f}% of the breast's volume")
-        if removed > TRIM_VOLUME_TOL:
-            (d / "trim.json").write_text(json.dumps({**trim, "registration_failure": True}, indent=2) + "\n")
-            raise SystemExit(f"REGISTRATION FAILURE for {sid} {side}: the trim takes {100*removed:.2f}% > "
-                             f"{100*TRIM_VOLUME_TOL:.0f}%; the breast is misplaced, not mislabelled; no seating attempted")
-        # re-mesh the trimmed body
-        Bk = boundary_faces(T[keep]); kv = np.unique(Bk); kmap = -np.ones(len(X), np.int64); kmap[kv] = np.arange(len(kv))
-        write_obj(md / "trimmed.obj", X[kv], kmap[Bk], [f"{sid} {side} breast, trimmed {100*removed:.3f}% behind the muscular wall"])
-        tmsh = md / "trimmed.msh"
-        if not tmsh.exists():
-            cmd = [str(FTETWILD), "-i", str(md / "trimmed.obj"), "-o", str(tmsh), "--no-binary", "-e", "1e-3",
-                   "-l", str(MESH_LR), "--max-threads", "12"]
-            t0 = time.time(); pr = subprocess.run(cmd, capture_output=True, text=True, timeout=3600)
-            (md / "ftetwild_trimmed.log").write_text(pr.stdout[-4000:] + pr.stderr[-4000:])
-            if pr.returncode != 0 or not tmsh.exists(): raise SystemExit(f"fTetWild failed on the trimmed {sid} {side}")
-            print(f"  re-meshed the trimmed breast in {time.time()-t0:.0f} s")
-        X, T = read_msh_tets(tmsh)
-        used = np.unique(T); remap = -np.ones(len(X), np.int64); remap[used] = np.arange(len(used)); X, T = X[used], remap[T]
-        v = tet_volumes(X, T); T[v < 0] = T[v < 0][:, [0, 2, 1, 3]]
-        B = boundary_faces(T)
-        trim["volume_after_remesh_ml"] = float(tet_volumes(X, T).sum() * 1e6)
-        trim["removed_volume_fraction_after_remesh"] = float(1.0 - tet_volumes(X, T).sum() / volume_all)
-        _, pen2, _, _ = penetration_of(X, B, bV, bF)
-        trim["penetration_after_mm"] = dict(max=float(pen2.max() * 1e3), p99=float(np.percentile(pen2, 99) * 1e3))
-        print(f"  after the trim and re-mesh: {len(X)} nodes, {len(T)} tets, penetration max {pen2.max()*1e3:.1f} mm")
+    # --- the trim, gated before any seating (the fourth attempt; superseded) ---
+    # The label trim answered "is the tissue behind the wall mislabelled or misplaced". It answered
+    # MISPLACED on all eight breasts (2.0-7.7% removed against a 1% gate), and the registration line
+    # that followed has now ended: a rib cage is struts with air between them, and pairing, closing
+    # and field-reading all failed on that one cause. The registration error is therefore ABSORBED by
+    # the seating rather than corrected before it, so the trim is off unless asked for.
+    if not TRIM_ENABLED:
+        trim = dict(enabled=False, note="registration error absorbed by the seating, not trimmed")
+        (d / "trim.json").write_text(json.dumps(trim, indent=2) + "\n")
+        nb = face_normals(X, B)
+    else:
+        idx, pen, _, _ = penetration_of(X, B, bV, bF)
+        deep = idx[pen > TRIM_DEPTH_M]
+        volume_all = tet_volumes(X, T).sum()
+        trim = dict(depth_mm=TRIM_DEPTH_M * 1e3, deep_vertices=int(len(deep)),
+                    penetration_before_mm=dict(max=float(pen.max() * 1e3), p99=float(np.percentile(pen, 99) * 1e3)))
+        if len(deep):
+            isdeep = np.zeros(len(X), bool); isdeep[deep] = True
+            keep = ~isdeep[T].any(1)
+            keep &= largest_component(T[keep])[np.cumsum(keep) - 1] if keep.any() else keep
+            removed = 1.0 - tet_volumes(X, T[keep]).sum() / volume_all
+            trim.update(tets_removed=int((~keep).sum()), removed_volume_fraction=float(removed))
+            print(f"  trim: {len(deep)} vertices deeper than {TRIM_DEPTH_M*1e3:.0f} mm (max {pen.max()*1e3:.1f} mm), "
+                  f"{int((~keep).sum())} tets, {100*removed:.3f}% of the breast's volume")
+            if removed > TRIM_VOLUME_TOL:
+                (d / "trim.json").write_text(json.dumps({**trim, "registration_failure": True}, indent=2) + "\n")
+                raise SystemExit(f"REGISTRATION FAILURE for {sid} {side}: the trim takes {100*removed:.2f}% > "
+                                 f"{100*TRIM_VOLUME_TOL:.0f}%; the breast is misplaced, not mislabelled; no seating attempted")
+            # re-mesh the trimmed body
+            Bk = boundary_faces(T[keep]); kv = np.unique(Bk); kmap = -np.ones(len(X), np.int64); kmap[kv] = np.arange(len(kv))
+            write_obj(md / "trimmed.obj", X[kv], kmap[Bk], [f"{sid} {side} breast, trimmed {100*removed:.3f}% behind the muscular wall"])
+            tmsh = md / "trimmed.msh"
+            if not tmsh.exists():
+                cmd = [str(FTETWILD), "-i", str(md / "trimmed.obj"), "-o", str(tmsh), "--no-binary", "-e", "1e-3",
+                       "-l", str(MESH_LR), "--max-threads", "12"]
+                t0 = time.time(); pr = subprocess.run(cmd, capture_output=True, text=True, timeout=3600)
+                (md / "ftetwild_trimmed.log").write_text(pr.stdout[-4000:] + pr.stderr[-4000:])
+                if pr.returncode != 0 or not tmsh.exists(): raise SystemExit(f"fTetWild failed on the trimmed {sid} {side}")
+                print(f"  re-meshed the trimmed breast in {time.time()-t0:.0f} s")
+            X, T = read_msh_tets(tmsh)
+            used = np.unique(T); remap = -np.ones(len(X), np.int64); remap[used] = np.arange(len(used)); X, T = X[used], remap[T]
+            v = tet_volumes(X, T); T[v < 0] = T[v < 0][:, [0, 2, 1, 3]]
+            B = boundary_faces(T)
+            trim["volume_after_remesh_ml"] = float(tet_volumes(X, T).sum() * 1e6)
+            trim["removed_volume_fraction_after_remesh"] = float(1.0 - tet_volumes(X, T).sum() / volume_all)
+            _, pen2, _, _ = penetration_of(X, B, bV, bF)
+            trim["penetration_after_mm"] = dict(max=float(pen2.max() * 1e3), p99=float(np.percentile(pen2, 99) * 1e3))
+            print(f"  after the trim and re-mesh: {len(X)} nodes, {len(T)} tets, penetration max {pen2.max()*1e3:.1f} mm")
     (d / "trim.json").write_text(json.dumps(trim, indent=2) + "\n")
     nb = face_normals(X, B)
     posterior = np.unique(B[nb[:, 2] < 0]); anterior = np.unique(B[nb[:, 2] > 0])
@@ -569,6 +580,16 @@ def stage_judge(sid, side, d):
                              base_displacement_median_mm=float(np.median(np.linalg.norm(ub, axis=1)) * 1e3),
                              base_displacement_max_mm=float(np.linalg.norm(ub, axis=1).max() * 1e3),
                              anterior_displacement_median_mm=float(np.median(ua) * 1e3), anterior_displacement_max_mm=float(ua.max() * 1e3),
+                             # The registration error is absorbed here rather than corrected, so how far
+                             # the tissue is moved has to be visible: a seating that moves tissue further
+                             # than the breast's own dimension is not that breast any more.
+                             deformation=dict(
+                                 median_mm=float(np.median(np.linalg.norm(u, axis=1)) * 1e3),
+                                 p90_mm=float(np.percentile(np.linalg.norm(u, axis=1), 90) * 1e3),
+                                 max_mm=float(np.linalg.norm(u, axis=1).max() * 1e3),
+                                 breast_cube_root_volume_mm=float((tet_volumes(X, T).sum() ** (1 / 3)) * 1e3),
+                                 breast_bbox_diagonal_mm=float(np.linalg.norm(np.ptp(X, axis=0)) * 1e3),
+                                 max_over_dimension=float(np.linalg.norm(u, axis=1).max() / np.linalg.norm(np.ptp(X, axis=0)))),
                              rib_points_inside_before=ribs_inside(side, X, B), rib_points_inside_after=ribs_inside(side, Y, B)),
                caveats=CAVEATS)
     e2 = d / "dr_displacement_E10000.npy"
@@ -584,6 +605,9 @@ def stage_judge(sid, side, d):
           f"{'PASS' if g['b_every_J_above_0_2'] else 'FAIL'} | solvers {100*rms/umax:.2f}% of {umax*1e3:.1f} mm "
           f"{'PASS' if g['c_solvers_within_5pct'] else 'FAIL'} | flipped base triangles {flipped} "
           f"{'PASS' if g['d_no_flipped_base_triangle'] else 'FAIL'} -> {'PASS' if rec['passes'] else 'FAIL'}")
+    dfm = rec['reported']['deformation']
+    print(f"  deformation: median {dfm['median_mm']:.2f} mm, p90 {dfm['p90_mm']:.2f}, max {dfm['max_mm']:.2f} "
+          f"against a breast {dfm['breast_bbox_diagonal_mm']:.0f} mm across ({100*dfm['max_over_dimension']:.1f}% of it)")
 
 
 def main():
