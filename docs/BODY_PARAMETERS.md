@@ -5040,3 +5040,41 @@ What has changed is that the parametrization no longer stops at the scaffold.
    half. From the placed state, **10 mm bandwidth removes 5.7%** — inside the predicted bandwidth
    and far under the predicted cost. Unplaced, the same stage had to work against a field with
    more than twice the median travel in it.
+
+   ## THE PLACED DRIVE: prediction CONFIRMED, and the fraction flatters it
+
+   The prediction fixed before this run was *"the last converged fraction rises above 0.1094"*.
+   It does, at **0.3594** — but the honest reading needs the absolute number beside it, because
+   the fraction is relative to an aim field that placement made 58% smaller.
+
+   | | unplaced | placed |
+   |---|---:|---:|
+   | last CONVERGED fraction | 0.1094 | **0.3594** |
+   | Newton iterations there | 77 | **160** |
+   | median aim travel | 6.17 mm | 2.62 mm |
+   | **absolute median travel converged** | **0.675 mm** | **0.942 mm** |
+   | min J at the last converged step | 0.667 | **0.469** |
+   | held nodes | 3,123 | 2,181 |
+
+   **Fraction improved 3.29x. Absolute travel improved 1.40x.** Both are true and the second is
+   the one to quote: most of the 3.29x is the denominator shrinking. The solver does get
+   genuinely further in millimetres — a real 40% — and that is a third of what the fraction
+   suggests. *A ratio whose denominator the treatment also changes is not a measure of the
+   treatment.*
+
+   **What placement bought, all told, measured rather than claimed:**
+
+   * deepest base node behind the wall **−19%** (41.8 → 33.7 mm, pipeline metric)
+   * median travel asked of the drive **−58%** (6.17 → 2.62 mm)
+   * smoothing cost **5.7%** of the field's magnitude against a pre-registered 20–40%
+   * absolute converged travel **+40%** (0.675 → 0.942 mm)
+   * min J still healthy where the unplaced run was already failing: **0.469** at the last
+     converged step, against an unplaced run that was at 0.406 by fraction 0.1797 and 0.215 by
+     0.4811
+
+   So placement **is** a lever — the branch my pre-registration named for its failure ("if the
+   converged fraction does not rise, placement is not the lever either") does not fire. It is a
+   40% lever in millimetres, not a 229% one.
+
+   The run continues past 0.4297, where it went `Newton 300 UNCONVERGED` at min J 0.409. Whether
+   it completes, and whether gate (b) survives, is still open — and I did not predict it.
