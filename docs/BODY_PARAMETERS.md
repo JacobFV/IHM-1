@@ -5117,3 +5117,32 @@ What has changed is that the parametrization no longer stops at the scaffold.
    **What is settled either way:** the pre-registered prediction is confirmed — the last converged
    fraction rose, and by 5.72x — and placement is worth 2.43x in absolute converged travel. What is
    not settled is whether it helps the gate, and on this evidence it does not.
+
+   ### min J is NOT monotonic: it bottoms out mid-drive and recovers
+
+   The placed drive's minimum Jacobian across all 17 load steps:
+
+   `0.777  0.542  0.484  0.469  0.409  0.366  0.264  0.146  0.090  **0.074**  0.107  0.099  0.076  0.167  0.203  0.214  0.212`
+
+   **It bottoms at 0.074 at fraction 0.6592 and recovers to 0.212 by 0.9601** — back above gate
+   (b)'s bar of 0.2, with the held gap down to 0.1658 mm median and 0.7440 mm max.
+
+   That is a fact about the mechanics, not about this run: **the worst element compression is
+   transient.** It happens part-way through the drive, while the tissue is being pushed into a
+   configuration it has not yet found, and it relaxes as the seating completes and the distortion
+   redistributes. The unplaced run never recovered — its min J fell monotonically to **0.045** and
+   ended there.
+
+   **Two consequences, and the first one I had wrong.** Every earlier reading in this document
+   quoted min J from wherever the run had reached at the time — 0.215, 0.184, 0.129, 0.090 — and
+   treated each as evidence the mesh was failing. **A mid-drive min J is not the gate.** Gate (b)
+   judges the solved state, and the solved state is the last one. That the intermediate values dip
+   below the bar is not a gate failure and should never have been written as though it foreshadowed
+   one.
+
+   And second: this is why the placed run may pass where the unplaced one could not. Both dip; only
+   one comes back.
+
+   **This does not yet mean gate (b) passes.** The run has not finished, the final state is not
+   written, and the last step is `Newton 300 UNCONVERGED` — so by the rule recorded above, whatever
+   `judge.json` says, a drive whose steps did not converge is reported as reached, never as seated.
