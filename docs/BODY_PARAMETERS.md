@@ -5333,3 +5333,31 @@ What has changed is that the parametrization no longer stops at the scaffold.
    Also recorded: s0790-left's placement moves its deepest penetration **47.7 → 42.9 mm**, a 10%
    reduction, against 19% for s1159-left. A breast that needs a transform larger than the bound
    also gets less out of the transform it is allowed.
+
+   ### Most breasts are REGISTRATION FAILURES, and the two sides of one subject differ 4.6x
+
+   Five of the eight placements measured so far, and the pattern is not what this line has been
+   assuming:
+
+   | breast | placement \|t\| | admissible (bound 25 mm) |
+   |---|---:|---|
+   | **s1067-right** | **8.89 mm** | yes — gate (b) PASS at min J 0.319 |
+   | **s1159-left** | **22.83 mm** | yes — gate (b) FAIL at min J 0.199 |
+   | s0790-right | 26.26 mm | **REGISTRATION FAILURE** |
+   | s0790-left | 33.59 mm | **REGISTRATION FAILURE** |
+   | s1067-left | **41.15 mm** | **REGISTRATION FAILURE** |
+
+   **Three of five exceed the bound.** By the rule at line 1630 — written long before today — each
+   is *"reported unseated rather than moved until it fits"*, and the pipeline enforces it: `place`
+   exits non-zero with `REGISTRATION FAILURE ... reported unseated`.
+
+   **And s1067's two sides differ by 4.6x.** The right breast needs **8.89 mm** and is the only one
+   to pass a gate; the left needs **41.15 mm** and is the worst of the five. Same subject, same
+   scan, same registration run. Whatever is going wrong is **per-breast, not per-subject** — which
+   rules out a subject-level scaling or pose error as the explanation and points at the
+   registration's handling of each breast individually.
+
+   **This reframes the line.** The question has been *"can the solver seat a breast?"* — and on
+   s1067-right the answer is now yes on gates (a) and (b). The question that matters more is
+   *"how often does the registration produce a breast that is admissible at all?"*, and so far
+   that is **2 of 5**. Improving the solver cannot help the other three; only the registration can.
