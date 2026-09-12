@@ -5213,3 +5213,63 @@ What has changed is that the parametrization no longer stops at the scaffold.
      idea is dead — which is worth more than another FAIL.
 
    Full chain from scratch: `prepare` → `place --place-objective rms` → `smooth` → `dr` → `judge`.
+
+   ## s1067-RIGHT: gates (a) AND (b) PASS for the first time — and my prediction is refuted
+
+   The second subject through the full chain, and the screening hypothesis it was run to test is
+   dead.
+
+   | gate | s1159-left (placed) | **s1067-right** |
+   |---|---|---|
+   | (a) volume within 1% | −0.429% PASS | **−0.367% PASS** |
+   | (b) every tet J > 0.2 | 0.199 FAIL | **0.319 PASS** ← *first ever* |
+   | (c) two solvers within 5% | no second solver FAIL | no second solver FAIL |
+   | (d) no flipped base triangle | 148 of 6,963 FAIL | **19 of 5,642 FAIL** |
+
+   | reported | s1159-left | s1067-right |
+   |---|---:|---:|
+   | deformation median / p90 / max | 5.52 / 9.90 / 39.37 mm | **5.15 / 7.75 / 16.13 mm** |
+   | max as a share of the breast's diagonal | 15.0% | **5.8%** |
+   | last CONVERGED fraction | 0.6258 | **1.0000** |
+   | unconverged steps | 10 | **3** |
+   | rib points inside | 2.00% → 0.25% | 3.65% → **1.71%** |
+   | placement transform | 22.83 mm, 0.58° | **8.89 mm, 3.43°** |
+   | wall clock, dr | 4.19 h | **1.77 h** |
+
+   **PREDICTED: min J FAILS and below 0.199; flipped triangles above 148.** Measured: **0.319 and
+   19.** Refuted in both directions, and not marginally.
+
+   **So the residual-sd screening measure is dead.** The pre-registration said plainly: *"if
+   s1067-right comes out better than s1159-left on min J despite a larger residual, the residual
+   does not control seating and the screening idea is dead — which is worth more than another
+   FAIL."* It came out better. s1067-right has the **larger** base-RMS residual (2.91 against
+   2.61), the **deeper** penetration (45.1 against 41.8 mm), **more** travel asked of the drive
+   (3.09 against 2.62 mm) and **more** smoothing required (25 mm removing 10.5% against 10 mm
+   removing 5.7%) — every geometric proxy said it should be harder, and it was markedly easier.
+
+   **The one quantity that ordered them correctly** is the placement transform's own magnitude:
+   **8.89 mm** for s1067-right against **22.83 mm** for s1159-left. A breast needing a small rigid
+   correction seats well. That is worth noting as a candidate screen — `place` costs ~30 min
+   against `dr`'s 2–4 h — but **n = 2**, and my own 3-DOF axial fit ordered the same pair the
+   *other* way (10.63 against 14.36 mm), so it is a hypothesis and not a finding.
+
+   ### It is a PASS on the gates and still not a seat
+
+   `dr.json` records `last_converged_fraction: 1.0` — **the final step converged**, unlike
+   s1159-left, whose final state was a `Newton 300 UNCONVERGED` one. So min J 0.319 describes a
+   genuine equilibrium and the gate numbers are trustworthy as a description of that state.
+
+   But `all_steps_converged: false`, with **3 unconverged steps** on the way. By the rule committed
+   before any of these runs, **a seat is claimed only for a drive with `all_steps_converged`**, and
+   this is reported as **reached**, not **seated**. The rule is kept rather than bent: contact with
+   sliding is path-dependent, so an unconverged intermediate step can land the solve on a different
+   branch, and a converged endpoint is *an* equilibrium without being *the* one.
+
+   Gate (c) fails because FEBio has never been run for this breast at all — `second_solver: absent`,
+   distinguished in `judge.json` from the `REJECTED` that s1159-left gets for an all-zero
+   displacement file. Gate (d) fails at **19 flipped triangles of 5,642 (0.34%)**, against
+   s1159-left's 148 of 6,963 (2.1%).
+
+   **And one number went the wrong way:** rib points inside the breast end at **1.71%** here
+   against s1159-left's 0.25%, above the 1% the earlier judge reported against. Recorded because
+   it is the one measure on which the better-seating breast is worse.
