@@ -5273,3 +5273,33 @@ What has changed is that the parametrization no longer stops at the scaffold.
    **And one number went the wrong way:** rib points inside the breast end at **1.71%** here
    against s1159-left's 0.25%, above the 1% the earlier judge reported against. Recorded because
    it is the one measure on which the better-seating breast is worse.
+
+   ## Testing the placement-magnitude screen out of sample, on all eight breasts
+
+   The residual-sd screen is dead. The one quantity that ordered the two solved breasts correctly
+   is the magnitude of the rigid transform `place` finds:
+
+   | breast | placement \|t\| | gate (b) |
+   |---|---:|---|
+   | s1067-right | **8.89 mm** | **PASS** (min J 0.319) |
+   | s1159-left | **22.83 mm** | FAIL (min J 0.199) |
+
+   **Two points fit any monotone rule**, so this is a hypothesis and the test has to be out of
+   sample. `place` costs ~30 min a breast against `dr`'s 2–4 h, so measuring all eight and then
+   solving only the extremes is affordable where solving all eight is not.
+
+   **PRE-REGISTERED, before any of the six remaining placements is run:**
+
+   * `place --place-objective rms` on the six unmeasured breasts, giving \|t\| for all eight.
+   * Then `dr` + `judge` on exactly two: the **smallest** \|t\| and the **largest** \|t\| among
+     those six. Not the ones that look interesting afterwards — the two extremes, named by the
+     rule, before their numbers are known.
+   * **PREDICTED: the smallest-\|t\| breast passes gate (b) and the largest-\|t\| fails.** If both
+     pass, or both fail, or the ordering inverts, the screen joins residual-sd in the discard pile
+     and the honest position is that nothing measured so far predicts which breasts seat.
+   * **A guard on the prediction:** if the six \|t\| values cluster so tightly that "smallest" and
+     "largest" differ by less than the 8.89–22.83 mm span that generated the hypothesis, the test
+     is underpowered and will be reported as inconclusive rather than as a pass.
+
+   Recorded here because the temptation after a first gate pass is to run more breasts and hope.
+   The question worth answering is not *how many pass* but *whether anything cheap predicts which*.
