@@ -320,13 +320,18 @@ def penetration_of(X, B, bV, bF, nodes=None):
 
 
 def stage_prepare(sid, side, d):
-    import igl
     src = ROOT / "data/derived" / REG[sid] / f"breast_{side}.obj"
     md = d / f"mesh_dec{DECIMATE_FACES}"; md.mkdir(parents=True, exist_ok=True)
     Vo, Fo = read_obj(src); to = Vo[Fo]
     vol_o = abs(np.einsum("ij,ij->i", to[:, 0], np.cross(to[:, 1], to[:, 2])).sum() / 6)
     dec, msh = md / "decimated.obj", md / "out.msh"
     if not dec.exists():
+        # `igl` is imported HERE rather than at the top of the function because it is needed only
+        # to decimate, and decimation is cached. All eight breasts already have a decimated.obj on
+        # disk, so a top-level import made `prepare` unrunnable on every one of them the moment
+        # libigl left the venv -- for a step none of them needs. An import that gates work already
+        # done is a dependency on nothing.
+        import igl
         out = [np.asarray(o) for o in igl.qslim(np.ascontiguousarray(Vo), np.ascontiguousarray(Fo), DECIMATE_FACES) if hasattr(o, "shape")]
         U = next(o for o in out if o.dtype.kind == "f" and o.ndim == 2 and o.shape[1] == 3)
         G = next(o for o in out if o.dtype.kind in "iu" and o.ndim == 2 and o.shape[1] == 3)
