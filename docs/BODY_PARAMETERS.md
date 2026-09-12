@@ -4944,3 +4944,35 @@ What has changed is that the parametrization no longer stops at the scaffold.
    but three to four times smaller than the 41.82 mm the drive actually faced.
 
    `scripts/measure_breast_base_rms.py`.
+
+   ### A signed-distance placement objective, and the prediction for re-running the drive placed
+
+   `stage_place` minimises **penetration**, which is one-sided: it charges a node for being behind
+   the wall and nothing for floating in front of it. The degenerate minimum that objective used to
+   have — fly the breast away and every ray misses — is already guarded, by charging a node that
+   loses its bed at its *pre-placement* penetration. But the guard only makes flying away cost the
+   same as doing nothing. It never **pulls** the base onto the wall, so a breast hovering clear of
+   the chest scores perfectly.
+
+   `--place-objective rms` uses the **signed** distance, so being in front costs as much as being
+   behind and the optimum is the base sitting *on* the wall — which is what seating means. The
+   default is unchanged, so no existing artefact is reinterpreted.
+
+   **PREDICTED, before running the drive from a properly placed state.** The previous drive ran
+   from the registered pose (see above) and its **last converged fraction was 0.1094**; everything
+   past that was `Newton 300 UNCONVERGED`, and it ended at min J 0.045 with 494 flipped base
+   triangles.
+
+   * **The last converged fraction rises above 0.1094.** The placed state gives the solver 2.5–4x
+     less depth to push out — deepest base node 9.5–16.5 mm instead of 41.82 mm — and the
+     converged reach is the quantity that should respond to that.
+   * **Whether gate (b) passes is genuinely open and I do not predict it.** The irreducible shape
+     mismatch is 2.61–4.03 mm sd whatever the placement, and 10–16 mm of local penetration still
+     has to go somewhere. Three to four times less work than a run that failed is not obviously
+     enough to pass.
+   * **If the converged fraction does NOT rise**, placement is not the lever either, and the
+     failure is in the boundary condition or the material model rather than in where the breast
+     starts — which would be worth more than a seat.
+
+   Subject: **s1159-left**, the lowest residual of the eight on the base-RMS measure (2.61 mm) and
+   the only breast already prepared in the sliding line.

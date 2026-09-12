@@ -430,7 +430,7 @@ def stage_prepare(sid, side, d):
           f"deepest penetration {info['deepest_penetration_mm']:.1f} mm")
 
 
-def stage_place(sid, side, d):
+def stage_place(sid, side, d, place_objective="penetration"):
     """Step 1: the rigid motion (no scale) minimising the summed squared penetration of the base
     nodes along their own outward normals. Rewrites the prepared state in the PLACED pose, keeping
     the registered one beside it."""
@@ -474,7 +474,33 @@ def stage_place(sid, side, d):
     sample = np.random.default_rng(0).choice(len(posterior), min(PLACEMENT_SAMPLE, len(posterior)), replace=False)
     before = pen0.copy()
     t0 = time.time()
-    objective = lambda q: float((penetration(q, sample) ** 2).sum())
+    # TWO OBJECTIVES, and the default is unchanged so nothing already run is reinterpreted.
+    #
+    # `penetration` is ONE-SIDED: it charges a node for being behind the wall and nothing for
+    # floating in front of it. The degenerate minimum it used to have -- fly the breast away and
+    # every ray misses -- is already guarded, by charging a node that loses its bed at its
+    # PRE-placement penetration. But the guard only makes flying away cost the same as doing
+    # nothing; it still never PULLS the base onto the wall, so a breast hovering clear scores
+    # perfectly.
+    #
+    # `rms` uses the SIGNED distance, so being in front costs as much as being behind and the
+    # optimum is the base sitting ON the wall -- which is what seating means. Measured over base
+    # nodes (scripts/measure_breast_base_rms.py) it takes the deepest node from 41.82 mm behind
+    # the wall to 9.5-16.5 mm, and its residual mean is 0.01-0.52 mm: a bounded rigid move really
+    # can centre these bases. Its known answer -- a 10 mm displacement compensated exactly, with
+    # the residual RMS unchanged -- passes at 0.00 mm.
+    def signed(params, idx):
+        Y, D, _, _ = place(params)
+        association, _ = bed_rays(bV, bF, D[idx], RAY_REACH_M)
+        c, n = association(Y[posterior[idx]])
+        gap = np.einsum('ij,ij->i', n, Y[posterior[idx]] - c)
+        # a node that loses its bed keeps the same treatment as above: charged its pre-placement
+        # penetration, so losing contact is never rewarded
+        return np.where(np.isfinite(gap), gap, -pen0[idx])
+
+    objective = ((lambda q: float((signed(q, sample) ** 2).mean())) if place_objective == "rms"
+                 else (lambda q: float((penetration(q, sample) ** 2).sum())))
+    print(f"    placement objective: {place_objective}", flush=True)
     anterior = -dirs0.mean(0); anterior /= max(np.linalg.norm(anterior), 1e-30)
     tries = []
     for mm in PLACEMENT_STARTS_MM:
@@ -716,10 +742,14 @@ def main():
     # control is run with "hold" because releasing would change WHICH nodes are driven midway, so the
     # two arms would differ in more than staleness -- and the count is reported per step either way.
     ap.add_argument("--lost-bed", choices=("hold", "release"), default="hold")
+    ap.add_argument("--place-objective", choices=("penetration", "rms"), default="penetration",
+                    help="rms uses SIGNED distance so the base is pulled ONTO the wall, not merely "
+                         "out of it; penetration is one-sided and is the default only because it "
+                         "is what every existing artefact was produced with")
     ap.add_argument("--stage", required=True, choices=("prepare", "place", "smooth", "control-r", "control-r-prime", "control-r2", "gate-s", "gate-t-none", "gate-t-all", "gate-u", "dr", "dr-check-E", "febio", "judge"))
     a = ap.parse_args(); d = OUT / a.subject / a.side; d.mkdir(parents=True, exist_ok=True)
     print(f"{a.subject} {a.side}: {a.stage}", flush=True)
-    {"prepare": lambda: stage_prepare(a.subject, a.side, d), "place": lambda: stage_place(a.subject, a.side, d),
+    {"prepare": lambda: stage_prepare(a.subject, a.side, d), "place": lambda: stage_place(a.subject, a.side, d, a.place_objective),
      "smooth": lambda: stage_smooth(a.subject, a.side, d),
      "control-r": lambda: stage_control_r(a.subject, a.side, d),
      "control-r-prime": lambda: stage_control_r(a.subject, a.side, d, bed_constraint=False),
