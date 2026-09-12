@@ -5398,3 +5398,52 @@ What has changed is that the parametrization no longer stops at the scaffold.
    two sides of s1067 differ 4.6x in required transform, and every breast sits ~18 mm too deep.
    The first is irreducible, the second says the error is per-breast, and the third says a large
    part of it is one global offset. **Solver work cannot reach any of them.**
+
+   ## ALL EIGHT PLACED: 5 of 8 are registration failures, and the screening test is NOT RUNNABLE
+
+   | breast | tx | ty | **tz** | \|t\| | admissible |
+   |---|---:|---:|---:|---:|---|
+   | **s1067-right** | 6.68 | 0.23 | 5.85 | **8.89** | yes — gate (b) PASS, min J 0.319 |
+   | **s1159-right** | 10.38 | −2.90 | 14.20 | **17.83** | yes — not driven |
+   | **s1159-left** | −13.70 | 2.95 | 18.02 | **22.83** | yes — gate (b) FAIL, min J 0.199 |
+   | s0790-right | 14.47 | 10.45 | 19.26 | 26.26 | **REGISTRATION FAILURE** |
+   | s0970-right | 10.94 | 0.78 | 25.26 | 27.54 | **REGISTRATION FAILURE** |
+   | s0970-left | −11.83 | 6.42 | 24.19 | 27.68 | **REGISTRATION FAILURE** |
+   | s0790-left | −10.62 | −24.26 | 20.66 | 33.59 | **REGISTRATION FAILURE** |
+   | s1067-left | −35.02 | 1.62 | 21.55 | 41.15 | **REGISTRATION FAILURE** |
+
+   **Five of eight breasts cannot be seated at all** under the bound this document fixed long
+   before today. That is the headline for this line, and it is not a solver result.
+
+   **The systematic bias holds at all eight, and strengthens.** The anterior component is positive
+   in **8 of 8** — sign test `p = 0.0039` — with mean **+18.62 mm, sd 5.82**, against x at sd 15.99
+   and y at sd 9.72. One axis biased, two axes noise. **Every breast is registered about 19 mm too
+   far into the chest wall.**
+
+   ### The pre-registered screening test: NOT RUNNABLE
+
+   The rule fixed before any of the six was measured: run `dr` on the smallest and largest \|t\|
+   among the admissible six, and *"if fewer than two of the six are admissible, the test is
+   reported as NOT RUNNABLE, not rescued by relaxing the bound."*
+
+   **Exactly one of the six is admissible** — s1159-right at 17.83 mm. So the test is **NOT
+   RUNNABLE**, and it is recorded as that rather than as a weaker test on a smaller sample or a
+   test with the bound moved to admit more subjects. Whether placement magnitude predicts seating
+   difficulty remains **unknown**, resting on the same two points it started with (8.89 mm → PASS,
+   22.83 mm → FAIL), which fit any monotone rule.
+
+   The honest position on screening after a full day of it: **residual sd is refuted, placement
+   magnitude is untested, and nothing cheap is yet known to predict which breasts seat.**
+
+   ### What the whole line now says
+
+   * A breast **can** be seated on this chest wall — s1067-right passes gates (a) and (b), the
+     first to do so, with min J 0.319 on a converged final state.
+   * **Most breasts cannot be**, because the registration puts them outside the admissible bound:
+     5 of 8.
+   * The dominant cause is **systematic, not per-breast**: ~19 mm of anterior offset in all eight.
+   * What remains after any rigid correction is a **2.61–4.03 mm sd shape mismatch** that no
+     placement reaches.
+
+   **The next work is on the registration's depth, not on the solver.** Four separate measurements
+   now say so, and none of them is reachable by a better conform.
