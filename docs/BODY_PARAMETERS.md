@@ -5303,3 +5303,33 @@ What has changed is that the parametrization no longer stops at the scaffold.
 
    Recorded here because the temptation after a first gate pass is to run more breasts and hope.
    The question worth answering is not *how many pass* but *whether anything cheap predicts which*.
+
+   ### A collision between my pre-registration and a prior rule, resolved before the data lands
+
+   The first of the six placements, **s0790-left**, returns **33.59 mm** of translation and
+   `registration_failure: true`. The rule at line 1630 of this document — written long before
+   today — says a breast needing more than **25 mm** *"is recorded as a REGISTRATION failure for
+   that subject, not a seating ... the breast is reported unseated rather than moved until it
+   fits."*
+
+   My pre-registration an hour ago named *"the largest \|t\| among those six"* as one of the two
+   breasts to drive. If the largest is a registration failure, those two rules disagree about
+   whether it should be driven at all.
+
+   **The prior rule binds.** It is committed, it is about admissibility rather than about this
+   experiment, and it says plainly that such a breast is not a seating candidate. So:
+
+   * s0790-left is recorded as a **REGISTRATION FAILURE** and is not driven.
+   * The out-of-sample test runs on the smallest and largest \|t\| among the **admissible** six —
+     those at or under 25 mm.
+   * If fewer than two of the six are admissible, the test is reported as **not runnable**, not
+     rescued by relaxing the bound.
+
+   **This is written now, with five of six placements still unmeasured**, precisely so that the
+   narrowing cannot be shaped by which breasts turn out to be admissible. Fixing it after seeing
+   the remaining \|t\| values would be indistinguishable from choosing the subjects that suit the
+   prediction.
+
+   Also recorded: s0790-left's placement moves its deepest penetration **47.7 → 42.9 mm**, a 10%
+   reduction, against 19% for s1159-left. A breast that needs a transform larger than the bound
+   also gets less out of the transform it is allowed.
