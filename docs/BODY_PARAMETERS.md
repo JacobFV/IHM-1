@@ -4847,3 +4847,44 @@ What has changed is that the parametrization no longer stops at the scaffold.
    translation moves from +7.00 to +17.00 mm in z, and the residual sd it achieves is unchanged at
    **3.444 mm** to three decimals. Thresholds were not touched at any point; only the instrument
    changed, and only after a failure.
+
+   ### The same measurement on BASE NODES ONLY: conclusion holds, numbers corrected, a withdrawal reversed
+
+   The decomposition above used **all** breast vertices. Only **31%** of a prepared breast's nodes
+   are base nodes (4,097 of 13,216 for s1159-left); the rest are the front surface, which sits far
+   from the chest wall and never has to seat. Including them can only inflate the spread, so the
+   measurement was redone on `prepared.npz`'s own `base` index, same objective, same known answer —
+   which passes exactly on the base too (a 10 mm displacement compensated to 0.00 mm, residual sd
+   unchanged).
+
+   | subject | side | n base | sd all-vertex | **sd base** | \|t\| | **residual** | removed |
+   |---|---|---:|---:|---:|---:|---:|---:|
+   | s0790 | left | 2,987 | 4.86 | 4.23 | 23.95 | 2.92 | 31.0% |
+   | s0790 | right | 2,903 | 4.67 | 3.66 | 21.30 | 2.59 | 29.2% |
+   | s1067 | left | 2,185 | 5.18 | 3.91 | 13.08 | 2.76 | 29.4% |
+   | **s1067** | **right** | 2,039 | 6.40 | 3.34 | 9.09 | **2.25** | 32.4% |
+   | s1159 | left | 2,449 | 4.10 | 3.43 | 14.90 | 2.54 | 25.9% |
+   | s1159 | right | 2,723 | 4.44 | 3.91 | 10.77 | 2.69 | 31.1% |
+   | s0970 | left | 2,361 | 6.49 | 6.56 | 24.87 | 3.68 | 43.9% |
+   | s0970 | right | 2,300 | 6.14 | 7.18 | 23.08 | 3.72 | 48.2% |
+
+   **The conclusion survives.** The best translation removes a median of **31.0%** of the base
+   spread — better than the 18.6% the all-vertex measure gave, and still far short of half. The
+   residual is **2.3–3.7 mm sd** that no placement can touch. *No placement seats these breasts*
+   stands, on the nodes that actually have to seat.
+
+   **The numbers above it were pessimistic and are superseded by these.** Base spread is 0.85x the
+   all-vertex spread, so including the front surface inflated it by about 18%.
+
+   **And it reverses the withdrawal I made an hour ago.** On the all-vertex measure s1067 looked
+   *worst* of the four and I withdrew the recommendation to fit on it. On the base alone,
+   **s1067-right is the best of the eight** at 2.25 mm residual, and it needs the smallest
+   translation of any (9.09 mm, comfortably inside the 25 mm bound where three others sit against
+   it). The withdrawal was made on a measure that included 69% of vertices with no bearing on
+   seating; it is itself withdrawn.
+
+   The ranking has now moved three times — buried fraction picked s1067, all-vertex spread picked
+   s1159-right, base spread picks s1067-right — which is worth stating plainly as a caution:
+   **these quantities are not interchangeable and the choice of subject was never robust to which
+   one was used.** What *is* robust across all three is s0970: worst or near-worst on every measure
+   (3.68 and 3.72 mm residual, 52–57% buried), and it is the subject to leave alone.
