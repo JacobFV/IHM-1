@@ -5078,3 +5078,42 @@ What has changed is that the parametrization no longer stops at the scaffold.
 
    The run continues past 0.4297, where it went `Newton 300 UNCONVERGED` at min J 0.409. Whether
    it completes, and whether gate (b) survives, is still open — and I did not predict it.
+
+   ### UPDATED, and the update is uncomfortable: placement bought converged REACH, not mesh health
+
+   The section above was written while the placed drive was still running and recorded its last
+   converged fraction as 0.3594. It went further: **0.6258, at Newton 288**. The absolute
+   comparison improves with it —
+
+   | | unplaced | placed | |
+   |---|---:|---:|---:|
+   | last converged fraction | 0.1094 | **0.6258** | 5.72x |
+   | **absolute median travel converged** | 0.675 mm | **1.640 mm** | **2.43x** |
+
+   — so the 1.40x recorded an hour ago is superseded by **2.43x**. Placement is a bigger lever
+   than that section said.
+
+   **And min J still crossed the bar, sooner in real terms than it did unplaced.**
+
+   | at min J = 0.090 | unplaced | placed |
+   |---|---:|---:|
+   | fraction | 0.8338 | 0.6258 |
+   | median travel | 5.14 mm | **1.64 mm** |
+   | median gap actually closed | 6.2304 mm | **2.5984 mm** |
+
+   **2.60 mm of closure costs the placed mesh what 6.23 mm cost the unplaced one.** Per millimetre
+   of work actually done, the placed run degrades its elements about 2.4x faster. That is the
+   opposite of what "less work to do" should buy, and it is stated as an open observation rather
+   than explained, because I have one run of each.
+
+   **A hypothesis, not a claim, and it is testable.** Placement changed the boundary condition as
+   well as the pose: nodes with muscle on their ray fell **4,206 → 4,033**, and held nodes fell
+   **3,123 → 2,181**. The same closure is then enforced through 30% fewer constraints, which would
+   concentrate distortion on the ones that remain. If that is right, the gain from placement is
+   partly cancelled by a sparser contact set, and the fix is in how the held set is chosen rather
+   than in where the breast starts. Testing it needs the held-node count varied independently of
+   the pose, which nothing in the pipeline currently does.
+
+   **What is settled either way:** the pre-registered prediction is confirmed — the last converged
+   fraction rose, and by 5.72x — and placement is worth 2.43x in absolute converged travel. What is
+   not settled is whether it helps the gate, and on this evidence it does not.
