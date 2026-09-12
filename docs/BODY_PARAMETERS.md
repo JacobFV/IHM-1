@@ -5447,3 +5447,36 @@ What has changed is that the parametrization no longer stops at the scaffold.
 
    **The next work is on the registration's depth, not on the solver.** Four separate measurements
    now say so, and none of them is reachable by a better conform.
+
+   ## s1159-RIGHT: the last admissible breast, with a QUANTITATIVE prediction
+
+   Three breasts are admissible and two have been driven. **s1159-right (17.83 mm) is the last**,
+   and it sits between the two known outcomes, which allows a sharper prediction than a direction.
+
+   | breast | \|t\| | min J | gate (b) | flipped |
+   |---|---:|---:|---|---:|
+   | s1067-right | 8.89 | 0.319 | PASS | 19 |
+   | **s1159-right** | **17.83** | **?** | **?** | **?** |
+   | s1159-left | 22.83 | 0.199 | FAIL | 148 |
+
+   **PREDICTED, by linear interpolation on the two known points:**
+
+   * **min J ≈ 0.242**, so gate **(b) PASSES**, narrowly — by 0.042 above the 0.2 bar.
+   * **flipped base triangles ≈ 102**, so gate **(d) FAILS**, between 19 and 148.
+   * gate (a) volume PASSES — it has on all three drives so far and is a solver property.
+   * gate (c) FAILS: no FEBio run exists for this breast, so `second_solver: absent`.
+
+   **Why interpolation is worth committing rather than a hand-wave.** With two points any monotone
+   rule fits, and the pre-registered screening test came back NOT RUNNABLE, so the placement-
+   magnitude idea has no support beyond those two. A *quantitative* prediction is falsifiable in a
+   way "it will land between them" is not: if min J comes in at 0.30 or at 0.15, the linear reading
+   is wrong even though the ordering holds.
+
+   **This is a weak test of monotonicity and I should say so.** Three points in which the middle
+   one lands anywhere between the outer two are monotone by construction. What the run can refute
+   is the *interpolation*, not the *ordering* — and what it adds independently is a third gate
+   result and the completion of s1159 on both sides, which the check-in asks for.
+
+   **What would make it informative either way:** a min J far from 0.242 says the relationship
+   between placement magnitude and mesh quality is not linear even across three points, which
+   would matter for any future screen built on it.
