@@ -4779,3 +4779,71 @@ What has changed is that the parametrization no longer stops at the scaffold.
    above was possible only for that reason. `json.dumps` now takes a `default=` coercion that
    degrades an array to its shape rather than raising, and the numbers quoted here come from
    `logs/dr_s1159_left_postrepair.log`.
+
+   ## NO PLACEMENT SEATS THESE BREASTS: it is a shape mismatch, not a registration offset
+
+   Measured 2026-09-12 by `scripts/measure_breast_registration_decomposition.py`, on all four
+   subjects and both sides. This answers the fork the first judged breast left open — whether the
+   41.82 mm of chest-wall penetration is a **placement** error a translation fixes, or a **shape**
+   disagreement no placement can touch.
+
+   The measure is the standard deviation of the signed anterior distance from breast vertices to
+   their nearest chest-wall point. A breast that a translation can seat has that spread collapse
+   under the best translation; one that cannot is a different shape from the wall it is being put
+   on. The bound is the **25 mm** this document already fixes as the line between a seating and a
+   registration failure.
+
+   | subject | side | sd before | best \|t\| | residual sd | removed | behind before |
+   |---|---|---:|---:|---:|---:|---:|
+   | s0790 | left | 4.86 | 18.53 | 3.70 | 24.0% | 51.0% |
+   | s0790 | right | 4.67 | 13.88 | 3.85 | 17.5% | 48.4% |
+   | s1067 | left | 5.18 | 10.89 | 4.55 | 12.3% | 34.2% |
+   | s1067 | right | 6.40 | 18.45 | 5.15 | 19.6% | 29.9% |
+   | s1159 | left | 4.10 | 14.97 | 3.39 | 17.4% | 45.8% |
+   | **s1159** | **right** | 4.44 | 21.19 | **3.07** | 30.8% | 47.5% |
+   | s0970 | left | 6.49 | 23.45 | 4.99 | 23.0% | 57.2% |
+   | s0970 | right | 6.14 | 24.25 | 5.11 | 16.8% | 51.9% |
+
+   **The best translation within 25 mm removes a median of 18.6% of the spread**, leaving
+   **3.1–5.1 mm of standard deviation** that no placement can reach, because a translation moves
+   every vertex by the same amount. **It is a shape mismatch.** The conform step is not seating
+   these breasts, it is reshaping them — which is exactly what 67.96 mm of maximum deformation and
+   494 flipped base triangles were.
+
+   That closes the question the judged breast opened and it closes it against the cheaper answer.
+   Correcting the registration will not make this easy. A body whose chest wall these breast bases
+   fit, or breast bases rebuilt against this wall, is the honest next move.
+
+   ### And it overturns the subject I recommended
+
+   `docs/SEGMENT_CONTACT_SURFACES.md` measures s1067 as the least-buried breast (32.7% of vertices
+   behind the wall against s1159's 47.5%), and I concluded from that it was the sensible subject to
+   fit the seating on. **On this measure it is the worst of the four**: s1067 has the *largest*
+   residual spread, 4.55 and 5.15 mm, while s1159-right has the smallest at 3.07 mm.
+
+   Buried fraction and seatability are different quantities. How much of a breast sits behind the
+   wall says how far it must move; how uniform that offset is says whether moving it helps. A
+   breast can be barely buried and still un-seatable, and s1067 is. The recommendation is
+   withdrawn.
+
+   ### Three instruments failed their known answers before one passed
+
+   Kept because each failure was a different real error, and none would have announced itself in
+   the result.
+
+   1. **Per-vertex outward normals.** Displacing the breast 12 mm *deeper* made measured
+      penetration go *down*, 1.88 → 1.53 mm. A breast's base normals point posteriorly and its
+      front-surface normals anteriorly, so projecting onto "the vertex's own normal" measures
+      penetration with opposite signs on the two halves and, over a whole breast, measures nothing.
+   2. **Minimising penetration over a bounded translation.** Reproduced a degeneracy *this
+      document had already recorded* — penetration alone is not a seating objective, because
+      carrying the breast off the chest scores perfectly. The doc said so; the known answer said so
+      again; I built it anyway.
+   3. **Mean and spread of nearest-point distance.** A 12 mm move shifted the mean by 1.61 mm, not
+      12. Nearest-point distance is **not additive under translation** — the nearest wall point
+      changes as the breast moves — so mean and spread do not decompose into rigid and residual.
+
+   The instrument that passed recovers a known 10 mm posterior displacement exactly: the fitted
+   translation moves from +7.00 to +17.00 mm in z, and the residual sd it achieves is unchanged at
+   **3.444 mm** to three decimals. Thresholds were not touched at any point; only the instrument
+   changed, and only after a failure.

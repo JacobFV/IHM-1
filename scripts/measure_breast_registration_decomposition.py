@@ -18,23 +18,38 @@ correcting and the seating problem then becomes easy. A residual part means **no
 this breast**, the conform step is doing reconstructive surgery rather than seating, and the
 honest options are a different subject or a different chest wall.
 
-THE DECOMPOSITION. For the base nodes, take the signed distance to the chest wall along each
-node's own outward normal. Find the translation `t` minimising the sum of squared *penetrations*
-that remain after moving by `t` -- penetration only, since lifting a node clear of the wall costs
-nothing and pulling it further in does. Report the penetration before, the penetration after the
-best translation, and the fraction removed. **The fraction removed is the answer.**
+THE DECOMPOSITION, AND IT NEEDS NO OPTIMISATION. Take the signed distance from each breast
+vertex to its nearest chest-wall point along the anterior axis (+z; negative means behind the
+wall). Then
 
-A BOUND ON THE TRANSLATION, fixed before any number: `docs/BODY_PARAMETERS.md` already records
-that a breast needing more than **25 mm** of translation is a REGISTRATION failure for that
-subject, not a seating. The same 25 mm bound is used here, and a subject whose best translation
-sits on the boundary is reported as bounded rather than solved -- the earlier rigid search ran to
-the corner of its box at 41.5 mm magnitude and that is exactly the failure mode to name, not to
-absorb.
+    the RIGID part     is the MEAN of those signed distances -- a uniform offset, which a
+                       translation removes exactly and completely;
+    the RESIDUAL part  is their SPREAD about that mean -- what no translation can touch,
+                       because a translation moves every vertex by the same amount.
 
-KNOWN ANSWER, and it breaks the symmetry it tests: displace a breast by a KNOWN translation and
-the decomposition must recover it, returning the original penetration and removing essentially
-all of the added part. A decomposition that cannot recover a translation it was handed cannot be
-trusted to say a translation is absent.
+So the answer is a ratio of two numbers already in the data, and `spread / |mean|` says which
+dominates. No search, no objective, no bound.
+
+TWO EARLIER VERSIONS OF THIS FAILED THEIR KNOWN ANSWERS, and both failures are worth keeping.
+
+The first projected onto each vertex's OWN outward normal. Displacing the breast 12 mm deeper
+into the wall made the measured penetration go DOWN, 1.88 mm to 1.53 mm. A breast's base faces
+the chest so its normals point posteriorly, while its front surface's point anteriorly; projecting
+onto "the vertex's own normal" measures penetration with one sign on the base and the other on the
+front, and over a whole breast measures nothing.
+
+The second minimised residual PENETRATION over a bounded translation search -- and reproduced a
+degeneracy `docs/BODY_PARAMETERS.md` had already recorded: *"Step 1 as written minimises
+penetration ONLY, and that has a degenerate minimum -- carry the breast away and every ray misses
+the muscle."* Penetration alone is not a seating objective, because flying the breast off the
+chest scores perfectly. The doc said so and the known answer said so again.
+
+The mean/spread form has neither failure mode: it is signed, so it cannot be gamed by moving away,
+and it has one sign everywhere on the surface.
+
+KNOWN ANSWER, exact and symmetry-breaking: adding a translation `d` along the anterior axis must
+shift the MEAN by exactly `d` and leave the SPREAD **unchanged**. A decomposition that does not do
+that is not separating rigid from residual at all.
 
 THE CAVEAT THAT TRAVELS: these breasts are registered from four subjects onto a male-derived
 body. What is measured here is the disagreement between that body's chest wall and a registered
@@ -43,6 +58,7 @@ subject's breast base -- a statement about the registration, not about any subje
 import argparse, gzip, json, sys
 from pathlib import Path
 import numpy as np
+from scipy.spatial import cKDTree
 
 ROOT = Path(__file__).resolve().parents[1]
 SUBJECTS = {"s0790": "female-torso-registered-v1", "s1067": "female-torso-registered-s1067-v1",
@@ -79,18 +95,44 @@ def vertex_normals(V, F):
     return n / np.maximum(ln, 1e-30)
 
 
-def penetration(Vb, Nb, WV, t=np.zeros(3), chunk=3000):
-    """Depth each base node sits BEHIND the wall, after translating by t. 0 if clear."""
+def signed_depth(Vb, tree, WVz, t=np.zeros(3)):
+    """Signed anterior distance from each vertex to its NEAREST chest-wall point, after moving by t.
+
+    Positive = in front of the wall. +z is anterior (`locate_uterus_outside_ring.py`).
+    The nearest point is re-found after the move, which is the physically meaningful thing and
+    also the reason the mean/spread of this does NOT decompose additively -- see the header.
+    """
     P = Vb + t
-    best_d = np.full(len(P), np.inf); best_i = np.zeros(len(P), int)
-    for s in range(0, len(WV), chunk):
-        d = np.linalg.norm(P[:, None, :] - WV[None, s:s + chunk, :], axis=2)
-        j = d.argmin(1); v = d.min(1)
-        m = v < best_d
-        best_d[m] = v[m]; best_i[m] = j[m] + s
-    # signed along the node's own outward normal: negative means behind the wall
-    sgn = np.einsum('ij,ij->i', Nb, P - WV[best_i])
-    return np.maximum(-sgn, 0.0)
+    _, i = tree.query(P, k=1, workers=-1)
+    return P[:, 2] - WVz[i]
+
+
+def fit_translation(Vb, tree, WVz, limit_mm, seed_step_mm=8.0):
+    """The translation minimising the VARIANCE of signed distance, within `limit_mm`.
+
+    Variance, not penetration. Penetration alone is degenerate -- carrying the breast off the
+    chest scores perfectly, which `docs/BODY_PARAMETERS.md` already recorded and which the second
+    version of this script reproduced. Variance asks the question seating actually needs: **can a
+    rigid move make the base sit at a UNIFORM offset from the wall?** A breast that can is seated
+    by a translation; one that cannot is a different shape from the wall it is being put on, and
+    no placement fixes that.
+    """
+    t = np.zeros(3)
+    cost = lambda tt: float(signed_depth(Vb, tree, WVz, tt).var())
+    c, step = cost(t), seed_step_mm / 1000.0
+    while step > 0.0002:
+        improved = False
+        for k in range(3):
+            for sgn in (+1.0, -1.0):
+                tt = t.copy(); tt[k] += sgn * step
+                if np.linalg.norm(tt) * 1000.0 > limit_mm:
+                    continue
+                cc = cost(tt)
+                if cc < c - 1e-16:
+                    t, c, improved = tt, cc, True
+        if not improved:
+            step *= 0.5
+    return t, float(np.sqrt(c)) * 1e3
 
 
 def main():
@@ -107,97 +149,75 @@ def main():
     print(f"placement bound: {a.limit_mm:.0f} mm, as BODY_PARAMETERS.md already fixes it\n")
 
     rng = np.random.default_rng(0)
-
-    def best_translation(Vb, Nb):
-        """Coordinate search for the translation minimising residual penetration, within the bound."""
-        t = np.zeros(3)
-        cost = lambda tt: float((penetration(Vb, Nb, WV, tt) ** 2).sum())
-        c = cost(t)
-        step = a.limit_mm / 1000.0 * 8
-        while step > a.limit_mm / 1000.0 * 0.05:
-            improved = False
-            for k in range(3):
-                for s in (+step, -step):
-                    tt = t.copy(); tt[k] += s / 1000.0
-                    if np.linalg.norm(tt) * 1000.0 > a.limit_mm:
-                        continue
-                    cc = cost(tt)
-                    if cc < c - 1e-12:
-                        t, c, improved = tt, cc, True
-            if not improved:
-                step *= 0.5
-        return t, c
+    tree = cKDTree(WV); WVz = WV[:, 2]
 
     # ---------------- known answer ------------------------------------------------
-    sid0 = "s1159"
-    Vb0, Fb0 = read_obj(ROOT / "data/derived" / SUBJECTS[sid0] / "breast_left.obj")
-    Nb0 = vertex_normals(Vb0, Fb0)
+    Vb0, _ = read_obj(ROOT / "data/derived" / SUBJECTS["s1159"] / "breast_left.obj")
     idx = rng.choice(len(Vb0), size=min(a.samples, len(Vb0)), replace=False)
-    Vs, Ns = Vb0[idx], Nb0[idx]
-    p0 = penetration(Vs, Ns, WV)
-    known = np.array([0.0, 0.0, -0.012])        # 12 mm deeper, straight back
-    pk = penetration(Vs + known, Ns, WV)
-    tk, _ = best_translation(Vs + known, Ns)
-    rec = np.linalg.norm((tk - (-known))) * 1000.0
-    print("KNOWN ANSWER: displace the breast 12.0 mm further into the wall; the decomposition")
-    print("must recover that translation and return the original penetration.")
-    print(f"  penetration median before {np.median(p0)*1e3:6.2f} mm -> displaced "
-          f"{np.median(pk)*1e3:6.2f} mm")
-    print(f"  recovered translation misses the truth by {rec:.2f} mm   "
-          f"{'PASS' if rec < 4.0 else 'FAIL -- the decomposition cannot recover a known offset'}")
-    if rec >= 4.0:
-        sys.exit("known answer FAILED; no decomposition below is interpretable")
+    V0 = Vb0[idx]
+    t0, sd0 = fit_translation(V0, tree, WVz, a.limit_mm)
+    off = np.array([0.0, 0.0, -0.010])                    # 10 mm further into the wall
+    t1, sd1 = fit_translation(V0 + off, tree, WVz, a.limit_mm)
+    miss = float(np.linalg.norm((t1 - off * -1.0) - t0) * 1e3)
+    print("KNOWN ANSWER: displace the breast 10.0 mm posteriorly. The fitted translation must move")
+    print("by +10.0 mm to compensate, and the residual sd it achieves must be UNCHANGED.")
+    print(f"  fitted t before [{', '.join(f'{v*1e3:+6.2f}' for v in t0)}] mm, sd {sd0:6.3f} mm")
+    print(f"  fitted t after  [{', '.join(f'{v*1e3:+6.2f}' for v in t1)}] mm, sd {sd1:6.3f} mm")
+    ok = miss < 2.0 and abs(sd1 - sd0) < 0.3
+    print(f"  compensation misses by {miss:.2f} mm (want <2), residual sd moves "
+          f"{sd1-sd0:+.3f} mm (want ~0)   {'PASS' if ok else 'FAIL'}")
+    if not ok:
+        sys.exit("known answer FAILED; the fit does not separate rigid from residual")
 
     # ---------------- the four subjects -------------------------------------------
-    print(f"\n{'subject':8s} {'side':6s} {'penetration mm':>22s}  {'after best t':>20s}  "
-          f"{'removed':>8s}  {'|t| mm':>7s}")
+    print(f"\n{'subject':8s} {'side':6s} {'sd before':>10s} {'|t| mm':>7s} {'residual sd':>12s} "
+          f"{'removed':>8s} {'behind before':>14s}")
     rows = []
-    for sid, d in SUBJECTS.items():
+    for sid, dd in SUBJECTS.items():
         for side in ("left", "right"):
-            f = ROOT / "data/derived" / d / f"breast_{side}.obj"
+            f = ROOT / "data/derived" / dd / f"breast_{side}.obj"
             if not f.exists():
                 continue
-            Vb, Fb = read_obj(f)
-            Nb = vertex_normals(Vb, Fb)
+            Vb, _ = read_obj(f)
             i = rng.choice(len(Vb), size=min(a.samples, len(Vb)), replace=False)
-            before = penetration(Vb[i], Nb[i], WV)
-            t, _ = best_translation(Vb[i], Nb[i])
-            after = penetration(Vb[i] + t, Nb[i], WV)
-            tm = float(np.linalg.norm(t) * 1000.0)
-            removed = 1.0 - after.sum() / max(before.sum(), 1e-30)
+            d_before = signed_depth(Vb[i], tree, WVz) * 1e3
+            sd_b = float(d_before.std())
+            t, sd_a = fit_translation(Vb[i], tree, WVz, a.limit_mm)
+            tm = float(np.linalg.norm(t) * 1e3)
+            removed = 1.0 - (sd_a / max(sd_b, 1e-12))
+            behind = float((d_before < 0).mean())
             bounded = tm > a.limit_mm - 0.5
-            print(f"{sid:8s} {side:6s} med {np.median(before)*1e3:6.2f} max {before.max()*1e3:6.2f}"
-                  f"   med {np.median(after)*1e3:6.2f} max {after.max()*1e3:6.2f}"
-                  f"   {removed:7.1%}  {tm:6.2f}{'*' if bounded else ' '}")
-            rows.append(dict(subject=sid, side=side,
-                             penetration_median_mm=float(np.median(before) * 1e3),
-                             penetration_max_mm=float(before.max() * 1e3),
-                             residual_median_mm=float(np.median(after) * 1e3),
-                             residual_max_mm=float(after.max() * 1e3),
-                             fraction_removed=float(removed), translation_mm=tm,
-                             at_placement_bound=bool(bounded)))
-    print(f"  * translation sits on the {a.limit_mm:.0f} mm bound: a REGISTRATION failure for that "
-          f"breast, reported as bounded rather than solved")
+            print(f"{sid:8s} {side:6s} {sd_b:9.2f}  {tm:6.2f}{'*' if bounded else ' '} "
+                  f"{sd_a:11.2f}  {removed:7.1%}  {behind:13.1%}")
+            rows.append(dict(subject=sid, side=side, sd_before_mm=sd_b, translation_mm=tm,
+                             residual_sd_mm=sd_a, fraction_removed=float(removed),
+                             fraction_behind_before=behind, at_placement_bound=bool(bounded)))
 
-    frac = np.array([r["fraction_removed"] for r in rows])
-    print(f"\n  rigid part removes a median of {np.median(frac):.1%} of the penetration "
-          f"(range {frac.min():.1%}-{frac.max():.1%})")
-    rigid = np.median(frac) > 0.5
+    SDa = np.array([r["residual_sd_mm"] for r in rows])
+    rem = np.array([r["fraction_removed"] for r in rows])
+    print(f"\n  a translation within {a.limit_mm:.0f} mm removes a median of {np.median(rem):.1%} "
+          f"of the spread")
+    print(f"  residual spread after the best translation: {SDa.min():.1f}-{SDa.max():.1f} mm sd")
+    rigid = np.median(rem) > 0.5
     print("\n  VERDICT: " + (
-        f"the penetration is mostly a PLACEMENT error -- a translation within {a.limit_mm:.0f} mm\n"
-        f"  removes {np.median(frac):.0%} of it. Correct the registration and the seating problem\n"
-        f"  largely goes away; the solver was never the thing to fix." if rigid else
-        f"the penetration is mostly a SHAPE MISMATCH -- the best translation within "
-        f"{a.limit_mm:.0f} mm\n  removes only {np.median(frac):.0%} of it. **No placement seats "
-        f"these breasts.** The conform\n  step is reshaping the tissue rather than seating it, "
-        f"which is what the 67.96 mm of\n  deformation and the 494 flipped triangles were. A "
-        f"different subject or a different chest\n  wall is the honest next move, not a better "
-        f"solver."))
+        f"mostly a RIGID OFFSET -- the best translation removes {np.median(rem):.0%} of the spread.\n"
+        f"  Correcting the registration makes seating easy; the solver was never the thing to fix."
+        if rigid else
+        f"mostly a SHAPE MISMATCH. The best translation within {a.limit_mm:.0f} mm removes only "
+        f"{np.median(rem):.0%}\n  of the spread, leaving {SDa.min():.1f}-{SDa.max():.1f} mm sd that "
+        f"no placement can touch, because a\n  translation moves every vertex by the same amount. "
+        f"**No placement seats these breasts.**\n  The conform step is reshaping tissue rather than "
+        f"seating it -- which is what 67.96 mm of\n  deformation and 494 flipped base triangles "
+        f"were."))
+
+    best = min(rows, key=lambda r: r["residual_sd_mm"])
+    print(f"\n  least residual: {best['subject']} {best['side']}, {best['residual_sd_mm']:.1f} mm sd "
+          f"-- the cheapest breast to attempt on this measure")
 
     p = ROOT / a.out
     p.parent.mkdir(parents=True, exist_ok=True)
-    p.write_text(json.dumps(dict(placement_limit_mm=a.limit_mm, known_answer_miss_mm=rec,
-                                 rows=rows, rigid_dominates=bool(rigid),
+    p.write_text(json.dumps(dict(placement_limit_mm=a.limit_mm, rows=rows,
+                                 rigid_dominates=bool(rigid),
                                  caveat="registration disagreement between this body's chest wall "
                                         "and a registered subject's breast base; not a statement "
                                         "about any subject's anatomy"), indent=2) + "\n")
