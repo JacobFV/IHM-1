@@ -1,0 +1,82 @@
+[
+  {
+    "subject": "s0790",
+    "side": "left",
+    "n_base": 2987,
+    "sd_all_mm": 4.86,
+    "sd_base_mm": 4.230670489594769,
+    "translation_mm": 23.95438373241942,
+    "residual_sd_mm": 2.9197178681741476,
+    "fraction_removed": 0.3098687606715951
+  },
+  {
+    "subject": "s0790",
+    "side": "right",
+    "n_base": 2903,
+    "sd_all_mm": 4.67,
+    "sd_base_mm": 3.659257971022145,
+    "translation_mm": 21.297006831947066,
+    "residual_sd_mm": 2.589175603628186,
+    "fraction_removed": 0.29243151914076493
+  },
+  {
+    "subject": "s1067",
+    "side": "left",
+    "n_base": 2185,
+    "sd_all_mm": 5.18,
+    "sd_base_mm": 3.9055625046634557,
+    "translation_mm": 13.07669683062202,
+    "residual_sd_mm": 2.7567568352888556,
+    "fraction_removed": 0.2941460207083776
+  },
+  {
+    "subject": "s1067",
+    "side": "right",
+    "n_base": 2039,
+    "sd_all_mm": 6.4,
+    "sd_base_mm": 3.3359218966310604,
+    "translation_mm": 9.089829481348922,
+    "residual_sd_mm": 2.253743003755264,
+    "fraction_removed": 0.32440174752552997
+  },
+  {
+    "subject": "s1159",
+    "side": "left",
+    "n_base": 2449,
+    "sd_all_mm": 4.1,
+    "sd_base_mm": 3.4338016256716317,
+    "translation_mm": 14.901761640826228,
+    "residual_sd_mm": 2.542920807221247,
+    "fraction_removed": 0.25944446289209666
+  },
+  {
+    "subject": "s1159",
+    "side": "right",
+    "n_base": 2723,
+    "sd_all_mm": 4.44,
+    "sd_base_mm": 3.9080189327875052,
+    "translation_mm": 10.770329614269007,
+    "residual_sd_mm": 2.693566007855776,
+    "fraction_removed": 0.3107592224650473
+  },
+  {
+    "subject": "s0970",
+    "side": "left",
+    "n_base": 2361,
+    "sd_all_mm": 6.49,
+    "sd_base_mm": 6.5627825037476715,
+    "translation_mm": 24.8709167502929,
+    "residual_sd_mm": 3.6791871143970116,
+    "fraction_removed": 0.4393860969343393
+  },
+  {
+    "subject": "s0970",
+    "side": "right",
+    "n_base": 2300,
+    "sd_all_mm": 6.14,
+    "sd_base_mm": 7.1795731327826875,
+    "translation_mm": 23.082731640774238,
+    "residual_sd_mm": 3.722308239016327,
+    "fraction_removed": 0.48154184515234266
+  }
+]

@@ -1,0 +1,87 @@
+{
+  "placement_limit_mm": 25.0,
+  "rows": [
+    {
+      "subject": "s0790",
+      "side": "left",
+      "sd_before_mm": 4.862795437048281,
+      "translation_mm": 18.528693963687783,
+      "residual_sd_mm": 3.6976701115506434,
+      "fraction_removed": 0.23959990515349938,
+      "fraction_behind_before": 0.51,
+      "at_placement_bound": false
+    },
+    {
+      "subject": "s0790",
+      "side": "right",
+      "sd_before_mm": 4.665890609575074,
+      "translation_mm": 13.876689086377919,
+      "residual_sd_mm": 3.849788035232644,
+      "fraction_removed": 0.1749082099498156,
+      "fraction_behind_before": 0.4841666666666667,
+      "at_placement_bound": false
+    },
+    {
+      "subject": "s1067",
+      "side": "left",
+      "sd_before_mm": 5.1841053757734015,
+      "translation_mm": 10.89151045539598,
+      "residual_sd_mm": 4.547360916818602,
+      "fraction_removed": 0.12282629553219793,
+      "fraction_behind_before": 0.3416666666666667,
+      "at_placement_bound": false
+    },
+    {
+      "subject": "s1067",
+      "side": "right",
+      "sd_before_mm": 6.404679859368837,
+      "translation_mm": 18.44586674569672,
+      "residual_sd_mm": 5.1482731902015795,
+      "fraction_removed": 0.19617009698453114,
+      "fraction_behind_before": 0.2991666666666667,
+      "at_placement_bound": false
+    },
+    {
+      "subject": "s1159",
+      "side": "left",
+      "sd_before_mm": 4.100529174931588,
+      "translation_mm": 14.966629547095767,
+      "residual_sd_mm": 3.3862912736497193,
+      "fraction_removed": 0.1741818850231166,
+      "fraction_behind_before": 0.4583333333333333,
+      "at_placement_bound": false
+    },
+    {
+      "subject": "s1159",
+      "side": "right",
+      "sd_before_mm": 4.438709909372073,
+      "translation_mm": 21.18962010041709,
+      "residual_sd_mm": 3.072167700667184,
+      "fraction_removed": 0.30786923151240764,
+      "fraction_behind_before": 0.475,
+      "at_placement_bound": false
+    },
+    {
+      "subject": "s0970",
+      "side": "left",
+      "sd_before_mm": 6.486006865105014,
+      "translation_mm": 23.45341126574128,
+      "residual_sd_mm": 4.992737634735003,
+      "fraction_removed": 0.23022936321635135,
+      "fraction_behind_before": 0.5725,
+      "at_placement_bound": false
+    },
+    {
+      "subject": "s0970",
+      "side": "right",
+      "sd_before_mm": 6.137780833770817,
+      "translation_mm": 24.25,
+      "residual_sd_mm": 5.109157201585197,
+      "fraction_removed": 0.16758885011436175,
+      "fraction_behind_before": 0.5191666666666667,
+      "at_placement_bound": false
+    }
+  ],
+  "rigid_dominates": false,
+  "caveat": "registration disagreement between this body's chest wall and a registered subject's breast base; not a statement about any subject's anatomy"
+}

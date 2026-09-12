@@ -1,0 +1,90 @@
+[
+  {
+    "subject": "s0790",
+    "side": "left",
+    "rms_before_mm": 4.4323650118559295,
+    "translation_mm": 18.496621313093915,
+    "rms_after_mm": 2.9409994145484633,
+    "residual_mean_mm": 0.007031046612880655,
+    "residual_sd_mm": 2.9409910099757073,
+    "deepest_behind_after_mm": 9.787100000000008,
+    "at_bound": false
+  },
+  {
+    "subject": "s0790",
+    "side": "right",
+    "rms_before_mm": 3.8316071932877693,
+    "translation_mm": 13.124404748406688,
+    "rms_after_mm": 3.4178767362251237,
+    "residual_mean_mm": -0.07728582139155998,
+    "residual_sd_mm": 3.41700282204167,
+    "deepest_behind_after_mm": 16.511000000000006,
+    "at_bound": false
+  },
+  {
+    "subject": "s1067",
+    "side": "left",
+    "rms_before_mm": 3.948893778307331,
+    "translation_mm": 8.620469824783335,
+    "rms_after_mm": 2.950784830187712,
+    "residual_mean_mm": -0.5180715880343961,
+    "residual_sd_mm": 2.904949731705773,
+    "deepest_behind_after_mm": 10.300299999999984,
+    "at_bound": false
+  },
+  {
+    "subject": "s1067",
+    "side": "right",
+    "rms_before_mm": 3.4867194616887836,
+    "translation_mm": 14.357054015361228,
+    "rms_after_mm": 2.908525171325751,
+    "residual_mean_mm": 0.02127486266268859,
+    "residual_sd_mm": 2.9084473611283,
+    "deepest_behind_after_mm": 9.508800000000011,
+    "at_bound": false
+  },
+  {
+    "subject": "s1159",
+    "side": "left",
+    "rms_before_mm": 3.5443183869575092,
+    "translation_mm": 10.63014581273465,
+    "rms_after_mm": 2.6102383990885727,
+    "residual_mean_mm": -0.10979647634150239,
+    "residual_sd_mm": 2.6079281496735036,
+    "deepest_behind_after_mm": 10.688170000000007,
+    "at_bound": false
+  },
+  {
+    "subject": "s1159",
+    "side": "right",
+    "rms_before_mm": 4.148033596599736,
+    "translation_mm": 11.146748404803976,
+    "rms_after_mm": 2.6943438420564956,
+    "residual_mean_mm": -0.054229646941565686,
+    "residual_sd_mm": 2.6937980408004516,
+    "deepest_behind_after_mm": 11.342099999999997,
+    "at_bound": false
+  },
+  {
+    "subject": "s0970",
+    "side": "left",
+    "rms_before_mm": 7.496419463672549,
+    "translation_mm": 24.831935083678033,
+    "rms_after_mm": 3.6857782910245995,
+    "residual_mean_mm": -0.24311271099954637,
+    "residual_sd_mm": 3.677751734462057,
+    "deepest_behind_after_mm": 12.458499999999997,
+    "at_bound": true
+  },
+  {
+    "subject": "s0970",
+    "side": "right",
+    "rms_before_mm": 7.3508657362291006,
+    "translation_mm": 20.273134932713294,
+    "rms_after_mm": 4.031325789219086,
+    "residual_mean_mm": -0.11905223149440632,
+    "residual_sd_mm": 4.029567493540602,
+    "deepest_behind_after_mm": 11.516799999999993,
+    "at_bound": false
+  }
+]
