@@ -406,6 +406,18 @@ def stage_prepare(sid, side, d):
     on_line = has_bed(X[posterior]) & facing
     base = posterior[on_line]; dirs = dirs[on_line]
     gap0 = np.einsum('ij,ij->i', n[on_line], X[base] - c[on_line])
+    # PREPARE OVERWRITES PLACE'S OUTPUT, AND THAT SILENTLY COST A SEVEN-HOUR DRIVE.
+    # `stage_place` rewrites this same file in the PLACED pose, adding `X_registered`. Re-running
+    # `prepare` afterwards writes the REGISTERED pose back over it with no warning, and every
+    # prepared.npz in both lines was found in that state on 2026-09-12 -- place.json written at
+    # 17:23, prepared.npz rewritten at 21:04. The 7-hour drive that produced the first judged
+    # breast therefore ran from the registered pose, doing 2.5-4x more work than necessary: the
+    # deepest base node is 41.82 mm behind the wall registered, and 9.5-16.5 mm after the best
+    # bounded placement.
+    if (d / "prepared.npz").exists() and "X_registered" in np.load(d / "prepared.npz"):
+        print(f"  WARNING: {d/'prepared.npz'} is in the PLACED pose and prepare is about to write "
+              f"the REGISTERED pose over it. Re-run `place` afterwards, or the conform starts "
+              f"from the wrong state.", flush=True)
     np.savez(d / "prepared.npz", X=X, T=T, base=base, posterior=posterior, anterior=anterior, boundary=B,
              gap0=gap0, bedV=bV, bedF=bF, rim=rim, ray_directions=dirs)
     info = dict(nodes=len(X), tets=len(T), mesh_ml=tet_volumes(X, T).sum() * 1e6, surface_ml=vol_o * 1e6,

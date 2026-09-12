@@ -4888,3 +4888,59 @@ What has changed is that the parametrization no longer stops at the scaffold.
    **these quantities are not interchangeable and the choice of subject was never robust to which
    one was used.** What *is* robust across all three is s0970: worst or near-worst on every measure
    (3.68 and 3.72 mm residual, 52–57% buried), and it is the subject to leave alone.
+
+   ### The seven-hour drive ran from the REGISTERED pose. `prepare` had silently overwritten `place`.
+
+   Found 2026-09-12 while closing a gap in the measurement above. It changes how the first judged
+   breast should be read, and it is a pipeline fault rather than a modelling one.
+
+   **`stage_place` rewrites `prepared.npz` in the placed pose, adding `X_registered`.
+   `stage_prepare` writes the registered pose back over the same file, with no `X_registered` and
+   no warning.** Every `prepared.npz` in both the sliding and the closest-point lines — eight
+   breasts — was found carrying **no `X_registered`**, so none of them is placed. For s1159-left
+   the timestamps show the order directly: `place.json` at **09-10 17:23**, `prepared.npz`
+   rewritten at **09-10 21:04**, nearly four hours later.
+
+   So the drive that reached fraction 1.0000 and produced the first `judge.json` **ran from the
+   registered pose**, despite this script's own header saying it conforms *"from the placed
+   state"*.
+
+   **How much that cost.** Measured over base nodes with the RMS objective (below): the deepest
+   base node sits **41.82 mm** behind the wall in the registered pose, and **9.5–16.5 mm** after
+   the best bounded placement. The drive was pushing out **2.5–4x more depth than necessary**, and
+   it failed gate (b) at min J 0.045 with 494 flipped base triangles and 67.96 mm of maximum
+   deformation while doing it.
+
+   A guard now warns when `prepare` is about to overwrite a placed state. It is a warning rather
+   than a refusal because re-preparing is legitimate — what is not legitimate is doing it silently.
+
+   ### Closing a gap in my own measure: variance ignores the mean
+
+   The base decomposition minimised the **variance** of signed distance, which is invariant to a
+   uniform offset — a base sitting uniformly 40 mm inside the wall would have scored as perfectly
+   seatable. The objective that asks the real question is the mean **squared** signed distance,
+   since `RMS² = mean² + variance`, penalising buried and mis-shaped together without the
+   degeneracy that minimising penetration has. Known answer passes exactly (10 mm displacement
+   compensated to 0.00 mm, residual RMS unchanged).
+
+   | subject | side | RMS before | \|t\| | RMS after | = mean | + sd | deepest still in |
+   |---|---|---:|---:|---:|---:|---:|---:|
+   | s0790 | left | 4.43 | 18.50 | 2.94 | 0.01 | 2.94 | 9.79 |
+   | s0790 | right | 3.83 | 13.12 | 3.42 | −0.08 | 3.42 | 16.51 |
+   | s1067 | left | 3.95 | 8.62 | 2.95 | −0.52 | 2.90 | 10.30 |
+   | **s1067** | **right** | 3.49 | 14.36 | **2.91** | 0.02 | 2.91 | 9.51 |
+   | **s1159** | **left** | 3.54 | 10.63 | **2.61** | −0.11 | 2.61 | 10.69 |
+   | s1159 | right | 4.15 | 11.15 | 2.69 | −0.05 | 2.69 | 11.34 |
+   | s0970 | left | 7.50 | 24.83* | 3.69 | −0.24 | 3.68 | 12.46 |
+   | s0970 | right | 7.35 | 20.27 | 4.03 | −0.12 | 4.03 | 11.52 |
+
+   **The residual mean is 0.01–0.52 mm — essentially zero.** A bounded translation *can* centre
+   every base on the wall; my worry that a uniformly-buried breast would score well was unfounded,
+   and the entire residual is spread. **The shape-mismatch conclusion is confirmed on an objective
+   that penalises both**, and the irreducible part is **2.61–4.03 mm sd**.
+
+   What is new is the last column: after the best placement the deepest base node is still
+   **9.5–16.5 mm** behind the wall. That is the local worst case a conform must absorb — large,
+   but three to four times smaller than the 41.82 mm the drive actually faced.
+
+   `scripts/measure_breast_base_rms.py`.
