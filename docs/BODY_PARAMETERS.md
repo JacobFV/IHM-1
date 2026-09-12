@@ -4678,3 +4678,34 @@ What has changed is that the parametrization no longer stops at the scaffold.
 
    And every fraction past **0.1094** was reached through `Newton 300 UNCONVERGED` steps, so by
    the rule recorded above none of this was a seat before gate (b) failed either.
+
+   ### What the drive actually cost, since affordability is the question
+
+   Six hours in, the post-repair production drive on s1159-left stands at:
+
+   | | |
+   |---|---|
+   | accepted load steps | 21 |
+   | cutbacks | 14 |
+   | fraction accepted | 0.8338 |
+   | **last CONVERGED fraction** | **0.1094** |
+   | min J | 0.090 (gate (b) bar: 0.2) |
+   | held gap | **1.2382 mm median**, 3.2915 mm max |
+   | held nodes worse than they started | **0 of 3,123** |
+   | one increment, wall clock | **> 31 minutes** and still running |
+
+   **The geometry is converging while the material fails.** The held gap has come down from
+   7.0196 mm to 1.2382 mm median — comfortably inside the 3 mm the earlier judge reported on —
+   and not one of 3,123 held nodes is further from its aim than when it started. Meanwhile min J
+   has fallen to 0.090, less than half the gate's bar, and a single increment now costs over half
+   an hour because near-inverted elements make the tangent ill-conditioned.
+
+   That combination is the finding. **The sliding boundary condition can close this contact. This
+   breast's tissue cannot survive being moved far enough to do it** — because it starts 41.82 mm
+   inside the chest wall, and the drive is expending the material's whole strain budget pushing
+   registration error out rather than seating a breast.
+
+   The cost curve says the same thing from the other side: 21 accepted steps in six hours, the
+   last converged one at fraction 0.1094 in the first fifteen minutes, and everything after it
+   both unconverged and progressively more expensive. **Driving further does not buy a seat; it
+   buys a more deformed mesh more slowly.**
