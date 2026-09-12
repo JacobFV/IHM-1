@@ -5186,3 +5186,30 @@ What has changed is that the parametrization no longer stops at the scaffold.
    sd across the eight breasts and no placement touches it. Placement removes the part of the
    problem that is a rigid offset; the part that is a difference in shape is what remains, and it
    is what the 148 flipped triangles and the 39 mm of deformation are made of.
+
+   ## A SECOND SUBJECT, and a quantitative prediction that tests the screening measure
+
+   Only s1159-left has been carried through the sliding pipeline. The next subject is
+   **s1067-right**, chosen because it is the best breast of a *different* subject on the base-RMS
+   residual (2.91 mm sd, against s1159-left's 2.61) — a different person tests more than the other
+   side of the same one.
+
+   **THE POINT OF THE RUN is not another seat. It is whether the residual predicts the outcome.**
+   The base-RMS residual is cheap — minutes — and a 5-hour solve is not. If residual sd orders the
+   subjects the way the gates do, it is a screening measure and the remaining six breasts never
+   need solving to be ranked. If it does not, it is a description of geometry with no bearing on
+   whether the solver can seat it, and it should stop being quoted as though it mattered.
+
+   **PREDICTED, before the run:**
+
+   * **(a) volume PASSES.** It passed unplaced (−0.730%) and placed (−0.429%); it is a property of
+     the solver's volume handling, not of the subject.
+   * **(b) min J FAILS, and below s1159-left's 0.199.** s1067-right's residual is 12% larger, and
+     if residual controls the outcome the min J should be worse. A value in roughly 0.15–0.19 is
+     what "12% worse" predicts if the relationship is anything like proportional.
+   * **(d) flipped base triangles FAILS, above s1159-left's 148**, for the same reason.
+   * **The ordering is the test, not the pass.** If s1067-right comes out *better* than s1159-left
+     on min J despite a larger residual, the residual does not control seating and the screening
+     idea is dead — which is worth more than another FAIL.
+
+   Full chain from scratch: `prepare` → `place --place-objective rms` → `smooth` → `dr` → `judge`.
