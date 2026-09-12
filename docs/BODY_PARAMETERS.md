@@ -5146,3 +5146,43 @@ What has changed is that the parametrization no longer stops at the scaffold.
    **This does not yet mean gate (b) passes.** The run has not finished, the final state is not
    written, and the last step is `Newton 300 UNCONVERGED` — so by the rule recorded above, whatever
    `judge.json` says, a drive whose steps did not converge is reported as reached, never as seated.
+
+   ## THE PLACED BREAST, JUDGED: everything improved, nothing new passed
+
+   The placed drive completed at fraction **1.0000** in 4.19 hours (the unplaced one took ~7), and
+   `dr.json` was written — the `default=` coercion added after the last run lost its metadata held.
+
+   | gate | unplaced | **placed** |
+   |---|---|---|
+   | (a) volume within 1% | −0.730% **PASS** | **−0.429% PASS** |
+   | (b) every tet J > 0.2 | 0.045 FAIL | **0.199 FAIL** |
+   | (c) two solvers within 5% | no second solver FAIL | no second solver FAIL |
+   | (d) no flipped base triangle | 494 FAIL | **148 FAIL** |
+
+   | reported | unplaced | placed |
+   |---|---:|---:|
+   | deformation median / p90 / max | 9.54 / 20.42 / 67.96 mm | **5.52 / 9.90 / 39.37 mm** |
+   | max as a share of the breast's 263 mm diagonal | 25.9% | **15.0%** |
+   | rib points inside the breast | 4.63% → 0.95% | **2.00% → 0.25%** |
+   | held gap to the aim, final | 0.0000 median | 0.0000 median |
+   | last CONVERGED fraction | 0.1094 | **0.6258** |
+   | unconverged steps | most | **10 of 17** |
+   | wall clock | ~7 h | **4.19 h** |
+
+   **Gate (b) fails at 0.19907 against a bar of 0.2 — by 0.0009.** It is recorded as a FAIL. The
+   bar is not moved, and the near-miss is not argued with, for a reason that is stronger than
+   discipline: **the final state is not a converged equilibrium.** `dr.json` records
+   `all_steps_converged: false`, `n_unconverged_steps: 10`, and `last_converged_fraction: 0.6258`.
+   The 0.19907 comes from a `Newton 300 UNCONVERGED` step, so it is not a number worth contesting
+   a thousandth of. By the rule committed before any of these runs, a drive whose steps did not
+   converge is reported as **reached**, never as **seated** — whatever the gates say.
+
+   **What placement is worth, now measured end to end on a completed drive:** volume error down
+   41%, min J up 4.4x, flipped base triangles down 70%, maximum deformation down 42%, rib points
+   inside down 4x, last converged fraction up 5.7x, and 40% less wall clock. Every quantity moved
+   the right way and none of it was enough.
+
+   **What is still true and unchanged by any of it:** the residual shape mismatch is 2.61–4.03 mm
+   sd across the eight breasts and no placement touches it. Placement removes the part of the
+   problem that is a rigid offset; the part that is a difference in shape is what remains, and it
+   is what the 148 flipped triangles and the 39 mm of deformation are made of.
