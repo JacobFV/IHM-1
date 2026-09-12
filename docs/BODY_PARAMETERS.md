@@ -4709,3 +4709,73 @@ What has changed is that the parametrization no longer stops at the scaffold.
    last converged one at fraction 0.1094 in the first fifteen minutes, and everything after it
    both unconverged and progressively more expensive. **Driving further does not buy a seat; it
    buys a more deformed mesh more slowly.**
+
+   ## THE FIRST JUDGED BREAST: the seat completes, the mesh does not survive it
+
+   2026-09-11. The post-repair production drive on s1159-left ran **7 hours** and **reached
+   fraction 1.0000**. This is the first `judge.json` this project has produced; gates (a)–(d) had
+   never been evaluated on a real breast in either the closest-point or the sliding line.
+
+   | gate | value | |
+   |---|---|---|
+   | (a) volume within 1% | **−0.730%** | **PASS** |
+   | (b) every tet J > 0.2 | **0.045** | **FAIL** |
+   | (c) two solvers within 5% | no second solver | **FAIL**, for a stated reason |
+   | (d) no flipped base triangle | **494 of 7,391** | **FAIL** |
+
+   **Overall FAIL** — and the shape of the failure is the finding, because the contact succeeded
+   completely.
+
+   ### The seating worked. At fraction 1.0000, from the drive's own log:
+
+   | | |
+   |---|---|
+   | held gap to the aim | **0.0000 mm median**, 0.4370 mm max |
+   | unilateral penetration | **0.0000 mm** |
+   | held nodes further from their aim than they started | **0 of 3,123** |
+   | rib points inside the breast | **4.63% → 0.95%** |
+
+   Zero median gap. Zero penetration. Not one node worse off. Rib points inside the breast cut by
+   a factor of five, to under the 1% the earlier judge reported against. **The sliding boundary
+   condition can seat this breast on this chest wall.**
+
+   ### And the tissue did not survive being moved far enough to do it
+
+   min J **0.045**, a quarter of the gate's bar and falling monotonically throughout
+   (0.800 → 0.406 → 0.215 → 0.090 → 0.045). **494 base triangles flipped.** Deformation median
+   **9.54 mm**, p90 20.42, max **67.96 mm** — 25.9% of the breast's own 263 mm diagonal, against
+   this document's own standard that *a seating that moves tissue further than the breast's own
+   dimension is not that breast any more*. And every step past fraction **0.1094** was
+   `Newton 300 UNCONVERGED`, so by the rule recorded above none of this is a seat regardless of
+   the gates.
+
+   **The diagnosis is unchanged and now fully evidenced: this is registration error, not
+   mechanics.** The breast begins **41.82 mm** inside the chest wall. The drive spent the
+   material's entire strain budget pushing that error out, and arrived with perfect contact and an
+   invalid mesh. Nothing in the boundary condition, the solver or the load stepping will fix
+   that — **the 41.82 mm is what to fix**, and `docs/SEGMENT_CONTACT_SURFACES.md` already names
+   the cheaper subject: s1067 at 32.7% of breast vertices behind the wall against s1159's 47.5%.
+
+   ### Two things the judge could not measure, recorded rather than glossed
+
+   `held_gap_median_mm`, `held_gap_max_mm` and both tangential-slide figures come back **nan**.
+   The judge re-measures the gap by casting rays at the bed, and once the breast has moved by up
+   to 68 mm the rays no longer reach it within `RAY_REACH_M`. The gap figures above are the
+   drive's own, taken during the solve. A judge that cannot re-measure its own reported quantity
+   after a large deformation is a limitation of the instrument and is noted here rather than left
+   as an unexplained `nan` in an artefact.
+
+   Gate (c) reads FAIL because there is no second solver: `febio_displacement.npy` exists but is
+   13,216 nodes of exact zero from a run that never took a step, and the judge now **rejects** it
+   with the reason recorded in `judge.json` as `second_solver`. Before today it would have been
+   loaded and silently compared against.
+
+   ### And the run nearly destroyed its own evidence
+
+   `stage_dr` saved `dr_displacement.npy` and then raised
+   `TypeError: Object of type ndarray is not JSON serializable` writing `dr.json`. **Seven hours
+   of load-stepping metadata were lost on the last line** — every per-step record of how the drive
+   got to 1.0000 — and only the displacement survived, because `np.save` happens first. The judge
+   above was possible only for that reason. `json.dumps` now takes a `default=` coercion that
+   degrades an array to its shape rather than raising, and the numbers quoted here come from
+   `logs/dr_s1159_left_postrepair.log`.

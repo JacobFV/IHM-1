@@ -554,9 +554,32 @@ def stage_dr(sid, side, d, young, tag=""):
             minimum_jacobian=r["minimum_jacobian"], caveats=CAVEATS,
             note="NOT A SEAT. The drive did not complete; this is the affordability measurement."),
             indent=2) + "\n")
+    # SEVEN HOURS OF METADATA WERE LOST HERE. `r["steps"]` carries per-step records whose `info`
+    # dicts hold numpy arrays, and json.dumps raised `Object of type ndarray is not JSON
+    # serializable` AFTER dr_displacement.npy had been saved -- so the 2026-09-11 drive reached
+    # fraction 1.0000 and wrote the displacement, then threw away every number describing how it
+    # got there. The displacement survived only because np.save happens first.
+    #
+    # Two lessons, both already in this repo's sibling: write the cheap summary BEFORE anything
+    # that can raise, and never hand numpy straight to json. `_jsonable` coerces rather than
+    # raising, so a stray array degrades to a list instead of destroying the record.
+    def _jsonable(o):
+        if isinstance(o, np.ndarray):
+            return o.tolist() if o.size <= 64 else dict(shape=list(o.shape), dtype=str(o.dtype))
+        if isinstance(o, (np.integer,)):
+            return int(o)
+        if isinstance(o, (np.floating,)):
+            return float(o)
+        if isinstance(o, (np.bool_,)):
+            return bool(o)
+        return str(o)
+
     (d / f"dr{tag}.json").write_text(json.dumps(dict(
         steps=r["steps"], cutbacks=r["cutbacks"], minimum_jacobian=r["minimum_jacobian"], converged=bool(r["converged"]),
-        held=int(r["held"].sum()), young_pa=young, wall_seconds=time.time() - t0), indent=2) + "\n")
+        all_steps_converged=r.get("all_steps_converged"), n_unconverged_steps=r.get("n_unconverged_steps"),
+        last_converged_fraction=r.get("last_converged_fraction"), max_fraction_reached=r.get("max_fraction_reached"),
+        held=int(r["held"].sum()), young_pa=young, wall_seconds=time.time() - t0,
+        caveats=CAVEATS), indent=2, default=_jsonable) + "\n")
     print(f"  in-repo E={young:g}: min J {r['minimum_jacobian']:.4f}, held gap max "
           f"{np.abs(r['gap_m'][r['held']]).max()*1e3:.4f} mm, {time.time()-t0:.0f} s")
 
