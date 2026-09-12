@@ -5018,3 +5018,25 @@ What has changed is that the parametrization no longer stops at the scaffold.
    The placed drive is running. Translation 22.83 mm, rotation 0.58°, four starts converging from
    objective 1.456e-04 down to 4.760e-05 — which is what a well-posed objective looks like against
    the one-sided one that used to run to its box corner.
+
+   ### Placement helps the MEDIAN far more than the worst case: 58% against 19%
+
+   Re-running `smooth` and `dr` from the properly placed state, against the unplaced run:
+
+   | | unplaced | placed | change |
+   |---|---:|---:|---:|
+   | deepest base node behind the wall (pipeline metric) | 41.8 mm | 33.7 mm | **−19%** |
+   | depth median, before smoothing | — | 4.68 mm | — |
+   | depth median, after smoothing | — | 4.15 mm | — |
+   | **median travel the drive is asked for** | **6.17 mm** | **2.62 mm** | **−58%** |
+
+   The correction above stands — placement buys 19% of the *worst case*, not 2.5–4x. But the
+   **median** travel falls by 58%, and it is the median the solver spends most of its work on. The
+   two numbers are not in conflict: a rigid move cannot fix the one node that is furthest out of
+   place, and it can fix most of the rest.
+
+   **The smoothing also beat its own pre-registration.** That prediction was *"a bandwidth of
+   10–20 mm suffices, it removes 20–40% of the magnitude"*, with a stopping condition at more than
+   half. From the placed state, **10 mm bandwidth removes 5.7%** — inside the predicted bandwidth
+   and far under the predicted cost. Unplaced, the same stage had to work against a field with
+   more than twice the median travel in it.
