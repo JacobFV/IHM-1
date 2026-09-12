@@ -4976,3 +4976,45 @@ What has changed is that the parametrization no longer stops at the scaffold.
 
    Subject: **s1159-left**, the lowest residual of the eight on the base-RMS measure (2.61 mm) and
    the only breast already prepared in the sliding line.
+
+   ### CORRECTION: placement buys 19%, not 2.5–4x. I compared two different metrics.
+
+   The RMS placement ran on s1159-left and reported penetration **41.8 → 33.7 mm**. I had written,
+   two sections above, that placement would take the deepest base node from 41.82 mm to
+   **9.5–16.5 mm** and that the drive was therefore "pushing out 2.5–4x more depth than
+   necessary". **That was wrong, and the error is the ledger's oldest shape.**
+
+   The 41.82 mm came from the **pipeline's** `deepest_penetration_mm`, which casts a ray along each
+   node's own normal to the muscle bed. The 9.5–16.5 mm came from **my** measure, the axial
+   distance to the nearest chest-wall vertex. For an oblique surface a ray along the normal is
+   longer than the axial drop, and on s1159-left the two differ by 3.15x:
+
+   | metric, s1159-left, registered pose | deepest behind the wall |
+   |---|---:|
+   | mine — nearest wall vertex, +z axis | **13.27 mm** |
+   | pipeline — `deepest_penetration_mm`, ray along node normal | **41.82 mm** |
+
+   I took the *before* from one and the *after* from the other. **Neither metric is wrong** — and
+   the check that shows it is that they agree on the *relative* change to a tenth of a point:
+
+   | | before | after placement | reduction |
+   |---|---:|---:|---:|
+   | pipeline | 41.8 | 33.7 | **19.4%** |
+   | mine | 13.27 | 10.69 | **19.4%** |
+
+   **Placement buys about 19% of the depth, not a factor of 2.5–4.** The claim is withdrawn.
+
+   **What survives unaffected.** That the drive ran from the registered pose because `prepare`
+   overwrote `place` — that is a file-timestamp fact, not a metric. And the shape-mismatch
+   conclusion, which was measured entirely within one metric and never crossed between them.
+
+   **What this does to the prediction.** The prediction recorded above was that a placed drive's
+   last converged fraction rises above 0.1094, justified by "2.5–4x less depth to push out". That
+   justification is gone; 19% is a much weaker lever. The prediction is **not** revised — it was
+   fixed before the run and it stands as made, now with a worse reason behind it — but it is a
+   good deal less likely to hold, and the branch it named for a failure is the live one: *if the
+   converged fraction does not rise, placement is not the lever either.*
+
+   The placed drive is running. Translation 22.83 mm, rotation 0.58°, four starts converging from
+   objective 1.456e-04 down to 4.760e-05 — which is what a well-posed objective looks like against
+   the one-sided one that used to run to its box corner.
