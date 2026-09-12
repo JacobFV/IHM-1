@@ -5361,3 +5361,40 @@ What has changed is that the parametrization no longer stops at the scaffold.
    s1067-right the answer is now yes on gates (a) and (b). The question that matters more is
    *"how often does the registration produce a breast that is admissible at all?"*, and so far
    that is **2 of 5**. Improving the solver cannot help the other three; only the registration can.
+
+   ## EVERY breast is registered ~18 mm too deep: the failures are a systematic bias, not scatter
+
+   Seven of eight placements measured. Decomposing the rigid transforms into components turns the
+   registration-failure story from a per-breast accident into a single systematic fault.
+
+   | breast | tx | ty | **tz (anterior)** | \|t\| | admissible |
+   |---|---:|---:|---:|---:|---|
+   | s1067-right | 6.68 | 0.23 | **5.85** | 8.89 | yes |
+   | s1159-right | 10.38 | −2.90 | **14.20** | 17.83 | yes |
+   | s1159-left | −13.70 | 2.95 | **18.02** | 22.83 | yes |
+   | s0790-right | 14.47 | 10.45 | **19.26** | 26.26 | no |
+   | s0970-left | −11.83 | 6.42 | **24.19** | 27.68 | no |
+   | s0790-left | −10.62 | −24.26 | **20.66** | 33.59 | no |
+   | s1067-left | −35.02 | 1.62 | **21.55** | 41.15 | no |
+
+   **Every breast needs a POSITIVE anterior move — all seven of seven.** The z component has mean
+   **+17.68 mm with sd 5.62**, while x and y scatter around zero with sd **16.05** and **10.38**.
+   One axis is biased; the other two are noise.
+
+   A sign test on that alone is `(1/2)^7 = 0.008`, and it needs no fitted correction to state:
+   **the registration places every breast about 18 mm too far posterior, into the chest wall.**
+   That is also exactly what the 41–47 mm deepest penetrations have been saying all along, read as
+   a depth rather than as eight separate geometry problems.
+
+   **What it would buy, and the caveat that goes with it.** Removing a single global 17.7 mm
+   anterior offset takes \|t\| from `8.9, 17.8, 22.8, 26.3, 27.7, 33.6, 41.2` to
+   `11.3, 13.6, 14.0, 14.9, 17.9, 26.6, 35.3`, and admissibility at the 25 mm bound from **3 of 7
+   to 5 of 7**. **That 5-of-7 is in-sample** — the offset is the mean of the same seven numbers it
+   is then scored on, so it is an upper bound on what a real correction would achieve and not a
+   prediction. The systematic *bias* is the finding; the 5-of-7 is an illustration of its size.
+
+   **This is the thing to fix, and it is upstream of everything on this line.** Three findings now
+   point at the same place: no placement fixes the residual shape mismatch (2.61–4.03 mm sd), the
+   two sides of s1067 differ 4.6x in required transform, and every breast sits ~18 mm too deep.
+   The first is irreducible, the second says the error is per-breast, and the third says a large
+   part of it is one global offset. **Solver work cannot reach any of them.**
