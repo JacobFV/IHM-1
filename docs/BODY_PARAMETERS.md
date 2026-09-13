@@ -5534,3 +5534,63 @@ What has changed is that the parametrization no longer stops at the scaffold.
    placement magnitude's out-of-sample test was NOT RUNNABLE, and now the interpolation built on it
    names the wrong point of the curve. **Nothing cheap predicts which breasts seat, and that is now
    three independent attempts rather than an impression.**
+
+   ## s1159-RIGHT JUDGED: three of four predictions refuted, and the screen is dead with evidence
+
+   | gate | predicted | **measured** | |
+   |---|---|---|---|
+   | (a) volume within 1% | PASS | **−1.133%** | **FAIL** — refuted |
+   | (b) every tet J > 0.2 | 0.242, PASS | **0.134** | **FAIL** — refuted |
+   | (c) two solvers within 5% | FAIL | FAIL | correct, and trivially so |
+   | (d) no flipped base triangle | ≈102 | **279** | **FAIL** — refuted |
+
+   **All four gates fail**, the first breast to fail gate (a), and three of my four predictions are
+   wrong. The one I got right — gate (c) — was right because no FEBio run exists for this breast,
+   which required no insight.
+
+   ### The screen is not merely untested. It is refuted.
+
+   I wrote last hour that three points whose middle lands between the outer two are *"monotone by
+   construction"*, so the run could refute the interpolation but not the ordering. **That was
+   wrong, and the data shows how:**
+
+   | breast | \|t\| | flipped base triangles |
+   |---|---:|---:|
+   | s1067-right | 8.89 mm | **19** |
+   | **s1159-right** | **17.83 mm** | **279** |
+   | s1159-left | 22.83 mm | **148** |
+
+   **279 is not between 19 and 148.** The middle placement magnitude produces the *most* flipped
+   triangles of the three. Monotonicity is broken outright — placement magnitude does not order
+   these breasts, let alone predict them. My claim that three points could not refute the ordering
+   assumed the middle value would land inside the outer two; it did not, and that possibility never
+   occurred to me when I wrote it.
+
+   **So all three screening ideas are now dead with evidence, not merely unsupported:** residual sd
+   ordered two breasts backwards, placement magnitude's out-of-sample test was NOT RUNNABLE *and*
+   its ordering is now broken on a third point, and the interpolation built on it named a mid-run
+   value. **Nothing cheap predicts which breasts seat.**
+
+   ### And the volume gate failed for the first time
+
+   −1.133% against a 1% bar. The three drives give −0.367%, −0.429%, **−1.133%** — so volume
+   conservation is not the solver property I called it when predicting it would pass. It degrades
+   with the difficulty of the solve, and on a drive with **9 unconverged steps** and a last
+   converged fraction of **0.4375** it degrades past the gate.
+
+   **The caveat that governs all of it:** `all_steps_converged: false`, 9 unconverged steps, last
+   converged at 0.4375. By the rule committed before these runs this is **reached, not seated**,
+   and its gate numbers describe a state the solver never converged to.
+
+   ### Where the three driven breasts leave the line
+
+   | breast | \|t\| | (a) volume | (b) min J | (d) flipped | last converged |
+   |---|---:|---|---|---:|---:|
+   | s1067-right | 8.89 | −0.367% PASS | **0.319 PASS** | 19 | **1.0000** |
+   | s1159-left | 22.83 | −0.429% PASS | 0.199 FAIL | 148 | 0.6258 |
+   | s1159-right | 17.83 | −1.133% FAIL | 0.134 FAIL | 279 | 0.4375 |
+
+   **One breast of eight has been seated well** — and the one quantity that tracks the outcome
+   across all three is not a geometric property measured beforehand but **how far the solve
+   converged**: 1.0000, 0.6258, 0.4375, in the same order as the gates. That is a description of
+   the result, not a predictor of it, and it is the honest end of a day spent looking for one.
