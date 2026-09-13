@@ -5723,3 +5723,42 @@ What has changed is that the parametrization no longer stops at the scaffold.
    this body's skin in the sternum band spans **459.9 mm mediolaterally while its ribcage spans
    214.2 mm**. Any trunk measurement taken from `skin` without excluding the arms is measuring a
    body twice as wide as the chest.
+
+   ### Attempt 4 also fails its known answer. The measurement is abandoned, not fudged.
+
+   `scripts/measure_trunk_proportions.py` removes the arms **by anatomy** rather than by a
+   coordinate clip — the fix the third attempt said was needed. It classifies each skin vertex by
+   the segment of its nearest bone, which is the same `nearest_bone_group_vertex_vote` basis the
+   repo's own segment binding uses, and keeps only vertices nearest a `torso` bone.
+
+   Two known answers, both fixed before the run:
+
+   | check | result | |
+   |---|---:|---|
+   | skin nearest the **sternum** classifies as torso | **100.0%** | PASS |
+   | skin nearest a **humerus** classifies as arm | **85.8%** | **FAIL** (bar 90%) |
+
+   **The bar is not lowered and the test is not redesigned to pass it.** 85.8% is below the 90% I
+   fixed in advance, so the script exits and prints no proportion.
+
+   **And the failure says something real about the method.** The 14.2% that misclassify are at the
+   axilla, where skin near the humerus is equally near the scapula and ribs — both `torso` bones.
+   **Arm skin and trunk skin are not cleanly separable by nearest-bone at the shoulder**, which is
+   an anatomical fact rather than a coding fault, and no amount of care with the same rule will fix
+   it.
+
+   **Four attempts, four failures, and the measurement is abandoned for now:**
+
+   1. ribcage vs trunk surface — bone against skin
+   2. skin vs trunk surface — arms in the band
+   3. skin clipped laterally — the clip cuts the torso at its widest
+   4. skin classified by nearest bone — 85.8% at the humerus, below a pre-set 90%
+
+   The instrument was never at fault: AP/ML is scale-invariant to six decimals and exactly
+   idempotent in every version. **Selecting "this body's chest" is the hard part**, and it has
+   defeated four approaches.
+
+   **So gate d's mechanism stands at: two candidates refuted, one unmeasurable with what is here.**
+   That is a worse position than an answer and a better one than a fifth number I could not defend.
+   The script is committed with its gates intact, so whoever has a clean trunk surface can run it
+   in a minute.
