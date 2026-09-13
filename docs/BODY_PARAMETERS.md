@@ -5859,3 +5859,35 @@ What has changed is that the parametrization no longer stops at the scaffold.
    necessarily a registration fault, and the two cannot be told apart by the gate alone. **If the
    failures correlate with uterine volume, they are anatomy; if they do not, they are
    registration.** That is checkable once the run is done and is worth more than the pass rate.
+
+   ### PRELIMINARY (29 of 102): the containment failures are ANATOMY, not registration
+
+   The pre-registered separation, run on the subjects completed so far while the batch continues.
+   Both known answers pass — shuffled labels straddle zero, and so does a coin-flip split, so a
+   quirk of the label vector cannot produce this.
+
+   | | median uterine volume |
+   |---|---:|
+   | containment **passing** (23) | **110.7 mL** |
+   | containment **failing** (6) | **429.0 mL** |
+
+   Mean-rank difference **+12.4**, two-sided **p = 0.0010** over 2,000 permutations.
+
+   **The failing subjects' uteri are about four times larger.** 429 mL is 3.6x the top of an adult
+   non-gravid reference, in a cohort whose labelled uteri reach 765.7 mL. So the gate is not
+   catching bad registrations — **it is catching uteri this body's pelvis genuinely cannot hold**,
+   and no amount of registration work will recover them.
+
+   **That is the opposite conclusion to the breast line**, and worth holding side by side. There,
+   five of eight failures were a systematic ~19 mm registration bias — fixable in principle. Here,
+   the failures track the organ's own size — not fixable by registration at all. **Two
+   organ-mapping lines, two failure modes, and the gate alone could not have told them apart in
+   either case.** What separated them was asking what the failures correlate with.
+
+   **Preliminary on 29 of 102 and labelled as such.** The test was pre-registered before any of it
+   ran, so this is not selection; but 6 failures is a small denominator and the full run will
+   either hold it or not. `scripts/measure_containment_vs_volume.py`, re-runnable in seconds.
+
+   **The caveat travels, as always:** UT-EndoMRI is an endometriosis cohort, pathology-selected,
+   and not a typical-anatomy reference. A pelvis that cannot hold *these* uteri is not thereby
+   wrong about a typical one.
