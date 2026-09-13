@@ -5916,3 +5916,56 @@ What has changed is that the parametrization no longer stops at the scaffold.
    **The pass rate is 84% (76 of 90)**, inside the 70–90% predicted before the run, and every
    failure is containment — also as predicted, since laterality passed throughout and the known
    answer is subject-independent by construction.
+
+   ### FINAL (the run is complete): 77 of 91 registered subjects pass, and the failures are anatomy
+
+   The batch finished. **It never had 102 subjects in it, and the two entries above say 102 --
+   that denominator is wrong and is corrected here.** The attrition, counted from the artefacts:
+
+   | stage | n | what falls out |
+   |---|---:|---|
+   | `extract_ut_endomri.py` manifest | **124** | the cohort the extraction wrote a record for |
+   | a subject directory on disk | 102 | 22 never produced one |
+   | a `uterus.obj` to register | **91** | 33 more: `total_mr` segmented no uterus |
+   | passes laterality + containment | **77** | 14 containment failures |
+
+   `register_pelvic_organs_batch.py` iterates the **manifest** (124), not the directory (102).
+   I read the directory count off `ls` and quoted it as the denominator for three entries.
+   The pass rate is **77/91 = 84.6%**, and it was 84% at the 90-subject read, so the *rate*
+   was right throughout -- the number underneath it was not. A denominator taken from a
+   directory listing rather than from the thing the loop actually iterates is the same shape
+   as the THINGS-EEG2 ordering rebuilt by walking a directory (IBM-1 `CLAUDE.md`): a count
+   that matches roughly enough not to be questioned.
+
+   **The 14 failures**, all containment, none laterality:
+   `D1-002 D1-004 D1-017 D1-035 D1-039 D1-041 D2-026 D2-042 D2-044 D2-048 D2-061 D2-062 D2-072 D2-073`
+
+   **The pre-registered separator, final:**
+
+   | | 29 (preliminary) | 90 (interim) | **91 (final)** |
+   |---|---:|---:|---:|
+   | passing median uterus | 110.7 mL | 98.2 mL | **97.9 mL** |
+   | failing median uterus | 429.0 mL | 196.4 mL | **196.4 mL** |
+   | ratio | 3.9x | 2.0x | **2.0x** |
+   | mean-rank difference | +12.4 | +25.0 | **+25.5** |
+   | two-sided p | 0.0010 | 0.0000 | **0.0005** |
+
+   Both known answers pass on the final set (shuffled labels straddle zero, [-27.4, +19.9];
+   a coin-flip split gives the same null, [-17.1, +13.5]).
+
+   **On the p-value, so it is not over-read: 2,000 permutations cannot resolve below 0.0005.**
+   The interim read printed 0.0000 (no permutation exceeded) and the final prints 0.0005 (one
+   did). Those are the same statement -- *at the floor of this instrument* -- and the apparent
+   "weakening" from 0.0000 to 0.0005 is not a weakening. The entry above wrote the interim as
+   "< 0.0005", which was right for a count of zero but invited exactly this misreading.
+
+   **VERDICT, on the rule fixed before the run: the containment failures are ANATOMY.**
+   Passing subjects' uteri sit at 97.9 mL, inside a 30-120 mL adult reference; failing ones at
+   196.4 mL, above it. The pre-registration committed before any of it ran says verbatim: *"If
+   the failures correlate with uterine volume, they are anatomy; if they do not, they are
+   registration."* They correlate. **Improving the registration will not recover those 14
+   subjects** -- this body's pelvis cannot hold them, and in a pathology-selected endometriosis
+   cohort that is the expected finding rather than a defect in the pipeline.
+
+   CAVEAT, as on every UT-EndoMRI artefact: endometriosis cohort, pathology-selected, NOT a
+   typical-anatomy reference.
