@@ -5690,3 +5690,36 @@ What has changed is that the parametrization no longer stops at the scaffold.
    trunk sits behind this body's sternum, 98% of the escaping vertices anterior, ~19 mm of it in
    the placements — but the one explanation I had for *why* is now refuted, and swapping to the
    other stored transform would make it worse rather than better.
+
+   ### Is gate d ANATOMICAL? Three attempts, three answers, none trustworthy — NOT ESTABLISHED
+
+   If this body's chest were proportioned differently from the female trunks, a similarity
+   transform with one uniform scale could not match both, and gate d would be unreachable rather
+   than merely unmet. That would explain all four subjects failing identically. **I could not
+   measure it, and the record of failing is more useful than a fourth number would be.**
+
+   The measure is AP/ML, chest depth over width, dimensionless and therefore immune to whatever
+   scale the registration chose. Its known answers pass every time — scaling a mesh by 1.5 leaves
+   the ratio identical to six decimals, and it is exactly idempotent. **The instrument is fine.
+   What it was pointed at was not.**
+
+   | attempt | this body | female trunks | reading | fault |
+   |---|---:|---:|---|---|
+   | 1. ribcage vs trunk surface | 0.841 | 0.598 | "+40.5% deeper" | **bone against skin** — soft tissue makes a trunk surface far wider than the ribcage inside it |
+   | 2. skin vs trunk surface | 0.561 | 0.557 | "+0.7%, matched" | **arms in the band** — skin ML reads 459.9 mm where the ribcage spans 214.2 |
+   | 3. skin clipped to the ribcage's lateral span | 1.111 | 0.557 | "2x deeper" | **the clip cuts the torso at its widest point**, understating ML while keeping AP |
+
+   Attempt 1 was the error this ledger is fullest of — a quantity computed correctly and compared
+   against the wrong thing. Attempt 2 looked like a clean null and was **a coincidence of two
+   contaminated numbers**. Attempt 3 replaced one bias with another in the opposite direction.
+
+   **So the anatomical hypothesis is NOT ESTABLISHED and NOT REFUTED — it is untested.** Doing it
+   properly needs this body's trunk surface with the arms removed by anatomy rather than by a
+   coordinate clip, which nothing in the repo currently produces. Until then the honest position is
+   that gate d's mechanism is unknown, with two candidate explanations refuted (ICP's refinement,
+   and my reading of the transforms) and one unmeasured.
+
+   **What is solid from the exercise**, and worth keeping because it will bite the next person:
+   this body's skin in the sternum band spans **459.9 mm mediolaterally while its ribcage spans
+   214.2 mm**. Any trunk measurement taken from `skin` without excluding the arms is measuring a
+   body twice as wide as the chest.
