@@ -5504,3 +5504,33 @@ What has changed is that the parametrization no longer stops at the scaffold.
    **What would make it informative either way:** a min J far from 0.242 says the relationship
    between placement magnitude and mesh quality is not linear even across three points, which
    would matter for any future screen built on it.
+
+   ### s1159-right: the interpolation names a MID-RUN value, and is about to be refuted
+
+   Written with the drive at fraction 0.9911 and one increment left, so this is a prediction of my
+   own refutation rather than an explanation after it.
+
+   The interpolation committed before the run predicted **min J ≈ 0.242** and gate (b) PASSING.
+   The trajectory:
+
+   | fraction | 0.4375 | 0.5312 | 0.7109 | 0.7637 | 0.9021 | 0.9911 |
+   |---|---:|---:|---:|---:|---:|---:|
+   | min J | 0.455 | 0.379 | 0.308 | **0.242** | 0.163 | **0.136** |
+
+   **It passed exactly through 0.242 — and kept falling.** The predicted value was right about a
+   number this run reaches and wrong about *when*: 0.242 is where it sits at fraction 0.76, not at
+   the end. Unless the final increment recovers it above 0.2 — which `min J` has been shown capable
+   of, s1159-left went 0.074 → 0.212 late in its own drive — **gate (b) will FAIL and the
+   prediction is refuted.**
+
+   **Why the interpolation failed, stated in advance.** I interpolated final values (0.319 and
+   0.199) against placement magnitude, treating min J as a function of \|t\| alone. It is a
+   function of the whole trajectory: s1159-left's *recovered* from 0.074, s1067-right's stayed
+   high throughout, and this one has fallen monotonically since fraction 0.44 with no recovery yet.
+   **Three runs, three different shapes.** A single scalar cannot predict the endpoint of a curve
+   whose shape varies, and two points could not have revealed that.
+
+   This is the third screening idea to fail in a day — residual sd ordered two breasts backwards,
+   placement magnitude's out-of-sample test was NOT RUNNABLE, and now the interpolation built on it
+   names the wrong point of the curve. **Nothing cheap predicts which breasts seat, and that is now
+   three independent attempts rather than an impression.**
