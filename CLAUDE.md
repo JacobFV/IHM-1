@@ -169,3 +169,31 @@ And it was caught only because a ratio was suspiciously close to an integer. The
 → 3.08 over two steps, looked like exactly the ratchet that had been predicted. **A result that
 agrees with the hypothesis you pre-registered is the one you are least likely to take apart** — so
 confirmation is the moment to check the instrument, not the moment to stop.
+
+## A denominator read off a directory listing is not the denominator
+
+`register_pelvic_organs_batch.py` iterates the **manifest** (124 subjects). The organs directory
+holds **102** entries, and 91 of those have a `uterus.obj` to register. I read `ls | wc -l`, got
+102, and wrote "of 102" into three committed entries before the run finished and printed its own
+tally.
+
+The pass *rate* was right throughout — 84% at the interim read, 84.6% final — which is precisely
+why it survived three commits. **A wrong denominator that produces a plausible rate is invisible
+to every check except reading the loop.** Take the count from the thing that iterates, not from
+the filesystem that happens to be near it; it is the same failure as rebuilding an image order by
+walking a directory and having the count match because counts were equal.
+
+The general form: **when you quote `n`, name the line of code that produced it.** If you cannot,
+you are quoting a listing.
+
+## Two known answers, and only the second one can fail
+
+An anisotropic fit has three scale parameters where a similarity has one. Handed a synthetic
+AP-only squash it recovers 0.900 exactly — and so would any fit with enough freedom, including one
+that reports anisotropy for every input. That control **cannot fail** in the way that matters.
+
+The control that can is the *isotropic* input: three scales that must come back **equal**. A fit
+that manufactures anisotropy from an isotropic input makes every anisotropy it reports its own.
+
+Whenever a new instrument has more parameters than the one it is being compared against, one known
+answer must be the **null case** — the input on which the extra freedom must produce *nothing*.

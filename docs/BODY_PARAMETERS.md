@@ -3,9 +3,9 @@
 Ask for a tall person and get one. Ask for a female person and get told, with
 numbers, exactly what is missing.
 
-> ## WHERE THE BREAST-SEATING LINE STANDS — 2026-09-12
+> ## WHERE THE BREAST-SEATING LINE STANDS — 2026-09-13
 >
-> This file is 5,000+ lines and the soft-tissue work is at the end of it. The state, in eight
+> This file is 5,000+ lines and the soft-tissue work is at the end of it. The state, in nine
 > lines, for anyone who does not want to read backwards:
 >
 > * **A breast can be seated.** `s1067-right` passes gates (a) volume (−0.367%) and (b) min J
@@ -25,6 +25,13 @@ numbers, exactly what is missing.
 >   came back NOT RUNNABLE because only one of six candidates was admissible.
 > * **The next work is the registration's depth, not the solver.** Four independent measurements
 >   say so and none of them is reachable by a better conform.
+> * **And it is not reachable by a better GLOBAL BONE MAP either.** Three have now been fitted to
+>   the same 34–39 correspondences — the centroid fit, the ICP refinement, and a per-axis
+>   anisotropic fit — and all three leave the ~19 mm. The anisotropy is real but it is **lateral**:
+>   `s_ML` is the smallest scale in 4 of 4 (0.90–0.96) and `s_AP` is smallest in **0 of 4**, so the
+>   pre-registered single-scale explanation is REFUTED. The standing candidate is the soft-tissue
+>   envelope: the map is fitted to bone, the breast seats on pectoralis-fat-skin, and the ribs
+>   already agree at 0.97–0.999 while the trunk SURFACE does not.
 
 
     ihm/body_parameters.py                        the schema
