@@ -5762,3 +5762,46 @@ What has changed is that the parametrization no longer stops at the scaffold.
    That is a worse position than an answer and a better one than a fifth number I could not defend.
    The script is committed with its gates intact, so whoever has a clean trunk surface can run it
    in a minute.
+
+   ### Attempt 5: a large, consistent signal that FAILED its own sanity gate. NOT CLAIMED.
+
+   Ribcage against ribcage — the one structure both bodies have unambiguously, with no skin, no
+   arms and no clipping. Female rib and sternum meshes mapped into the atlas frame by the
+   registration's own transform, which is a similarity and so leaves AP/ML untouched.
+
+   | subject | AP vs this body | ML vs this body | AP/ML |
+   |---|---:|---:|---:|
+   | s0790 | 0.83x | 1.10x | 0.633 |
+   | s1067 | 0.84x | 1.16x | 0.608 |
+   | s1159 | 0.78x | 1.13x | 0.581 |
+   | s0970 | **0.73x** | 1.14x | 0.542 |
+   | **this body** | — | — | **0.841** |
+
+   **The pattern is consistent in both axes across all four subjects**: every mapped female ribcage
+   is shallower (AP 0.73–0.84x) and wider (ML 1.10–1.16x). The ratios put this body **+42% deeper
+   relative to width**, which is exactly what would make a single uniform scale unable to fit both.
+
+   **AND THE KNOWN ANSWER FAILED, so none of that is claimed.** I required each mapped ribcage to
+   fall within 25% of this body's on each axis; s0970's AP is 27% smaller. The script exits and
+   prints no verdict.
+
+   **The premise of that check was unsound, which is a worse fault than the failure.** I justified
+   the 25% bound by *"this body's ribs are 97.3–99.9% contained inside the mapped trunk"* — but
+   that containment is inside the **trunk SURFACE**, which is skin and much larger than either
+   ribcage. Containment in a skin surface does not constrain a ribcage-to-ribcage size ratio at
+   all. So the gate neither passed nor meaningfully failed: **the sanity check I intended was never
+   actually performed**, and a bound I invented failed by two percentage points.
+
+   **Why the +42% is still not claimed.** The obvious move is to point at the registration's own
+   gate b — leave-one-bone-out centroid error 13.2 mm against a 29.7 mm null, ratio 0.446 — as
+   independent evidence that the bone mapping is sound. It probably is. But **choosing that check
+   now, after mine failed and while it would license the answer I have spent five attempts
+   hunting, is exactly how a result gets talked into existence.** A sanity gate picked because it
+   passes is not a gate.
+
+   **Status: a large, four-of-four-consistent signal that this body is proportioned differently
+   from all four female subjects, resting on a measurement whose sanity check was ill-posed.** It
+   should be settled by someone designing the check without knowing the answer — the direction to
+   look is whether a similarity transform can match a chest of a different depth-to-width ratio,
+   and the answer here is probably no. `scripts/measure_ribcage_proportions.py` carries the gate as
+   written, failing, so nothing downstream can quietly inherit the number.
