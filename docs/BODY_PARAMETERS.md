@@ -6027,3 +6027,69 @@ What has changed is that the parametrization no longer stops at the scaffold.
    **What this does not test.** It says nothing about the 2.61-4.03 mm residual shape
    mismatch, which no global map of any kind reaches. If CONFIRMED, the remedy is an
    anisotropic registration and the residual stays exactly where it is.
+
+   ### RESULT: REFUTED. The anisotropy is real, it is in the RIGHT direction, and it is ML
+
+   `scripts/measure_registration_anisotropy.py`. All four known answers pass, including the
+   rebuild gate -- the uniform scale computed here reproduces `register.log`'s centroid-fit
+   scale to **0.00%** for all four subjects, and its centroid RMS reproduces the logged one
+   (11.17 vs 11.2 mm for s0790, 14.53 vs 14.5 for s1067). The fit is on the registration's own
+   correspondences, not a lookalike population.
+
+   | subject | n | s_uniform | s_ML | s_SI | s_AP | is AP smallest? |
+   |---|---:|---:|---:|---:|---:|:---:|
+   | s0790 | 39 | 1.0412 | **0.9607** | 1.0865 | 1.0686 | no |
+   | s0970 | 39 | 1.0146 | **0.8982** | 1.0845 | 1.1190 | no |
+   | s1067 | 34 | 1.0854 | **0.9625** | 1.1832 | 1.1452 | no |
+   | s1159 | 39 | 1.0537 | **0.9427** | 1.1118 | 1.2396 | no |
+
+   **`s_AP` is the smallest in 0 of 4. The gate needed 3.** It is not even close: AP is the
+   LARGEST scale in two subjects and the middle one in the other two. **`s_ML` is the smallest
+   in 4 of 4**, and by a wide margin -- 0.90-0.96 against a uniform scale of 1.01-1.09. The
+   thorax mismatch is real and it is *lateral*: these subjects' thoraces must be narrowed by
+   4-10% and lengthened and deepened by 7-24% to reach this body's. The fit reduces centroid
+   RMS by 20-25% (11-16 mm -> 8.8-12.5 mm), so the anisotropy is not noise.
+
+   **The direction was right and the magnitude is not.** Because `s_AP > s_uniform` in 4 of 4,
+   the uniform fit does under-scale AP and does leave the mapped chest wall too posterior --
+   the sign predicted. But the shortfall it produces at the sternum is only a part of what the
+   breasts need:
+
+   | subject | lever mm | predicted | direct | measured | fraction |
+   |---|---:|---:|---:|---:|---:|
+   | s0790 | 109.8 | +3.01 | +2.52 | +19.96 | **15.1%** |
+   | s0970 | 109.8 | +11.47 | +7.68 | +24.73 | **46.4%** |
+   | s1067 | 106.5 | +6.37 | +4.89 | +13.70 | **46.5%** |
+   | s1159 | 109.8 | +20.41 | +14.47 | +16.11 | **126.7%** |
+
+   Reaches 50% in **1 of 4**; the gate needed 3. **REFUTED**, and recorded as refuted with the
+   fraction stated rather than as "partly confirmed", exactly as the pre-registration said it
+   would be.
+
+   **A discrepancy in my own predictor, reported rather than buried.** The pre-registered
+   formula `(s_AP - s_uniform) x lever` overstates by 20-30% against the direct measurement of
+   where each map actually puts the source sternum centroid (+3.01 vs +2.52, +11.47 vs +7.68,
+   +20.41 vs +14.47). The formula ignores that the two fits also differ in rotation and
+   translation. The verdict stands on the pre-registered formula as committed; on the direct
+   numbers the fractions are 12.6%, 31.1%, 35.7%, 89.8% and the gate fails harder. It does not
+   change which way this goes, and the formula is the weaker of the two -- a later use should
+   take the direct one.
+
+   **What is now eliminated.** Four candidate explanations of the ~19 mm have been tested and
+   none survives: ICP refinement (refuted), the centroid fit (refuted -- it contains the
+   sternum worse), and now the single scale (refuted, 1 of 4). The bias is not in the class of
+   things a better GLOBAL BONE MAP reaches -- three different global bone maps have now been
+   fitted to the same correspondences and all three leave it.
+
+   **The next candidate, named now rather than after the fact.** The registration is fitted to
+   **bone** and the breast base seats on **soft tissue** -- pectoralis major, then fat, then
+   skin. A bone-exact map says nothing about the thickness of what lies on top of it, and
+   `chest_wall_offset.log` already shows the two chest walls disagreeing at the soft-tissue
+   surface while the ribs agree at 0.97-0.999: this body's sternum stands 2.8-5.0 mm proud of
+   the mapped female trunk SURFACE with 95-98% of the escaping vertices anterior. That is a
+   soft-tissue-envelope disagreement sitting on a bone agreement, which is the shape the
+   remaining ~19 mm would have. It is a different measurement from this one and gets its own
+   pre-registration before anything is fitted.
+
+   CAVEAT: four CT subjects registered onto a male-derived body. This measures the
+   registration, not any subject's anatomy.
