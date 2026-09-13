@@ -5594,3 +5594,59 @@ What has changed is that the parametrization no longer stops at the scaffold.
    across all three is not a geometric property measured beforehand but **how far the solve
    converged**: 1.0000, 0.6258, 0.4375, in the same order as the gates. That is a description of
    the result, not a predictor of it, and it is the honest end of a day spent looking for one.
+
+   ## THE ~19 mm BIAS IS GATE d, AND GATE d HAS BEEN FAILING SINCE REGISTRATION
+
+   Today's placements found every breast needing ~19 mm of anterior movement (8 of 8, sign test
+   p = 0.0039). That is not a new fault. It is the quantitative size of a gate that **every one of
+   the four registrations recorded itself as failing**, and the record has been on disk since they
+   ran.
+
+   Every manifest carries `stopped_at: "gate d"`. From `register.log`:
+
+   ```
+   GATE a: recovery of a known similarity on s1067's own centroids, error 1.55e-15  -> PASS
+   GATE b: leave-one-bone-out median 13.2 mm vs a 29.7 mm null, ratio 0.446 (<= 0.5) -> PASS
+   GATE c: laterality after mapping                                                  -> PASS
+   GATE d1: this body's bones inside the MAPPED female trunk --
+            left ribs 0.978, right ribs 0.973, sternum 0.635 (each >= 0.95)          -> FAIL
+   GATE d2: this body's rib vertices inside a mapped breast --
+            left 0.0417, right 0.0303 (each <= 0.01)                                 -> FAIL
+   ```
+
+   **The accuracy gates pass and the containment gates fail.** The fit is good — a known-answer
+   recovery at 1.55e-15 and a leave-one-bone-out ratio of 0.446 — and the result still puts this
+   body's skeleton outside the surface it was fitted to.
+
+   | subject | stopped at | **sternum contained** | ribs | rib-in-breast L/R |
+   |---|---|---:|---|---|
+   | s0790 | gate d | 0.767 | 0.997 / 0.999 | 0.051 / 0.039 |
+   | s1067 | gate d | 0.635 | 0.978 / 0.973 | 0.042 / 0.030 |
+   | s1159 | gate d | 0.315 | 0.998 / 0.995 | 0.034 / 0.044 |
+   | s0970 | gate d | **0.090** | 0.989 / 0.991 | 0.052 / 0.050 |
+
+   **The ribs are contained to 0.97–0.999. The sternum is contained to between 0.09 and 0.77.**
+   `chest_wall_offset.log` says which way it escapes: of this body's sternum vertices lying outside
+   the mapped trunk, **98% are ANTERIOR of the nearest trunk point** — the xiphoid process is 94.7%
+   outside, by 5.0 mm median and 12.4 mm at the 95th percentile.
+
+   **So the mapped female trunk passes BEHIND this body's sternum**, and everything attached to
+   that trunk — the breasts — sits too far posterior relative to the skeleton. Gate d says *"the
+   sternum is not contained and the ribs are inside the breasts"*; today's placements say
+   *"every breast needs +19 mm anterior"*. **They are the same fact measured two ways, and the
+   second one gives it a magnitude.**
+
+   **A hypothesis about the mechanism, flagged as mine and not the log's.** The same log records
+   `centroid fit: centroid RMS 14.5 mm, trimmed surface RMS 5.8 mm` against
+   `ICP refined: centroid RMS 16.2 mm, trimmed surface RMS 5.3 mm`, and `REFINE RULE (declared):
+   refined map USED`. **ICP improved the surface fit and made the bone-centroid fit worse.** If the
+   refinement is pulling the trunk to match a skin envelope rather than the skeleton, a female
+   subject's shallower chest would drag the mapped trunk posteriorly and leave this body's sternum
+   protruding — which is exactly the observed sign. That is a testable claim (re-run using
+   `centroid_fit_transform`, which every manifest already stores, and re-measure containment), and
+   it is not established here.
+
+   **What this settles about the day's work.** Every seating result on this line inherits a
+   registration that failed its own containment gate, and the eight placements are the first
+   measurement of how much that costs: **~19 mm of depth, and five of eight breasts pushed beyond
+   the admissible bound.** Solver work was never going to reach it.
