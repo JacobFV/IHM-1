@@ -5650,3 +5650,43 @@ What has changed is that the parametrization no longer stops at the scaffold.
    registration that failed its own containment gate, and the eight placements are the first
    measurement of how much that costs: **~19 mm of depth, and five of eight breasts pushed beyond
    the admissible bound.** Solver work was never going to reach it.
+
+   ### The ICP hypothesis is REFUTED: the centroid fit contains the sternum WORSE
+
+   I proposed last hour that ICP's surface-driven refinement is what pushes the mapped trunk
+   posteriorly, and that using the stored `centroid_fit_transform` instead would contain the
+   sternum better. **Wrong, and two independent pieces of evidence say so.**
+
+   **First, the transforms themselves.** `M_centroid @ inv(M_icp)` carries a translation of
+   `[−4.2, +8.4, −9.7] mm` and a scale of 0.9886. The z component is **−9.7 mm**: the centroid fit
+   puts the trunk nearly a centimetre *further posterior*, which should make the sternum protrude
+   more, not less.
+
+   **Second, the measurement.** Mapping the trunk into each frame and testing containment of the
+   same 600 sternum vertices with the same instrument:
+
+   | frame | sternum contained |
+   |---|---:|
+   | ICP refined (as used) | **0.722** |
+   | centroid fit | **0.485** |
+
+   **The centroid fit is 0.24 worse.** ICP improves containment even though it worsens the
+   bone-centroid RMS (14.5 → 16.2 mm) — so the refinement is not trading skeleton for skin in the
+   way I supposed. The hypothesis is withdrawn.
+
+   **MY KNOWN ANSWER FAILED, and it limits what the above may claim.** Applying `M_icp @ inv(M_icp)`
+   — the identity — must reproduce the registration's recorded **0.635**. My instrument reads
+   **0.722**. It subsamples 600 of 6,968 sternum vertices and uses a 3-ray majority test, so it is
+   not the registration's own measure and its absolute values are not comparable to the recorded
+   ones.
+
+   What the failure does **not** invalidate is the *paired* comparison: both frames were measured
+   with the identical instrument on the identical subset, so the 0.24 difference and its sign are
+   real even though neither absolute number is the registration's. That distinction is the only
+   reason a conclusion survives a failed known answer here, and the conclusion is limited to the
+   direction.
+
+   **So the mechanism behind gate d's failure is still unknown.** The fact is solid — the mapped
+   trunk sits behind this body's sternum, 98% of the escaping vertices anterior, ~19 mm of it in
+   the placements — but the one explanation I had for *why* is now refuted, and swapping to the
+   other stored transform would make it worse rather than better.
