@@ -6153,3 +6153,54 @@ What has changed is that the parametrization no longer stops at the scaffold.
    remedies are a different chest wall or an explicit anterior-chest correction, declared as
    authored. That is a heavier conclusion than "the fit is wrong", so half (ii) is the one to
    distrust and it is the one carrying the 2x bar.
+
+   ### RESULT: CONFIRMED, 4 of 4 on both halves. The ~19 mm is THIS BODY'S OWN CHEST
+
+   `scripts/measure_anterior_chest_offset.py`, `out/anterior_chest_offset.json`.
+
+   | subject | cells | anterior | posterior | measured | fraction | ant/post |
+   |---|---:|---:|---:|---:|---:|---:|
+   | s0790 | 1266 | **+11.54** | −0.94 | +19.96 | 57.8% | 12.33 |
+   | s0970 | 1127 | **+16.51** | −3.97 | +24.73 | 66.8% | 4.16 |
+   | s1067 | 1355 | **+9.51** | −1.62 | +13.70 | 69.4% | 5.88 |
+   | s1159 | 1242 | **+11.11** | −1.38 | +16.11 | 69.0% | 8.05 |
+
+   Half (i) passes **4 of 4** (needed 3); half (ii) passes **4 of 4** (needed 3). Known answer 1
+   returns exactly +10.000 mm on both regions under a +10 mm translation.
+
+   **This body's anterior chest wall stands 9.5-16.5 mm proud of every registered subject's at
+   the breast footprint, while the back of the same rib cage agrees to within 4 mm.** The fit is
+   not displaced; the chest is a different shape, in the one place the fitted quantity cannot
+   see. A rib's centroid lives on its long lateral and posterior arc; its anterior end
+   contributes almost nothing, so a centroid fit good to 11-16 mm says nothing about where the
+   sternum and costal cartilages end up. That is the ~19 mm, and it accounts for 58-69% of it.
+
+   **A control I wrote today that cannot fail, said plainly.** Pre-registered known answer 2 --
+   "this body's bones against themselves through the identity map" -- compares an array with
+   its own copy. It returns +0.0000 and could never have returned anything else. It tests
+   determinism; it does not test the bias it was written to test. I added the trap "only the
+   second one can fail" to `CLAUDE.md` this same day and then wrote one.
+
+   **The null that CAN fail, run afterwards, and it matters.** A per-cell **maximum** rises with
+   the number of samples in the cell, so the denser of two meshes reads as more anterior. On a
+   thinning ladder against itself this body's bones give +0.000 mm at 50%, +0.495 at 25%,
+   +1.788 at 10%. The real densities are **this body 65,478 vertices against the subjects'
+   88,611-97,696** -- this body is the *sparser* mesh at 0.67-0.74x, so the bias runs at under
+   0.5 mm and **against** the hypothesis, not with it. The finding survives its own worst case;
+   had this body been the denser mesh the result would have needed discounting.
+
+   **WHAT THIS CHANGES.** The breast line has been treating the ~19 mm as a registration defect
+   for three rounds. It is not one. Four candidate registration fixes have now been tested and
+   all four are refuted -- ICP refinement, the centroid fit, per-axis anisotropy, and by this
+   result the class as a whole. **No registration seats these breasts, because the body they are
+   being seated on has a chest that the subjects do not have.** The honest remedies are exactly
+   two, and both must be declared as authored rather than measured:
+
+   * a different chest wall -- one derived from a female subject rather than this male-derived body;
+   * an explicit anterior-chest correction, carried as a declared parameter with its provenance.
+
+   The 2.61-4.03 mm residual shape mismatch is untouched by any of this and stays where it is.
+   58-69% of the bias is accounted for here; the remaining 31-42% is not, and is not claimed.
+
+   CAVEAT: four CT subjects registered onto a male-derived body. A statement about the
+   registration and this body's thorax, not about any subject's anatomy.
