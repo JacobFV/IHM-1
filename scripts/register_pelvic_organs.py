@@ -150,8 +150,16 @@ def known_answer(body):
     serr = abs(scale_of(M) / scale_of(Minv) - 1)
     ok = terr <= KA_T_MM and rerr <= KA_R_DEG and serr <= KA_S
     say(f"  kept surface share after the 160 mm cut: {frac}")
-    say(f"GATE known answer: translation {terr:.3f} mm (<= {KA_T_MM}), rotation {rerr:.3f} deg (<= {KA_R_DEG}), "
-        f"scale {100*serr:.3f}% (<= {100*KA_S:.0f}%), {it} iterations, trimmed residual {1000*rms:.2f} mm -> {'PASS' if ok else 'FAIL'}")
+    # SAY WHAT THIS GATE IS. It truncates THIS BODY'S OWN pelvis and recovers a FIXED synthetic
+    # similarity -- it never touches the subject's scan, so it returns the same numbers for every
+    # subject and its per-subject appearance in a batch log is misleading. It validates the FITTING
+    # CODE, once, and nothing about any individual registration. The gates that do discriminate per
+    # subject are laterality and containment: containment separated D1-017 at 0.6881 from three
+    # subjects at 1.0000, which is what a per-subject gate looks like when it works.
+    say(f"GATE known answer [CODE-LEVEL, subject-independent: this body's own pelvis, a fixed "
+        f"synthetic transform]: translation {terr:.3f} mm (<= {KA_T_MM}), rotation {rerr:.3f} deg "
+        f"(<= {KA_R_DEG}), scale {100*serr:.3f}% (<= {100*KA_S:.0f}%), {it} iterations, "
+        f"trimmed residual {1000*rms:.2f} mm -> {'PASS' if ok else 'FAIL'}")
     return ok, dict(translation_mm=terr, rotation_deg=rerr, scale_rel=serr, iterations=it, kept_share=frac)
 
 def interior_points(V, F, n, seed=0):

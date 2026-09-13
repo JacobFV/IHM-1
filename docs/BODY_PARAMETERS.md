@@ -5805,3 +5805,31 @@ What has changed is that the parametrization no longer stops at the scaffold.
    look is whether a similarity transform can match a chest of a different depth-to-width ratio,
    and the answer here is probably no. `scripts/measure_ribcage_proportions.py` carries the gate as
    written, failing, so nothing downstream can quietly inherit the number.
+
+   ### A per-subject log line for a subject-independent gate
+
+   `data/derived/ut-endomri-registered-v2-world/batch.log` prints, for each of its four subjects:
+
+   ```
+   GATE known answer: translation 0.033 mm (<= 2.0), rotation 0.018 deg (<= 2.0),
+                      scale 0.004% (<= 1%), 57 iterations, trimmed residual 0.56 mm -> PASS
+   ```
+
+   **Identical to three significant figures for all four**, because it is identical by
+   construction: the gate truncates **this body's own pelvis**, applies a **fixed synthetic
+   similarity** (scale 1.06, 9°, [40, −30, 50] mm) and fits it back. It never touches the subject's
+   scan.
+
+   **The gate is good and the reporting is not.** Recovering a known similarity to 0.033 mm and
+   0.018° is a strong test of the fitting code, and `register_pelvic_organs.py`'s own docstring
+   says plainly what it does. But printing it once per subject in a batch log makes four
+   registrations look individually verified when one code-level test was run four times. A reader
+   scanning that log would reasonably conclude otherwise.
+
+   The log line now names itself: `GATE known answer [CODE-LEVEL, subject-independent: this body's
+   own pelvis, a fixed synthetic transform]`.
+
+   **The gates that do discriminate are the other two**, and they work: containment separated
+   **D1-017 at 0.6881** from three subjects at **1.0000** against a 0.99 bar, and failed it. That
+   is what a per-subject gate looks like when it has something to say — which is also why the
+   subject-independent one is worth labelling rather than removing.
