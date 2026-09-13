@@ -6100,3 +6100,56 @@ What has changed is that the parametrization no longer stops at the scaffold.
 
    CAVEAT: four CT subjects registered onto a male-derived body. This measures the
    registration, not any subject's anatomy.
+
+   ## 2026-09-13 -- PRE-REGISTRATION: is the ~19 mm the ANTERIOR CHEST, where no centroid looks?
+
+   *Written and committed before the measurement is run.*
+
+   **Why this and not the soft tissue first.** The previous entry named the soft-tissue envelope
+   as the standing candidate. There is a cheaper thing to eliminate first and it has to go
+   first, because if it is true the soft-tissue question never arises: **the registration is
+   fitted to bone CENTROIDS, and a rib's centroid is dominated by its long lateral and
+   posterior arc, not by its anterior end.** A fit can match all 34-39 centroids to 11-16 mm
+   and still leave the two anterior chest walls tens of millimetres apart, because almost none
+   of the fitted quantity lives there. `register.log`'s own gate d1 is consistent with exactly
+   that: ribs contained at 0.97-0.999 while the sternum -- the one bone that is *entirely*
+   anterior -- is contained at 0.09-0.767, with 95-98% of the escaping vertices anterior.
+
+   **The hypothesis.** This body's anterior chest wall stands proud of the registered subjects'
+   at the breast footprint by about the ~19 mm the breasts need, while the two skeletons agree
+   everywhere the centroids can see.
+
+   **The measurement.** For each subject, map its bones by the registration's own transform.
+   Then over a sampling of the breast footprint, compare the most-anterior bone surface of
+   this body against the mapped subject's, and report the median signed difference. Bones:
+   ribs 2-7 and the sternum, the ones a breast sits on.
+
+   **THE GATE, and it has two halves because one of them alone proves nothing.**
+   * **(i) magnitude** -- the anterior difference at the breast footprint is **>= 50%** of that
+     subject's measured anterior correction (s0790 +19.96, s0970 +24.73, s1067 +13.70,
+     s1159 +16.11 mm) in **>= 3 of 4** subjects.
+   * **(ii) localisation** -- the difference at the ANTERIOR chest is at least **2x** the
+     difference at the POSTERIOR ribs, in **>= 3 of 4** subjects.
+   * **CONFIRMED** only if both hold. **REFUTED** otherwise, with the fractions stated.
+
+   **Half (ii) is the half that can fail, and it is the point.** A global AP offset in the fit
+   would satisfy (i) and say nothing about the anterior chest -- it would move front and back
+   by the same amount. Only (ii) separates *a chest wall that is a different shape* from *a fit
+   that is bodily displaced*, and the previous entry has already shown the fit is displaced
+   somewhat. **Reporting (i) without (ii) would be a measurement that cannot fail.**
+
+   **KNOWN ANSWER 1, symmetry-breaking on the axis under test.** Displace this body's bones
+   +10.0 mm anteriorly. The measured anterior difference must increase by **10.0 +/- 0.5 mm**
+   and the posterior difference must increase by the same 10.0, since a translation moves
+   everything equally. A measurement whose two regions do not both move by 10 is not measuring
+   a signed anterior distance.
+
+   **KNOWN ANSWER 2, the null.** Compare this body's bones against **themselves** through the
+   identity map, with the identical footprint sampling. Both regions must return **0.0 +/- 0.2
+   mm**. Anything else is the sampler's own bias and every number below it is that bias.
+
+   **What it cannot settle.** If CONFIRMED, the ~19 mm is this body's own thoracic shape and
+   NOT a registration defect -- which would mean no registration fixes it and the honest
+   remedies are a different chest wall or an explicit anterior-chest correction, declared as
+   authored. That is a heavier conclusion than "the fit is wrong", so half (ii) is the one to
+   distrust and it is the one carrying the 2x bar.
