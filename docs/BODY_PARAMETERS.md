@@ -16,6 +16,14 @@ numbers, exactly what is missing.
 > * **Every breast is registered ~19 mm too deep** — the anterior component of the required
 >   transform is positive in 8 of 8 (sign test p = 0.0039), mean +18.62 mm sd 5.82, while the other
 >   two axes scatter around zero. One systematic bias, not eight geometry problems.
+> * **And that bias is NOT a registration defect — it is this body's own chest.** This body's
+>   anterior chest wall stands **9.5–16.5 mm proud** of every registered subject's at the breast
+>   footprint while the back of the same rib cage agrees to within 4 mm (4 of 4 on both halves of
+>   a pre-registered gate). A rib's centroid lives on its lateral and posterior arc, so a centroid
+>   fit good to 11–16 mm says nothing about where the sternum ends up. That accounts for **58–69%**
+>   of the bias; the rest is unexplained and unclaimed. **No registration seats these breasts** —
+>   the remedies are a female-derived chest wall or a declared anterior-chest correction, both
+>   authored rather than measured.
 > * **What survives any rigid correction is a 2.61–4.03 mm sd shape mismatch** that no placement
 >   reaches — measured three ways, the first two of which failed their own known answers first.
 > * **`prepare` silently overwrote `place`** for every breast, so a seven-hour drive ran from the
@@ -23,15 +31,12 @@ numbers, exactly what is missing.
 > * **Nothing cheap predicts which breasts seat.** Residual sd is refuted (it ordered two solved
 >   breasts backwards); placement magnitude is untested — its pre-registered out-of-sample test
 >   came back NOT RUNNABLE because only one of six candidates was admissible.
-> * **The next work is the registration's depth, not the solver.** Four independent measurements
->   say so and none of them is reachable by a better conform.
-> * **And it is not reachable by a better GLOBAL BONE MAP either.** Three have now been fitted to
->   the same 34–39 correspondences — the centroid fit, the ICP refinement, and a per-axis
->   anisotropic fit — and all three leave the ~19 mm. The anisotropy is real but it is **lateral**:
->   `s_ML` is the smallest scale in 4 of 4 (0.90–0.96) and `s_AP` is smallest in **0 of 4**, so the
->   pre-registered single-scale explanation is REFUTED. The standing candidate is the soft-tissue
->   envelope: the map is fitted to bone, the breast seats on pectoralis-fat-skin, and the ribs
->   already agree at 0.97–0.999 while the trunk SURFACE does not.
+> * **Four registration fixes tested, four refuted.** The centroid fit, the ICP refinement, a
+>   per-axis anisotropic fit, and then the class as a whole. The anisotropy is real but it is
+>   **lateral** — `s_ML` is the smallest scale in 4 of 4 (0.90–0.96) and `s_AP` in **0 of 4** — so
+>   the single-scale explanation is refuted too. It was never the solver and it is not the fit.
+> * **The next work is a CHEST WALL, not a better map.** Every remaining route is authored rather
+>   than measured, so it needs a declared provenance before anything is built.
 
 
     ihm/body_parameters.py                        the schema
