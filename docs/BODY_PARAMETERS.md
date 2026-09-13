@@ -5891,3 +5891,28 @@ What has changed is that the parametrization no longer stops at the scaffold.
    **The caveat travels, as always:** UT-EndoMRI is an endometriosis cohort, pathology-selected,
    and not a typical-anatomy reference. A pelvis that cannot hold *these* uteri is not thereby
    wrong about a typical one.
+
+   ### UPDATED at 90 of 102: the direction holds, and my preliminary effect size was 2x too big
+
+   | | 29 subjects (preliminary) | **90 subjects** |
+   |---|---:|---:|
+   | containment passing, median uterus | 110.7 mL | **98.2 mL** |
+   | containment failing, median uterus | **429.0 mL** | **196.4 mL** |
+   | ratio | 3.9x | **2.0x** |
+   | mean-rank difference | +12.4 | **+25.0** |
+   | two-sided p | 0.0010 | **< 0.0005** |
+   | failures | 6 of 29 | **14 of 90** |
+
+   **The conclusion holds and strengthens: the failures are anatomy.** p drops below 0.0005 and
+   the mean-rank difference doubles as the denominator grows. Passing subjects' uteri sit at
+   98.2 mL, inside a 30–120 mL adult reference; failing ones at 196.4 mL, above it.
+
+   **And the preliminary effect size was inflated by a factor of two.** 429.0 mL rested on **six**
+   failures; with fourteen it is 196.4. That is exactly what a small denominator does, and it is
+   why the entry above was labelled preliminary rather than quoted — but the number was published
+   and is now corrected. A significance that strengthens while the effect size halves is the normal
+   shape of an early estimate, not a contradiction.
+
+   **The pass rate is 84% (76 of 90)**, inside the 70–90% predicted before the run, and every
+   failure is containment — also as predicted, since laterality passed throughout and the known
+   answer is subject-independent by construction.
