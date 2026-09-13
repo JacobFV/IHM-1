@@ -3,6 +3,30 @@
 Ask for a tall person and get one. Ask for a female person and get told, with
 numbers, exactly what is missing.
 
+> ## WHERE THE BREAST-SEATING LINE STANDS — 2026-09-12
+>
+> This file is 5,000+ lines and the soft-tissue work is at the end of it. The state, in eight
+> lines, for anyone who does not want to read backwards:
+>
+> * **A breast can be seated.** `s1067-right` passes gates (a) volume (−0.367%) and (b) min J
+>   (0.319) on a converged final state — the first breast ever to pass either. It fails (c) for
+>   want of a second solver and (d) at 19 flipped triangles of 5,642.
+> * **Five of eight breasts cannot be seated at all**: their placement exceeds the 25 mm bound and
+>   they are REGISTRATION FAILURES by this document's own prior rule.
+> * **Every breast is registered ~19 mm too deep** — the anterior component of the required
+>   transform is positive in 8 of 8 (sign test p = 0.0039), mean +18.62 mm sd 5.82, while the other
+>   two axes scatter around zero. One systematic bias, not eight geometry problems.
+> * **What survives any rigid correction is a 2.61–4.03 mm sd shape mismatch** that no placement
+>   reaches — measured three ways, the first two of which failed their own known answers first.
+> * **`prepare` silently overwrote `place`** for every breast, so a seven-hour drive ran from the
+>   wrong pose. Guarded now.
+> * **Nothing cheap predicts which breasts seat.** Residual sd is refuted (it ordered two solved
+>   breasts backwards); placement magnitude is untested — its pre-registered out-of-sample test
+>   came back NOT RUNNABLE because only one of six candidates was admissible.
+> * **The next work is the registration's depth, not the solver.** Four independent measurements
+>   say so and none of them is reachable by a better conform.
+
+
     ihm/body_parameters.py                        the schema
     ihm/body_scaling.py                           the exponent table: no exponent is typed
     ihm/native/model_scaling.py                   measure and scale the mechanical SCAFFOLD
