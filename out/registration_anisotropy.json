@@ -1,0 +1,80 @@
+{
+  "gate": {
+    "n_subjects_min": 3,
+    "shortfall_fraction_min": 0.5
+  },
+  "confirmed": false,
+  "n_ap_smallest": 0,
+  "n_fraction_met": 1,
+  "rows": [
+    {
+      "subject": "s0790",
+      "n": 39,
+      "uniform_scale": 1.0411863563272616,
+      "logged_scale": 1.0412,
+      "s_ml": 0.9606637079847652,
+      "s_si": 1.0864652533697403,
+      "s_ap": 1.0685854898923164,
+      "rms_uniform_mm": 11.168139336239543,
+      "rms_aniso_mm": 8.819436957570579,
+      "ap_is_smallest": false,
+      "sternum_ap_lever_mm": 109.79760506513091,
+      "predicted_shortfall_mm": 3.008359246302653,
+      "direct_shortfall_mm": 2.518950951424931,
+      "measured_anterior_mm": 19.96,
+      "fraction": 0.15071940111736737
+    },
+    {
+      "subject": "s0970",
+      "n": 39,
+      "uniform_scale": 1.0145926202769688,
+      "logged_scale": 1.0146,
+      "s_ml": 0.8981561289488971,
+      "s_si": 1.0845109639581945,
+      "s_ap": 1.1190279986814893,
+      "rms_uniform_mm": 14.347605019638156,
+      "rms_aniso_mm": 9.364612310359902,
+      "ap_is_smallest": false,
+      "sternum_ap_lever_mm": 109.79760506513091,
+      "predicted_shortfall_mm": 11.466754432887036,
+      "direct_shortfall_mm": 7.676670759073301,
+      "measured_anterior_mm": 24.73,
+      "fraction": 0.46367789862058373
+    },
+    {
+      "subject": "s1067",
+      "n": 34,
+      "uniform_scale": 1.0853682639796236,
+      "logged_scale": 1.0854,
+      "s_ml": 0.96253798885291,
+      "s_si": 1.1832268300537268,
+      "s_ap": 1.1452063041355833,
+      "rms_uniform_mm": 14.526056626675793,
+      "rms_aniso_mm": 9.510294921168757,
+      "ap_is_smallest": false,
+      "sternum_ap_lever_mm": 106.46415605752999,
+      "predicted_shortfall_mm": 6.370606445340842,
+      "direct_shortfall_mm": 4.893672534421606,
+      "measured_anterior_mm": 13.7,
+      "fraction": 0.4650077697329082
+    },
+    {
+      "subject": "s1159",
+      "n": 39,
+      "uniform_scale": 1.0537237338699936,
+      "logged_scale": 1.0537,
+      "s_ml": 0.9427268764978831,
+      "s_si": 1.11178547293083,
+      "s_ap": 1.2395896036871121,
+      "rms_uniform_mm": 16.02192042785209,
+      "rms_aniso_mm": 12.452339645656561,
+      "ap_is_smallest": false,
+      "sternum_ap_lever_mm": 109.79760506513091,
+      "predicted_shortfall_mm": 20.40762736926701,
+      "direct_shortfall_mm": 14.469305636034935,
+      "measured_anterior_mm": 16.11,
+      "fraction": 1.266767682760212
+    }
+  ],
+  "caveat": "four CT subjects registered onto a male-derived body; a statement about the registration, not about any subject's anatomy"
+}

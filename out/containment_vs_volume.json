@@ -1,0 +1,9 @@
+{
+  "n_pass": 77,
+  "n_fail": 14,
+  "median_pass_ml": 97.89184835457795,
+  "median_fail_ml": 196.37472680412353,
+  "mean_rank_diff": 25.493506493506494,
+  "p_two_sided": 0.0005,
+  "caveat": "UT-EndoMRI is an endometriosis cohort, pathology-selected, NOT a typical-anatomy reference"
+}

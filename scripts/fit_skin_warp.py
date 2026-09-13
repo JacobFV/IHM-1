@@ -50,7 +50,16 @@ BUNDLE = "data/derived/segment-contact-meshes/skin-warp-v1"
 REFERENCE_BUNDLE = ROOT / "data/derived/segment-contact-meshes/skin-binding"
 
 # ---- fixed before the fit
-N_CORR, N_CORR_TORSO, N_CORR_PELVIS, CORR_TRIM = 200, 600, 300, 0.10
+N_CORR, N_CORR_TORSO, N_CORR_PELVIS = 200, 600, 300
+# There is no correspondence trim.  A 10% trim was imported into the v1 pre-registration by analogy
+# with the per-segment fit's ICP outlier rejection, never measured, and the sweep in b034206 found
+# its cost strictly monotone: 0% 1.666 mm, 2% 1.729, 5% 1.847, 10% 2.138 to-surface recovery at a
+# fixed fitted count.  It is deleted rather than set to zero so there is nothing here to retune.
+# CAVEAT carried wherever this is quoted: the control's truth is a known field on this same body, so
+# its largest separations are hard but GENUINE; on a real subject-to-scaffold registration they may
+# be WRONG correspondences, where a trim could be protective, and no ground truth exists there to
+# tell.  The only evidence available says remove it; none says keep it.
+CONTROL_FITTED_FRACTION = 0.90   # count-matching for the historical control arms ONLY, not a trim
 FOLDS, LAMBDAS, TIE = 5, [0.0] + [float(x) for x in np.logspace(-8, 0, 17)], 0.01
 # ---- the gates, as pre-registered in 93d3d57
 GATE1_MARGIN_M, ENCLOSURE_MEAN, ENCLOSURE_FOOT, HEEL_RANGE_M = 1e-3, 0.95, 0.95, (-0.025, -0.005)
@@ -63,6 +72,8 @@ def load(name, rel):
     s = importlib.util.spec_from_file_location(name, ROOT / rel); m = importlib.util.module_from_spec(s); s.loader.exec_module(m); return m
 def sha(p): return hashlib.sha256(Path(p).read_bytes()).hexdigest()
 def apply(M, p): return p @ M[:3, :3].T + M[:3, 3]
+def sim_matrix(s, R, t):
+    M = np.eye(4); M[:3, :3] = s * R; M[:3, 3] = t; return M
 
 B = load("btfe", "scripts/build_tissue_force_elements.py")
 bscm = load("bscm", "scripts/build_skin_contact_meshes.py")
@@ -134,7 +145,7 @@ def closest_on_triangles(P, A, B, C):
         put(np.ones(len(P), bool), A + (vb / s)[:, None] * ab + (vc / s)[:, None] * ac)
     return out
 
-def projector(V, F, rng, n=200000):
+def projector(V, F, rng, n=200000, return_face=False):
     """Exact nearest point on a triangle mesh.  The nearest of a dense surface sample is a point ON
     the surface at distance u, so the answer is within u; every triangle whose bounding sphere comes
     within u of the query is tested exactly.  (A k-nearest-sample candidate heuristic missed an 8 mm2
@@ -149,6 +160,7 @@ def projector(V, F, rng, n=200000):
         Cc = closest_on_triangles(Q[qi], tri[ti, 0], tri[ti, 1], tri[ti, 2]); dc = np.linalg.norm(Cc - Q[qi], axis=1)
         order = np.lexsort((dc, qi)); first = order[np.unique(qi[order], return_index=True)[1]]
         if len(first) != len(Q): raise RuntimeError('a query found no candidate triangle')
+        if return_face: return Cc[first], dc[first], u, ti[first]
         return Cc[first], dc[first], u
     return project
 
@@ -289,8 +301,8 @@ def anchor_atlas_samples(Mseg, rest, om):
         i = segments.index(seg); Va, Fa = atlas_mesh(seg); Vo, Fo = om[seg]; Vo_g = apply(rest[seg], Vo)
         n = N_CORR_TORSO if seg == "torso" else N_CORR_PELVIS if seg == "pelvis" else N_CORR
         a = sample(Va, Fa, n, np.random.default_rng(10000 + i))
-        _, d, _ = projector(Vo_g, Fo, np.random.default_rng(20000 + i))(apply(Mseg[seg], a))
-        out.append(a[d <= np.quantile(d, 1 - CORR_TRIM)])
+        projector(Vo_g, Fo, np.random.default_rng(20000 + i))(apply(Mseg[seg], a))
+        out.append(a)
     return np.concatenate(out)
 
 def stage_anchors():
@@ -447,14 +459,13 @@ def stage_fit():
         n = N_CORR_TORSO if seg == "torso" else N_CORR_PELVIS if seg == "pelvis" else N_CORR
         a = sample(Va, Fa, n, np.random.default_rng(10000 + i))
         p = apply(Mseg[seg], a); t, d, _ = projector(Vo_g, Fo, np.random.default_rng(20000 + i))(p)
-        keep = d <= np.quantile(d, 1 - CORR_TRIM)
-        s = apply(G, a)
-        S.append(s[keep]); T.append(t[keep]); L += [seg] * int(keep.sum()); atlas_kept.append(a[keep])
-        per[seg] = dict(sampled=n, kept=int(keep.sum()), projection_median_mm=1e3 * float(np.median(d)),
-                        projection_kept_max_mm=1e3 * float(d[keep].max()),
-                        displacement_from_global_median_mm=1e3 * float(np.median(np.linalg.norm(t[keep] - s[keep], axis=1))),
-                        displacement_from_global_max_mm=1e3 * float(np.linalg.norm(t[keep] - s[keep], axis=1).max()))
-        say(f"  {seg:10s} kept {keep.sum():4d}/{n}  |t - M a| median {per[seg]['projection_median_mm']:5.2f} mm   "
+        s = apply(G, a)                      # every sample is kept: the trim is gone (8caf15b)
+        S.append(s); T.append(t); L += [seg] * len(a); atlas_kept.append(a)
+        per[seg] = dict(sampled=n, kept=int(len(a)), projection_median_mm=1e3 * float(np.median(d)),
+                        projection_max_mm=1e3 * float(d.max()),
+                        displacement_from_global_median_mm=1e3 * float(np.median(np.linalg.norm(t - s, axis=1))),
+                        displacement_from_global_max_mm=1e3 * float(np.linalg.norm(t - s, axis=1).max()))
+        say(f"  {seg:10s} kept {len(a):4d}/{n}  |t - M a| median {per[seg]['projection_median_mm']:5.2f} mm   "
             f"|t - G a| median {per[seg]['displacement_from_global_median_mm']:5.1f} max {per[seg]['displacement_from_global_max_mm']:5.1f} mm")
     S, T, L = np.concatenate(S), np.concatenate(T), np.asarray(L); D = T - S
     atlas_kept = np.concatenate(atlas_kept)
@@ -780,8 +791,8 @@ def stage_recovery():
             # this line's correspondence: the nearest point ON the displaced surface, from the
             # starting map's image -- the identity here, as the global similarity is in the real one
             t, d, _ = projector(Vd, Fa, np.random.default_rng(20000 + i))(a)
-            keep = d <= np.quantile(d, 1 - CORR_TRIM)
-            S.append(a[keep]); T.append(t[keep])
+            keep = d <= np.quantile(d, 1 - 0.10)   # RETIRED control: its 10% is frozen as a literal so
+            S.append(a[keep]); T.append(t[keep])   # the numbers already on the record stay reproducible
             e = sample(Va, Fa, 2000, np.random.default_rng(30000 + i))
             ES.append(e); TRUTH_ES.append(truth.apply(e)); seg_of_es += [seg] * len(e)
         S, T = np.concatenate(S), np.concatenate(T); ES, TRUTH_ES = np.concatenate(ES), np.concatenate(TRUTH_ES)
@@ -819,6 +830,773 @@ def stage_recovery():
         basis="a known thin-plate-spline displacement of this body's own bone groups, fitted by this line's own "
               "correspondences (nearest point on the displaced surface) and lambda rule; recovery measured against "
               "the known field, not against the targets"), indent=2) + "\n")
+
+# The control has to sit at the separation the pipeline operates at, and separation is what is LEFT
+# after the per-segment similarity.  A field with 200 centres over the whole body is locally almost a
+# similarity on any single bone, so the starting map absorbs it and the separation comes out at
+# 0.09 mm -- ten times below the pipeline's 0.78-6.88 mm.  The field therefore needs bone-scale
+# spatial frequency, and its amplitude is calibrated to put the separation inside the measured range.
+FIELD_CENTRES = 2000
+SEPARATION_TARGETS = (0.001, 0.003, 0.007)   # metres, spanning the pipeline's own 0.78-6.88 mm
+
+# Normal shooting (fec11d2/5239b2a), adopted explicitly with its settings declared here rather than
+# defaulted: the module's cap defaults to 20 mm, which is marginal against the 12.32 mm separations
+# measured at amplitude 3, and its agreement filter defaults to OFF.
+SHOOT_CAP_M = 0.050          # 4x the largest measured per-segment separation (12.32 mm)
+SHOOT_AGREEMENT = 0.0        # ON: drop a target whose normal opposes the source's -- the thin-sheet far wall
+SHOOT_RETURN_TOL_M = 1e-3    # the module's own return test, unchanged
+
+def correspond(mode, Va, Fa, Vd, M0, n, seed_a, seed_b, keep_target):
+    """One correspondence, two rules, everything downstream identical.
+
+    Returns the ATLAS-space source points, their targets on the displaced surface, the point the
+    rule started from, and a census of what it dropped and why."""
+    if mode == "nearest":
+        a = sample(Va, Fa, n, np.random.default_rng(seed_a))
+        start = apply(M0, a)
+        tgt, d, _ = projector(Vd, Fa, np.random.default_rng(seed_b))(start)
+        if len(a) > keep_target:             # no trim; uniform thinning only, for count-matching
+            idx = np.random.default_rng(seed_b + 5).choice(len(a), keep_target, replace=False)
+            a, tgt, start = a[idx], tgt[idx], start[idx]
+        return a, tgt, start, dict(rule="nearest point on the surface, no trim",
+                                   sampled=int(n), kept=int(len(a)))
+    if mode == "nearest_untrimmed":
+        # 2x2 cell A (269f1bb): the nearest arm with the trim REMOVED and nothing else changed --
+        # same sampler, same targets, same fitted count, thinned uniformly instead of by separation.
+        a = sample(Va, Fa, n, np.random.default_rng(seed_a))
+        start = apply(M0, a)
+        tgt, _, _ = projector(Vd, Fa, np.random.default_rng(seed_b))(start)
+        if len(a) > keep_target:
+            idx = np.random.default_rng(seed_b + 5).choice(len(a), keep_target, replace=False)
+            a, tgt, start = a[idx], tgt[idx], start[idx]
+        return a, tgt, start, dict(rule="nearest point, NO separation trim, uniform thinning (cell A)",
+                                   sampled=int(n), survived=int(n), kept=int(len(a)))
+    if mode in ("hybrid", "hybrid_trimmed"):
+        # 380df28: the shot's target where it survives, the nearest rule's where it does not, over ONE
+        # population -- so coverage is 100% by construction and only the targets differ.
+        from ihm.anatomy.normal_shooting import shoot_pairs, surface_samples
+        src_V = apply(M0, Va)
+        samples = surface_samples(src_V, Fa, n, seed_a)
+        P = samples[0]
+        r = shoot_pairs(src_V, Fa, Vd, Fa, samples=samples, cap_m=SHOOT_CAP_M,
+                        return_tol_m=SHOOT_RETURN_TOL_M, min_normal_agreement=SHOOT_AGREEMENT)
+        keep = r["keep"]; tgt = np.empty_like(P)
+        if keep.any(): tgt[keep] = r["target"]
+        if (~keep).any():
+            tgt[~keep] = projector(Vd, Fa, np.random.default_rng(seed_b))(P[~keep])[0]
+        if mode == "hybrid_trimmed":           # 2x2 cell B: hybrid targets WITH the nearest arm's trim
+            sep = np.linalg.norm(tgt - P, axis=1); m = sep <= np.quantile(sep, 1 - 0.10)
+            P, tgt, keep = P[m], tgt[m], keep[m]
+        if len(P) > keep_target:               # uniform thinning to the fitted count; coverage unchanged
+            idx = np.random.default_rng(seed_b + 3).choice(len(P), keep_target, replace=False)
+            P, tgt, keep = P[idx], tgt[idx], keep[idx]
+        return apply(np.linalg.inv(M0), P), tgt, P, dict(
+            rule=("hybrid targets WITH the separation trim (cell B)" if mode == "hybrid_trimmed" else
+                  "hybrid: normal shooting where the shot is kept, nearest point where it is dropped"),
+            sampled=int(n), survived=int(len(P)), kept=int(len(P)),
+            from_shot=int(keep.sum()), from_nearest=int((~keep).sum()))
+    from ihm.anatomy.normal_shooting import shoot_pairs   # modes "shooting" and "nearest_subset"
+    src_V = apply(M0, Va)                      # shoot from the starting map's image, in the target's space
+    r = shoot_pairs(src_V, Fa, Vd, Fa, n=3 * n, cap_m=SHOOT_CAP_M, return_tol_m=SHOOT_RETURN_TOL_M,
+                    seed=seed_a, min_normal_agreement=SHOOT_AGREEMENT)
+    P, Q = r["source"], r["target"]
+    survived = int(len(P))                     # BEFORE the subsample: the rule's own keep rate
+    if len(P) > keep_target:                   # match the other arm's fitted count, so the fit is comparable
+        idx = np.random.default_rng(seed_b).choice(len(P), keep_target, replace=False); P, Q = P[idx], Q[idx]
+    a = apply(np.linalg.inv(M0), P)
+    census = dict(rule=f"normal shooting, return test {1e3*SHOOT_RETURN_TOL_M:.1f} mm, cap {1e3*SHOOT_CAP_M:.0f} mm, "
+                       f"min_normal_agreement {SHOOT_AGREEMENT}", sampled=int(r["sampled"]),
+                  survived=survived, kept=int(len(P)),
+                  no_hit=int(r["no_hit"]), no_return=int(r["no_return"]),
+                  return_too_far=int(r["return_too_far"]), normal_disagreed=int(r["normal_disagreed"]))
+    if mode == "shooting": return a, Q, P, census
+    # Control C (0213dfc): the SAME points and the SAME starting points, but the nearest rule's
+    # targets -- correspondence rule held constant against the full-coverage arm, only coverage varies.
+    tgt, _, _ = projector(Vd, Fa, np.random.default_rng(seed_b + 7))(P)
+    census["rule"] = "nearest point, restricted to the population normal shooting keeps (Control C)"
+    return a, tgt, P, census
+
+def stage_recovery_separation(mode="nearest"):
+    """The recovery control at the separation this pipeline actually operates at (73dfc35).
+
+    POST-HOC: this replaces a stop rule that was written at 20 mm, the amplitude of the skin's
+    displacement, and fired on it.  The correspondence never sees 20 mm.  In the real pipeline the
+    target is the nearest point on the scaffold FROM THE PER-SEGMENT SIMILARITY'S IMAGE, and those
+    separations measure 0.78 mm (radius) to 6.88 mm (torso).  So the starting map here is the
+    best-fit similarity from the atlas bone to the displaced bone -- what M_seg is -- and what is
+    scored is the few millimetres left after it.  The 20 mm threshold is NOT carried across at any
+    weight: a threshold set at one separation says nothing at another, which is the error being
+    corrected.  Pointwise and to-surface are reported separately, because a random spline field
+    slides each surface along itself and no surface method can see that component."""
+    t0 = time.time(); OUT.mkdir(parents=True, exist_ok=True)
+    # Known answer for the decomposition itself (ae34bd2): for an ISOTROPIC field the tangential
+    # share is pi/4 by mean and sqrt(2/3) by rms, and the normal share is 1/2.  The measured
+    # fraction is reported against this, so a field that is not isotropic declares itself.
+    rr = np.random.default_rng(7).normal(size=(400000, 3)); nn = np.array([0., 0., 1.])
+    vn = np.abs(rr @ nn); vt = np.linalg.norm(rr - (rr @ nn)[:, None] * nn, axis=1); vm = np.linalg.norm(rr, axis=1)
+    say(f"decomposition known answer, isotropic: mean|v_t|/mean|v| {vt.mean()/vm.mean():.4f} (pi/4 {np.pi/4:.4f}), "
+        f"rms {np.sqrt((vt**2).mean())/np.sqrt((vm**2).mean()):.4f} (sqrt(2/3) {np.sqrt(2/3):.4f}), "
+        f"mean|v_n|/mean|v| {vn.mean()/vm.mean():.4f} (0.5)")
+    meshes = {seg: atlas_mesh(seg) for seg in segments}
+    allV, allF = atlas_bone_surface()
+    centres = sample(allV, allF, FIELD_CENTRES, np.random.default_rng(102))
+    w0 = np.random.default_rng(101).normal(size=(len(centres), 3))
+    P = np.hstack([centres, np.ones((len(centres), 1))]); Q, _ = np.linalg.qr(P)
+    w0 -= Q @ (Q.T @ w0)
+    probe = sample(allV, allF, 20000, np.random.default_rng(103))
+    unit = float(np.linalg.norm(Warp(np.eye(4), centres, w0, np.zeros((4, 3))).displacement(probe), axis=1).mean())
+    # calibration: what a unit field leaves after the starting map, so the amplitudes can be set to
+    # land on the pipeline's separations.  Linear in the amplitude, so one pass fixes all three.
+    unit_field = Warp(np.eye(4), centres, w0 / unit, np.zeros((4, 3)))
+    left = []
+    for seg in segments:
+        Va, Fa = meshes[seg]; Vd = unit_field.apply(Va)
+        s_, R_, t_ = bind.umeyama(Va, Vd)
+        a = sample(Va, Fa, 200, np.random.default_rng(50000 + segments.index(seg)))
+        left.append(np.linalg.norm(unit_field.apply(a) - apply(sim_matrix(s_, R_, t_), a), axis=1))
+    per_metre = float(np.median(np.concatenate(left)))
+    say(f"calibration: a field of {FIELD_CENTRES} centres leaves {1e3*per_metre:.3f} mm after the starting map "
+        f"per 1 m of mean displacement  [{time.time()-t0:.0f}s]")
+    out = {}
+    for target in SEPARATION_TARGETS:
+        magnitude = target / per_metre
+        truth = Warp(np.eye(4), centres, w0 * (magnitude / unit), np.zeros((4, 3)))
+        moved = float(np.linalg.norm(truth.displacement(probe), axis=1).mean())
+        say(f"\n-- aiming at {1e3*target:.1f} mm of separation")
+        say(f"\n== known field moves this body's bones {1e3*moved:.2f} mm on average  [{time.time()-t0:.0f}s]")
+        S, T, SEP, TERR, RESID, TOTAL, ES, TRUTH_ES, seg_es, per_seg = [], [], [], [], [], [], [], [], [], {}
+        TN, TT, LAB = [], [], []   # the error vector split at each point: normal, tangential (the floor), segment
+        CENSUS, ON = [], []        # what the correspondence dropped and why; targets' distance to the surface
+        for seg in segments:
+            i = segments.index(seg); Va, Fa = meshes[seg]; Vd = truth.apply(Va)
+            s_, R_, t_ = bind.umeyama(Va, Vd)                 # the starting map: what M_seg is
+            M0 = sim_matrix(s_, R_, t_)
+            n = N_CORR_TORSO if seg == "torso" else N_CORR_PELVIS if seg == "pelvis" else N_CORR
+            a, tgt, start, census = correspond(mode, Va, Fa, Vd, M0, n, 10000 + i, 20000 + i,
+                                               int(round(n * CONTROL_FITTED_FRACTION)))
+            CENSUS.append((seg, census))
+            true_a = truth.apply(a)
+            # The target's own face on the displaced surface, for the decomposition.  A target that
+            # is not ON that surface declares itself here as a non-zero distance.
+            _, d_on, _, face = projector(Vd, Fa, np.random.default_rng(60000 + i), return_face=True)(tgt)
+            ON.append(d_on)
+            # Split the error against the surface it is measured on.  The tangential part is
+            # invisible to ANY surface-based correspondence -- a floor, not a defect of this one --
+            # and only the normal part may be called target error.
+            tri = Vd[Fa[face]]
+            nrm = np.cross(tri[:, 1] - tri[:, 0], tri[:, 2] - tri[:, 0])
+            nrm /= np.maximum(np.linalg.norm(nrm, axis=1, keepdims=True), 1e-30)
+            err = tgt - true_a
+            en = np.einsum('ij,ij->i', err, nrm)
+            TN.append(np.abs(en)); TT.append(np.linalg.norm(err - en[:, None] * nrm, axis=1))
+            LAB += [seg] * len(a)
+            sep = np.linalg.norm(tgt - start, axis=1)
+            S.append(a); T.append(tgt); SEP.append(sep)
+            TERR.append(np.linalg.norm(err, axis=1))
+            RESID.append(np.linalg.norm(true_a - start, axis=1))
+            TOTAL.append(np.linalg.norm(true_a - a, axis=1))
+            per_seg[seg] = float(np.median(sep))
+            e = sample(Va, Fa, 2000, np.random.default_rng(30000 + i))
+            ES.append(e); TRUTH_ES.append(truth.apply(e)); seg_es += [seg] * len(e)
+        S, T = np.concatenate(S), np.concatenate(T); SEP = np.concatenate(SEP)
+        TERR, RESID, TOTAL = np.concatenate(TERR), np.concatenate(RESID), np.concatenate(TOTAL)
+        ES, TRUTH_ES, seg_es = np.concatenate(ES), np.concatenate(TRUTH_ES), np.asarray(seg_es)
+        ON = np.concatenate(ON)
+        sampled = sum(c["sampled"] for _, c in CENSUS); kept = sum(c["kept"] for _, c in CENSUS)
+        say(f"   correspondence: {CENSUS[0][1]['rule']}")
+        if mode == "hybrid":
+            shot = sum(c["from_shot"] for _, c in CENSUS); near_n = sum(c["from_nearest"] for _, c in CENSUS)
+            say(f"   fitted {kept:,} points, coverage 100% of quota by construction; targets from the shot "
+                f"{shot:,} ({100*shot/max(shot+near_n,1):.1f}%), from the nearest rule {near_n:,}")
+            say("   per-segment coverage (fitted / quota) and where each segment's targets came from:")
+            for s, c in CENSUS:
+                q = int(round((N_CORR_TORSO if s == "torso" else N_CORR_PELVIS if s == "pelvis" else N_CORR) * CONTROL_FITTED_FRACTION))
+                say(f"      {s:10s} {c['kept']:4d} / {q:4d}  {100*c['kept']/q:5.1f}%   shot {c['from_shot']:4d}, nearest {c['from_nearest']:4d}")
+        say(f"   kept {kept:,} of {sampled:,} sampled ({100*kept/sampled:.1f}%)"
+            + ("" if mode == "nearest" else
+               "; dropped: no hit " + str(sum(c.get("no_hit", 0) for _, c in CENSUS))
+               + ", no return " + str(sum(c.get("no_return", 0) for _, c in CENSUS))
+               + ", return too far " + str(sum(c.get("return_too_far", 0) for _, c in CENSUS))
+               + ", normal disagreed " + str(sum(c.get("normal_disagreed", 0) for _, c in CENSUS))))
+        say(f"   targets lie on the surface to {1e3*ON.max():.2e} mm (max)")
+        say(f"   separation after the starting map: median {1e3*np.median(SEP):.2f} mm, "
+            f"range over segments {1e3*min(per_seg.values()):.2f}-{1e3*max(per_seg.values()):.2f} mm "
+            f"(the pipeline's own: 0.78-6.88)")
+        say(f"   residual displacement the correspondence must supply: median {1e3*np.median(RESID):.2f} mm "
+            f"(total field displacement {1e3*np.median(TOTAL):.2f} mm)")
+        TN, TT, LAB = np.concatenate(TN), np.concatenate(TT), np.asarray(LAB)
+        frac = float(TT.mean() / TERR.mean())
+        # Thin-sheet hits are a DIFFERENT phenomenon from the separation scaling: the nearest point
+        # sits on the far wall of a rib or scapula, so the error is a sheet thickness and does not
+        # scale with separation.  Reported as a count of affected correspondences, never as a max.
+        thin = TN > max(0.010, 5 * float(np.median(RESID)))
+        thin_by_seg = {s: int((thin & (LAB == s)).sum()) for s in segments if (thin & (LAB == s)).any()}
+        say(f"   thin-sheet hits (normal error > {1e3*max(0.010, 5*float(np.median(RESID))):.1f} mm, the far wall of a "
+            f"sheet): {int(thin.sum())} of {len(TN)} correspondences ({100*thin.mean():.2f}%) "
+            + (", ".join(f"{s} {n}" for s, n in sorted(thin_by_seg.items(), key=lambda kv: -kv[1])[:6]) or "none"))
+        say(f"   error vs the known truth, whole vector: mean {1e3*TERR.mean():.3f} mm "
+            f"({100*TERR.mean()/RESID.mean():.1f}% of the residual displacement) -- NOT the correspondence's error")
+        say(f"      tangential (the floor, invisible to any surface method): mean {1e3*TT.mean():.3f} mm, "
+            f"fraction {frac:.4f}  (isotropic prediction pi/4 = 0.7854)")
+        say(f"      NORMAL, the only part a correspondence can be blamed for: mean {1e3*TN.mean():.3f} mm, "
+            f"p90 {1e3*np.quantile(TN,.9):.3f}, max {1e3*TN.max():.3f}  "
+            f"=  {100*TN.mean()/RESID.mean():.1f}% of the residual displacement")
+        lam, cv = choose_lambda(S, T)
+        w, a_ = tps_solve(tps_system(S), T - S, lam)
+        W = Warp(np.eye(4), S, w, a_)
+        fit_res = np.linalg.norm(W.apply(S) - T, axis=1)
+        got = W.apply(ES); point = np.linalg.norm(got - TRUTH_ES, axis=1); surf = np.zeros(len(ES))
+        for seg in segments:
+            m = seg_es == seg; Va, Fa = meshes[seg]
+            surf[m] = projector(truth.apply(Va), Fa, np.random.default_rng(40000 + segments.index(seg)))(got[m])[1]
+        say(f"   lambda {lam:.2e}; residual at the correspondences {1e3*np.sqrt((fit_res**2).mean()):.3f} mm RMS")
+        say(f"   RECOVERY pointwise vs truth: {1e3*np.sqrt((point**2).mean()):.3f} mm RMS, p90 {1e3*np.quantile(point,.9):.3f}"
+            f"   (includes the tangential slide no surface method can see)")
+        say(f"   RECOVERY to the surface:     {1e3*np.sqrt((surf**2).mean()):.3f} mm RMS, p90 {1e3*np.quantile(surf,.9):.3f}"
+            f"   [{time.time()-t0:.0f}s]")
+        # DIAGNOSTIC, no threshold attaches and nothing is rescored on it (d4ce65e): agreement with
+        # the targets is not a small version of distance from the truth.  The retired control put
+        # this at 3.4x (0.149 -> 0.510 mm) and 7.7x (0.437 -> 3.345); what it reads at the
+        # operating point is what licenses or forbids quoting a correspondence residual as accuracy.
+        understatement = float(np.sqrt((surf ** 2).mean()) / max(np.sqrt((fit_res ** 2).mean()), 1e-30))
+        say(f"   residual at correspondences {1e3*np.sqrt((fit_res**2).mean()):.3f} mm vs recovery to surface "
+            f"{1e3*np.sqrt((surf**2).mean()):.3f} mm  ->  understatement {understatement:.1f}x  (diagnostic only)")
+        out[f"{1e3*moved:.1f}mm"] = dict(
+            field_mean_displacement_m=moved, separation_median_m=float(np.median(SEP)),
+            separation_by_segment_m=per_seg, residual_displacement_median_m=float(np.median(RESID)),
+            total_displacement_median_m=float(np.median(TOTAL)),
+            whole_error_mean_m=float(TERR.mean()), whole_error_p90_m=float(np.quantile(TERR, .9)),
+            whole_error_max_m=float(TERR.max()),
+            whole_error_over_residual=float(TERR.mean() / RESID.mean()),
+            tangential_floor_mean_m=float(TT.mean()), tangential_fraction=frac, isotropic_fraction=float(np.pi / 4),
+            target_error_normal_mean_m=float(TN.mean()), target_error_normal_p90_m=float(np.quantile(TN, .9)),
+            target_error_normal_max_m=float(TN.max()),
+            target_error_normal_over_residual=float(TN.mean() / RESID.mean()), lam=lam,
+            residual_at_correspondences_rms_m=float(np.sqrt((fit_res ** 2).mean())),
+            recovery_pointwise_rms_m=float(np.sqrt((point ** 2).mean())),
+            recovery_to_surface_rms_m=float(np.sqrt((surf ** 2).mean())),
+            recovery_to_surface_p90_m=float(np.quantile(surf, .9)),
+            understatement_to_surface_over_residual=understatement,
+            correspondence=CENSUS[0][1]["rule"], sampled=sampled, kept=kept,
+            kept_fraction=float(kept / sampled), census_by_segment={s: c for s, c in CENSUS},
+            targets_on_surface_max_m=float(ON.max()),
+            thin_sheet_hits=int(thin.sum()), thin_sheet_by_segment=thin_by_seg)
+    name = {"nearest": "recovery_separation.json", "shooting": "recovery_separation_shooting.json",
+            "nearest_subset": "recovery_separation_controlC.json", "hybrid": "recovery_separation_hybrid.json"}[mode]
+    (OUT / name).write_text(json.dumps(dict(
+        schema="ihm.skin-warp-recovery-separation.v1", status="post-hoc replacement of the 20 mm stop rule (73dfc35)",
+        correspondence_mode=mode, carried_over_threshold=None,
+        shooting_settings=(None if mode == "nearest" else
+                           dict(cap_m=SHOOT_CAP_M, cap_basis="4x the largest measured per-segment separation (12.32 mm)",
+                                min_normal_agreement=SHOOT_AGREEMENT, return_tol_m=SHOOT_RETURN_TOL_M,
+                                module="ihm/anatomy/normal_shooting.py")),
+        scales=out), indent=2) + "\n")
+
+def known_field_setup():
+    """Rebuild the control's known field and its calibration, with the same seeds and constants."""
+    meshes = {seg: atlas_mesh(seg) for seg in segments}
+    allV, allF = atlas_bone_surface()
+    centres = sample(allV, allF, FIELD_CENTRES, np.random.default_rng(102))
+    w0 = np.random.default_rng(101).normal(size=(len(centres), 3))
+    P = np.hstack([centres, np.ones((len(centres), 1))]); Q, _ = np.linalg.qr(P)
+    w0 -= Q @ (Q.T @ w0)
+    probe = sample(allV, allF, 20000, np.random.default_rng(103))
+    unit = float(np.linalg.norm(Warp(np.eye(4), centres, w0, np.zeros((4, 3))).displacement(probe), axis=1).mean())
+    unit_field = Warp(np.eye(4), centres, w0 / unit, np.zeros((4, 3)))
+    left = []
+    for seg in segments:
+        Va, Fa = meshes[seg]; Vd = unit_field.apply(Va)
+        s_, R_, t_ = bind.umeyama(Va, Vd)
+        a = sample(Va, Fa, 200, np.random.default_rng(50000 + segments.index(seg)))
+        left.append(np.linalg.norm(unit_field.apply(a) - apply(sim_matrix(s_, R_, t_), a), axis=1))
+    return meshes, centres, w0, unit, float(np.median(np.concatenate(left)))
+
+def stage_subset():
+    """Score the NEAREST rule on exactly the points normal shooting kept (ded65bf).
+
+    1.933 mm against 0.444 mm compares two rules on two populations: shooting declines to answer
+    for the far-wall hits that inflate the nearest rule's mean, so its kept set may be enriched for
+    points the nearest rule also handles well.  Here both rules are scored on the SAME points.
+    The reconstruction must reproduce the shooting arm's own published number or it is void."""
+    t0 = time.time(); meshes, centres, w0, unit, per_metre = known_field_setup()
+    out = {}
+    for aim, label in ((0.003, "operating amplitude"), (0.007, "largest amplitude")):
+        truth = Warp(np.eye(4), centres, w0 * ((aim / per_metre) / unit), np.zeros((4, 3)))
+        near_n, shoot_n, per_seg, tot_s, tot_k = [], [], {}, 0, 0
+        for seg in segments:
+            i = segments.index(seg); Va, Fa = meshes[seg]; Vd = truth.apply(Va)
+            s_, R_, t_ = bind.umeyama(Va, Vd); M0 = sim_matrix(s_, R_, t_)
+            n = N_CORR_TORSO if seg == "torso" else N_CORR_PELVIS if seg == "pelvis" else N_CORR
+            a, tgt_shoot, start, census = correspond("shooting", Va, Fa, Vd, M0, n, 10000 + i, 20000 + i,
+                                                     int(round(n * CONTROL_FITTED_FRACTION)))
+            # the rule's OWN keep rate, before the subsample that matches the other arm's count
+            survived = census.get("survived", census["kept"])
+            per_seg[seg] = (survived, census["sampled"]); tot_k += survived; tot_s += census["sampled"]
+            if not len(a): continue
+            # the NEAREST rule, from the same starting points, on the same population
+            tgt_near, _, _ = projector(Vd, Fa, np.random.default_rng(20000 + i))(start)
+            true_a = truth.apply(a)
+            _, _, _, face = projector(Vd, Fa, np.random.default_rng(60000 + i), return_face=True)(tgt_shoot)
+            tri = Vd[Fa[face]]
+            nrm = np.cross(tri[:, 1] - tri[:, 0], tri[:, 2] - tri[:, 0])
+            nrm /= np.maximum(np.linalg.norm(nrm, axis=1, keepdims=True), 1e-30)
+            for tgt, acc in ((tgt_near, near_n), (tgt_shoot, shoot_n)):
+                err = tgt - true_a
+                acc.append(np.abs(np.einsum('ij,ij->i', err, nrm)))
+        near_n, shoot_n = np.concatenate(near_n), np.concatenate(shoot_n)
+        say(f"\n== {label} (aim {1e3*aim:.0f} mm): {tot_k:,} of {tot_s:,} kept ({100*tot_k/tot_s:.1f}%)  [{time.time()-t0:.0f}s]")
+        say(f"   on the SAME {len(near_n):,} points, normal error: nearest {1e3*near_n.mean():.3f} mm, "
+            f"shooting {1e3*shoot_n.mean():.3f} mm  ->  {near_n.mean()/max(shoot_n.mean(),1e-30):.2f}x")
+        say(f"   (the shooting number must match this amplitude's published one, or the subset is not the same set)")
+        say(f"   kept fraction per segment:")
+        for s in sorted(per_seg, key=lambda k: per_seg[k][0] / max(per_seg[k][1], 1)):
+            k_, s_ = per_seg[s]
+            say(f"      {s:10s} {k_:5d} / {s_:5d}  {100*k_/max(s_,1):5.1f}%")
+        out[label] = dict(aim_m=aim, kept=tot_k, sampled=tot_s, kept_fraction=float(tot_k / tot_s),
+                          points=int(len(near_n)), nearest_normal_mean_m=float(near_n.mean()),
+                          shooting_normal_mean_m=float(shoot_n.mean()),
+                          ratio=float(near_n.mean() / max(shoot_n.mean(), 1e-30)),
+                          kept_by_segment={s: dict(kept=k_, sampled=s_, fraction=k_ / max(s_, 1)) for s, (k_, s_) in per_seg.items()})
+    (OUT / "subset_control.json").write_text(json.dumps(dict(
+        schema="ihm.skin-warp-subset-control.v1",
+        basis="both correspondence rules scored on the population normal shooting keeps, from the same starting points",
+        scales=out), indent=2) + "\n")
+
+TRIM_SWEEP = (0.0, 0.02, 0.05, 0.10)
+
+def stage_trim_sweep():
+    """What the borrowed 10% costs, swept (b034206).
+
+    The trim entered the v1 pre-registration by ANALOGY with the per-segment fit's ICP trim, never
+    measured.  Here it is varied with everything else fixed: nearest targets, amplitude 2, lambda
+    1e-3, and the fitted COUNT held constant at the trimmed arm's, so only WHICH points are kept
+    changes, not how many.
+
+    CAVEAT, which limits what this can conclude: this control's truth is a known field applied to
+    this same body, so its largest separations are hard but GENUINE.  On a real subject-to-scaffold
+    registration the largest separations may be WRONG correspondences rather than merely hard ones,
+    and a trim that costs accuracy here could be protective there.  No ground truth exists on real
+    data -- which is why this control exists -- so the only evidence available says remove the trim
+    and no evidence says keep it.  That is weaker than the numbers look."""
+    t0 = time.time(); meshes, centres, w0, unit, per_metre = known_field_setup()
+    aim, LAM = 0.003, 1e-3
+    truth = Warp(np.eye(4), centres, w0 * ((aim / per_metre) / unit), np.zeros((4, 3)))
+    rows = []
+    for trim in TRIM_SWEEP:
+        S, T, TN, ES, TRUTH_ES, seg_es = [], [], [], [], [], []
+        for seg in segments:
+            i = segments.index(seg); Va, Fa = meshes[seg]; Vd = truth.apply(Va)
+            s_, R_, t_ = bind.umeyama(Va, Vd); M0 = sim_matrix(s_, R_, t_)
+            n = N_CORR_TORSO if seg == "torso" else N_CORR_PELVIS if seg == "pelvis" else N_CORR
+            quota = int(round(n * CONTROL_FITTED_FRACTION))
+            a = sample(Va, Fa, n, np.random.default_rng(10000 + i)); start = apply(M0, a)
+            tgt, d, _ = projector(Vd, Fa, np.random.default_rng(20000 + i))(start)
+            if trim > 0:
+                m = d <= np.quantile(d, 1 - trim); a, tgt, start = a[m], tgt[m], start[m]
+            if len(a) > quota:                       # count held constant across the sweep
+                idx = np.random.default_rng(20005 + i).choice(len(a), quota, replace=False)
+                a, tgt, start = a[idx], tgt[idx], start[idx]
+            _, _, _, face = projector(Vd, Fa, np.random.default_rng(60000 + i), return_face=True)(tgt)
+            tri = Vd[Fa[face]]
+            nrm = np.cross(tri[:, 1] - tri[:, 0], tri[:, 2] - tri[:, 0])
+            nrm /= np.maximum(np.linalg.norm(nrm, axis=1, keepdims=True), 1e-30)
+            err = tgt - truth.apply(a)
+            TN.append(np.abs(np.einsum('ij,ij->i', err, nrm)))
+            S.append(a); T.append(tgt)
+            e = sample(Va, Fa, 2000, np.random.default_rng(30000 + i))
+            ES.append(e); TRUTH_ES.append(truth.apply(e)); seg_es += [seg] * len(e)
+        S, T, TN = np.concatenate(S), np.concatenate(T), np.concatenate(TN)
+        ES, TRUTH_ES, seg_es = np.concatenate(ES), np.concatenate(TRUTH_ES), np.asarray(seg_es)
+        w, a_ = tps_solve(tps_system(S), T - S, LAM)
+        got = Warp(np.eye(4), S, w, a_).apply(ES); surf = np.zeros(len(ES))
+        for seg in segments:
+            m = seg_es == seg; Va, Fa = meshes[seg]
+            surf[m] = projector(truth.apply(Va), Fa, np.random.default_rng(40000 + segments.index(seg)))(got[m])[1]
+        rec = float(np.sqrt((surf ** 2).mean()))
+        rows.append(dict(trim=trim, points=int(len(S)), to_surface_rms_m=rec,
+                         target_error_normal_mean_m=float(TN.mean())))
+        say(f"   trim {100*trim:5.1f}%  points {len(S):,}  to-surface {1e3*rec:.3f} mm  "
+            f"normal target error {1e3*TN.mean():.3f} mm  [{time.time()-t0:.0f}s]")
+    best = min(rows, key=lambda r: r["to_surface_rms_m"])
+    monotone = all(rows[i]["to_surface_rms_m"] <= rows[i + 1]["to_surface_rms_m"] for i in range(len(rows) - 1))
+    say(f"\nbest at trim {100*best['trim']:.0f}%; monotone in the trim: {monotone}")
+    say("caveat: this control's largest separations are genuine; on real data they may be wrong "
+        "correspondences instead, and no ground truth exists there to tell.")
+    (OUT / "trim_sweep.json").write_text(json.dumps(dict(schema="ihm.skin-warp-trim-sweep.v1", amplitude_aim_m=aim,
+        lam=LAM, rows=rows, monotone=monotone, best_trim=best["trim"],
+        caveat="the control's largest separations are hard but genuine; on real data they may be wrong "
+               "correspondences, where a trim could be protective. No ground truth exists on real data."), indent=2) + "\n")
+
+def stage_twobytwo():
+    """The 2x2 that separates the trim from the targets (269f1bb), at the operating amplitude.
+
+                        trimmed 10%   untrimmed
+      nearest targets   2.138 (have)  cell A
+      hybrid targets    cell B        1.686 (have)
+
+    Within a row only the trim changes, so each row isolates it exactly.  Across a column the
+    sampler also differs (surface_samples vs the area-weighted sampler), which is stated rather
+    than controlled.  lambda is held at 1e-3, what both existing arms' own rule chose here."""
+    t0 = time.time(); meshes, centres, w0, unit, per_metre = known_field_setup()
+    aim, LAM = 0.003, 1e-3
+    truth = Warp(np.eye(4), centres, w0 * ((aim / per_metre) / unit), np.zeros((4, 3)))
+    out = {}
+    for mode, label in (("nearest_untrimmed", "cell A: nearest targets, untrimmed"),
+                        ("hybrid_trimmed", "cell B: hybrid targets, trimmed")):
+        S, T, TN, ES, TRUTH_ES, seg_es = [], [], [], [], [], []
+        for seg in segments:
+            i = segments.index(seg); Va, Fa = meshes[seg]; Vd = truth.apply(Va)
+            s_, R_, t_ = bind.umeyama(Va, Vd); M0 = sim_matrix(s_, R_, t_)
+            n = N_CORR_TORSO if seg == "torso" else N_CORR_PELVIS if seg == "pelvis" else N_CORR
+            a, tgt, start, _ = correspond(mode, Va, Fa, Vd, M0, n, 10000 + i, 20000 + i,
+                                          int(round(n * CONTROL_FITTED_FRACTION)))
+            _, _, _, face = projector(Vd, Fa, np.random.default_rng(60000 + i), return_face=True)(tgt)
+            tri = Vd[Fa[face]]
+            nrm = np.cross(tri[:, 1] - tri[:, 0], tri[:, 2] - tri[:, 0])
+            nrm /= np.maximum(np.linalg.norm(nrm, axis=1, keepdims=True), 1e-30)
+            err = tgt - truth.apply(a)
+            TN.append(np.abs(np.einsum('ij,ij->i', err, nrm)))
+            S.append(a); T.append(tgt)
+            e = sample(Va, Fa, 2000, np.random.default_rng(30000 + i))
+            ES.append(e); TRUTH_ES.append(truth.apply(e)); seg_es += [seg] * len(e)
+        S, T, TN = np.concatenate(S), np.concatenate(T), np.concatenate(TN)
+        ES, TRUTH_ES, seg_es = np.concatenate(ES), np.concatenate(TRUTH_ES), np.asarray(seg_es)
+        w, a_ = tps_solve(tps_system(S), T - S, LAM)
+        got = Warp(np.eye(4), S, w, a_).apply(ES); surf = np.zeros(len(ES))
+        for seg in segments:
+            m = seg_es == seg; Va, Fa = meshes[seg]
+            surf[m] = projector(truth.apply(Va), Fa, np.random.default_rng(40000 + segments.index(seg)))(got[m])[1]
+        rec = float(np.sqrt((surf ** 2).mean()))
+        out[mode] = dict(label=label, to_surface_rms_m=rec, target_error_normal_mean_m=float(TN.mean()),
+                         target_error_normal_p90_m=float(np.quantile(TN, .9)), points=int(len(S)))
+        say(f"{label}: to-surface {1e3*rec:.3f} mm | normal target error mean {1e3*TN.mean():.3f} mm, "
+            f"p90 {1e3*np.quantile(TN,.9):.3f} mm  [{time.time()-t0:.0f}s]")
+    say(f"\n{'':22s} {'trimmed 10%':>13s} {'untrimmed':>13s}")
+    say(f"{'nearest targets':22s} {'2.138':>13s} {1e3*out['nearest_untrimmed']['to_surface_rms_m']:13.3f}")
+    say(f"{'hybrid targets':22s} {1e3*out['hybrid_trimmed']['to_surface_rms_m']:13.3f} {'1.686':>13s}")
+    say("(rows isolate the trim exactly; columns also differ in sampler, which is stated not controlled)")
+    say(f"nearest targets, trim effect: 2.138 -> {1e3*out['nearest_untrimmed']['to_surface_rms_m']:.3f} mm")
+    say(f"hybrid targets,  trim effect: 1.686 -> {1e3*out['hybrid_trimmed']['to_surface_rms_m']:.3f} mm")
+    say(f"cell A target error {1e3*out['nearest_untrimmed']['target_error_normal_mean_m']:.3f} mm against the "
+        f"trimmed arm's 1.933 mm -- if far above, the trim was doing quality work as well as coverage work")
+    (OUT / "twobytwo.json").write_text(json.dumps(dict(schema="ihm.skin-warp-2x2.v1", amplitude_aim_m=aim, lam=LAM,
+        have=dict(nearest_trimmed_to_surface_m=0.002138, hybrid_untrimmed_to_surface_m=0.001686),
+        cells=out, caveat="rows isolate the trim; columns also differ in sampler"), indent=2) + "\n")
+
+def stage_per_segment():
+    """Per-segment to-surface recovery, hybrid against full-coverage nearest (80afd28).
+
+    Tests the mechanism offered for the hybrid's win: that it improves the bulk of points where the
+    shot survives, while the torso -- 6.8% shot share -- uses nearest targets anyway and should
+    therefore barely move.  If the torso improves as much as the well-covered segments, the
+    mechanism is wrong.  Both arms are fitted at lambda 1e-3, which is what each arm's own rule
+    chose at this amplitude, so no cross-validation is repeated and only the targets differ."""
+    t0 = time.time(); meshes, centres, w0, unit, per_metre = known_field_setup()
+    aim, LAM = 0.003, 1e-3
+    truth = Warp(np.eye(4), centres, w0 * ((aim / per_metre) / unit), np.zeros((4, 3)))
+    share, out = {}, {}
+    for mode in ("nearest", "hybrid"):
+        S, T, ES, TRUTH_ES, seg_es = [], [], [], [], []
+        for seg in segments:
+            i = segments.index(seg); Va, Fa = meshes[seg]; Vd = truth.apply(Va)
+            s_, R_, t_ = bind.umeyama(Va, Vd); M0 = sim_matrix(s_, R_, t_)
+            n = N_CORR_TORSO if seg == "torso" else N_CORR_PELVIS if seg == "pelvis" else N_CORR
+            a, tgt, start, census = correspond(mode, Va, Fa, Vd, M0, n, 10000 + i, 20000 + i,
+                                               int(round(n * CONTROL_FITTED_FRACTION)))
+            if mode == "hybrid": share[seg] = census["from_shot"] / max(census["kept"], 1)
+            S.append(a); T.append(tgt)
+            e = sample(Va, Fa, 2000, np.random.default_rng(30000 + i))
+            ES.append(e); TRUTH_ES.append(truth.apply(e)); seg_es += [seg] * len(e)
+        S, T = np.concatenate(S), np.concatenate(T)
+        ES, TRUTH_ES, seg_es = np.concatenate(ES), np.concatenate(TRUTH_ES), np.asarray(seg_es)
+        w, a_ = tps_solve(tps_system(S), T - S, LAM)
+        got = Warp(np.eye(4), S, w, a_).apply(ES)
+        rms = {}
+        for seg in segments:
+            m = seg_es == seg; Va, Fa = meshes[seg]
+            d = projector(truth.apply(Va), Fa, np.random.default_rng(40000 + segments.index(seg)))(got[m])[1]
+            rms[seg] = float(np.sqrt((d ** 2).mean()))
+        out[mode] = rms
+        say(f"   {mode} fitted and scored  [{time.time()-t0:.0f}s]")
+    say(f"\n{'segment':10s} {'shot share':>11s} {'nearest':>9s} {'hybrid':>9s} {'change':>9s}")
+    rows = []
+    for seg in sorted(segments, key=lambda s: -share[s]):
+        n_, h_ = out["nearest"][seg], out["hybrid"][seg]
+        rows.append((seg, share[seg], n_, h_))
+        say(f"{seg:10s} {100*share[seg]:10.1f}% {1e3*n_:9.3f} {1e3*h_:9.3f} {100*(h_-n_)/n_:8.1f}%")
+    hi = [r for r in rows if r[1] >= 0.5]; lo = [r for r in rows if r[1] < 0.5]
+    for label, group in (("shot share >= 50%", hi), ("shot share < 50%", lo)):
+        if group:
+            say(f"{label}: {len(group)} segments, mean change "
+                f"{100*np.mean([(h-n)/n for _, _, n, h in group]):.1f}%")
+    (OUT / "per_segment_recovery.json").write_text(json.dumps(dict(
+        schema="ihm.skin-warp-per-segment.v1", amplitude_aim_m=aim, lam=LAM,
+        basis="hybrid vs full-coverage nearest, identical fit path, lambda held at what both arms' own rule chose",
+        rows=[dict(segment=s, shot_share=sh, nearest_to_surface_m=n_, hybrid_to_surface_m=h_,
+                   change=(h_ - n_) / n_) for s, sh, n_, h_ in rows]), indent=2) + "\n")
+
+def stage_toe_geometry():
+    """Does the toe skin carry more material than its warped bone frame can hold? (8f78bf2)
+
+    The mechanism under test: if the scaffold's forefoot differs from this specimen's by ~21%, skin
+    carried rigidly through the warp has the wrong amount of material for the frame, the excess
+    buckles (gate 4's folds) and the bone pushes through where the skin pulled away (gate 2's
+    shortfall).  It predicts compression NEAR THE SCALE FACTOR and folds where local area
+    compression is greatest.  Note the direction: this warp maps the atlas onto the SCAFFOLD, whose
+    foot is the larger, so the segment totals are expected to EXPAND; only a local measure can test
+    the mechanism, and that is what is computed here."""
+    W = load_warp(OUT / "warp.npz")
+    mech = json.loads((ROOT / "data/derived/canonical/mechanics.json").read_text())
+    skin = next(e for e in mech["entities"] if e["role"] == "skin")
+    g = json.loads(gzip.decompress((ROOT / skin["reference_geometry"]["path"]).read_bytes()))
+    V = np.asarray(g["positions"], float).reshape(-1, 3); F = np.asarray(g["indices"], np.int64).reshape(-1, 3)
+    ext = np.asarray(json.loads((ROOT / bscm.EVIDENCE).read_text())["contact_eligible_triangle_ids"], np.int64)
+    used = np.unique(F[ext])
+    Y0, Y1 = np.zeros_like(V), np.zeros_like(V)
+    Y0[used], Y1[used] = W.ground(V[used]), W.apply(V[used])
+    def nrm(Y, f): t = Y[f]; return np.cross(t[:, 1] - t[:, 0], t[:, 2] - t[:, 0])
+    n0, n1 = nrm(Y0, F[ext]), nrm(Y1, F[ext])
+    a0, a1 = np.linalg.norm(n0, axis=1) / 2, np.linalg.norm(n1, axis=1) / 2
+    ratio = np.where(a0 > 0, a1 / np.maximum(a0, 1e-30), np.nan)
+    inverted = (n0 * n1).sum(1) < 0
+    sb = json.loads(gzip.decompress((ROOT / bscm.BINDING).read_bytes())); names = [s["id"] for s in sb["segments"]]
+    Wt = np.asarray(sb["weights"], np.float32)
+    owner = ((Wt[F[:, 0]] + Wt[F[:, 1]] + Wt[F[:, 2]]) / 3).argmax(1)[ext]
+    say(f"{'segment':10s} {'area total':>10s} {'median tri':>11s} {'p10 tri':>8s} {'frac<1':>7s} "
+        f"{'principal extents (after/before)':>34s}  {'folds':>6s} {'fold median ratio':>18s}")
+    rows = []
+    for i, name in enumerate(names):
+        m = owner == i
+        if not m.any(): continue
+        vm = np.unique(F[ext][m])
+        P0, P1 = Y0[vm], Y1[vm]
+        ext0 = np.linalg.svd(P0 - P0.mean(0), compute_uv=False) / max(len(P0) - 1, 1) ** 0.5
+        ext1 = np.linalg.svd(P1 - P1.mean(0), compute_uv=False) / max(len(P1) - 1, 1) ** 0.5
+        pr = ext1 / np.maximum(ext0, 1e-30)
+        f_m = inverted & m
+        rows.append(dict(segment=name, area_total=float(a1[m].sum() / a0[m].sum()),
+                         median_triangle=float(np.nanmedian(ratio[m])), p10=float(np.nanquantile(ratio[m], .1)),
+                         fraction_below_one=float(np.nanmean(ratio[m] < 1)), principal=[float(x) for x in pr],
+                         folds=int(f_m.sum()),
+                         fold_median_ratio=(float(np.nanmedian(ratio[f_m])) if f_m.any() else None)))
+        r = rows[-1]
+        say(f"{name:10s} {r['area_total']:10.3f} {r['median_triangle']:11.3f} {r['p10']:8.3f} "
+            f"{r['fraction_below_one']:7.3f} {pr[0]:10.3f} {pr[1]:10.3f} {pr[2]:10.3f}  {r['folds']:6d} "
+            + ("      -" if r['fold_median_ratio'] is None else f"{r['fold_median_ratio']:18.3f}"))
+    fold_all = ratio[inverted]; rest = ratio[~inverted]
+    say(f"\nfolded triangles: {int(inverted.sum())}, median area ratio {np.nanmedian(fold_all):.3f}; "
+        f"all others {np.nanmedian(rest):.3f}")
+    say(f"folds with local COMPRESSION (ratio < 1): {int(np.nansum(fold_all < 1))} of {int(inverted.sum())}")
+    (OUT / "toe_geometry.json").write_text(json.dumps(dict(schema="ihm.skin-warp-toe-geometry.v1",
+        basis="per-triangle area change and per-segment principal extents under the fitted warp; "
+              "the warp maps atlas -> scaffold, whose foot is larger, so expansion is the expected direction",
+        rows=rows, folded_median_ratio=float(np.nanmedian(fold_all)), others_median_ratio=float(np.nanmedian(rest)),
+        folds_compressive=int(np.nansum(fold_all < 1)), folds_total=int(inverted.sum())), indent=2) + "\n")
+
+def stage_seam():
+    """Do folds sit at the MTP seam for a reason BEYOND being where compression is? (43a63e4)
+
+    A bare 'folds cluster at the seam' is circular if the seam is simply the most compressed place,
+    so folded triangles are compared against unfolded ones MATCHED on local area ratio.  If matched
+    controls do not exist -- if folds occupy a compression range unfolded triangles never reach --
+    that is reported rather than papered over, and it answers the question in the other direction."""
+    CALIPER = 0.02
+    W = load_warp(OUT / "warp.npz")
+    mech = json.loads((ROOT / "data/derived/canonical/mechanics.json").read_text())
+    skin = next(e for e in mech["entities"] if e["role"] == "skin")
+    g = json.loads(gzip.decompress((ROOT / skin["reference_geometry"]["path"]).read_bytes()))
+    V = np.asarray(g["positions"], float).reshape(-1, 3); F = np.asarray(g["indices"], np.int64).reshape(-1, 3)
+    ext = np.asarray(json.loads((ROOT / bscm.EVIDENCE).read_text())["contact_eligible_triangle_ids"], np.int64)
+    used = np.unique(F[ext])
+    Y0, Y1 = np.zeros_like(V), np.zeros_like(V)
+    Y0[used], Y1[used] = W.ground(V[used]), W.apply(V[used])
+    tri = F[ext]
+    def nrm(Y): t = Y[tri]; return np.cross(t[:, 1] - t[:, 0], t[:, 2] - t[:, 0])
+    n0, n1 = nrm(Y0), nrm(Y1)
+    a0, a1 = np.linalg.norm(n0, axis=1) / 2, np.linalg.norm(n1, axis=1) / 2
+    ratio = a1 / np.maximum(a0, 1e-30); inverted = (n0 * n1).sum(1) < 0
+    sb = json.loads(gzip.decompress((ROOT / bscm.BINDING).read_bytes())); names = [s["id"] for s in sb["segments"]]
+    Wt = np.asarray(sb["weights"], np.float32)
+    owner = ((Wt[F[:, 0]] + Wt[F[:, 1]] + Wt[F[:, 2]]) / 3).argmax(1)[ext]
+    out = {}
+    for side in ("l", "r"):
+        ti, ci = names.index("toes_" + side), names.index("calcn_" + side)
+        toes, calcn = owner == ti, owner == ci
+        if not toes.any(): continue
+        # the seam: vertices carried by BOTH partitions, i.e. the MTP boundary on the skin
+        seam = np.intersect1d(np.unique(tri[toes]), np.unique(tri[calcn]))
+        if not len(seam): say(f"toes_{side}: no shared boundary with calcn_{side}"); continue
+        cen = Y0[tri[toes]].mean(1)
+        d = cKDTree(Y0[seam]).query(cen)[0]
+        r_, inv_ = ratio[toes], inverted[toes]
+        say(f"\n== toes_{side}: {len(cen):,} triangles, {int(inv_.sum())} folded, seam of {len(seam)} vertices")
+        say(f"   RAW: folded {1e3*d[inv_].mean():.1f} mm from the seam, unfolded {1e3*d[~inv_].mean():.1f} mm")
+        say(f"   compression: folded ratio {np.median(r_[inv_]):.3f} (min {r_[inv_].min():.3f}, max {r_[inv_].max():.3f}); "
+            f"unfolded {np.median(r_[~inv_]):.3f}")
+        # matched on local area ratio
+        lo, hi = r_[inv_].min() - CALIPER, r_[inv_].max() + CALIPER
+        pool = (~inv_) & (r_ >= lo) & (r_ <= hi)
+        say(f"   unfolded triangles inside the folded compression range [{lo:.3f}, {hi:.3f}]: {int(pool.sum())}")
+        pairs, matched_f, matched_u = 0, [], []
+        for k in np.flatnonzero(inv_):
+            c = (~inv_) & (np.abs(r_ - r_[k]) <= CALIPER)
+            if c.any(): pairs += 1; matched_f.append(d[k]); matched_u.append(d[c].mean())
+        if pairs:
+            mf, mu = np.asarray(matched_f), np.asarray(matched_u)
+            diff = mf - mu
+            t = float(diff.mean() / (diff.std(ddof=1) / np.sqrt(len(diff)))) if len(diff) > 1 and diff.std(ddof=1) > 0 else float('nan')
+            say(f"   MATCHED (caliper {CALIPER} on area ratio): {pairs} of {int(inv_.sum())} folded triangles matched")
+            say(f"      folded {1e3*mf.mean():.1f} mm vs equally-compressed unfolded {1e3*mu.mean():.1f} mm "
+                f"-> difference {1e3*diff.mean():+.1f} mm, paired t = {t:+.2f}")
+        else:
+            say(f"   MATCHED: NO unfolded triangle is within {CALIPER} of any folded one's area ratio -- "
+                f"the folds occupy a compression range the rest of the toe skin never reaches, so the "
+                f"matched test cannot be run and compression alone separates them")
+        out[f"toes_{side}"] = dict(triangles=int(len(cen)), folded=int(inv_.sum()), seam_vertices=int(len(seam)),
+            raw_folded_mm=1e3 * float(d[inv_].mean()), raw_unfolded_mm=1e3 * float(d[~inv_].mean()),
+            folded_ratio_median=float(np.median(r_[inv_])), folded_ratio_min=float(r_[inv_].min()),
+            folded_ratio_max=float(r_[inv_].max()), unfolded_ratio_median=float(np.median(r_[~inv_])),
+            pool_in_range=int(pool.sum()), matched_pairs=int(pairs),
+            matched_folded_mm=(1e3 * float(np.mean(matched_f)) if pairs else None),
+            matched_unfolded_mm=(1e3 * float(np.mean(matched_u)) if pairs else None))
+    (OUT / "seam_test.json").write_text(json.dumps(dict(schema="ihm.skin-warp-seam.v1", caliper=CALIPER,
+        basis="folded vs unfolded toe triangles, matched on local area ratio, compared by distance to the "
+              "toes/calcn partition seam (the MTP boundary on the skin)", sides=out), indent=2) + "\n")
+
+def stage_contact_folds():
+    """Do the folded triangles reach the contact layer the engine uses? (a173957)
+
+    Option (a) -- accept the folds and gate the body anyway -- is viable only if they are not in the
+    contact set, or carry negligible area and no load.  A fold reverses the surface locally, so a
+    triangle there has an outward normal pointing inward and any force it carried would push the
+    wrong way.  Checked here: whether the bundle the engine loads still contains them, their share
+    of the contact area, and where they sit relative to the plantar band that meets the floor."""
+    W = load_warp(OUT / "warp.npz")
+    Tb, frames_b, _ = bscm.binding_registration()
+    mech = json.loads((ROOT / "data/derived/canonical/mechanics.json").read_text())
+    skin = next(e for e in mech["entities"] if e["role"] == "skin")
+    g = json.loads(gzip.decompress((ROOT / skin["reference_geometry"]["path"]).read_bytes()))
+    V = np.asarray(g["positions"], float).reshape(-1, 3); F = np.asarray(g["indices"], np.int64).reshape(-1, 3)
+    ext = np.asarray(json.loads((ROOT / bscm.EVIDENCE).read_text())["contact_eligible_triangle_ids"], np.int64)
+    source = W.apply(V)                                   # exactly what the bundle is built from
+    used = np.unique(F[ext])
+    Y0 = np.zeros_like(V); Y0[used] = W.ground(V[used])
+    def nrm(Y, f): t = Y[f]; return np.cross(t[:, 1] - t[:, 0], t[:, 2] - t[:, 0])
+    inverted = (nrm(Y0, F[ext]) * nrm(source, F[ext])).sum(1) < 0
+    sb = json.loads(gzip.decompress((ROOT / bscm.BINDING).read_bytes())); names = [s["id"] for s in sb["segments"]]
+    Wt = np.asarray(sb["weights"], np.float32)
+    owner = ((Wt[F[:, 0]] + Wt[F[:, 1]] + Wt[F[:, 2]]) / 3).argmax(1)[ext]
+    manifest = json.loads((ROOT / BUNDLE / "manifest.json").read_text())
+    rec = {r["body"]: r for r in manifest["records"]}
+    say(f"folded triangles: {int(inverted.sum())} of {len(ext):,} exterior")
+    out = {}
+    for i, name in enumerate(names):
+        m = owner == i
+        if not (m & inverted).any(): continue
+        sel = np.flatnonzero(m)                            # this segment's exterior triangles, build()'s order
+        fold_local = inverted[m]
+        tri_g = source[F[ext][m]]
+        area = np.linalg.norm(np.cross(tri_g[:, 1] - tri_g[:, 0], tri_g[:, 2] - tri_g[:, 0]), axis=1) / 2
+        r = rec.get(name)
+        in_bundle = r is not None and r["exterior_triangles"] == len(sel)
+        # into the segment's own frame, where the bundle stores it and where the floor is met
+        M = np.linalg.inv(frames_b[name])
+        loc = tri_g.reshape(-1, 3) @ M[:3, :3].T + M[:3, 3]
+        cen_y = loc.reshape(-1, 3, 3).mean(1)[:, 1]
+        piece_min = float(cen_y.min()) if not len(loc) else float((loc[:, 1]).min())
+        h = cen_y[fold_local] - piece_min                  # height above the piece's lowest point
+        plantar = int((h <= 0.010).sum())
+        say(f"\n{name}: {int(fold_local.sum())} folded of {len(sel):,} triangles in this piece")
+        say(f"   still in the bundle the engine loads: {in_bundle} "
+            f"(manifest records {r['exterior_triangles'] if r else 'no record'} exterior triangles, build selected {len(sel)})")
+        say(f"   folded area {1e6*area[fold_local].sum():.1f} mm2 of {1e6*area.sum():.0f} mm2 in this piece "
+            f"({100*area[fold_local].sum()/area.sum():.3f}%); of the bundle's {1e4*r['cut_surface_area_m2']:.0f} cm2 cut area "
+            f"that is {100*area[fold_local].sum()/r['cut_surface_area_m2']:.3f}%" if r else "")
+        say(f"   height above the piece's lowest point: median {1e3*np.median(h):.1f} mm, min {1e3*h.min():.1f} mm; "
+            f"{plantar} of {int(fold_local.sum())} lie within the lowest 10 mm (the band that meets the floor)")
+        out[name] = dict(folded=int(fold_local.sum()), piece_triangles=int(len(sel)), in_bundle=bool(in_bundle),
+                         folded_area_m2=float(area[fold_local].sum()), piece_area_m2=float(area.sum()),
+                         folded_area_fraction=float(area[fold_local].sum() / area.sum()),
+                         height_above_lowest_median_m=float(np.median(h)), height_above_lowest_min_m=float(h.min()),
+                         within_plantar_10mm=plantar)
+    (OUT / "contact_folds.json").write_text(json.dumps(dict(schema="ihm.skin-warp-contact-folds.v1",
+        bundle=BUNDLE, basis="folded triangles located in the bundle the engine loads, by area share and by "
+        "height above the piece's lowest point in its own segment frame", segments=out), indent=2) + "\n")
+
+def stage_crawl_clearance(trajectory):
+    """SUPPLEMENTARY: how close the folded triangles come to the floor over a crawl (3070d00).
+
+    THIS IS NOT THE COMMISSIONED MEASUREMENT.  a0653f5 asked for clearance over a crawl that
+    RESPECTS the declared joint limits.  No such trajectory exists in this repo: all 67 stored
+    trajectories are outside the declared ranges, and the only two crawls plantarflex the ankle to
+    -1.073 rad against a declared +-0.873.  So this is measured against an INADMISSIBLE trajectory
+    and it does not close the branch.  Clearance here means the standing-pose conclusion survives a
+    pose that over-plantarflexes by 11.5 degrees; it does not mean an admissible crawl was tested."""
+    spec = importlib.util.spec_from_file_location("crawl", ROOT / "scripts/crawl.py")
+    crawl = importlib.util.module_from_spec(spec); spec.loader.exec_module(crawl)
+    ranges = crawl.declared_ranges(B.MODEL)
+    t = json.loads((ROOT / trajectory).read_text()); frames = t["frames"]
+    def pose_of(f):
+        d = f.get("joints") or f.get("coordinates") or {}
+        return {k: (v["value"] if isinstance(v, dict) else v) for k, v in d.items()}
+    worst, where = 0.0, None; outside = set()
+    for f in frames:
+        for k, v in pose_of(f).items():
+            if k in ranges and isinstance(v, (int, float)):
+                lo, hi = ranges[k]; e = max(lo - v, v - hi, 0.0)
+                if e > 1e-9: outside.add(k)
+                if e > worst: worst, where = e, k
+    say(f"trajectory {trajectory}: {len(frames)} frames")
+    say(f"AUDIT: outside the declared ranges on {len(outside)} of {len(ranges)} coordinates; worst "
+        f"{worst:.4f} rad ({np.degrees(worst):.1f} deg) on {where}  -> INADMISSIBLE, supplementary only")
+    W = load_warp(OUT / "warp.npz"); Tb, frames_b, _ = bscm.binding_registration()
+    mech = json.loads((ROOT / "data/derived/canonical/mechanics.json").read_text())
+    skin = next(e for e in mech["entities"] if e["role"] == "skin")
+    g = json.loads(gzip.decompress((ROOT / skin["reference_geometry"]["path"]).read_bytes()))
+    V = np.asarray(g["positions"], float).reshape(-1, 3); F = np.asarray(g["indices"], np.int64).reshape(-1, 3)
+    ext = np.asarray(json.loads((ROOT / bscm.EVIDENCE).read_text())["contact_eligible_triangle_ids"], np.int64)
+    source = W.apply(V); used = np.unique(F[ext])
+    Y0 = np.zeros_like(V); Y0[used] = W.ground(V[used])
+    def nrm(Y, f): tt = Y[f]; return np.cross(tt[:, 1] - tt[:, 0], tt[:, 2] - tt[:, 0])
+    inverted = (nrm(Y0, F[ext]) * nrm(source, F[ext])).sum(1) < 0
+    sb = json.loads(gzip.decompress((ROOT / bscm.BINDING).read_bytes())); names = [s["id"] for s in sb["segments"]]
+    Wt = np.asarray(sb["weights"], np.float32)
+    owner = ((Wt[F[:, 0]] + Wt[F[:, 1]] + Wt[F[:, 2]]) / 3).argmax(1)[ext]
+    fold_local, piece_local = {}, {}
+    for i, name in enumerate(names):
+        m = (owner == i) & inverted
+        if not m.any(): continue
+        M = np.linalg.inv(frames_b[name])
+        fold_local[name] = source[np.unique(F[ext][m])] @ M[:3, :3].T + M[:3, 3]
+        piece_local[name] = source[np.unique(F[ext][owner == i])] @ M[:3, :3].T + M[:3, 3]
+    model = render.OsimModel(B.MODEL)
+    best = dict(clearance=np.inf); series = []
+    for n, f in enumerate(frames):
+        tr = model.forward(pose_of(f))
+        lo_fold, lo_piece = np.inf, np.inf
+        for name, P in fold_local.items():
+            Mt = tr[name]
+            lo_fold = min(lo_fold, float((P @ Mt[:3, :3].T + Mt[:3, 3])[:, 1].min()))
+            Q = piece_local[name]
+            lo_piece = min(lo_piece, float((Q @ Mt[:3, :3].T + Mt[:3, 3])[:, 1].min()))
+        series.append(lo_fold)
+        if lo_fold < best["clearance"]:
+            best = dict(clearance=lo_fold, frame=n, time_s=f.get("time_s"), piece_lowest=lo_piece)
+    s = np.asarray(series)
+    say(f"\nfolded triangles vs the floor (y = 0) over {len(frames)} frames:")
+    say(f"   minimum clearance {1e3*best['clearance']:+.1f} mm at frame {best['frame']} (t = {best['time_s']}s); "
+        f"the skin of those segments reaches {1e3*best['piece_lowest']:+.1f} mm at that frame")
+    say(f"   median over frames {1e3*np.median(s):+.1f} mm, 5th percentile {1e3*np.quantile(s,.05):+.1f} mm")
+    say(f"   frames with a folded triangle at or below the floor: {int((s <= 0).sum())} of {len(s)}")
+    (OUT / "crawl_clearance.json").write_text(json.dumps(dict(schema="ihm.skin-warp-crawl-clearance.v1",
+        status="SUPPLEMENTARY -- measured against an INADMISSIBLE trajectory; not the measurement "
+               "commissioned in a0653f5, and it does not close that branch",
+        trajectory=str(trajectory), frames=len(frames),
+        audit=dict(coordinates_outside=len(outside), coordinates_total=len(ranges),
+                   worst_excursion_rad=worst, worst_coordinate=where),
+        minimum_clearance_m=float(best["clearance"]), minimum_frame=int(best["frame"]),
+        minimum_time_s=best["time_s"], piece_lowest_at_minimum_m=float(best["piece_lowest"]),
+        median_clearance_m=float(np.median(s)), frames_at_or_below_floor=int((s <= 0).sum())), indent=2) + "\n")
 
 def stage_slivers():
     """The triangles gate 4 caught: slivers in the SOURCE mesh, or ordinary triangles?
@@ -866,11 +1644,18 @@ def stage_slivers():
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("--stage", choices=("fit", "score", "diagnose", "slivers", "anchors", "recovery"), required=True)
+    ap.add_argument("--stage", choices=("fit", "score", "diagnose", "slivers", "anchors", "recovery",
+                                        "recovery-separation", "recovery-shooting", "subset",
+                                        "recovery-controlC", "recovery-hybrid", "per-segment", "twobytwo", "trim-sweep", "toe-geometry", "seam", "contact-folds", "crawl-clearance"), required=True)
     ap.add_argument("--family", choices=("spline", "flow", "anchored", "anchored-surface"), default="spline",
                     help="spline: the v1 thin-plate warp (data/derived/skin-warp-v1). "
                          "flow: the v2 stationary-velocity-field flow, which cannot fold (skin-warp-v2). "
                          "anchored: the v3 spline with anchors for skin that has no bone under it (skin-warp-v3).")
+    ap.add_argument("--out", default=None, help="override the family's output directory")
+    ap.add_argument("--bundle", default=None, help="override the family's contact-mesh bundle path")
+    ap.add_argument("--trajectory", default="data/derived/crawl-best/trajectory.json",
+                    help="crawl-clearance only: the trajectory to measure against; it is audited against the "
+                         "declared joint ranges and the verdict is recorded with the number")
     args = ap.parse_args()
     # module-level rebinding, so every stage reads the family's own directories
     FAMILY = args.family
@@ -885,5 +1670,19 @@ if __name__ == "__main__":
         ANCHOR_MEASURE = "surface"
         OUT = ROOT / "data/derived/skin-warp-v4"
         BUNDLE = "data/derived/segment-contact-meshes/skin-warp-v4"
+    if args.out: OUT = ROOT / args.out
+    if args.bundle: BUNDLE = args.bundle
     {"fit": stage_fit, "score": stage_score, "diagnose": stage_diagnose, "slivers": stage_slivers,
-     "anchors": stage_anchors, "recovery": stage_recovery}[args.stage]()
+     "anchors": stage_anchors, "recovery": stage_recovery,
+     "recovery-separation": stage_recovery_separation,
+     "recovery-shooting": lambda: stage_recovery_separation("shooting"),
+     "subset": stage_subset,
+     "recovery-controlC": lambda: stage_recovery_separation("nearest_subset"),
+     "recovery-hybrid": lambda: stage_recovery_separation("hybrid"),
+     "per-segment": stage_per_segment,
+     "twobytwo": stage_twobytwo,
+     "trim-sweep": stage_trim_sweep,
+     "toe-geometry": stage_toe_geometry,
+     "seam": stage_seam,
+     "contact-folds": stage_contact_folds,
+     "crawl-clearance": lambda: stage_crawl_clearance(args.trajectory)}[args.stage]()

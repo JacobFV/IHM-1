@@ -1,0 +1,76 @@
+{
+  "gate": {
+    "fraction_min": 0.5,
+    "localisation_min": 2.0,
+    "n_min": 3
+  },
+  "confirmed": true,
+  "n_fraction_met": 4,
+  "n_localisation_met": 4,
+  "known_answers": {
+    "null_anterior_mm": 0.0,
+    "null_posterior_mm": 0.0,
+    "translation_anterior_mm": 9.999999999999995,
+    "translation_posterior_mm": 9.999999999999995,
+    "density_ladder": [
+      {
+        "fraction": 0.5,
+        "n": 32784,
+        "anterior_mm": 0.0,
+        "posterior_mm": 0.0
+      },
+      {
+        "fraction": 0.25,
+        "n": 16418,
+        "anterior_mm": 0.49499999999999544,
+        "posterior_mm": -0.37655000000000327
+      },
+      {
+        "fraction": 0.1,
+        "n": 6538,
+        "anterior_mm": 1.787999999999984,
+        "posterior_mm": -1.2952049999999973
+      }
+    ],
+    "null_cannot_fail": "the self-vs-copy null tests determinism only; the density ladder is the null that can fail"
+  },
+  "rows": [
+    {
+      "subject": "s0790",
+      "n_cells": 1266,
+      "anterior_mm": 11.53512914454341,
+      "posterior_mm": -0.9355771454813977,
+      "measured_anterior_mm": 19.96,
+      "fraction": 0.5779122817907519,
+      "localisation": 12.329425959425347
+    },
+    {
+      "subject": "s0970",
+      "n_cells": 1127,
+      "anterior_mm": 16.509544037883252,
+      "posterior_mm": -3.971796382416501,
+      "measured_anterior_mm": 24.73,
+      "fraction": 0.6675917524417004,
+      "localisation": 4.1566944647445885
+    },
+    {
+      "subject": "s1067",
+      "n_cells": 1355,
+      "anterior_mm": 9.51288927422704,
+      "posterior_mm": -1.617868992526722,
+      "measured_anterior_mm": 13.7,
+      "fraction": 0.6943714798705869,
+      "localisation": 5.87988849416676
+    },
+    {
+      "subject": "s1159",
+      "n_cells": 1242,
+      "anterior_mm": 11.112611402104358,
+      "posterior_mm": -1.380139039716191,
+      "measured_anterior_mm": 16.11,
+      "fraction": 0.689795866052412,
+      "localisation": 8.051805711103958
+    }
+  ],
+  "caveat": "four CT subjects registered onto a male-derived body; a statement about the registration and this body's thorax, not about any subject's anatomy"
+}
