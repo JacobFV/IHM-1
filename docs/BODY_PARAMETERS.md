@@ -5833,3 +5833,29 @@ What has changed is that the parametrization no longer stops at the scaffold.
    **D1-017 at 0.6881** from three subjects at **1.0000** against a 0.99 bar, and failed it. That
    is what a per-subject gate looks like when it has something to say — which is also why the
    subject-independent one is worth labelling rather than removing.
+
+   ## UT-EndoMRI world-frame registration: running the other 98
+
+   `ut-endomri-registered-v2-world` holds **4 subjects**. The organs directory holds **102**. The
+   four were an explicit pilot — `register_pelvic_organs_batch.py` takes `--subjects` — and three
+   of them passed while **D1-017 failed containment at 0.6881** against a 0.99 bar.
+
+   **PREDICTED, before the full run:**
+
+   * **Between 70% and 90% pass all gates.** The pilot's 3 of 4 is the only evidence and it is four
+     subjects, so the interval is wide on purpose. A rate outside it means the pilot subjects were
+     not representative — which is worth knowing, because four subjects were chosen somehow.
+   * **The failures are containment, not laterality or the known answer.** Containment is the only
+     gate that discriminated in the pilot; laterality passed 4 of 4 and the known answer is
+     subject-independent by construction, so neither can produce a subject-specific failure.
+   * **The endometriosis caveat travels on every artefact**, as it does now — these are
+     pathology-selected organs and 42% of the cohort's labelled uteri exceed an adult non-gravid
+     reference.
+
+   **What a high failure rate would mean.** Containment asks whether the mapped uterus sits inside
+   this body's pelvic ring. A subject whose uterus does not fit is either badly registered or
+   genuinely larger than this pelvis admits — and the cohort characterisation already found uteri
+   up to **765.7 mL, 6.4x the top of a normal range**. So a containment failure here is not
+   necessarily a registration fault, and the two cannot be told apart by the gate alone. **If the
+   failures correlate with uterine volume, they are anatomy; if they do not, they are
+   registration.** That is checkable once the run is done and is worth more than the pass rate.
