@@ -5969,3 +5969,61 @@ What has changed is that the parametrization no longer stops at the scaffold.
 
    CAVEAT, as on every UT-EndoMRI artefact: endometriosis cohort, pathology-selected, NOT a
    typical-anatomy reference.
+
+   ## 2026-09-13 -- PRE-REGISTRATION: is the ~19 mm anterior deficit the single scale?
+
+   *Written and committed before the fit is run. The gate below is fixed here and is not
+   moved afterwards, whichever way it falls.*
+
+   **The claim under test.** `register_female_torso.py` fits a **similarity** -- rotation +
+   **one uniform scale** + translation (`umeyama`, line ~104). One scale cannot represent a
+   thorax that differs from this body's by a different ratio in AP depth than in ML width or
+   SI height. The 34 bone-centroid correspondences are 24 ribs, 2 clavicles, 12 thoracic
+   vertebrae and the sternum: that population's spread is dominated by ML and SI, so a uniform
+   scale fitted to it is set almost entirely by those two axes. If the CT subjects' thoraces
+   are proportionally **shallower in AP** than this body's, the fitted scale overshoots AP,
+   the mapped chest wall lands too far posterior, and every structure attached to it -- the
+   breasts -- lands with it. That would make the +18.62 mm a property of the FIT, fixable, and
+   not a property of the anatomy.
+
+   **The measurement.** Rebuild the same correspondences the registration builds (same pairs,
+   same `--whole-labels-only` drop, same area-weighted centroids). Fit two maps to the SAME
+   points:
+
+   * `umeyama` -- rotation + one scale + translation, exactly what the registration uses
+   * an anisotropic fit -- rotation + **three per-axis scales** + translation, the axes being
+     this body's own anatomical axes (x lateral, y superoinferior, z anterior)
+
+   **The prediction, fixed now.** If this explanation is right, `s_AP` is the smallest of the
+   three, and the anterior shortfall it produces at the sternum --
+   `(s_AP - s_uniform) x (AP distance from the fit's centroid to the sternum)` -- accounts for
+   a substantial part of that subject's measured anterior correction. Those corrections, from
+   the table above, are per subject: **s0790 +19.96, s0970 +24.73, s1067 +13.70, s1159 +16.11 mm.**
+
+   **THE GATE.**
+   * **CONFIRMED** if `s_AP` is the smallest of the three scales in **>= 3 of 4** subjects AND
+     the predicted anterior shortfall is **>= 50%** of that subject's measured correction in
+     **>= 3 of 4** subjects.
+   * **REFUTED** otherwise -- and in particular if `s_AP` is not systematically the smallest,
+     the uniform scale is not what puts the breasts 19 mm deep, and the next candidate is
+     named rather than this one rescued. A partial result (say, right sign but 20% of the
+     magnitude) is recorded as REFUTED with the fraction stated, not as "partly confirmed".
+
+   **KNOWN ANSWER 1, symmetry-breaking.** Take a subject's own centroids, apply a known
+   anisotropic transform -- AP scaled **0.900**, ML and SI **1.000**, composed with a random
+   rotation and translation -- and fit both. The anisotropic fit must recover the ratio 0.900
+   to **< 0.5%**; the uniform fit must **NOT** (it must return a single scale near the
+   geometric mean ~0.965 and leave a residual the anisotropic fit does not). A fit that
+   recovers 0.900 from the uniform map is not measuring anisotropy at all.
+
+   **KNOWN ANSWER 2, and it is the one that matters.** An anisotropic fit has three parameters
+   where the similarity has one, so it will *always* report some anisotropy. Under an
+   **isotropic** synthetic transform (all three scales 1.070, random rotation, random
+   translation) the anisotropic fit must return three scales equal to within **0.5%**. If it
+   manufactures anisotropy from an isotropic input, every anisotropy it reports on real data
+   is its own and the measurement is void. *A control that cannot fail has not passed --
+   known answer 1 alone would pass for a fit that simply has more freedom.*
+
+   **What this does not test.** It says nothing about the 2.61-4.03 mm residual shape
+   mismatch, which no global map of any kind reaches. If CONFIRMED, the remedy is an
+   anisotropic registration and the residual stays exactly where it is.
