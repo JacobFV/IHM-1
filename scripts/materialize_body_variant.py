@@ -41,7 +41,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from ihm import body_scaling as bs                                       # noqa: E402
-from ihm.body_parameters import (MECHANICAL_SOURCE_MASS_KG,              # noqa: E402
+from ihm.body_parameters import (ANATOMICAL_STATURE_M,                   # noqa: E402
+                                 MECHANICAL_SOURCE_MASS_KG,
                                  MECHANICAL_STATURE_M,
                                  MECHANICAL_TARGET_MASS_KG, resolve)
 
@@ -153,13 +154,18 @@ def main():
     stages['anatomy'] = anatomy_report
     gates += [dict(g, stage='anatomy') for g in anatomy_report['gates']]
 
-    scaled_peripheral, nerve_report = nerve_stage.build(ROOT, scale)
+    # nerve and skin-patch routes were measured on the ANATOMICAL body (1.7195 m skin),
+    # so they take stature / 1.7195, not the scaffold's stature / 1.7973 (18 Sep 2026).
+    # The anatomy stage above keeps the scaffold's factor: it preserves the declared
+    # registration between the two bodies, and that seam is recorded, not hidden.
+    route_scale = parameters['derived']['anatomical_stature_scale']
+    scaled_peripheral, nerve_report = nerve_stage.build(ROOT, route_scale)
     (out / 'peripheral_scaled.json').write_text(
         json.dumps(scaled_peripheral, indent=1) + '\n')
     stages['nerve'] = nerve_report
     gates += [dict(g, stage='nerve') for g in nerve_report['gates']]
 
-    scaled_dermatomes, skin_report = skin_stage.build(ROOT, scale)
+    scaled_dermatomes, skin_report = skin_stage.build(ROOT, route_scale)
     (out / 'dermatomes_scaled.json').write_text(
         json.dumps(scaled_dermatomes, indent=1) + '\n')
     stages['skin'] = skin_report
@@ -183,7 +189,13 @@ def main():
 
     record = dict(
         schema='ihm.body-variant.v1',
-        stature_m=stature, stature_scale=scale,
+        stature_m=stature, stature_scale=scale, route_stature_scale=route_scale,
+        known_seam=('nerve and skin-patch routes scale by stature / ANATOMICAL_STATURE_M '
+                    '(%.6f); the anatomical entities and segment binding scale by '
+                    'stature / MECHANICAL_STATURE_M (%.6f), preserving the declared '
+                    'registration between the two bodies. So the displayed anatomy of this '
+                    'variant is %.4f m tall while the routes the brain reads belong to a '
+                    '%.4f m body.' % (route_scale, scale, ANATOMICAL_STATURE_M * scale, stature)),
         body_parameters=parameters,
         scaling_table=bs.table(),
         stages={name: {k: v for k, v in report.items()

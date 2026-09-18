@@ -120,3 +120,40 @@ all, which is what item 1 says it was not. Skill belongs to
 - A replay carries no physiology and no internal state. `/api/body/segment-bound`
   lists these separately from the canonical trajectory and says so on every
   entry, so a kinematic replay can never read as the body's own physics.
+
+## The per-frame call (18 September 2026)
+
+`ihm/assembly/anatomy_pose.py` turns this binding into something a running simulation can call
+every frame. `scripts/render_anatomical_motion.py` had used it only offline.
+
+    poser = AnatomyPoser.from_workspace(root)          # ~0.5 s, checks frames and provenance
+    pose = poser.pose_from_native(native_frame)         # or .pose({body: 4x4}), .pose_from_coordinates(q)
+    pose.rotation[i], pose.translation[i]               # entity pose.entity_ids[i]: x = R x_rest + t
+    skin = poser.skin_vertices(pose)                    # FJ2810, by the continuous linear blend
+
+It costs 1.3 ms a frame, and 57 ms with all 102,467 skin vertices blended.
+`scripts/verify_anatomy_pose.py` gates it, and every gate passes:
+- FK against Simbody: 7.8e-16 over 12 native frames.
+- The reference pose reproduces rest: 5e-16 m, centroids and vertices.
+- Each of the 31 coordinates moves exactly its distal entities, with 0 violations in either pivot
+  mode.
+- Output is bit-identical when called twice.
+- Each frame guard is made to fire: millimetres, the atlas frame, the 15.7% display-box rescale,
+  a missing body, and `z-anatomy-display-normalized` vertices are all refused.
+- Coverage: 3,995 rigid, the skin blended, its 3 layers following, and 1 not posed (the lymphatic
+  network graph, listed on every frame).
+
+Two corrections the module makes, and says so:
+- **FK.** It evaluates `SimmSpline` as OpenSim does (Forsythe–Malcolm–Moler).
+  `scripts/render_body_3d.py` uses a natural spline, and the patellae there sit up to 6.5 mm off
+  Simbody.
+- **Symmetry.** 11 of the 1,342 mirrored pairs in this binding sit on unmirrored segments. At load,
+  each pair takes its higher-coherence side. All 11 overrides are in `poser.symmetry_overrides`,
+  and the fix at source is to score both sides in `bind_anatomy_to_segments.py`.
+
+`pivot='anatomical'` re-seats each joint at the closest bone surfaces instead of at OpenSim's
+joint centre, keeping every orientation exact. It cuts the worst joint opening from 108 to 32 mm
+at the knee and from 105 to 14 mm at the lumbar joint. In exchange it moves the anatomy off the
+simulated segments by 11 mm median and 50 mm max over gait-best. The default is `opensim`.
+
+The full account is in IBM-1 `docs/DISCONNECTS.md` §1.

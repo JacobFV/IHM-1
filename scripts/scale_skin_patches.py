@@ -50,6 +50,14 @@ exceeds trunk innervation by more than an order of magnitude.  Holding the count
 fixed preserves that limitation exactly; it neither improves nor worsens it.
 The honest summary is: **count fixed, area scales, density falls as s**-2, and
 the density that falls was never a measured density in the first place.**
+
+**The scale is taken against the ANATOMICAL body (fixed 18 Sep 2026).**  The
+patches, their areas and their route lengths are measured on the FJ2810 skin,
+1.7195 m tall.  This stage used `stature / 1.7973 m`, the mechanical scaffold's
+height, exactly as `scale_nerve_conduction.py` did, so a "2.03 m" request got a
+1.942 m body's skin and patch routes.  Both stages now use
+`resolve()['derived']['anatomical_stature_scale']`, so the patch routes and the
+nerve routes the brain reads stay on one body.  `--scale` is that factor.
 """
 from pathlib import Path
 import argparse, gzip, hashlib, json, sys
@@ -60,7 +68,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from ihm import body_scaling as bs                                  # noqa: E402
-from ihm.body_parameters import MECHANICAL_STATURE_M, resolve       # noqa: E402
+from ihm.body_parameters import ANATOMICAL_STATURE_M, resolve       # noqa: E402
 
 DERMATOMES = 'data/derived/canonical/dermatomes.json'
 SKIN_GEOMETRY = 'data/derived/canonical/geometry/body-bp3d-FJ2810.json.gz'
@@ -298,10 +306,11 @@ def main():
     parser.add_argument('--sabotage', choices=('area-as-length',), default=None)
     args = parser.parse_args()
 
-    stature = args.stature_m if args.stature_m is not None else args.scale * MECHANICAL_STATURE_M
-    scale = resolve({'stature_m': stature})['derived']['stature_scale']
+    stature = args.stature_m if args.stature_m is not None else args.scale * ANATOMICAL_STATURE_M
+    derived = resolve({'stature_m': stature})['derived']
+    scale = derived['anatomical_stature_scale']      # patches live on the anatomical skin
     out = ROOT / (args.output or ('data/derived/body-variants/stature_%s'
-                                  % ('%.6f' % scale).replace('.', 'p')))
+                                  % ('%.6f' % derived['stature_scale']).replace('.', 'p')))
     out.mkdir(parents=True, exist_ok=True)
 
     if args.sabotage == 'area-as-length':

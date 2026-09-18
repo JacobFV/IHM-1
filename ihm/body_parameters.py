@@ -583,6 +583,12 @@ def resolve(request=None):
 
     derived = {
         'stature_scale': stature_scale,
+        # The factor for quantities MEASURED ON THE ANATOMICAL BODY -- nerve route
+        # lengths, skin-patch route lengths -- when the request is read as the
+        # person's stature.  Those were measured on the 1.7195 m skin, not on the
+        # 1.7973 m scaffold, so scaling them by `stature_scale` gave a "2.03 m"
+        # body the nerves of a 1.942 m one (docs/BODY_PERIPHERAL.md, 18 Sep 2026).
+        'anatomical_stature_scale': resolved['stature_m'] / ANATOMICAL_STATURE_M,
         'mass_scale': resolved['mass_kg'] / MECHANICAL_SOURCE_MASS_KG,
         'mass_source': ('requested' if 'mass_kg' in request
                         else 'derived from stature_m on the measured allometric '

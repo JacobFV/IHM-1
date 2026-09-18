@@ -2180,6 +2180,29 @@ The three retinal populations ride **one** optic nerve, so their spread is a
 delay too and separates in proportion: 7.66 ms → 8.65 ms. All seven are named in
 advance in `HEADLINE` so the report cannot be read as whatever came out.
 
+> **Superseded, 18 September 2026.** Two errors are in the table above.
+>
+> **The reference stature.** The routes are measured on the anatomical body, a 1.7195 m skin, not
+> on the 1.7973 m scaffold. They now scale by `stature / ANATOMICAL_STATURE_M`, so at 2.03 m every
+> delay is **+18.06%**.
+>
+> **The route lengths.** The spinal relays sat 89–349 mm below their cord segments, and the gastric
+> endpoint sat below the stomach.
+>
+> Current values:
+>
+> | route | length | delay | at 2.03 m |
+> |---|---:|---:|---:|
+> | vagal C | 447.9 mm | 447.91 ms | 528.80 ms |
+> | greater splanchnic C | 279.1 mm | 279.13 ms | 329.54 ms |
+> | median A-beta | 705.4 mm | 12.83 ms | 15.14 ms |
+> | sciatic Ia | 600.0 mm | 6.00 ms | 7.08 ms |
+>
+> Optic is unchanged in length: 3.28 ms, 3.88 ms at 2.03 m.
+>
+> Two nerve-stage gates now FAIL: the 30 mm floor at s = 1, and the independent arm at 2.03 m. The
+> cause and the full account are in `docs/BODY_PERIPHERAL.md`, "FIXED, 18 September 2026".
+
 This is the consequence that says the parametrization reached the body.
 `docs/MILESTONES.md` records that lumping peripheral delays costs as much as
 deleting an entire fibre group, so delays are load-bearing for the brain and a

@@ -56,14 +56,26 @@ def build():
  geo=json.loads(gzip.decompress((ROOT/skin['reference_geometry']['path']).read_bytes()))
  vertices=np.asarray(geo['positions'],float).reshape(-1,3)
  relays=[];nerves={};lines=[];bindings=[];unsupported=[];patches=[]
- ys={'cranial':.65,'cervical':.53,'thoracic':.30,'lumbar':.04,'sacral':-.08}
+ # Relay positions come from build_spinal_cord_levels.py: the registered Z-Anatomy dura
+ # centreline at each group's segment level, and the pons/medulla for the brainstem relays.
+ # Until 18 Sep 2026 they were typed here as [+-.012, y, -.04] with y in {.65,.53,.30,.04,-.08},
+ # which put every spinal relay 89-337 mm BELOW its cord segment (docs/BODY_PERIPHERAL.md).
+ levels_path=OUT/'spinal_cord_levels.json'
+ if not levels_path.exists():raise SystemExit('run scripts/build_spinal_cord_levels.py first: relays are read from '+str(levels_path))
+ levels=json.loads(levels_path.read_text())
+ if levels['frame']['id']!=anatomy['frame']['id']:raise SystemExit('spinal_cord_levels.json is in '+levels['frame']['id']+', anatomy.json in '+anatomy['frame']['id'])
+ if not levels['relay_level_gate']['passed']:raise SystemExit('spinal_cord_levels.json relay-level canal gate did not pass')
+ placed=levels['relays'];levels_sha=hashlib.sha256(levels_path.read_bytes()).hexdigest()
+ ys=['cranial','cervical','thoracic','lumbar','sacral']
  def nerve(side,name,level):
   nid=f'peripheral-nerve-{side}-{name}';rid=f'peripheral-relay-{side}-{level}'
   if nid not in nerves:
    nerves[nid]={'id':nid,'name':f'{side} {name.replace("_"," ")} nerve','side':side,'relay_id':rid,'evidence_kind':'named_anatomical_prior','geometry_kind':'schematic_route','measured_axon_geometry':False}
   return nid,rid
  for side,sign in [('left',1),('right',-1)]:
-  for level,y in ys.items():relays.append({'id':f'peripheral-relay-{side}-{level}','name':f'{side} {level} somatic relay','side':side,'position_m':[sign*.012,y,-.04],'kind':'cranial_sensory_motor_relay' if level=='cranial' else 'spinal_segment_group','evidence_kind':'regional_group_prior'})
+  for level in ys:
+   rid=f'peripheral-relay-{side}-{level}';q=placed[rid]
+   relays.append({'id':rid,'name':f'{side} {level} somatic relay','side':side,'position_m':q['position_m'],'kind':'cranial_sensory_motor_relay' if level=='cranial' else 'spinal_segment_group','evidence_kind':q['evidence_kind'],'position_source':q['position_source'],'level_rule':q['level_rule'],**({'segment':q['segment'],'vertebra':q['vertebra'],'distance_to_dura_centreline_m':q['distance_to_dura_centreline_m']} if 'segment' in q else {'structure':q['structure'],'entity_id':q['entity_id']}),'levels_artifact':{'path':str(levels_path.relative_to(ROOT)),'sha256':levels_sha}})
  rp={r['id']:r['position_m'] for r in relays}
  for m in mechanics['muscles']:
   e=entities[m['canonical_entity_id']];name=e['name'].lower()
@@ -92,7 +104,7 @@ def build():
   src=ROOT.parent/'IBM-1'/rel;dst=preserved/('ibm-'+Path(rel).parent.name+'-'+Path(rel).name);shutil.copyfile(src,dst)
   receipts.append({'source_path':str(src),'preserved_path':str(dst.relative_to(ROOT)),'sha256':hashlib.sha256(dst.read_bytes()).hexdigest(),'role':'inspected_reference_not_executed'})
  data={'schema_version':1,'id':'ihm-body-peripheral','frame':anatomy['frame'],'units':{'position':'m','time':'s','activity':'Hz','pressure':'Pa','temperature':'C','activation':'1'},'relays':relays,'nerves':list(nerves.values()),'receptor_patches':patches,'muscle_bindings':bindings,'unsupported_muscles':unsupported,'sources':SOURCES,'source_receipts':receipts,'parameters':{'pressure_gain_hz_pa':.005,'stretch_gain_hz':200.,'temperature_gain_hz_C':8.,'baseline_skin_temperature_C':32.,'max_receptor_rate_hz':200.,'receptor_tau_s':.02,'activation_tau_s':.03,'tactile_velocity_m_s':50.,'warm_velocity_m_s':.5,'cold_velocity_m_s':2.1,'central_afferent_delay_s':.012},'parameter_scope':'Uncalibrated illustrative transfer priors; velocity anchors differ by fiber class. Rate is excess evoked activity above omitted spontaneous baseline.','biological_validation':False,'ibm_reuse_scope':'Existing BodyBrain executes preserved IBM Wilson-Cowan/shunting functions. Peripheral runtime is a new causal time-domain reduction informed by IBM receptor/effector declarations; IBM spectral runtime, full multimodal materialization, uncertainty, inference and learned motor policies are not integrated.','counts':{'nerves':len(nerves),'relays':len(relays),'receptor_patches':len(patches),'muscle_bindings':len(bindings),'unsupported_muscles':len(unsupported)},'limitations':['Schematic centerlines are inferred visualization; do not represent dissected or measured nerves.','Coarse contralateral postcentral routing; modality-specific thalamic nuclei and decussation sites unresolved.','Named muscle bindings are generic anatomical priors; mixed innervation and absent name rules remain unsupported.','No autonomic controller or respiration override; somatic commands only.']}
- enrich(data,lines,ROOT)
+ enrich(data,lines,ROOT,anatomy=anatomy,levels=levels)
  relays=data['relays']
  for fn,payload in [('peripheral.json',data),('peripheral_display.json',{'schema_version':1,'frame':anatomy['frame'],'lines':lines,'nodes':relays+patches,'evidence_kind':'schematic_anatomical_prior'})]:
   (OUT/fn).write_text(json.dumps(payload,indent=2,allow_nan=False)+'\n')

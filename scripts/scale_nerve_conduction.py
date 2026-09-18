@@ -12,8 +12,18 @@ are cellular dimensions; they do not know how tall their owner is, and
 sources.  Route length is anatomy and scales with stature.  So the delay --
 `route / velocity` -- takes the length exponent exactly, and **every conduction
 delay in the body lengthens in proportion to stature**.  At 2.03 m against the
-source subject's 1.7973 m that is +12.95% on all 1,743 recorded delays plus every route the
-fibre-class join derives one from.
+1.7195 m anatomical body the routes were measured on, that is +18.06% on all
+1,743 recorded delays plus every route the fibre-class join derives one from.
+
+**The reference stature is the ANATOMICAL body's (fixed 18 Sep 2026).**  Every
+route is measured on `anatomy.json` -- entity centroids, the FJ2810 skin, relays
+on the registered cord -- whose skin is 1.7195 m tall.  Until 18 September this
+script divided by the MECHANICAL scaffold's 1.7973 m, so a "2.03 m" request got
++12.95% and carried the nerves of a 1.942 m body, 4.5% short.  The reference is
+now `ROUTE_REFERENCE_STATURE_M = ANATOMICAL_STATURE_M`, and a gate re-measures
+the skin mesh's extent and requires it to equal that reference: the gate the old
+convention would have failed.  `--scale` is the ROUTE scale (identity at 1.0 is
+the anatomical body's own 1.7195 m).
 
 Why it matters beyond being correct.  `docs/MILESTONES.md` records that lumping
 every peripheral delay to step 0 costs as much as deleting an entire fibre group
@@ -53,7 +63,13 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from ihm import body_scaling as bs                                  # noqa: E402
-from ihm.body_parameters import MECHANICAL_STATURE_M, resolve       # noqa: E402
+from ihm.body_parameters import (ANATOMICAL_STATURE_M,              # noqa: E402
+                                 MECHANICAL_STATURE_M, resolve)
+
+#: The stature the route lengths were MEASURED at: the anatomical skin's extent,
+#: not the mechanical scaffold's head-marker height.  See the docstring.
+ROUTE_REFERENCE_STATURE_M = ANATOMICAL_STATURE_M
+SKIN_GEOMETRY = 'data/derived/canonical/geometry/body-bp3d-FJ2810.json.gz'
 
 PERIPHERAL = 'data/derived/canonical/peripheral.json'
 ANATOMY = 'data/derived/canonical/anatomy.json'
@@ -237,6 +253,8 @@ def build(root, scale, anatomy_scale=None):
                                 anatomy_scale=anatomy_scale)
     report = dict(
         schema='ihm.nerve-conduction-scaling.v1', stature_scale=scale,
+        route_reference_stature_m=ROUTE_REFERENCE_STATURE_M,
+        implied_stature_m=ROUTE_REFERENCE_STATURE_M * scale,
         routes=len(peripheral['nerves']),
         muscle_bindings=len(peripheral['muscle_bindings']),
         receptor_patches=len(peripheral['receptor_patches']),
@@ -338,6 +356,22 @@ def run_gates(root, peripheral, scaled, centroids, velocity, scale,
                'so this fails if the nerves were scaled and the anatomy was not.',
                routes=n)
 
+    # 4b. The reference stature is the body the routes were measured on. Re-measure
+    #     the skin mesh they were measured against; under the pre-18-Sep convention
+    #     (MECHANICAL_STATURE_M, 1.7973 m) this fails by 4.5%.
+    import gzip
+    with gzip.open(root / SKIN_GEOMETRY) as handle:
+        skin = json.load(handle)['positions'][1::3]
+    extent = max(skin) - min(skin)
+    record('route reference stature is the measured skin extent of the routes\' body',
+           abs(ROUTE_REFERENCE_STATURE_M / extent - 1.0), 1e-6,
+           'route lengths are measured on anatomy.json (skin FJ2810 %.4f m tall); scaling '
+           'them by stature / %.4f m makes a requested stature the stature of the body the '
+           'nerves are on. The mechanical scaffold\'s %.4f m head-marker height is a '
+           'different body.' % (extent, ROUTE_REFERENCE_STATURE_M, MECHANICAL_STATURE_M),
+           skin_extent_m=extent, reference_m=ROUTE_REFERENCE_STATURE_M,
+           implied_stature_m=ROUTE_REFERENCE_STATURE_M * scale)
+
     # 5. The floor. max(0.03, ...) is not homogeneous; measure whether it bites.
     shortest = min(r['path_length_m'] for r in peripheral['muscle_bindings'])
     record('the 30 mm route floor is inactive at this scale',
@@ -345,7 +379,7 @@ def run_gates(root, peripheral, scaled, centroids, velocity, scale,
            'max(0.03, 1.15*d) stops being homogeneous below 30 mm. The shortest '
            'route is %.1f mm, so the floor activates only below s = %.3f, against '
            '%.3f at the bottom of the declared stature range.'
-           % (1000 * shortest, BINDING_FLOOR_M / shortest, 1.40 / MECHANICAL_STATURE_M),
+           % (1000 * shortest, BINDING_FLOOR_M / shortest, 1.40 / ROUTE_REFERENCE_STATURE_M),
            shortest_route_mm=1000 * shortest,
            floor_active_below_scale=BINDING_FLOOR_M / shortest)
 
@@ -414,10 +448,13 @@ def main():
                                                'routes-without-anatomy'), default=None)
     args = parser.parse_args()
 
-    stature = args.stature_m if args.stature_m is not None else args.scale * MECHANICAL_STATURE_M
-    scale = resolve({'stature_m': stature})['derived']['stature_scale']
+    stature = (args.stature_m if args.stature_m is not None
+               else args.scale * ROUTE_REFERENCE_STATURE_M)
+    derived = resolve({'stature_m': stature})['derived']
+    scale = derived['anatomical_stature_scale']       # the ROUTE scale; see the docstring
+    # the variant directory is keyed by the mechanical scale, as every other stage's is
     out = ROOT / (args.output or ('data/derived/body-variants/stature_%s'
-                                  % ('%.6f' % scale).replace('.', 'p')))
+                                  % ('%.6f' % derived['stature_scale']).replace('.', 'p')))
     out.mkdir(parents=True, exist_ok=True)
 
     if args.sabotage == 'scale-the-velocities':

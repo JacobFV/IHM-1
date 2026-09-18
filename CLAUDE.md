@@ -49,6 +49,19 @@ report what the crude body did as what the body did.
   is acceleration and `_Actuation_power` is watts; both parse cleanly and produce
   muscle excursions of 1e22. Gate on physiology (path/optimal in 0.2–20), not on
   filenames alone.
+- **The FK in `render_body_3d.py` uses the wrong spline type for the patella.** It
+  puts the patellae up to 6.5 mm off Simbody's own transforms. `ihm/assembly/anatomy_pose.py`
+  matches Simbody to 8e-16 over 12 native frames: use it, not the renderer's FK, for
+  anything measured.
+- **Two bodies of different STATURE too.** Nerve routes are measured on the anatomical
+  body (1.7195 m) but were scaled by the mechanical body's height (1.7973 m), so a "2.03 m"
+  variant carried a 1.942 m body's nerves. Routes now scale by stature / 1.7195. The
+  displayed anatomy still scales mechanically (`known_seam`).
+- **A hand-placed coordinate is not a measurement, even in the right frame.** Every spinal
+  relay sat 89-337 mm below the cord segment it stood for, and four visceral endpoints were
+  off their organs (the pelvic one by 171 mm, in the thigh). A frame audit passed all of
+  them. Check each ENDPOINT against the structure its own label names; the relays are now
+  on the dura centreline (`scripts/build_spinal_cord_levels.py`).
 - **Two bodies of different mass.** Mechanical 77.6122029 kg (a bare literal in
   67 places across 58 files, no derivation found) against anatomical 70.7713 kg.
 

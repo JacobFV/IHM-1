@@ -1,10 +1,12 @@
 """Versioned geometry contract and a preserved IBM fibre-velocity snapshot."""
 import ast
+import gzip
 import hashlib
 import json
 import math
 from pathlib import Path
-from peripheral_route_catalog import SOMATIC, VISCERAL, SPECIAL
+import numpy as np
+from peripheral_route_catalog import SOMATIC, VISCERAL, SPECIAL, ANCHORED
 
 LIMITATIONS = [
  'Authored schematic geometry, not dissected nerves or measured axon lengths.',
@@ -12,7 +14,38 @@ LIMITATIONS = [
  'Length excludes downstream cortical transport and synaptic delays.',
 ]
 
-def enrich(data, lines, root):
+def _vertices(root, entity):
+    g = json.loads(gzip.decompress((root/entity['reference_geometry']['path']).read_bytes()))
+    return np.asarray(g['positions'], float).reshape(-1, 3)
+
+
+def anchor_point(root, entities, name, side, authored):
+    """The endpoint of an ANCHORED route: a vertex of the named mesh, by the stated rule."""
+    spec = ANCHORED[name]
+    e = entities[spec['entity'][side]]
+    V = _vertices(root, e)
+    c = np.asarray(e['centroid_m'], float)
+    sign = 1.0 if side == 'left' else -1.0
+    rule = spec['rule']
+    if rule == 'stomach_wall':
+        near = V[(np.abs(V[:, 0]-c[0]) < .015) & (np.abs(V[:, 1]-c[1]) < .015)]
+        p = near[np.argmax(near[:, 2])] if side == 'left' else near[np.argmin(near[:, 2])]
+    elif rule == 'kidney_hilum':
+        p = V[np.argmin(np.linalg.norm(V - np.array([0., c[1], c[2]]), axis=1))]
+    elif rule == 'nearest_surface':
+        q = np.array([sign*authored[0], *authored[1:]])
+        p = V[np.argmin(np.linalg.norm(V - q, axis=1))]
+    elif rule == 'diaphragm_dome':
+        band = V[np.abs(V[:, 0] - sign*abs(authored[0])) < .01]
+        p = band[np.argmax(band[:, 1])]
+    else:
+        raise ValueError(f'unknown anchor rule {rule!r}')
+    return [float(v) for v in p], dict(rule=rule, entity_id=e['id'], entity_name=e['name'],
+                                       label=spec['label'], authored_point_replaced=authored,
+                                       authored_point_was=spec['was_off_mm'])
+
+
+def enrich(data, lines, root, anatomy=None, levels=None):
     source = root.parent/'IBM-1/ibm/topologies/nerve.py'
     raw = source.read_bytes()
     tree = ast.parse(raw)
@@ -24,6 +57,9 @@ def enrich(data, lines, root):
         sha256=hashlib.sha256(raw).hexdigest(),role='fibre_velocity_prior_snapshot_not_executed'))
     data['fibre_velocity_m_s'] = {k:dict(low=v[0],typical=v[1],high=v[2]) for k,v in velocities.items()}
     data['fibre_velocity_scope'] = 'IBM nerve.py snapshot; unvalidated physiology priors, not independent IHM measurements. Composition is owned by IBM; local channels do not assert whole-trunk composition.'
+    if anatomy is None:
+        anatomy = json.loads((root/'data/derived/canonical/anatomy.json').read_text())
+    entities = {e['id']:e for e in anatomy['entities']}
     relays = {r['id']:r for r in data['relays']}
     nerves = {n['id']:n for n in data['nerves']}
     records = data['muscle_bindings']+data['receptor_patches']
@@ -50,12 +86,34 @@ def enrich(data, lines, root):
         if f'peripheral-nerve-{side}-{name}' in nerves:
             return  # Existing bound routes retain their identity and length.
         sign=1 if side=='left' else -1
-        pos=[sign*pos[0],*pos[1:]]
+        endpoint_source=None
+        if name in ANCHORED and ANCHORED[name]['sides']=='mirror_left' and side=='right':
+            # IBM-1's visceral join collapses sides and raises if they differ: see the catalog
+            left,endpoint_source=anchor_point(root,entities,name,'left',pos)
+            pos=[-left[0],*left[1:]]
+            endpoint_source=dict(endpoint_source,rule='mirror_of_left',on_named_structure=False,
+                                 mirrored_from_rule=endpoint_source['rule'],
+                                 why='bilateral-symmetry contract of IBM-1 ihm_bridge.visceral_routes')
+        elif name in ANCHORED:
+            pos,endpoint_source=anchor_point(root,entities,name,side,pos)
+            endpoint_source['on_named_structure']=True
+        else:
+            pos=[sign*pos[0],*pos[1:]]
         rid=f'peripheral-relay-{side}-{level}'
         if rid not in relays:
-            xyz=relay_pos or [.012,.655,-.035]
-            relays[rid]=dict(id=rid,name=f'{side} {level.replace("_"," ")} relay',side=side,
-                position_m=[sign*xyz[0],*xyz[1:]],kind='named_relay_group',evidence_kind='authored_anatomical_prior')
+            placed=(levels or {}).get('relays',{}).get(rid)
+            if placed is not None:
+                # the solitary relay: the medulla, from build_spinal_cord_levels.py
+                relays[rid]=dict(id=rid,name=f'{side} {level.replace("_"," ")} relay',side=side,
+                    position_m=placed['position_m'],kind='named_relay_group',evidence_kind=placed['evidence_kind'],
+                    position_source=placed['position_source'],level_rule=placed['level_rule'],
+                    structure=placed.get('structure'),entity_id=placed.get('entity_id'))
+            elif relay_pos is None:
+                raise SystemExit(f'relay {rid} has no placed position and no authored one')
+            else:
+                xyz=relay_pos
+                relays[rid]=dict(id=rid,name=f'{side} {level.replace("_"," ")} relay',side=side,
+                    position_m=[sign*xyz[0],*xyz[1:]],kind='named_relay_group',evidence_kind='authored_anatomical_prior')
         end=relays[rid]['position_m']
         # Somatic/visceral via an authored proximal waypoint; special senses direct.
         points=[pos,end] if kind=='special_sense' else [pos,[sign*.04,end[1],end[2]],end]
@@ -66,6 +124,10 @@ def enrich(data, lines, root):
             path_length_m=length,path_length_scope='representative_endpoint_to_relay',
             endpoint_label=endpoint,points_m=points,length_method='sum of authored polyline segment lengths',
             route_kind=kind,runtime_support='topology_only',limitations=list(LIMITATIONS))
+        if endpoint_source:
+            n['endpoint_source']=endpoint_source
+            if endpoint_source.get('on_named_structure'):
+                n['endpoint_id']=endpoint_source['entity_id']
         if kind=='visceral':
             n['limitations'].append('Representative visceral afferent path only; efferent ganglionic stages and organ-specific branches are unresolved. Do not apply one velocity across a multi-neuron autonomic chain.')
         if cortex:

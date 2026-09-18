@@ -3,6 +3,25 @@
 Coordinates use the canonical body frame. Each entry is one representative
 branch, not the extent of an entire branching nerve/plexus. Numbers are authored
 landmarks; references support topology only, not these coordinates or lengths.
+
+ANCHORED overrides the authored point for every endpoint whose label names an
+organ the atlas carries and which the 18 Sep 2026 endpoint check found off that
+organ (docs/BODY_PERIPHERAL.md): the authored trunk-and-viscera points sat
+10-17 cm low, like the relays.  An anchored endpoint is a vertex of the named
+BodyParts3D mesh chosen by the stated rule, so it is ON the structure by
+construction; the authored point is kept below as the record of what it replaced
+and, for `nearest_surface`, as the point whose nearest surface vertex is taken.
+VISCERAL anchors are declared on the LEFT and the right route is the mirror image
+of the left (`sides='mirror_left'`).  That is not anatomy -- the right vagus
+reaches the posterior gastric wall and the right kidney sits lower than the
+left -- it is the contract IBM-1 reads visceral routes under:
+`ihm_bridge.visceral_routes` collapses each visceral trunk to one delay and
+RAISES if its two sides differ.  With per-side organ anchors the vagus would be
+448 mm left and 423 mm right and the brain's interoceptive loop would refuse
+to load.  So the right-side record carries `endpoint_source.rule =
+'mirror_of_left'`, its endpoint is NOT on the organ, and lifting that needs the
+brain-side join to accept per-side lengths.  Phrenic is somatic and has no such
+join; it is anchored per side.
 """
 # name, relay group, representative distal endpoint, authored position (left)
 SOMATIC = [
@@ -64,3 +83,27 @@ SPECIAL = [
  ('vestibular','vestibular_nuclei','vestibular ganglion region',[.060,.680,.000],[.038,.670,-.012],'insula'),
  ('olfactory','olfactory_bulb','olfactory epithelium',[.012,.710,.065],[.012,.720,.060],'entorhinal'),
 ]
+
+# name -> anchor rule on a named atlas entity.  Resolved in enrich_peripheral_routes.py.
+ANCHORED = {
+ 'vagus': dict(sides='mirror_left', rule='stomach_wall', entity={'left': 'body-bp3d-FJ2564', 'right': 'body-bp3d-FJ2564'},
+               label='gastric wall: the left vagus (anterior vagal trunk) on the anterior wall, '
+                     'directly in front of the stomach centroid; right = mirror of left',
+               was_off_mm='87 mm from the stomach surface (132 mm below its centroid)'),
+ 'greater_splanchnic': dict(sides='mirror_left', rule='stomach_wall', entity={'left': 'body-bp3d-FJ2564', 'right': 'body-bp3d-FJ2564'},
+               label='foregut (gastric) wall via the coeliac plexus; the vagus\'s anterior wall point; '
+                     'right = mirror of left',
+               was_off_mm='shared the vagus point: 87 mm from the stomach surface'),
+ 'least_splanchnic': dict(sides='mirror_left', rule='kidney_hilum', entity={'left': 'body-bp3d-FJ3145', 'right': 'body-bp3d-FJ3147'},
+               label='renal: the left kidney, surface vertex nearest the midline at its centroid '
+                     'height (the hilum); right = mirror of left',
+               was_off_mm='101 mm from the left kidney surface'),
+ 'pelvic_splanchnic': dict(sides='mirror_left', rule='nearest_surface', entity={'left': 'body-bp3d-FJ3149', 'right': 'body-bp3d-FJ3149'},
+               label='pelvic viscera: urinary bladder wall, vertex nearest the authored point; '
+                     'right = mirror of left',
+               was_off_mm='171 mm below the bladder, in the upper thigh'),
+ 'phrenic': dict(sides='per_side', rule='diaphragm_dome', entity={'left': 'body-bp3d-FJ3131', 'right': 'body-bp3d-FJ3131'},
+               label='diaphragm: highest diaphragm vertex within 10 mm of the authored lateral '
+                     'offset (the dome the phrenic pierces)',
+               was_off_mm='29 mm from the diaphragm surface, 72 mm below its centroid'),
+}
